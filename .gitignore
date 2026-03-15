@@ -1,0 +1,21 @@
+# Build output
+dist/
+
+# Node.js dependencies
+node_modules/
+
+# Astro generated files
+.astro/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# OS / editor artefacts
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/

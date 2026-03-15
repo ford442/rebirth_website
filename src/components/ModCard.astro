@@ -1,0 +1,190 @@
+---
+// ModCard.astro — reusable card for displaying individual mods or songs
+export interface Props {
+  /** Display title of the mod or song */
+  title: string;
+  /** File type label, e.g. ".rbm" or ".rbs" */
+  fileType: '.rbm' | '.rbs' | string;
+  /** Short description or notes */
+  description?: string;
+  /** Author / creator name */
+  author?: string;
+  /** Download or detail page href */
+  href?: string;
+  /** Optional tags, e.g. ["acid", "303", "ambient"] */
+  tags?: string[];
+}
+
+const {
+  title,
+  fileType,
+  description,
+  author,
+  href,
+  tags = [],
+} = Astro.props;
+
+const isSong = fileType === '.rbs';
+const isMod  = fileType === '.rbm';
+const typeClass = isSong ? 'type--song' : isMod ? 'type--mod' : 'type--other';
+---
+
+<article class={`mod-card ${typeClass}`} aria-label={`${fileType} — ${title}`}>
+  <header class="mod-card__header">
+    <span class={`mod-card__badge ${typeClass}`} aria-hidden="true">{fileType}</span>
+    <h3 class="mod-card__title">{title}</h3>
+  </header>
+
+  {description && (
+    <p class="mod-card__desc">{description}</p>
+  )}
+
+  <footer class="mod-card__footer">
+    {author && (
+      <span class="mod-card__author">
+        <span class="sr-only">Author: </span>{author}
+      </span>
+    )}
+
+    {tags.length > 0 && (
+      <ul class="mod-card__tags" aria-label="Tags" role="list">
+        {tags.map((tag) => (
+          <li class="mod-card__tag">{tag}</li>
+        ))}
+      </ul>
+    )}
+
+    {href && (
+      <a class="mod-card__link" href={href}>
+        View / Download <span aria-hidden="true">&rarr;</span>
+      </a>
+    )}
+  </footer>
+</article>
+
+<style>
+  .mod-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .mod-card:hover {
+    border-color: var(--color-amber-dim);
+    box-shadow: 0 0 12px -4px var(--color-amber-dim);
+  }
+
+  /* Left accent strip by type */
+  .mod-card.type--song { border-left: 3px solid var(--color-green-dim); }
+  .mod-card.type--mod  { border-left: 3px solid var(--color-amber-dim); }
+
+  /* ── Header ── */
+  .mod-card__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .mod-card__badge {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    padding: 2px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .mod-card__badge.type--song {
+    background: color-mix(in srgb, var(--color-green-dim) 20%, transparent);
+    color: var(--color-green);
+    border: 1px solid var(--color-green-dim);
+  }
+
+  .mod-card__badge.type--mod {
+    background: color-mix(in srgb, var(--color-amber-dim) 20%, transparent);
+    color: var(--color-amber);
+    border: 1px solid var(--color-amber-dim);
+  }
+
+  .mod-card__badge.type--other {
+    background: var(--color-surface-alt);
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+  }
+
+  .mod-card__title {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    color: var(--color-text);
+    margin: 0;
+    letter-spacing: 0.03em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ── Body ── */
+  .mod-card__desc {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* ── Footer ── */
+  .mod-card__footer {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .mod-card__author {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  .mod-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex: 1;
+  }
+
+  .mod-card__tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+    border-radius: 3px;
+    padding: 1px 5px;
+    color: var(--color-text-muted);
+  }
+
+  .mod-card__link {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    color: var(--color-amber);
+    margin-left: auto;
+    white-space: nowrap;
+    transition: color var(--transition-fast);
+  }
+
+  .mod-card__link:hover,
+  .mod-card__link:focus-visible {
+    color: var(--color-green);
+  }
+</style>

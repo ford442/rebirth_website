@@ -1,0 +1,182 @@
+---
+// BaseLayout.astro — shared shell for every page
+export interface Props {
+  title: string;
+  description?: string;
+}
+
+const {
+  title,
+  description = 'Community archive for the ReBirth RB-338 software synthesizer — songs, mods, and history preserved.',
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:type" content="website" />
+
+    <title>{title} — ReBirth RB-338 Archive</title>
+
+    <!-- Global styles are imported via the component's style tag below -->
+  </head>
+  <body>
+    <!-- Accessibility skip link -->
+    <a href="#main-content" class="skip-nav">Skip to main content</a>
+
+    <!-- Site header -->
+    <header class="site-header">
+      <div class="container">
+        <a href={`${import.meta.env.BASE_URL}`} class="site-logo" aria-label="ReBirth RB-338 Archive home">
+          <span class="logo-rb">RB</span><span class="logo-338">-338</span>
+          <span class="logo-sub">ARCHIVE</span>
+        </a>
+        <nav aria-label="Primary navigation">
+          <ul role="list">
+            <li><a href={`${import.meta.env.BASE_URL}`}>Home</a></li>
+            <li><a href={`${import.meta.env.BASE_URL}archive/songs`}>Songs</a></li>
+            <li><a href={`${import.meta.env.BASE_URL}archive/mods`}>Mods</a></li>
+            <li><a href={`${import.meta.env.BASE_URL}docs`}>Docs</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Page content -->
+    <main id="main-content">
+      <slot />
+    </main>
+
+    <!-- Site footer -->
+    <footer class="site-footer">
+      <div class="container">
+        <p>
+          ReBirth RB-338 Archive &mdash; Community-maintained. Not affiliated with Propellerhead Software.
+        </p>
+        <p class="footer-build">
+          Built with <a href="https://astro.build" rel="noopener noreferrer" target="_blank">Astro</a> &mdash;
+          <a href="https://github.com/ford442/rebirth_website" rel="noopener noreferrer" target="_blank">Contribute on GitHub</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  @import '../styles/global.css';
+</style>
+
+<style>
+  /* ── Header ─────────────────────────────────────────────────── */
+  .site-header {
+    border-bottom: 1px solid var(--color-border);
+    padding-block: var(--space-md);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: color-mix(in srgb, var(--color-bg) 90%, transparent);
+    backdrop-filter: blur(6px);
+  }
+
+  .site-header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .site-logo {
+    display: flex;
+    align-items: baseline;
+    gap: 0.15em;
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-size: 1.4rem;
+    font-weight: bold;
+    letter-spacing: 0.06em;
+  }
+
+  .logo-rb {
+    color: var(--color-amber);
+    font-size: 1.6rem;
+  }
+
+  .logo-338 {
+    color: var(--color-text);
+  }
+
+  .logo-sub {
+    color: var(--color-text-muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    margin-left: var(--space-sm);
+    align-self: center;
+  }
+
+  nav ul {
+    display: flex;
+    list-style: none;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  nav a {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--color-text-muted);
+    padding: var(--space-xs) var(--space-sm);
+    border: 1px solid transparent;
+    border-radius: 3px;
+    transition: color var(--transition-fast), border-color var(--transition-fast);
+  }
+
+  nav a:hover,
+  nav a:focus-visible {
+    color: var(--color-amber);
+    border-color: var(--color-amber-dim);
+  }
+
+  /* ── Footer ─────────────────────────────────────────────────── */
+  .site-footer {
+    border-top: 1px solid var(--color-border);
+    padding-block: var(--space-lg);
+    margin-top: var(--space-xl);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+
+  .site-footer .container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    align-items: center;
+    text-align: center;
+  }
+
+  .site-footer a {
+    color: var(--color-text-muted);
+  }
+
+  .site-footer a:hover {
+    color: var(--color-amber);
+  }
+
+  .footer-build { opacity: 0.6; }
+</style>

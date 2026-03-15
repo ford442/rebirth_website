@@ -1,0 +1,24 @@
+{
+  "name": "rebirth-rb338-archive",
+  "version": "0.1.0",
+  "description": "Community archive for the ReBirth RB-338 software synthesizer",
+  "author": "ford442",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^6.0.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18.17.1"
+  }
+}
