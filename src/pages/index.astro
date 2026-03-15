@@ -1,0 +1,420 @@
+---
+// src/pages/index.astro — Landing page for the ReBirth RB-338 Community Archive
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ModCard from '../components/ModCard.astro';
+
+const featuredSongs = [
+  {
+    title: 'AcidLine303',
+    fileType: '.rbs',
+    description: 'Classic TB-303-inspired acid bassline with 909 kick pattern.',
+    author: 'ford442',
+    tags: ['acid', '303', '909'],
+    href: '#',
+  },
+  {
+    title: 'IndustrialBeat01',
+    fileType: '.rbs',
+    description: 'Hard-driving industrial percussion sequence demonstrating RB-338 pattern chaining.',
+    author: 'archive',
+    tags: ['industrial', 'percussion'],
+    href: '#',
+  },
+];
+
+const featuredMods = [
+  {
+    title: 'TB303_Silver',
+    fileType: '.rbm',
+    description: 'Silver-panel skin for the 303 emulation module. Faithful recreation of the hardware finish.',
+    author: 'archive',
+    tags: ['skin', '303', 'silver'],
+    href: '#',
+  },
+  {
+    title: 'BassStation_Mk2',
+    fileType: '.rbm',
+    description: 'Alternate waveform table mod introducing a sawtooth variant not present in stock firmware.',
+    author: 'archive',
+    tags: ['waveform', 'bass'],
+    href: '#',
+  },
+];
+---
+
+<BaseLayout
+  title="Home"
+  description="Community archive for the ReBirth RB-338 software synthesizer — songs, mods, and history preserved."
+>
+  <!-- ── Hero ──────────────────────────────────────────────────── -->
+  <section class="hero" aria-labelledby="hero-heading">
+    <div class="container hero__inner">
+      <div class="hero__text">
+        <p class="hero__eyebrow">// SYSTEM ONLINE — EST. 1997</p>
+        <h1 id="hero-heading">
+          ReBirth<br />
+          <span class="hero__model">RB-338</span><br />
+          <span class="hero__subtitle">Community Archive</span>
+        </h1>
+        <p class="hero__desc">
+          A living repository of songs, mods, and history for the legendary
+          Propellerhead ReBirth RB-338 software synthesizer. Preserving the
+          acid, techno, and industrial sounds of the late '90s for a new
+          generation of explorers.
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--primary" href={`${import.meta.env.BASE_URL}archive/songs`}>Browse Songs</a>
+          <a class="btn btn--secondary" href={`${import.meta.env.BASE_URL}archive/mods`}>Browse Mods</a>
+          <a class="btn btn--ghost" href={`${import.meta.env.BASE_URL}docs`}>Documentation</a>
+        </div>
+      </div>
+
+      <aside class="hero__terminal" aria-label="System status readout">
+        <div class="terminal">
+          <div class="terminal__bar" aria-hidden="true">
+            <span></span><span></span><span></span>
+            <span class="terminal__title">rb338_archive.sh</span>
+          </div>
+          <pre class="terminal__body" aria-label="Simulated terminal output"><code>$ rb338 --status
+<span class="t-green">▶ ARCHIVE ONLINE</span>
+  songs  : <span class="t-amber">loading...</span>
+  mods   : <span class="t-amber">loading...</span>
+  version: <span class="t-green">2.0.1</span>
+  wasm   : <span class="t-dim">pending</span>
+
+$ rb338 --list-formats
+  *.rbs  — ReBirth Song file
+  *.rbm  — ReBirth Mod file
+
+$ _</code></pre>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ── About ─────────────────────────────────────────────────── -->
+  <section class="about section" aria-labelledby="about-heading">
+    <div class="container">
+      <h2 id="about-heading" class="section__heading">// About the Archive</h2>
+      <div class="about__grid">
+        <div class="about__block">
+          <h3>What is ReBirth?</h3>
+          <p>
+            Released by Propellerhead Software in 1997, <strong>ReBirth RB-338</strong>
+            was one of the first software synthesizers to faithfully emulate the
+            Roland TB-303 Bass Line and the Roland TR-808 / TR-909 drum machines.
+            It became a cornerstone of electronic music production and is now
+            freely available as abandonware.
+          </p>
+        </div>
+        <div class="about__block">
+          <h3>What is this site?</h3>
+          <p>
+            This community archive preserves <code>.rbs</code> song files and
+            <code>.rbm</code> mod files contributed by enthusiasts worldwide.
+            It also hosts historical documentation spanning versions
+            <code>1.0</code> through <code>2.0.1</code> and lays the groundwork
+            for in-browser <code>.rbs</code> preview via WebAssembly.
+          </p>
+        </div>
+        <div class="about__block">
+          <h3>How to contribute?</h3>
+          <p>
+            Open a pull request on the
+            <a href="https://github.com/ford442/rebirth_website" rel="noopener noreferrer" target="_blank">GitHub repository</a>.
+            Place song files in <code>public/archive/rbs-songs/</code> and mod
+            files in <code>public/archive/rbm-mods/</code>. See the
+            <a href={`${import.meta.env.BASE_URL}docs`}>documentation</a> for
+            naming conventions and metadata requirements.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Featured Songs ────────────────────────────────────────── -->
+  <section class="featured section" aria-labelledby="songs-heading">
+    <div class="container">
+      <h2 id="songs-heading" class="section__heading">// Featured Songs</h2>
+      <div class="card-grid">
+        {featuredSongs.map((song) => (
+          <ModCard {...song} />
+        ))}
+      </div>
+      <a class="view-all-link" href={`${import.meta.env.BASE_URL}archive/songs`}>
+        View all songs &rarr;
+      </a>
+    </div>
+  </section>
+
+  <!-- ── Featured Mods ─────────────────────────────────────────── -->
+  <section class="featured section" aria-labelledby="mods-heading">
+    <div class="container">
+      <h2 id="mods-heading" class="section__heading">// Featured Mods</h2>
+      <div class="card-grid">
+        {featuredMods.map((mod) => (
+          <ModCard {...mod} />
+        ))}
+      </div>
+      <a class="view-all-link" href={`${import.meta.env.BASE_URL}archive/mods`}>
+        View all mods &rarr;
+      </a>
+    </div>
+  </section>
+
+  <!-- ── WASM Teaser ────────────────────────────────────────────── -->
+  <section class="wasm-teaser section" aria-labelledby="wasm-heading">
+    <div class="container">
+      <div class="wasm-teaser__inner">
+        <div class="wasm-teaser__text">
+          <h2 id="wasm-heading" class="section__heading">// Coming Soon: Browser Playback</h2>
+          <p>
+            We are building a WebAssembly audio engine that will allow you to
+            preview <code>.rbs</code> files directly in your browser — no
+            software installation required. The module lives under
+            <code>src/wasm/</code> and will parse the binary format, reconstruct
+            the pattern data, and route it through the Web Audio API.
+          </p>
+          <p class="wasm-teaser__status">
+            Status: <code class="status--pending">PENDING IMPLEMENTATION</code>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* ── Hero ── */
+  .hero {
+    padding-block: var(--space-xl) calc(var(--space-xl) * 0.75);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .hero__inner {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+    align-items: center;
+  }
+
+  @media (min-width: 800px) {
+    .hero__inner {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .hero__eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-green);
+    letter-spacing: 0.12em;
+    margin-bottom: var(--space-sm);
+  }
+
+  .hero__model {
+    color: var(--color-accent);
+  }
+
+  .hero__subtitle {
+    font-size: 0.55em;
+    color: var(--color-text-muted);
+    letter-spacing: 0.2em;
+  }
+
+  .hero__desc {
+    margin-block: var(--space-md);
+    color: var(--color-text-muted);
+    max-width: 50ch;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 0.55em 1.2em;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    transition:
+      background var(--transition-fast),
+      border-color var(--transition-fast),
+      color var(--transition-fast);
+  }
+
+  .btn--primary {
+    background: var(--color-amber);
+    color: var(--color-bg);
+    border-color: var(--color-amber);
+  }
+
+  .btn--primary:hover,
+  .btn--primary:focus-visible {
+    background: transparent;
+    color: var(--color-amber);
+  }
+
+  .btn--secondary {
+    background: transparent;
+    color: var(--color-amber);
+    border-color: var(--color-amber);
+  }
+
+  .btn--secondary:hover,
+  .btn--secondary:focus-visible {
+    background: var(--color-amber);
+    color: var(--color-bg);
+  }
+
+  .btn--ghost {
+    background: transparent;
+    color: var(--color-text-muted);
+    border-color: var(--color-border);
+  }
+
+  .btn--ghost:hover,
+  .btn--ghost:focus-visible {
+    color: var(--color-text);
+    border-color: var(--color-text-muted);
+  }
+
+  /* Terminal widget */
+  .hero__terminal { align-self: stretch; }
+
+  .terminal {
+    background: #000;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+    height: 100%;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .terminal__bar {
+    background: var(--color-surface-alt);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .terminal__bar > span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-border);
+  }
+
+  .terminal__bar > span:nth-child(1) { background: #e84343; }
+  .terminal__bar > span:nth-child(2) { background: #f5a623; }
+  .terminal__bar > span:nth-child(3) { background: #39c041; }
+
+  .terminal__title {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    background: none;
+  }
+
+  .terminal__body {
+    flex: 1;
+    padding: var(--space-md);
+    font-size: 0.82rem;
+    line-height: 1.8;
+    color: var(--color-text);
+    background: none;
+    border: none;
+    overflow: auto;
+    white-space: pre;
+  }
+
+  .t-green { color: var(--color-green); }
+  .t-amber { color: var(--color-amber); }
+  .t-dim   { color: var(--color-text-muted); }
+
+  /* ── Sections ── */
+  .section { padding-block: var(--space-xl); }
+
+  .section__heading {
+    font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+    color: var(--color-amber);
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  /* About grid */
+  .about__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--space-lg);
+  }
+
+  .about__block h3 {
+    color: var(--color-text);
+    font-size: 1rem;
+    margin-bottom: var(--space-sm);
+  }
+
+  .about__block p {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .about__block strong { color: var(--color-amber); }
+
+  /* Card grid */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+  }
+
+  .view-all-link {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* WASM teaser */
+  .wasm-teaser {
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .wasm-teaser__inner {
+    max-width: 720px;
+  }
+
+  .wasm-teaser p {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    margin-bottom: var(--space-sm);
+  }
+
+  .wasm-teaser__status {
+    margin-top: var(--space-md);
+  }
+
+  .status--pending {
+    color: var(--color-amber);
+    border-color: var(--color-amber-dim);
+    background: color-mix(in srgb, var(--color-amber-dim) 15%, transparent);
+  }
+</style>
