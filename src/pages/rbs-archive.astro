@@ -1,0 +1,541 @@
+---
+// RBS Song Archive Browser
+const archiveBaseUrl = "http://test.1ink.us/rb338/archive/rbs-songs";
+
+interface Collection {
+  name: string;
+  path: string;
+  type: "folder" | "file";
+  modified?: string;
+  count?: number;
+}
+
+const collections = {
+  featured: {
+    name: "Featured Collections",
+    folders: [
+      { name: "Contests", path: "Featured_Collections/Contests" },
+      { name: "MODs", path: "Featured_Collections/MODs" }
+    ]
+  },
+  bySource: {
+    name: "By Source",
+    folders: [
+      { name: "Rebirth 1.5", path: "By_Source/Rebirth_1.5" },
+      { name: "Rebirth 2.0", path: "By_Source/Rebirth_2.0" },
+      { name: "Archives", path: "By_Source/Archives" }
+    ]
+  },
+  artists: {
+    name: "Artists",
+    folders: [
+      { name: "Cavey", path: "Artists/Cavey" },
+      { name: "DJ Caspa", path: "Artists/DJ Caspa" },
+      { name: "DJ Knightmare", path: "Artists/DJ Knightmare" },
+      { name: "Fanatic", path: "Artists/Fanatic" },
+      { name: "Noah Cohn", path: "Artists/Noah Cohn" },
+      { name: "Noah Cohn Complete", path: "Artists/Noah_Cohn_Complete" },
+      { name: "Noah Cohn Extended", path: "Artists/Noah_Cohn_Extended" },
+      { name: "Rotorkopf", path: "Artists/Rotorkopf" }
+    ]
+  },
+  monthly: {
+    name: "Monthly Archive",
+    folders: [
+      { name: "January to December", path: "Monthly_Archive" }
+    ]
+  },
+  other: {
+    name: "Other Collections",
+    folders: [
+      { name: "Color X", path: "Other_Collections/Color X" },
+      { name: "Euro Pack", path: "Other_Collections/Euro Pack" },
+      { name: "Freestyle Pack", path: "Other_Collections/Freestyle Pack" },
+      { name: "Rotorkopf 2", path: "Other_Collections/Rotorkopf 2" },
+      { name: "Saturday Morning", path: "Other_Collections/Saturday Morning" }
+    ]
+  }
+};
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RBS Song Archive Browser</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 40px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+      color: #333;
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 1.1em;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1em;
+      transition: border-color 0.3s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    button {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .collections-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .collection-section {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .collection-section:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .section-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      font-size: 1.3em;
+      font-weight: 600;
+    }
+
+    .folder-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .folder-item {
+      padding: 15px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      text-decoration: none;
+      color: #333;
+    }
+
+    .folder-item:last-child {
+      border-bottom: none;
+    }
+
+    .folder-item:hover {
+      background-color: #f9f9f9;
+    }
+
+    .folder-item a {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .folder-icon {
+      font-size: 1.5em;
+    }
+
+    .folder-name {
+      flex: 1;
+      font-weight: 500;
+    }
+
+    .external-link {
+      color: #667eea;
+      font-size: 1.2em;
+      transition: color 0.2s;
+    }
+
+    .folder-item:hover .external-link {
+      color: #764ba2;
+    }
+
+    .stats {
+      background: rgba(102, 126, 234, 0.1);
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      text-align: center;
+    }
+
+    .stat-item h3 {
+      color: #667eea;
+      font-size: 2em;
+      margin-bottom: 5px;
+    }
+
+    .stat-item p {
+      color: #666;
+      font-size: 0.9em;
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+
+    .view-toggle button {
+      padding: 10px 20px;
+      background: #f0f0f0;
+      color: #333;
+      border: 2px solid #e0e0e0;
+      cursor: pointer;
+    }
+
+    .view-toggle button.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-color: transparent;
+    }
+
+    #listView {
+      display: none;
+    }
+
+    #gridView {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    footer {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.8);
+      margin-top: 40px;
+      padding: 20px;
+    }
+
+    footer a {
+      color: white;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎵 RBS Song Archive</h1>
+      <p class="subtitle">Browse and explore Rebirth songs from various collections, artists, and sources</p>
+
+      <div class="search-bar">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search collections and artists..."
+        >
+        <button onclick="clearSearch()">Clear</button>
+      </div>
+    </header>
+
+    <div class="stats">
+      <div class="stat-item">
+        <h3>5</h3>
+        <p>Main Collections</p>
+      </div>
+      <div class="stat-item">
+        <h3>8</h3>
+        <p>Featured Artists</p>
+      </div>
+      <div class="stat-item">
+        <h3>2000+</h3>
+        <p>Total Songs</p>
+      </div>
+      <div class="stat-item">
+        <h3>12</h3>
+        <p>Monthly Archives</p>
+      </div>
+    </div>
+
+    <div class="view-toggle">
+      <button class="active" onclick="switchView('grid')">Grid View</button>
+      <button onclick="switchView('list')">List View</button>
+    </div>
+
+    <div id="gridView" class="collections-grid">
+      {collections.featured && (
+        <CollectionCard
+          section={collections.featured}
+          archiveUrl={archiveBaseUrl}
+        />
+      )}
+      {collections.bySource && (
+        <CollectionCard
+          section={collections.bySource}
+          archiveUrl={archiveBaseUrl}
+        />
+      )}
+      {collections.artists && (
+        <CollectionCard
+          section={collections.artists}
+          archiveUrl={archiveBaseUrl}
+        />
+      )}
+      {collections.monthly && (
+        <CollectionCard
+          section={collections.monthly}
+          archiveUrl={archiveBaseUrl}
+        />
+      )}
+      {collections.other && (
+        <CollectionCard
+          section={collections.other}
+          archiveUrl={archiveBaseUrl}
+        />
+      )}
+    </div>
+
+    <div id="listView" style="display:none">
+      <div style="background: white; padding: 20px; border-radius: 12px;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 2px solid #e0e0e0;">
+              <th style="text-align: left; padding: 12px;">Collection</th>
+              <th style="text-align: left; padding: 12px;">Path</th>
+              <th style="text-align: left; padding: 12px;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="listTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer>
+      <p>RBS Archive Browser • <a href="/" style="color: white;">Back to Home</a></p>
+    </footer>
+  </div>
+
+  <script>
+    const archiveBaseUrl = "http://test.1ink.us/rb338/archive/rbs-songs";
+
+    const allCollections = {
+      featured: {
+        name: "Featured Collections",
+        folders: [
+          { name: "Contests", path: "Featured_Collections/Contests" },
+          { name: "MODs", path: "Featured_Collections/MODs" }
+        ]
+      },
+      bySource: {
+        name: "By Source",
+        folders: [
+          { name: "Rebirth 1.5", path: "By_Source/Rebirth_1.5" },
+          { name: "Rebirth 2.0", path: "By_Source/Rebirth_2.0" },
+          { name: "Archives", path: "By_Source/Archives" }
+        ]
+      },
+      artists: {
+        name: "Artists",
+        folders: [
+          { name: "Cavey", path: "Artists/Cavey" },
+          { name: "DJ Caspa", path: "Artists/DJ Caspa" },
+          { name: "DJ Knightmare", path: "Artists/DJ Knightmare" },
+          { name: "Fanatic", path: "Artists/Fanatic" },
+          { name: "Noah Cohn", path: "Artists/Noah Cohn" },
+          { name: "Noah Cohn Complete", path: "Artists/Noah_Cohn_Complete" },
+          { name: "Noah Cohn Extended", path: "Artists/Noah_Cohn_Extended" },
+          { name: "Rotorkopf", path: "Artists/Rotorkopf" }
+        ]
+      },
+      monthly: {
+        name: "Monthly Archive",
+        folders: [
+          { name: "January to December", path: "Monthly_Archive" }
+        ]
+      },
+      other: {
+        name: "Other Collections",
+        folders: [
+          { name: "Color X", path: "Other_Collections/Color X" },
+          { name: "Euro Pack", path: "Other_Collections/Euro Pack" },
+          { name: "Freestyle Pack", path: "Other_Collections/Freestyle Pack" },
+          { name: "Rotorkopf 2", path: "Other_Collections/Rotorkopf 2" },
+          { name: "Saturday Morning", path: "Other_Collections/Saturday Morning" }
+        ]
+      }
+    };
+
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const sections = document.querySelectorAll('.collection-section');
+
+      sections.forEach(section => {
+        const sectionTitle = section.querySelector('.section-header').textContent.toLowerCase();
+        const folderItems = section.querySelectorAll('.folder-item');
+        let hasVisibleItems = false;
+
+        folderItems.forEach(item => {
+          const folderName = item.querySelector('.folder-name').textContent.toLowerCase();
+          const matches = sectionTitle.includes(query) || folderName.includes(query) || query === '';
+          item.style.display = matches ? '' : 'none';
+          if (matches) hasVisibleItems = true;
+        });
+
+        section.style.display = hasVisibleItems || query === '' ? '' : 'none';
+      });
+    });
+
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      searchInput.dispatchEvent(new Event('input'));
+    }
+
+    function switchView(view) {
+      const gridView = document.getElementById('gridView');
+      const listView = document.getElementById('listView');
+      const buttons = document.querySelectorAll('.view-toggle button');
+
+      buttons.forEach(b => b.classList.remove('active'));
+
+      if (view === 'grid') {
+        gridView.style.display = 'grid';
+        listView.style.display = 'none';
+        buttons[0].classList.add('active');
+      } else {
+        gridView.style.display = 'none';
+        listView.style.display = 'block';
+        buttons[1].classList.add('active');
+        renderListView();
+      }
+    }
+
+    function renderListView() {
+      const tbody = document.getElementById('listTableBody');
+      tbody.innerHTML = '';
+
+      Object.values(allCollections).forEach(section => {
+        section.folders.forEach(folder => {
+          const row = document.createElement('tr');
+          row.style.borderBottom = '1px solid #f0f0f0';
+          row.innerHTML = `
+            <td style="padding: 12px; font-weight: 500;">${folder.name}</td>
+            <td style="padding: 12px; color: #666; font-family: monospace; font-size: 0.9em;">${folder.path}</td>
+            <td style="padding: 12px;">
+              <a href="${archiveBaseUrl}/${folder.path}" target="_blank"
+                 style="color: #667eea; text-decoration: none; font-weight: 500;">
+                Open →
+              </a>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      });
+    }
+  </script>
+
+  <!-- Collection Card Component inline -->
+  <script>
+    function createCollectionCard(section, archiveUrl) {
+      const html = `
+        <div class="collection-section">
+          <div class="section-header">${section.name}</div>
+          <div class="folder-list">
+            ${section.folders.map(folder => `
+              <a href="${archiveUrl}/${folder.path}" target="_blank" class="folder-item">
+                <span class="folder-icon">📁</span>
+                <span class="folder-name">${folder.name}</span>
+                <span class="external-link">↗</span>
+              </a>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      return html;
+    }
+
+    // Render grid view on load
+    const gridView = document.getElementById('gridView');
+    gridView.innerHTML = Object.values(allCollections)
+      .map(section => createCollectionCard(section, archiveBaseUrl))
+      .join('');
+  </script>
+</body>
+</html>

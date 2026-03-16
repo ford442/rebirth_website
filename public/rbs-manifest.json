@@ -1,0 +1,221 @@
+{
+  "archive": {
+    "name": "RBS Song Archive",
+    "baseUrl": "http://test.1ink.us/rb338/archive/rbs-songs",
+    "description": "Complete Rebirth Song archive with thousands of tracks from various sources, artists, and collections",
+    "lastUpdated": "2026-03-15",
+    "totalSongs": 2000,
+    "totalCollections": 5,
+    "totalArtists": 8
+  },
+  "collections": {
+    "Featured_Collections": {
+      "name": "Featured Collections",
+      "description": "Curated selection of contest entries and MOD creations",
+      "path": "Featured_Collections",
+      "subcategories": [
+        {
+          "name": "Contests",
+          "path": "Featured_Collections/Contests",
+          "description": "Songs from Rebirth song contests",
+          "estimatedSongs": 156
+        },
+        {
+          "name": "MODs",
+          "path": "Featured_Collections/MODs",
+          "description": "Custom MOD creations and variations",
+          "estimatedSongs": 97
+        }
+      ]
+    },
+    "By_Source": {
+      "name": "By Source",
+      "description": "Songs organized by Rebirth software version and source",
+      "path": "By_Source",
+      "subcategories": [
+        {
+          "name": "Rebirth 1.5",
+          "path": "By_Source/Rebirth_1.5",
+          "description": "Songs created with Rebirth 1.5 (includes Propellerhead originals, user uploads, and base collections)",
+          "estimatedSongs": 500
+        },
+        {
+          "name": "Rebirth 2.0",
+          "path": "By_Source/Rebirth_2.0",
+          "description": "Songs created with Rebirth 2.0 (includes official releases and user uploads)",
+          "estimatedSongs": 400
+        },
+        {
+          "name": "Archives",
+          "path": "By_Source/Archives",
+          "description": "Historic archives including Hotline and ICQ Chat transfers",
+          "estimatedSongs": 300
+        }
+      ]
+    },
+    "Monthly_Archive": {
+      "name": "Monthly Archive",
+      "description": "Songs organized by month from January to December",
+      "path": "Monthly_Archive",
+      "subcategories": [
+        {
+          "name": "January",
+          "path": "Monthly_Archive/January"
+        },
+        {
+          "name": "February",
+          "path": "Monthly_Archive/February"
+        },
+        {
+          "name": "March",
+          "path": "Monthly_Archive/March"
+        },
+        {
+          "name": "April",
+          "path": "Monthly_Archive/April"
+        },
+        {
+          "name": "May",
+          "path": "Monthly_Archive/May"
+        },
+        {
+          "name": "June",
+          "path": "Monthly_Archive/June"
+        },
+        {
+          "name": "July",
+          "path": "Monthly_Archive/July"
+        },
+        {
+          "name": "August",
+          "path": "Monthly_Archive/August"
+        },
+        {
+          "name": "September",
+          "path": "Monthly_Archive/September"
+        },
+        {
+          "name": "October",
+          "path": "Monthly_Archive/October"
+        },
+        {
+          "name": "November",
+          "path": "Monthly_Archive/November"
+        },
+        {
+          "name": "December",
+          "path": "Monthly_Archive/December"
+        }
+      ],
+      "estimatedSongs": 1407,
+      "description": "Over 1,407 songs organized by calendar months"
+    },
+    "Artists": {
+      "name": "Artists",
+      "description": "Collections organized by featured creators and musicians",
+      "path": "Artists",
+      "subcategories": [
+        {
+          "name": "Cavey",
+          "path": "Artists/Cavey",
+          "description": "Songs by Cavey"
+        },
+        {
+          "name": "DJ Caspa",
+          "path": "Artists/DJ Caspa",
+          "description": "Songs by DJ Caspa"
+        },
+        {
+          "name": "DJ Knightmare",
+          "path": "Artists/DJ Knightmare",
+          "description": "Songs by DJ Knightmare"
+        },
+        {
+          "name": "Fanatic",
+          "path": "Artists/Fanatic",
+          "description": "Songs by Fanatic"
+        },
+        {
+          "name": "Noah Cohn",
+          "path": "Artists/Noah Cohn",
+          "description": "Songs by Noah Cohn"
+        },
+        {
+          "name": "Noah Cohn Complete",
+          "path": "Artists/Noah_Cohn_Complete",
+          "description": "Complete collection of Noah Cohn's works"
+        },
+        {
+          "name": "Noah Cohn Extended",
+          "path": "Artists/Noah_Cohn_Extended",
+          "description": "Extended collection of Noah Cohn's works"
+        },
+        {
+          "name": "Rotorkopf",
+          "path": "Artists/Rotorkopf",
+          "description": "Songs by Rotorkopf"
+        }
+      ],
+      "estimatedSongs": 237
+    },
+    "Other_Collections": {
+      "name": "Other Collections",
+      "description": "Themed collections and special series",
+      "path": "Other_Collections",
+      "subcategories": [
+        {
+          "name": "Color X",
+          "path": "Other_Collections/Color X",
+          "description": "Color X collection"
+        },
+        {
+          "name": "Euro Pack",
+          "path": "Other_Collections/Euro Pack",
+          "description": "European Rebirth songs collection"
+        },
+        {
+          "name": "Freestyle Pack",
+          "path": "Other_Collections/Freestyle Pack",
+          "description": "Freestyle and experimental tracks"
+        },
+        {
+          "name": "Rotorkopf 2",
+          "path": "Other_Collections/Rotorkopf 2",
+          "description": "Second collection by Rotorkopf"
+        },
+        {
+          "name": "Saturday Morning",
+          "path": "Other_Collections/Saturday Morning",
+          "description": "Saturday Morning themed collection"
+        }
+      ],
+      "estimatedSongs": 103
+    }
+  },
+  "statistics": {
+    "totalSongs": 2000,
+    "songsByCategory": {
+      "Featured_Collections": 253,
+      "By_Source": 1200,
+      "Monthly_Archive": 1407,
+      "Artists": 237,
+      "Other_Collections": 103
+    },
+    "featuredArtists": 8,
+    "contestEntries": 156,
+    "mods": 97
+  },
+  "metadata": {
+    "version": "1.0",
+    "created": "2026-03-15",
+    "lastUpdated": "2026-03-15",
+    "archiveType": "RBS (Rebirth Song Files)",
+    "supportedFormats": [".rbs"],
+    "description": "RBS (Rebirth Song) files are Rebirth music sequences created with Propellerhead Software's Rebirth synthesizer software"
+  },
+  "navigation": {
+    "browse": "/rbs-archive",
+    "manifest": "/rbs-manifest.json",
+    "baseArchive": "http://test.1ink.us/rb338/archive/rbs-songs"
+  }
+}
