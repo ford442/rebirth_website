@@ -1,0 +1,107 @@
+---
+// CollectionCard.astro — reusable card for displaying collection sections
+export interface Props {
+  /** Section object with name and folders */
+  section: {
+    name: string;
+    folders: Array<{
+      name: string;
+      path: string;
+    }>;
+  };
+  /** Base URL for the archive */
+  archiveUrl: string;
+}
+
+const { section, archiveUrl } = Astro.props;
+---
+
+<div class="collection-section">
+  <div class="section-header">{section.name}</div>
+  <div class="folder-list">
+    {section.folders.map(folder => (
+      <a href={`${archiveUrl}/${folder.path}`} target="_blank" class="folder-item">
+        <span class="folder-icon">📁</span>
+        <span class="folder-name">{folder.name}</span>
+        <span class="external-link">↗</span>
+      </a>
+    ))}
+  </div>
+</div>
+
+<style>
+  .collection-section {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .collection-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .section-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    font-size: 1.3em;
+    font-weight: 600;
+  }
+
+  .folder-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .folder-item {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-decoration: none;
+    color: #333;
+  }
+
+  .folder-item:last-child {
+    border-bottom: none;
+  }
+
+  .folder-item:hover {
+    background-color: #f9f9f9;
+  }
+
+  .folder-item a {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .folder-icon {
+    font-size: 1.5em;
+  }
+
+  .folder-name {
+    flex: 1;
+    font-weight: 500;
+  }
+
+  .external-link {
+    color: #667eea;
+    font-size: 1.2em;
+    transition: color 0.2s;
+  }
+
+  .folder-item:hover .external-link {
+    color: #764ba2;
+  }
+</style>
