@@ -338,38 +338,7 @@ const collections = {
       <button onclick="switchView('list')">List View</button>
     </div>
 
-    <div id="gridView" class="collections-grid">
-      {collections.featured && (
-        <CollectionCard
-          section={collections.featured}
-          archiveUrl={archiveBaseUrl}
-        />
-      )}
-      {collections.bySource && (
-        <CollectionCard
-          section={collections.bySource}
-          archiveUrl={archiveBaseUrl}
-        />
-      )}
-      {collections.artists && (
-        <CollectionCard
-          section={collections.artists}
-          archiveUrl={archiveBaseUrl}
-        />
-      )}
-      {collections.monthly && (
-        <CollectionCard
-          section={collections.monthly}
-          archiveUrl={archiveBaseUrl}
-        />
-      )}
-      {collections.other && (
-        <CollectionCard
-          section={collections.other}
-          archiveUrl={archiveBaseUrl}
-        />
-      )}
-    </div>
+    <div id="gridView" class="collections-grid"></div>
 
     <div id="listView" style="display:none">
       <div style="background: white; padding: 20px; border-radius: 12px;">
