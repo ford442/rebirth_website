@@ -1,5 +1,7 @@
 ---
 // RBS Song Archive Browser
+import CollectionCard from '../components/CollectionCard.astro';
+
 const archiveBaseUrl = "http://test.1ink.us/rb338/archive/rbs-songs";
 
 interface Collection {
@@ -149,81 +151,6 @@ const collections = {
       margin-bottom: 30px;
     }
 
-    .collection-section {
-      background: rgba(255, 255, 255, 0.95);
-      padding: 0;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-
-    .collection-section:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-    }
-
-    .section-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 20px;
-      font-size: 1.3em;
-      font-weight: 600;
-    }
-
-    .folder-list {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .folder-item {
-      padding: 15px 20px;
-      border-bottom: 1px solid #f0f0f0;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-      text-decoration: none;
-      color: #333;
-    }
-
-    .folder-item:last-child {
-      border-bottom: none;
-    }
-
-    .folder-item:hover {
-      background-color: #f9f9f9;
-    }
-
-    .folder-item a {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .folder-icon {
-      font-size: 1.5em;
-    }
-
-    .folder-name {
-      flex: 1;
-      font-weight: 500;
-    }
-
-    .external-link {
-      color: #667eea;
-      font-size: 1.2em;
-      transition: color 0.2s;
-    }
-
-    .folder-item:hover .external-link {
-      color: #764ba2;
-    }
-
     .stats {
       background: rgba(102, 126, 234, 0.1);
       padding: 20px;
@@ -338,7 +265,38 @@ const collections = {
       <button onclick="switchView('list')">List View</button>
     </div>
 
-    <div id="gridView" class="collections-grid"></div>
+    <div id="gridView" class="collections-grid">
+      {collections.featured && (
+        <CollectionCard
+          section={collections.featured}
+          archiveUrl={archiveBaseUrl}
+        />
+      )}
+      {collections.bySource && (
+        <CollectionCard
+          section={collections.bySource}
+          archiveUrl={archiveBaseUrl}
+        />
+      )}
+      {collections.artists && (
+        <CollectionCard
+          section={collections.artists}
+          archiveUrl={archiveBaseUrl}
+        />
+      )}
+      {collections.monthly && (
+        <CollectionCard
+          section={collections.monthly}
+          archiveUrl={archiveBaseUrl}
+        />
+      )}
+      {collections.other && (
+        <CollectionCard
+          section={collections.other}
+          archiveUrl={archiveBaseUrl}
+        />
+      )}
+    </div>
 
     <div id="listView" style="display:none">
       <div style="background: white; padding: 20px; border-radius: 12px;">
@@ -478,33 +436,6 @@ const collections = {
         });
       });
     }
-  </script>
-
-  <!-- Collection Card Component inline -->
-  <script>
-    function createCollectionCard(section, archiveUrl) {
-      const html = `
-        <div class="collection-section">
-          <div class="section-header">${section.name}</div>
-          <div class="folder-list">
-            ${section.folders.map(folder => `
-              <a href="${archiveUrl}/${folder.path}" target="_blank" class="folder-item">
-                <span class="folder-icon">📁</span>
-                <span class="folder-name">${folder.name}</span>
-                <span class="external-link">↗</span>
-              </a>
-            `).join('')}
-          </div>
-        </div>
-      `;
-      return html;
-    }
-
-    // Render grid view on load
-    const gridView = document.getElementById('gridView');
-    gridView.innerHTML = Object.values(allCollections)
-      .map(section => createCollectionCard(section, archiveBaseUrl))
-      .join('');
   </script>
 </body>
 </html>
