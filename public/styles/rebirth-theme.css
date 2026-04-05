@@ -1,0 +1,748 @@
+/* ============================================================
+   ReBirth RB-338 Theme — TB-303 / TR-909 Hardware Aesthetic
+   Dark metallic panels · Amber LCD · Red/Green buttons
+   ============================================================ */
+
+/* ── Color Tokens ─────────────────────────────────────────── */
+:root {
+  --rb-dark:         #2d2d2d;
+  --rb-darker:       #1e1e1e;
+  --rb-darkest:      #111111;
+  --rb-panel:        #262626;
+  --rb-panel-raised: #303030;
+  --rb-border:       #3a3a3a;
+  --rb-border-hi:    #555555;
+
+  --rb-red:          #c41e3a;
+  --rb-red-dim:      #8a1528;
+  --rb-red-glow:     rgba(196, 30, 58, 0.5);
+
+  --rb-green:        #2d8a4e;
+  --rb-green-bright: #3dba66;
+  --rb-green-dim:    #1a5230;
+  --rb-green-glow:   rgba(45, 138, 78, 0.5);
+
+  --rb-amber:        #ffb000;
+  --rb-amber-dim:    #b37800;
+  --rb-amber-glow:   rgba(255, 176, 0, 0.4);
+
+  --rb-silver:       #c0c0c0;
+  --rb-silver-dim:   #888888;
+
+  --rb-lcd-bg:       #1a1a0a;
+  --rb-lcd-text:     #ffb000;
+  --rb-lcd-dim:      #7a5500;
+
+  --rb-phosphor:     #33ff66;
+  --rb-phosphor-dim: #1a7a33;
+
+  /* Fonts */
+  --rb-font-display: 'Courier New', 'Lucida Console', monospace;
+  --rb-font-label:   system-ui, -apple-system, sans-serif;
+}
+
+/* ── Base Theme ───────────────────────────────────────────── */
+.rebirth-theme {
+  background: var(--rb-darkest);
+  color: var(--rb-silver);
+  font-family: var(--rb-font-label);
+}
+
+/* Metallic noise texture overlay */
+.rebirth-theme::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='1' height='1' x='0' y='0' fill='rgba(255,255,255,0.015)'/%3E%3Crect width='1' height='1' x='2' y='2' fill='rgba(255,255,255,0.015)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* ── Header / Logo ────────────────────────────────────────── */
+.rb-header {
+  background: linear-gradient(180deg, #2a2a2a 0%, #1e1e1e 60%, #161616 100%);
+  border-bottom: 2px solid #111;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.06);
+  padding: 0;
+}
+
+.rb-header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-block: 0.75rem;
+}
+
+.rb-logo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.15em;
+  text-decoration: none;
+  font-family: var(--rb-font-display);
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  position: relative;
+}
+
+.rb-logo .logo-rb {
+  color: var(--rb-amber);
+  font-size: 1.8rem;
+  text-shadow: 0 0 12px var(--rb-amber-glow), 0 0 24px rgba(255,176,0,0.2);
+}
+
+.rb-logo .logo-338 {
+  color: var(--rb-silver);
+  font-size: 1.6rem;
+}
+
+.rb-logo .logo-sub {
+  color: var(--rb-silver-dim);
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  margin-left: 0.6em;
+  align-self: center;
+  border: 1px solid var(--rb-border-hi);
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+
+/* ── Navigation Buttons ───────────────────────────────────── */
+.rb-nav {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.rb-nav-btn {
+  font-family: var(--rb-font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--rb-silver-dim);
+  padding: 0.4em 0.9em;
+  background: linear-gradient(180deg, #363636 0%, #282828 100%);
+  border: 1px solid var(--rb-border);
+  border-bottom: 2px solid #111;
+  border-radius: 3px;
+  transition: all 120ms ease;
+  position: relative;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
+}
+
+.rb-nav-btn::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--rb-border-hi);
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+
+.rb-nav-btn:hover,
+.rb-nav-btn:focus-visible {
+  color: var(--rb-amber);
+  border-color: var(--rb-amber-dim);
+  background: linear-gradient(180deg, #3a3a2a 0%, #2a2a1a 100%);
+}
+
+.rb-nav-btn:hover::before,
+.rb-nav-btn:focus-visible::before {
+  background: var(--rb-amber);
+  box-shadow: 0 0 6px var(--rb-amber-glow);
+}
+
+/* ── Pattern Buttons (Red) ────────────────────────────────── */
+.rb-pattern-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  font-family: var(--rb-font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #fff;
+  padding: 0.5em 1.1em;
+  background: linear-gradient(180deg, #d42040 0%, #a0182e 60%, #8a1525 100%);
+  border: 1px solid var(--rb-red-dim);
+  border-bottom: 3px solid #600a18;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+  transition: all 100ms ease;
+  position: relative;
+}
+
+.rb-pattern-btn::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 160, 160, 0.6);
+  box-shadow: 0 0 4px #ff4060;
+  flex-shrink: 0;
+}
+
+.rb-pattern-btn:hover {
+  background: linear-gradient(180deg, #e82548 0%, #b81e34 60%, #9a1a2c 100%);
+  box-shadow: 0 0 12px var(--rb-red-glow), 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+  transform: translateY(-1px);
+}
+
+.rb-pattern-btn:active {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+.rb-pattern-btn::before.led-on {
+  background: #ff4060;
+  box-shadow: 0 0 8px #ff4060, 0 0 16px rgba(255, 64, 96, 0.5);
+}
+
+/* ── Mix Buttons (Green) ──────────────────────────────────── */
+.rb-mix-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  font-family: var(--rb-font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #fff;
+  padding: 0.5em 1.1em;
+  background: linear-gradient(180deg, #339958 0%, #236e3e 60%, #1a5230 100%);
+  border: 1px solid var(--rb-green-dim);
+  border-bottom: 3px solid #0d3020;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
+  transition: all 100ms ease;
+}
+
+.rb-mix-btn::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(100, 255, 140, 0.5);
+  box-shadow: 0 0 4px #44ff88;
+  flex-shrink: 0;
+}
+
+.rb-mix-btn:hover {
+  background: linear-gradient(180deg, #3dba66 0%, #2d8a4e 60%, #1e6038 100%);
+  box-shadow: 0 0 14px var(--rb-green-glow), 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+  transform: translateY(-1px);
+  color: #fff;
+}
+
+.rb-mix-btn:active {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+/* ── LCD Display ──────────────────────────────────────────── */
+.rb-lcd {
+  background: var(--rb-lcd-bg);
+  color: var(--rb-lcd-text);
+  font-family: var(--rb-font-display);
+  border: 2px solid #111;
+  border-radius: 4px;
+  padding: 0.6em 1em;
+  box-shadow:
+    inset 0 0 12px rgba(0,0,0,0.8),
+    inset 0 0 4px rgba(255,176,0,0.08),
+    0 0 8px rgba(0,0,0,0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.rb-lcd::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.15) 3px,
+    rgba(0,0,0,0.15) 4px
+  );
+  pointer-events: none;
+}
+
+.rb-lcd .lcd-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--rb-lcd-dim);
+  margin-bottom: 0.2em;
+}
+
+.rb-lcd .lcd-value {
+  font-size: 1.4rem;
+  font-weight: bold;
+  text-shadow: 0 0 8px var(--rb-amber-glow), 0 0 16px rgba(255,176,0,0.2);
+  line-height: 1.1;
+}
+
+.rb-lcd .lcd-value--sm {
+  font-size: 1rem;
+}
+
+/* ── Module Panel (303 / 909 style) ───────────────────────── */
+.rb-module {
+  background: linear-gradient(180deg, #2e2e2e 0%, #252525 100%);
+  border: 1px solid var(--rb-border);
+  border-top: 2px solid var(--rb-border-hi);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+  overflow: hidden;
+}
+
+.rb-module__header {
+  background: linear-gradient(180deg, #333 0%, #2a2a2a 100%);
+  border-bottom: 1px solid #111;
+  padding: 0.5em 1em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+}
+
+.rb-module__title {
+  font-family: var(--rb-font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--rb-silver-dim);
+}
+
+.rb-module__body {
+  padding: 1rem;
+}
+
+/* ── File Cards (song/mod cards styled as synth modules) ──── */
+.rb-file-card {
+  background: linear-gradient(160deg, #282828 0%, #222222 100%);
+  border: 1px solid var(--rb-border);
+  border-radius: 5px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.rb-file-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--rb-border);
+  border-radius: 5px 0 0 5px;
+  transition: background 120ms ease;
+}
+
+.rb-file-card.type--song::before { background: var(--rb-green-dim); }
+.rb-file-card.type--mod::before  { background: var(--rb-amber-dim); }
+
+.rb-file-card:hover {
+  border-color: var(--rb-border-hi);
+  box-shadow: 0 0 16px rgba(0,0,0,0.5), 0 0 8px rgba(255,176,0,0.1);
+}
+
+.rb-file-card:hover.type--song {
+  border-color: var(--rb-green-dim);
+  box-shadow: 0 0 16px rgba(0,0,0,0.5), 0 0 10px var(--rb-green-glow);
+}
+
+.rb-file-card:hover.type--mod {
+  border-color: var(--rb-amber-dim);
+  box-shadow: 0 0 16px rgba(0,0,0,0.5), 0 0 10px var(--rb-amber-glow);
+}
+
+/* ── Knobs ────────────────────────────────────────────────── */
+.rb-knob {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3em;
+}
+
+.rb-knob__dial {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #888 0%, #555 40%, #333 70%, #222 100%);
+  border: 2px solid #111;
+  box-shadow:
+    0 3px 8px rgba(0,0,0,0.7),
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    inset 0 -1px 0 rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.rb-knob__dial::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 10px;
+  background: var(--rb-red);
+  border-radius: 2px;
+  box-shadow: 0 0 4px var(--rb-red-glow);
+}
+
+.rb-knob__label {
+  font-family: var(--rb-font-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--rb-silver-dim);
+  text-align: center;
+}
+
+/* ── Step Sequencer Grid ──────────────────────────────────── */
+.rb-step-grid {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 4px;
+  padding: 0.75rem;
+}
+
+@media (max-width: 600px) {
+  .rb-step-grid {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
+
+.rb-step-btn {
+  aspect-ratio: 1;
+  min-width: 0;
+  background: linear-gradient(180deg, #303030 0%, #252525 100%);
+  border: 1px solid #111;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 100ms ease;
+  position: relative;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 3px rgba(0,0,0,0.5);
+}
+
+.rb-step-btn::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 2px;
+  background: rgba(0,0,0,0.3);
+  transition: all 100ms ease;
+}
+
+.rb-step-btn.active {
+  background: linear-gradient(180deg, #c41e3a 0%, #8a1528 100%);
+  border-color: var(--rb-red-dim);
+  box-shadow: 0 0 8px var(--rb-red-glow), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+.rb-step-btn.active::after {
+  background: rgba(255,100,120,0.2);
+}
+
+.rb-step-btn.beat {
+  background: linear-gradient(180deg, #ffb000 0%, #a07800 100%);
+  border-color: var(--rb-amber-dim);
+  box-shadow: 0 0 8px var(--rb-amber-glow);
+}
+
+.rb-step-btn:hover {
+  background: linear-gradient(180deg, #3a3a3a 0%, #2e2e2e 100%);
+  border-color: #555;
+}
+
+.rb-step-btn.active:hover {
+  background: linear-gradient(180deg, #e82548 0%, #9a1a2c 100%);
+  box-shadow: 0 0 12px var(--rb-red-glow);
+}
+
+/* ── Terminal / Code block ────────────────────────────────── */
+.rb-terminal {
+  background: #050505;
+  border: 1px solid var(--rb-border);
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.7), inset 0 0 30px rgba(0,0,0,0.5);
+}
+
+.rb-terminal__bar {
+  background: linear-gradient(180deg, #2e2e2e 0%, #252525 100%);
+  border-bottom: 1px solid #111;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rb-terminal__bar .dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+.rb-terminal__bar .dot--red   { background: #c0392b; box-shadow: 0 0 4px rgba(192,57,43,0.5); }
+.rb-terminal__bar .dot--amber { background: #d4a017; box-shadow: 0 0 4px rgba(212,160,23,0.5); }
+.rb-terminal__bar .dot--green { background: #27ae60; box-shadow: 0 0 4px rgba(39,174,96,0.5); }
+
+.rb-terminal__title {
+  margin-left: auto;
+  font-family: var(--rb-font-display);
+  font-size: 0.72rem;
+  color: #555;
+}
+
+.rb-terminal__body {
+  flex: 1;
+  padding: 1rem;
+  font-family: var(--rb-font-display);
+  font-size: 0.82rem;
+  line-height: 1.8;
+  color: var(--rb-phosphor);
+  text-shadow: 0 0 6px var(--rb-phosphor-dim);
+  background: none;
+  border: none;
+  overflow: auto;
+  white-space: pre;
+  /* Phosphor scanline effect */
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.07) 2px,
+    rgba(0, 0, 0, 0.07) 4px
+  );
+}
+
+.rb-terminal .t-amber { color: var(--rb-amber); text-shadow: 0 0 6px var(--rb-amber-glow); }
+.rb-terminal .t-red   { color: var(--rb-red);   text-shadow: 0 0 6px var(--rb-red-glow); }
+.rb-terminal .t-dim   { color: #555; text-shadow: none; }
+.rb-terminal .t-green { color: var(--rb-phosphor); text-shadow: 0 0 6px var(--rb-phosphor-dim); }
+
+/* ── Info / Status Panel ──────────────────────────────────── */
+.rb-panel {
+  background: linear-gradient(180deg, #282828 0%, #222 100%);
+  border: 1px solid var(--rb-border);
+  border-radius: 5px;
+  padding: 1rem;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.rb-panel__label {
+  font-family: var(--rb-font-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--rb-silver-dim);
+  margin-bottom: 0.4em;
+  border-bottom: 1px solid var(--rb-border);
+  padding-bottom: 0.3em;
+}
+
+/* ── Status LEDs ──────────────────────────────────────────── */
+.rb-led {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-family: var(--rb-font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rb-silver-dim);
+}
+
+.rb-led__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.4);
+  flex-shrink: 0;
+}
+
+.rb-led--online  .rb-led__dot {
+  background: var(--rb-green-bright);
+  box-shadow: 0 0 6px var(--rb-green-glow), 0 0 12px rgba(61,186,102,0.3);
+}
+.rb-led--online { color: var(--rb-green-bright); }
+
+.rb-led--pending .rb-led__dot {
+  background: var(--rb-amber);
+  box-shadow: 0 0 6px var(--rb-amber-glow);
+  animation: rb-blink 1.4s ease-in-out infinite;
+}
+.rb-led--pending { color: var(--rb-amber); }
+
+.rb-led--offline .rb-led__dot {
+  background: #444;
+  box-shadow: none;
+}
+
+@keyframes rb-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+/* ── Section heading ──────────────────────────────────────── */
+.rb-section-heading {
+  font-family: var(--rb-font-display);
+  font-size: clamp(0.75rem, 2vw, 0.9rem);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--rb-silver-dim);
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  margin-bottom: 1rem;
+}
+
+.rb-section-heading::before,
+.rb-section-heading::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rb-border);
+}
+
+.rb-section-heading::before {
+  max-width: 1.5rem;
+}
+
+/* ── Utility ──────────────────────────────────────────────── */
+.rb-screw {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #777 0%, #444 50%, #333 100%);
+  border: 1px solid #222;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 1px 2px rgba(0,0,0,0.5);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.rb-screw::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 15%;
+  right: 15%;
+  height: 1px;
+  background: rgba(0,0,0,0.5);
+  transform: rotate(-45deg);
+  transform-origin: center;
+}
+
+.rb-divider {
+  border: none;
+  border-top: 1px solid var(--rb-border);
+  margin-block: 0.75rem;
+}
+
+.rb-badge {
+  display: inline-block;
+  font-family: var(--rb-font-display);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 2px;
+  border: 1px solid;
+}
+
+.rb-badge--song {
+  color: var(--rb-green-bright);
+  border-color: var(--rb-green-dim);
+  background: rgba(45, 138, 78, 0.15);
+}
+
+.rb-badge--mod {
+  color: var(--rb-amber);
+  border-color: var(--rb-amber-dim);
+  background: rgba(255, 176, 0, 0.1);
+}
+
+/* ── Knob row ──────────────────────────────────────────────── */
+.rb-knob-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+/* ── Transport bar ────────────────────────────────────────── */
+.rb-transport {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.rb-transport-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  font-family: var(--rb-font-display);
+  font-size: 0.85rem;
+  color: var(--rb-silver-dim);
+  background: linear-gradient(180deg, #383838 0%, #2a2a2a 100%);
+  border: 1px solid var(--rb-border);
+  border-bottom: 2px solid #111;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 100ms ease;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
+}
+
+.rb-transport-btn:hover {
+  color: var(--rb-amber);
+  border-color: var(--rb-amber-dim);
+  background: linear-gradient(180deg, #3a3a28 0%, #2a2a18 100%);
+}
+
+.rb-transport-btn--play {
+  color: var(--rb-green-bright);
+  border-color: var(--rb-green-dim);
+}
+.rb-transport-btn--play:hover {
+  box-shadow: 0 0 10px var(--rb-green-glow);
+  color: var(--rb-green-bright);
+  background: linear-gradient(180deg, #1e3a28 0%, #142a1c 100%);
+}
+
+.rb-transport-btn--rec {
+  color: var(--rb-red);
+  border-color: var(--rb-red-dim);
+}
+.rb-transport-btn--rec:hover {
+  box-shadow: 0 0 10px var(--rb-red-glow);
+  color: var(--rb-red);
+  background: linear-gradient(180deg, #3a1422 0%, #2a0e18 100%);
+}

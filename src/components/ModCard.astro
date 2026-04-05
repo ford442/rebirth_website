@@ -29,9 +29,9 @@ const isMod  = fileType === '.rbm';
 const typeClass = isSong ? 'type--song' : isMod ? 'type--mod' : 'type--other';
 ---
 
-<article class={`mod-card ${typeClass}`} aria-label={`${fileType} — ${title}`}>
+<article class={`mod-card rb-file-card ${typeClass}`} aria-label={`${fileType} — ${title}`}>
   <header class="mod-card__header">
-    <span class={`mod-card__badge ${typeClass}`} aria-hidden="true">{fileType}</span>
+    <span class={`mod-card__badge rb-badge ${isSong ? 'rb-badge--song' : isMod ? 'rb-badge--mod' : ''}`} aria-hidden="true">{fileType}</span>
     <h3 class="mod-card__title">{title}</h3>
   </header>
 
