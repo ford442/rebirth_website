@@ -31,24 +31,25 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <title>{title} — ReBirth RB-338 Archive</title>
 
     <!-- Global styles are imported via the component's style tag below -->
+    <link rel="stylesheet" href={`${import.meta.env.BASE_URL}styles/rebirth-theme.css`} />
   </head>
-  <body>
+  <body class="rebirth-theme">
     <!-- Accessibility skip link -->
     <a href="#main-content" class="skip-nav">Skip to main content</a>
 
     <!-- Site header -->
-    <header class="site-header">
+    <header class="site-header rb-header">
       <div class="container">
-        <a href={`${import.meta.env.BASE_URL}`} class="site-logo" aria-label="ReBirth RB-338 Archive home">
+        <a href={`${import.meta.env.BASE_URL}`} class="site-logo rb-logo" aria-label="ReBirth RB-338 Archive home">
           <span class="logo-rb">RB</span><span class="logo-338">-338</span>
           <span class="logo-sub">ARCHIVE</span>
         </a>
-        <nav aria-label="Primary navigation">
+        <nav class="rb-nav" aria-label="Primary navigation">
           <ul role="list">
-            <li><a href={`${import.meta.env.BASE_URL}`}>Home</a></li>
-            <li><a href={`${import.meta.env.BASE_URL}archive/songs`}>Songs</a></li>
-            <li><a href={`${import.meta.env.BASE_URL}archive/mods`}>Mods</a></li>
-            <li><a href={`${import.meta.env.BASE_URL}docs`}>Docs</a></li>
+            <li><a href={`${import.meta.env.BASE_URL}`} class="rb-nav-btn">Home</a></li>
+            <li><a href={`${import.meta.env.BASE_URL}archive/songs`} class="rb-nav-btn">Songs</a></li>
+            <li><a href={`${import.meta.env.BASE_URL}archive/mods`} class="rb-nav-btn">Mods</a></li>
+            <li><a href={`${import.meta.env.BASE_URL}docs`} class="rb-nav-btn">Docs</a></li>
           </ul>
         </nav>
       </div>
@@ -79,86 +80,30 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 </style>
 
 <style>
-  /* ── Header ─────────────────────────────────────────────────── */
+  /* ── Header — positional wrapper (visual via .rb-header) ──── */
   .site-header {
-    border-bottom: 1px solid var(--color-border);
-    padding-block: var(--space-md);
     position: sticky;
     top: 0;
     z-index: 100;
-    background: color-mix(in srgb, var(--color-bg) 90%, transparent);
-    backdrop-filter: blur(6px);
   }
 
-  .site-header .container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-  }
-
-  .site-logo {
-    display: flex;
-    align-items: baseline;
-    gap: 0.15em;
-    text-decoration: none;
-    font-family: var(--font-mono);
-    font-size: 1.4rem;
-    font-weight: bold;
-    letter-spacing: 0.06em;
-  }
-
-  .logo-rb {
-    color: var(--color-amber);
-    font-size: 1.6rem;
-  }
-
-  .logo-338 {
-    color: var(--color-text);
-  }
-
-  .logo-sub {
-    color: var(--color-text-muted);
-    font-size: 0.7rem;
-    letter-spacing: 0.18em;
-    margin-left: var(--space-sm);
-    align-self: center;
-  }
-
-  nav ul {
+  .rb-nav ul {
     display: flex;
     list-style: none;
-    gap: var(--space-md);
+    gap: 0.4rem;
     flex-wrap: wrap;
-  }
-
-  nav a {
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    text-decoration: none;
-    color: var(--color-text-muted);
-    padding: var(--space-xs) var(--space-sm);
-    border: 1px solid transparent;
-    border-radius: 3px;
-    transition: color var(--transition-fast), border-color var(--transition-fast);
-  }
-
-  nav a:hover,
-  nav a:focus-visible {
-    color: var(--color-amber);
-    border-color: var(--color-amber-dim);
+    padding: 0;
+    margin: 0;
   }
 
   /* ── Footer ─────────────────────────────────────────────────── */
   .site-footer {
-    border-top: 1px solid var(--color-border);
+    border-top: 2px solid #111;
     padding-block: var(--space-lg);
     margin-top: var(--space-xl);
+    background: linear-gradient(0deg, #111 0%, #1a1a1a 100%);
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: var(--color-text-muted);
   }
 
@@ -171,12 +116,13 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
   }
 
   .site-footer a {
-    color: var(--color-text-muted);
+    color: #666;
+    text-decoration: none;
   }
 
   .site-footer a:hover {
-    color: var(--color-amber);
+    color: var(--rb-amber, #ffb000);
   }
 
-  .footer-build { opacity: 0.6; }
+  .footer-build { opacity: 0.5; }
 </style>
