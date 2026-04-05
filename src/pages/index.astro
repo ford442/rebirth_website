@@ -243,7 +243,7 @@ $ _<span class="cursor-blink">█</span></code></pre>
             <div class="rb-step-grid" aria-hidden="true">
               {kickPattern.map((active, i) => (
                 <button
-                  class={`rb-step-btn${active ? ' beat' : ''}${i % 4 === 0 ? '' : ''}`}
+                  class={`rb-step-btn${active ? ' beat' : ''}`}
                   style={active ? 'background: linear-gradient(180deg,#ffb000 0%,#a07800 100%); border-color: #b37800; box-shadow: 0 0 8px rgba(255,176,0,0.4);' : ''}
                   aria-label={`Step ${i+1} ${active ? 'on' : 'off'}`}
                   title={`Step ${i+1}`}
