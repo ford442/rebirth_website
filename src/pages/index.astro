@@ -55,14 +55,14 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
   <!-- ╔══════════════════════════════════════════════════════════╗ -->
   <!-- ║  TRANSPORT + HERO — Main instrument face                 ║ -->
   <!-- ╚══════════════════════════════════════════════════════════╝ -->
+  <div class="rack-container container">
   <section class="hero-panel" aria-labelledby="hero-heading">
-    <div class="container">
 
       <!-- Top instrument strip -->
       <div class="instrument-strip">
         <div class="instrument-strip__screws">
-          <span class="rb-screw" aria-hidden="true"></span>
-          <span class="rb-screw" aria-hidden="true"></span>
+          <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
+          <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
         </div>
 
         <!-- Model badge -->
@@ -80,14 +80,14 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
 
         <!-- Transport controls -->
         <nav class="rb-transport" aria-label="Transport controls">
-          <a href={`${import.meta.env.BASE_URL}archive/songs`} class="rb-transport-btn rb-transport-btn--play" title="Browse Songs" aria-label="Browse Songs">▶</a>
-          <a href={`${import.meta.env.BASE_URL}archive/mods`}  class="rb-transport-btn rb-transport-btn--rec"  title="Browse Mods"  aria-label="Browse Mods">●</a>
-          <a href={`${import.meta.env.BASE_URL}docs`}          class="rb-transport-btn"                        title="Documentation" aria-label="Docs">■</a>
+          <a href={`${import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL}/archive/songs`} class="rb-transport-btn rb-transport-btn--play" title="Browse Songs" aria-label="Browse Songs">▶</a>
+          <a href={`${import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL}/archive/mods`}  class="rb-transport-btn rb-transport-btn--rec"  title="Browse Mods"  aria-label="Browse Mods">●</a>
+          <a href={`${import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL}/docs`}          class="rb-transport-btn"                        title="Documentation" aria-label="Docs">■</a>
         </nav>
 
         <div class="instrument-strip__screws instrument-strip__screws--right">
-          <span class="rb-screw" aria-hidden="true"></span>
-          <span class="rb-screw" aria-hidden="true"></span>
+          <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
+          <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
         </div>
       </div>
 
@@ -158,7 +158,7 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
 
           <!-- Action buttons -->
           <div class="action-btns">
-            <a class="rb-pattern-btn" href={`${import.meta.env.BASE_URL}archive/songs`}>Browse Songs</a>
+            <a class="rb-pattern-btn" href={`${import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL}/archive/songs`}>Browse Songs</a>
             <a class="rb-mix-btn"     href={`${import.meta.env.BASE_URL}archive/mods`}>Browse Mods</a>
           </div>
         </div>
@@ -270,17 +270,14 @@ $ _<span class="cursor-blink">█</span></code></pre>
   <!-- ╔══════════════════════════════════════════════════════════╗ -->
   <!-- ║  ABOUT — Three 303-style modules                         ║ -->
   <!-- ╚══════════════════════════════════════════════════════════╝ -->
-  <section class="about-section section" aria-labelledby="about-heading">
-    <div class="container">
-      <p class="rb-section-heading">
-        <span>// ABOUT THE ARCHIVE</span>
-      </p>
+  <div class="rack-row about-row" aria-labelledby="about-heading">
+      <h2 id="about-heading" class="sr-only">About the Archive</h2>
       <div class="about-modules">
 
         <div class="rb-module about-module">
           <div class="rb-module__header">
             <span class="rb-module__title">WHAT IS REBIRTH?</span>
-            <span class="rb-screw" aria-hidden="true"></span>
+            <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
           </div>
           <div class="rb-module__body">
             <p>
@@ -296,7 +293,7 @@ $ _<span class="cursor-blink">█</span></code></pre>
         <div class="rb-module about-module">
           <div class="rb-module__header">
             <span class="rb-module__title">WHAT IS THIS SITE?</span>
-            <span class="rb-screw" aria-hidden="true"></span>
+            <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
           </div>
           <div class="rb-module__body">
             <p>
@@ -312,7 +309,7 @@ $ _<span class="cursor-blink">█</span></code></pre>
         <div class="rb-module about-module">
           <div class="rb-module__header">
             <span class="rb-module__title">HOW TO CONTRIBUTE?</span>
-            <span class="rb-screw" aria-hidden="true"></span>
+            <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
           </div>
           <div class="rb-module__body">
             <p>
@@ -320,26 +317,26 @@ $ _<span class="cursor-blink">█</span></code></pre>
               <a href="https://github.com/ford442/rebirth_website" rel="noopener noreferrer" target="_blank">GitHub repository</a>.
               Place song files in <code>public/archive/rbs-songs/</code> and mod
               files in <code>public/archive/rbm-mods/</code>. See the
-              <a href={`${import.meta.env.BASE_URL}docs`}>documentation</a> for
+              <a href={`${import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL}/docs`}>documentation</a> for
               naming conventions and metadata requirements.
             </p>
           </div>
         </div>
 
       </div>
-    </div>
-  </section>
 
+  <div class="rack-row">
   <!-- ╔══════════════════════════════════════════════════════════╗ -->
   <!-- ║  FEATURED SONGS — Pattern section (red)                  ║ -->
   <!-- ╚══════════════════════════════════════════════════════════╝ -->
-  <section class="featured-section section" aria-labelledby="songs-heading">
-    <div class="container">
+  <div class="rb-module featured-module" aria-labelledby="songs-heading">
+    <div class="rb-module__header">
+       <span class="rb-module__title" id="songs-heading">FEATURED SONGS — .RBS</span>
+       <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
+    </div>
+    <div class="rb-module__body">
       <div class="featured-header">
-        <p class="rb-section-heading" id="songs-heading">
-          <span>// FEATURED SONGS — .RBS</span>
-        </p>
-        <a class="rb-pattern-btn" href={`${import.meta.env.BASE_URL}archive/songs`}>All Songs &rarr;</a>
+        <a class="rb-pattern-btn" href={`${import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL}/archive/songs`}>All Songs &rarr;</a>
       </div>
       <div class="card-grid">
         {featuredSongs.map((song) => (
@@ -347,18 +344,19 @@ $ _<span class="cursor-blink">█</span></code></pre>
         ))}
       </div>
     </div>
-  </section>
+  </div>
 
   <!-- ╔══════════════════════════════════════════════════════════╗ -->
   <!-- ║  FEATURED MODS — Mix section (green)                     ║ -->
   <!-- ╚══════════════════════════════════════════════════════════╝ -->
-  <section class="featured-section section" aria-labelledby="mods-heading">
-    <div class="container">
+  <div class="rb-module featured-module" aria-labelledby="mods-heading">
+    <div class="rb-module__header">
+       <span class="rb-module__title" id="mods-heading">FEATURED MODS — .RBM</span>
+       <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
+    </div>
+    <div class="rb-module__body">
       <div class="featured-header">
-        <p class="rb-section-heading" id="mods-heading">
-          <span>// FEATURED MODS — .RBM</span>
-        </p>
-        <a class="rb-mix-btn" href={`${import.meta.env.BASE_URL}archive/mods`}>All Mods &rarr;</a>
+        <a class="rb-mix-btn" href={`${import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL}/archive/mods`}>All Mods &rarr;</a>
       </div>
       <div class="card-grid">
         {featuredMods.map((mod) => (
@@ -366,17 +364,19 @@ $ _<span class="cursor-blink">█</span></code></pre>
         ))}
       </div>
     </div>
-  </section>
+  </div>
+  </div>
 
   <!-- ╔══════════════════════════════════════════════════════════╗ -->
   <!-- ║  WASM TEASER — LCD panel                                 ║ -->
   <!-- ╚══════════════════════════════════════════════════════════╝ -->
-  <section class="wasm-section section" aria-labelledby="wasm-heading">
-    <div class="container">
-      <div class="wasm-inner rb-module">
+  <div class="wasm-inner rb-module" aria-labelledby="wasm-heading">
         <div class="rb-module__header">
           <span class="rb-module__title">BROWSER PLAYBACK ENGINE</span>
-          <span class="rb-led rb-led--pending"><span class="rb-led__dot"></span>PENDING</span>
+          <div style="display: flex; gap: 1rem; align-items: center;">
+            <span class="rb-led rb-led--pending"><span class="rb-led__dot"></span>PENDING</span>
+            <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
+          </div>
         </div>
         <div class="rb-module__body wasm-body">
           <div class="wasm-lcd-block">
@@ -402,16 +402,19 @@ $ _<span class="cursor-blink">█</span></code></pre>
         </div>
       </div>
     </div>
-  </section>
-
+    </div>
+  </div>
 </BaseLayout>
 
 <style>
   /* ── Hero panel ───────────────────────────────────────────── */
   .hero-panel {
-    padding-block: var(--space-lg) var(--space-xl);
-    background: linear-gradient(180deg, #1a1a1a 0%, #111111 100%);
-    border-bottom: 2px solid #0a0a0a;
+    background: linear-gradient(180deg, #2e2e2e 0%, #252525 100%);
+    border: 1px solid var(--rb-border);
+    border-top: 2px solid var(--rb-border-hi);
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+    overflow: hidden;
   }
 
   /* Instrument strip (top bar with screws, model badge, transport) */
@@ -602,15 +605,15 @@ $ _<span class="cursor-blink">█</span></code></pre>
   .step-counter { margin-left: auto; }
 
   /* ── About modules ────────────────────────────────────────── */
-  .about-section {
-    padding-block: var(--space-xl);
-    background: linear-gradient(180deg, #111 0%, #0f0f0f 100%);
-  }
 
-  .about-modules {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+
+  .about-row {
     gap: 1rem;
+  }
+  @media (min-width: 800px) {
+    .about-row {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 
   .about-module .rb-module__body p {
@@ -640,16 +643,12 @@ $ _<span class="cursor-blink">█</span></code></pre>
   .about-module a:hover { color: var(--rb-green-bright, #3dba66); }
 
   /* ── Featured sections ────────────────────────────────────── */
-  .featured-section {
-    padding-block: var(--space-xl);
-    background: #0f0f0f;
-    border-top: 1px solid #1a1a1a;
-  }
+
 
   .featured-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 1rem;
     margin-bottom: 1rem;
     flex-wrap: wrap;
@@ -663,19 +662,15 @@ $ _<span class="cursor-blink">█</span></code></pre>
   /* Card grid */
   .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 1rem;
   }
 
   /* ── WASM section ─────────────────────────────────────────── */
-  .wasm-section {
-    padding-block: var(--space-xl);
-    background: linear-gradient(180deg, #0f0f0f 0%, #0a0a0a 100%);
-    border-top: 1px solid #1a1a1a;
-  }
+
 
   .wasm-inner {
-    max-width: 860px;
+    /* specific max-width if needed */
   }
 
   .wasm-body {
@@ -724,3 +719,43 @@ $ _<span class="cursor-blink">█</span></code></pre>
   .section { padding-block: var(--space-xl); }
 </style>
 
+
+<style>
+  /* Rack styling */
+  .rack-container {
+    margin-top: var(--space-xl);
+    background-image: url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1h2v2H1z' fill='%23000000' fill-opacity='0.2' fill-rule='evenodd'/%3E%3C/svg%3E");
+    border: 1px solid #1a1a1a;
+    border-radius: 4px;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.8), inset 0 0 10px rgba(0,0,0,1);
+    padding: var(--space-xl) var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .rack-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+
+  @media (min-width: 800px) {
+    .rack-row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* Make sure modules in rack rows stretch to fill height */
+  .rack-row .rb-module {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .rack-row .rb-module__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+</style>
