@@ -108,7 +108,8 @@ def upload_file(sftp, local_path, remote_path):
     sftp.put(str(local_path), remote_path)
 
 
-def connect_sftp(host, port, username, password=None, key_file=None):
+def connect_sftp(host, port, username, password=None, key_file=None):bash git.sh
+
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     if key_file:
