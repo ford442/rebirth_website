@@ -12,7 +12,7 @@ import urllib.request
 SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
 DEFAULT_LIST_FILE = SCRIPT_DIR / "peff_rbm_filenames.txt"
 DEFAULT_BASE_URL = (
-    "https://web.archive.org/web/20130422175256/http://peff.com/rebirth/downloads/mods/"
+    "https://web.archive.org/web/20040129012338/http://peff.com/rebirth/downloads/mods/"
 )
 
 
