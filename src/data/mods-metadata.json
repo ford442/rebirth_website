@@ -1,0 +1,140 @@
+{
+  "mods": [
+    {
+      "filename": "Aluwerk.rbm",
+      "title": "Aluwerk",
+      "author": "Dr Bruno & Syrusate",
+      "year": null,
+      "description": "A true concept-mod with a metallic look and sound, highly appealing to producers of industrial music.",
+      "tags": ["industrial", "metallic", "concept"]
+    },
+    {
+      "filename": "AnokhaV2.rbm",
+      "title": "AnokhaV2",
+      "author": "Sam Laleo Singh",
+      "year": null,
+      "description": "Features sitar loops, tabla samples, and a graphical interface decorated with Indian deities to create a definite ethnic vibe.",
+      "tags": ["ethnic", "world", "tribal", "sitar"]
+    },
+    {
+      "filename": "Bone_Vibes.rbm",
+      "title": "Bone Vibes",
+      "author": "Syrusate",
+      "year": null,
+      "description": "A black and dark mod with lots of rattling bones and skulls (including an 808 drum selection knob), suited for industrial and darkwave.",
+      "tags": ["dark", "industrial", "darkwave", "percussion"]
+    },
+    {
+      "filename": "Circuit.rbm",
+      "title": "Circuit",
+      "author": "Epilogue",
+      "year": null,
+      "description": "Has a green glowing electric look and features a collection of industrial-type basses and snares.",
+      "tags": ["industrial", "electronic", "techno", "bass"]
+    },
+    {
+      "filename": "digalog.rbm",
+      "title": "Digalog",
+      "author": "Einzelgänger",
+      "year": null,
+      "description": "Features a very plastic blue interface with highly electronic, synthetic percussion sounds and bleeps.",
+      "tags": ["electronic", "synth", "futuristic", "bleeps"]
+    },
+    {
+      "filename": "ibex_mkII.rbm",
+      "title": "ibex mkII",
+      "author": "Unknown",
+      "year": null,
+      "description": "Contains a very varied set of sounds, ranging from a tribal didgeridoo to assorted synths and full drums.",
+      "tags": ["varied", "tribal", "drums", "synth"]
+    },
+    {
+      "filename": "ice_RB20Mod.rbm",
+      "title": "iCE!",
+      "author": "Entropy/SiNGULARiTY",
+      "year": null,
+      "description": "Described directly by the author as 'chilly and cheezy' with many original sounds left intact.",
+      "tags": ["chilly", "experimental", "original"]
+    },
+    {
+      "filename": "INFERNALIZER.rbm",
+      "title": "Infernalizer",
+      "author": "Jesuspark",
+      "year": null,
+      "description": "Hailed historically as 'The Most Beautiful Mod Ever,' it features sharp drums, synths, and a church organ tailored for dark or loud styles.",
+      "tags": ["dark", "organ", "sharp", "award-winning"]
+    },
+    {
+      "filename": "IQ.rbm",
+      "title": "IQ",
+      "author": "Dr. Bruno & Syrusate",
+      "year": null,
+      "description": "A funky, collaborative mod from the same creators of the Aluwerk mod.",
+      "tags": ["funk", "collaboration", "funky"]
+    },
+    {
+      "filename": "ManicBox.rbm",
+      "title": "Manic Box",
+      "author": "DJ LuVcHiLE",
+      "year": null,
+      "description": "A mean, black interface packed with phat percussion sounds tailored for tribal-minded producers.",
+      "tags": ["tribal", "percussion", "house", "dark"]
+    },
+    {
+      "filename": "Metallicon.rbm",
+      "title": "Metallicon",
+      "author": "Propellerhead",
+      "year": 1998,
+      "description": "One of the four official default mods included on the original ReBirth 2.0.1 CD-ROM.",
+      "tags": ["official", "default", "classic", "metal"]
+    },
+    {
+      "filename": "minimod.rbm",
+      "title": "minimod",
+      "author": "Peff",
+      "year": null,
+      "description": "A house producer's toolbox featuring house organs, basses, pianos, and a beautifully crafted GUI that mimics a classic synth brand.",
+      "tags": ["house", "organ", "piano", "toolbox"]
+    },
+    {
+      "filename": "Modulus.rbm",
+      "title": "Modulus",
+      "author": "Tristan",
+      "year": null,
+      "description": "Bread-and-butter clean drums mapped to the 909, and wacky FX and brass stabs mapped to the 808.",
+      "tags": ["house", "drums", "brass", "clean"]
+    },
+    {
+      "filename": "noize.rbm",
+      "title": "Noize",
+      "author": "Einzelgänger",
+      "year": null,
+      "description": "A minimalistic, futuristic interface with electro/plastic sounds that follow a similar design philosophy to the Digalog mod.",
+      "tags": ["minimalist", "electronic", "futuristic", "electro"]
+    },
+    {
+      "filename": "polyvibe.rbm",
+      "title": "Polyvibe",
+      "author": "Jonas H.",
+      "year": null,
+      "description": "An Acid Jazz mod featuring pianos, brass, jazzy drums, and a blend of blue-note samples.",
+      "tags": ["jazz", "acid-jazz", "piano", "brass"]
+    },
+    {
+      "filename": "Red_Stripe_a6.rbm",
+      "title": "Red Stripe",
+      "author": "Thomas & Wolfgang Merkle",
+      "year": 1999,
+      "description": "An official branding campaign mod created through UK agency 5emedia; requires transport at 338 BPM for fast drum roll effects.",
+      "tags": ["official", "campaign", "dnb", "fast"]
+    },
+    {
+      "filename": "X-Anvers.rbm",
+      "title": "X-Anvers",
+      "author": "Unknown",
+      "year": null,
+      "description": "A house-style mod featuring pads and synth bleeps that react beautifully to the Pattern Controlled Filter.",
+      "tags": ["house", "pads", "synth", "experimental"]
+    }
+  ]
+}

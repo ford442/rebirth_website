@@ -1,0 +1,158 @@
+---
+// ModBrowserCard.astro — display a single RBM mod with metadata
+export interface Props {
+  filename: string;
+  title: string;
+  author?: string;
+  year?: number;
+  description?: string;
+  tags?: string[];
+  downloadUrl?: string;
+}
+
+const {
+  filename,
+  title,
+  author = 'Unknown',
+  year,
+  description,
+  tags = [],
+  downloadUrl,
+} = Astro.props;
+
+const baseModsUrl = 'https://storage.1ink.us/rebirth_mods';
+const modUrl = downloadUrl || `${baseModsUrl}/${filename}`;
+---
+
+<div class="mod-card">
+  <div class="mod-card__header">
+    <h3 class="mod-card__title">{title}</h3>
+    {year && <span class="mod-card__year">{year}</span>}
+  </div>
+  
+  <div class="mod-card__author">{author}</div>
+  
+  {description && (
+    <p class="mod-card__description">{description}</p>
+  )}
+  
+  {tags.length > 0 && (
+    <div class="mod-card__tags">
+      {tags.map((tag) => (
+        <span class="mod-tag">{tag}</span>
+      ))}
+    </div>
+  )}
+  
+  <div class="mod-card__footer">
+    <span class="mod-card__filename">{filename}</span>
+    <a 
+      href={modUrl}
+      target="_blank" 
+      rel="noopener noreferrer"
+      class="rb-pattern-btn mod-download-btn"
+      aria-label={`Download ${title}`}
+    >
+      ↓ Download
+    </a>
+  </div>
+</div>
+
+<style>
+  .mod-card {
+    background: linear-gradient(180deg, #2e2e2e 0%, #252525 100%);
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #3a3a3a;
+    border-top: 2px solid #555;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .mod-card:hover {
+    border-color: #ffb000;
+    box-shadow: 0 0 16px rgba(0,0,0,0.5), 0 0 10px rgba(255,176,0,0.15);
+  }
+
+  .mod-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .mod-card__title {
+    margin: 0;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1rem;
+    color: #ffb000;
+    flex: 1;
+  }
+
+  .mod-card__year {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.75rem;
+    color: #888;
+    flex-shrink: 0;
+  }
+
+  .mod-card__author {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.8rem;
+    color: #888;
+    letter-spacing: 0.05em;
+  }
+
+  .mod-card__description {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #aaa;
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  .mod-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .mod-tag {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+    background: rgba(255,176,0,0.1);
+    border: 1px solid rgba(255,176,0,0.3);
+    border-radius: 3px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.7rem;
+    color: #ffb000;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .mod-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #333;
+  }
+
+  .mod-card__filename {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.7rem;
+    color: #555;
+    word-break: break-all;
+    flex: 1;
+  }
+
+  .mod-download-btn {
+    flex-shrink: 0;
+    padding: 0.4em 0.8em;
+    font-size: 0.75rem;
+  }
+</style>
