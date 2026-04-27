@@ -746,3 +746,297 @@
   color: var(--rb-red);
   background: linear-gradient(180deg, #3a1422 0%, #2a0e18 100%);
 }
+
+/* ============================================================
+   Brushed-Silver Chassis Layer
+   Light chassis · Dark inset panels · LED accents
+   ============================================================ */
+
+/* ── Extended tokens ───────────────────────────────────────── */
+:root {
+  --rb-bg:              #c9cdce;
+  --rb-panel-light:     #2c2f30;
+  --rb-red-bright:      #ff3b3b;
+  --rb-red-glow-bright: 0 0 8px rgba(255, 59, 59, 0.8), 0 0 2px rgba(255, 255, 255, 0.5);
+  --rb-silver-1:        #e8eaeb;
+  --rb-silver-2:        #b0b4b5;
+  --rb-text-main:       #111111;
+  /* Horizontal stretched noise for brushed aluminum look */
+  --rb-texture:         url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.005 0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* ── Chassis wrapper ───────────────────────────────────────── */
+.rb-chassis {
+  position: relative;
+  background: linear-gradient(180deg, #d8dbdc 0%, #a4a8a9 100%);
+  border-top: 4px solid #f2f4f5;
+  border-bottom: 4px solid #6b6f70;
+  border-left: 3px solid #c0c4c5;
+  border-right: 3px solid #c0c4c5;
+  overflow: hidden;
+  color: #111;
+}
+
+.rb-chassis::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--rb-texture);
+  opacity: 0.15;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+.rb-chassis > * {
+  position: relative;
+  z-index: 10;
+}
+
+/* Dark modules inside chassis keep light text */
+.rb-chassis .rb-module,
+.rb-chassis .hero-panel,
+.rb-chassis .rb-panel {
+  color: var(--rb-silver);
+}
+
+/* ── LED display ───────────────────────────────────────────── */
+.led-display {
+  background-color: #080808;
+  border: 2px solid #111;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,1), 0 1px 0 rgba(255,255,255,0.3);
+  border-radius: 4px;
+}
+
+.led-text {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  color: var(--rb-red-bright);
+  text-shadow: var(--rb-red-glow-bright);
+  letter-spacing: 0.05em;
+}
+
+/* ── Dark inset panel (enhanced) ───────────────────────────── */
+.rb-panel {
+  background: linear-gradient(180deg, #2a2a2a 0%, #1e1e1e 100%);
+  background-color: var(--rb-panel);
+  border: 1px solid #111;
+  box-shadow: inset 0 4px 10px rgba(0,0,0,0.8), 0 1px 1px rgba(255,255,255,0.3), inset 0 1px 0 rgba(255,255,255,0.03);
+  border-radius: 6px;
+  padding: 1rem;
+  color: #d1d5db;
+}
+
+/* ── Silver button ─────────────────────────────────────────── */
+.rb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  background: linear-gradient(to bottom, var(--rb-silver-1), var(--rb-silver-2));
+  box-shadow: 0 4px 6px rgba(0,0,0,0.4), inset 0 2px 2px rgba(255,255,255,0.9);
+  border: 1px solid #555;
+  color: #222;
+  font-family: var(--rb-font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  border-radius: 4px;
+  transition: all 0.05s ease-in-out;
+  cursor: pointer;
+  padding: 0.5em 1.1em;
+  text-decoration: none;
+}
+
+.rb-btn:hover {
+  background: linear-gradient(to bottom, #ffffff, var(--rb-silver-2));
+}
+
+.rb-btn:active {
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4), inset 0 3px 5px rgba(0,0,0,0.5);
+  transform: translateY(3px);
+  background: linear-gradient(to bottom, var(--rb-silver-2), #d0d0d0);
+}
+
+/* ── Screw enhancements ────────────────────────────────────── */
+.rb-screw {
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(135deg, #d1d5db, #6b7280);
+  border-radius: 50%;
+  border: 1px solid #555;
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.6), 0 1px 2px rgba(0,0,0,0.4);
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.rb-screw::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 15%;
+  width: 70%;
+  height: 2px;
+  background: rgba(0,0,0,0.7);
+  transform: translateY(-50%) rotate(45deg);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.4);
+}
+
+.rb-screw.cross::before {
+  content: '';
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  width: 2px;
+  height: 70%;
+  background: rgba(0,0,0,0.7);
+  transform: translateX(-50%) rotate(45deg);
+  box-shadow: 1px 0 0 rgba(255,255,255,0.4);
+}
+
+/* ── Decal text ────────────────────────────────────────────── */
+.decal-text {
+  font-family: 'Arial Black', sans-serif;
+  color: #d84525;
+  font-style: italic;
+  text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
+  letter-spacing: -1px;
+}
+
+/* ── Module headings ───────────────────────────────────────── */
+.rb-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 16px 4px 12px;
+  border-radius: 3px;
+  font-family: 'Arial Black', var(--rb-font-label);
+  text-transform: uppercase;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.3);
+  border: 1px solid #111;
+  margin-bottom: 1rem;
+}
+
+/* The green square LED indicator */
+.rb-heading::before {
+  content: '';
+  display: block;
+  width: 14px;
+  height: 10px;
+  background: linear-gradient(135deg, #7aff7a 0%, #15b515 100%);
+  border: 1px solid #050505;
+  border-radius: 1px;
+  box-shadow: 0 0 6px rgba(40, 255, 40, 0.7), inset 0 1px 2px rgba(255, 255, 255, 0.6);
+}
+
+.rb-heading-red {
+  background: linear-gradient(180deg, #e8453c 0%, #b8221a 100%);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+.rb-heading-yellow {
+  background: linear-gradient(180deg, #fad14b 0%, #d49f11 100%);
+  color: #111;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+}
+
+.rb-heading-blue {
+  background: linear-gradient(180deg, #4b92db 0%, #21609e 100%);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+/* ── Step buttons (chassis context) ────────────────────────── */
+.rb-chassis .rb-step-grid .rb-step-btn,
+.rb-chassis .rb-step-btn {
+  aspect-ratio: auto;
+  width: 32px;
+  height: 48px;
+  background: linear-gradient(180deg, #fdfdfd 0%, #d5d7d8 100%);
+  border: 1px solid #555;
+  border-radius: 4px;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.4), inset 0 2px 2px rgba(255,255,255,0.9);
+  position: relative;
+  cursor: pointer;
+  transition: all 0.05s ease;
+}
+
+.rb-chassis .rb-step-grid .rb-step-btn::after,
+.rb-chassis .rb-step-btn::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 4px;
+  background: #444;
+  border-radius: 1px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+  transition: all 0.1s ease;
+}
+
+.rb-chassis .rb-step-grid .rb-step-btn.active,
+.rb-chassis .rb-step-btn.active {
+  background: linear-gradient(180deg, #d5d7d8 0%, #bcbebf 100%);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.4), inset 0 3px 6px rgba(0,0,0,0.3);
+  transform: translateY(2px);
+}
+
+.rb-chassis .rb-step-grid .rb-step-btn.active::after,
+.rb-chassis .rb-step-btn.active::after {
+  background: #ff3b3b;
+  box-shadow: 0 0 6px #ff3b3b, inset 0 1px 1px rgba(255,255,255,0.4);
+}
+
+/* Preserve beat state inside chassis */
+.rb-chassis .rb-step-grid .rb-step-btn.beat,
+.rb-chassis .rb-step-btn.beat {
+  background: linear-gradient(180deg, #ffb000 0%, #a07800 100%);
+  border-color: var(--rb-amber-dim);
+  box-shadow: 0 0 8px var(--rb-amber-glow);
+}
+
+.rb-chassis .rb-step-grid .rb-step-btn:hover,
+.rb-chassis .rb-step-btn:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #e0e2e3 100%);
+  border-color: #777;
+}
+
+.rb-chassis .rb-step-grid .rb-step-btn.active:hover,
+.rb-chassis .rb-step-btn.active:hover {
+  background: linear-gradient(180deg, #e8eaea 0%, #c5c7c8 100%);
+  box-shadow: 0 0 12px rgba(255, 59, 59, 0.4), 0 1px 2px rgba(0,0,0,0.4);
+}
+
+/* ── Knob enhancements ─────────────────────────────────────── */
+.rb-knob__dial {
+  width: 48px;
+  height: 48px;
+  background: conic-gradient(from 180deg at 50% 50%, #444 0deg, #666 60deg, #333 120deg, #666 180deg, #333 240deg, #666 300deg, #444 360deg);
+  box-shadow: 0 6px 8px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.8);
+  border: 1px solid #111;
+}
+
+.rb-knob__dial::after {
+  width: 4px;
+  height: 14px;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* ── Etched divider ────────────────────────────────────────── */
+hr.etched {
+  border: 0;
+  height: 2px;
+  background: rgba(0,0,0,0.3);
+  border-bottom: 1px solid rgba(255,255,255,0.3);
+  margin: 2rem 0;
+}

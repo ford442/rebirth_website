@@ -30,6 +30,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
     <title>{title} — ReBirth RB-338 Archive</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
     <!-- Global styles are imported via the component's style tag below -->
     <link rel="stylesheet" href={`${import.meta.env.BASE_URL}styles/rebirth-theme.css`} />
   </head>
