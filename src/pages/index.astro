@@ -45,6 +45,8 @@ const featuredMods = [
 const songPattern  = [1,0,0,0, 1,0,1,0, 0,0,1,0, 1,0,0,1];
 const bassPattern  = [1,0,1,0, 0,1,0,0, 1,0,0,1, 0,1,0,0];
 const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
+
+const base = import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL;
 ---
 
 <BaseLayout
@@ -52,27 +54,39 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
   description="Community archive for the ReBirth RB-338 software synthesizer — songs, mods, and history preserved."
 >
 
-  <!-- ╔══════════════════════════════════════════════════════════╗ -->
-  <!-- ║  MASTER HEADER — Title & Navigation                      ║ -->
-  <!-- ╚══════════════════════════════════════════════════════════╝ -->
-  <div class="master-header rb-chassis">
-    <div class="master-header__screws">
-      <span class="rb-screw cross" aria-hidden="true"></span>
-      <span class="rb-screw" aria-hidden="true"></span>
+  <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
+  <!-- ║  PANEL 1: MASTER HEADER — Chassis panel                              ║ -->
+  <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
+  <section aria-label="Archive master header" class="rb-panel rb-panel--chassis">
+    <span aria-hidden="true" class="rb-screw rb-screw--tl cross"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--tr"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--bl"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--br cross"></span>
+
+    <div class="rb-panel__header" style="justify-content:center;">
+      <span class="rb-panel__title">MASTER CONTROL</span>
+      <span class="rb-led rb-led--online">
+        <span class="rb-led__dot"></span>
+        ONLINE
+      </span>
     </div>
 
-    <div class="master-header__content">
+    <div class="rb-panel__body" style="padding:1.5rem 1rem;">
       <h1 class="master-title">
         <span class="master-title__label">COMMUNITY ARCHIVE</span>
         <span class="master-title__main">ReBirth RB-338</span>
         <span class="master-title__tagline">Legacy Software Synthesizer</span>
       </h1>
-
       <div class="master-leds">
-        <span class="rb-led rb-led--online" aria-label="Archive online"><span class="rb-led__dot"></span>ARCHIVE ONLINE</span>
-        <span class="rb-led rb-led--pending" aria-label="WASM engine pending"><span class="rb-led__dot"></span>WASM PENDING</span>
+        <span aria-label="Archive online" class="rb-led rb-led--online">
+          <span class="rb-led__dot"></span>
+          ARCHIVE ONLINE
+        </span>
+        <span aria-label="WASM engine pending" class="rb-led rb-led--pending">
+          <span class="rb-led__dot"></span>
+          WASM PENDING
+        </span>
       </div>
-
       <div class="master-stats">
         <div class="master-stat">
           <span class="master-stat__value">2000+</span>
@@ -88,139 +102,89 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
         </div>
       </div>
     </div>
+  </section>
 
-    <div class="master-header__screws master-header__screws--right">
-      <span class="rb-screw" aria-hidden="true"></span>
-      <span class="rb-screw cross" aria-hidden="true"></span>
+  <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
+  <!-- ║  INSTRUMENT STRIP (between panels — model badge + status + transport) ║ -->
+  <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
+  <div class="instrument-strip" role="region" aria-label="Instrument control strip">
+    <div class="model-badge">
+      <span class="model-badge__brand">REBIRTH</span>
+      <span class="model-badge__model">RB-338</span>
     </div>
+    <div aria-label="System status" class="status-cluster" role="status">
+      <span class="rb-led rb-led--online">
+        <span class="rb-led__dot"></span>
+        ARCHIVE ONLINE
+      </span>
+      <span class="rb-led rb-led--pending">
+        <span class="rb-led__dot"></span>
+        WASM PENDING
+      </span>
+      <span class="rb-led rb-led--offline">
+        <span class="rb-led__dot"></span>
+        MIDI OFFLINE
+      </span>
+    </div>
+    <nav aria-label="Transport controls" class="rb-transport">
+      <a aria-label="Browse Songs" class="rb-transport-btn rb-transport-btn--play" href={`${base}/archive/songs`} title="Browse Songs">▶</a>
+      <a aria-label="Browse Mods" class="rb-transport-btn rb-transport-btn--rec" href={`${base}/archive/mods`} title="Browse Mods">●</a>
+      <a aria-label="Docs" class="rb-transport-btn" href={`${base}/docs`} title="Documentation">■</a>
+    </nav>
   </div>
 
-  <!-- ╔══════════════════════════════════════════════════════════╗ -->
-  <!-- ║  TRANSPORT + HERO — Main instrument face                 ║ -->
-  <!-- ╚══════════════════════════════════════════════════════════╝ -->
-  <div class="rack-container rb-chassis">
-    <span class="rb-screw cross" style="position:absolute;top:1rem;left:1rem;z-index:20;" aria-hidden="true"></span>
-    <span class="rb-screw" style="position:absolute;top:1rem;right:1rem;z-index:20;" aria-hidden="true"></span>
-    <span class="rb-screw" style="position:absolute;bottom:1rem;left:1rem;z-index:20;" aria-hidden="true"></span>
-    <span class="rb-screw cross" style="position:absolute;bottom:1rem;right:1rem;z-index:20;" aria-hidden="true"></span>
-  <section class="hero-panel" aria-labelledby="hero-heading">
+  <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
+  <!-- ║  PANEL 2: SYSTEM STATUS + TERMINAL (side by side on desktop)       ║ -->
+  <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
+  <section aria-label="System status and terminal readout" class="rb-panel rb-panel--amber">
+    <span aria-hidden="true" class="rb-screw rb-screw--tl"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--tr cross"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--bl cross"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--br"></span>
 
-      <!-- Top instrument strip -->
-      <div class="instrument-strip">
-        <div class="instrument-strip__screws">
-          <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
-          <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
-        </div>
+    <div class="rb-panel__header">
+      <span class="rb-panel__title">SYSTEM STATUS</span>
+      <span class="rb-led rb-led--online">
+        <span class="rb-led__dot"></span>
+        LIVE
+      </span>
+    </div>
 
-        <!-- Model badge -->
-        <div class="model-badge">
-          <span class="model-badge__brand">REBIRTH</span>
-          <span class="model-badge__model">RB-338</span>
-        </div>
-
-        <!-- Status LEDs cluster -->
-        <div class="status-cluster" role="status" aria-label="System status">
-          <span class="rb-led rb-led--online"><span class="rb-led__dot"></span>ARCHIVE ONLINE</span>
-          <span class="rb-led rb-led--pending"><span class="rb-led__dot"></span>WASM PENDING</span>
-          <span class="rb-led rb-led--offline"><span class="rb-led__dot"></span>MIDI OFFLINE</span>
-        </div>
-
-        <!-- Transport controls -->
-        <nav class="rb-transport" aria-label="Transport controls">
-          <a href={`${import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL}/archive/songs`} class="rb-transport-btn rb-transport-btn--play" title="Browse Songs" aria-label="Browse Songs">▶</a>
-          <a href={`${import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL}/archive/mods`}  class="rb-transport-btn rb-transport-btn--rec"  title="Browse Mods"  aria-label="Browse Mods">●</a>
-          <a href={`${import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL}/docs`}          class="rb-transport-btn"                        title="Documentation" aria-label="Docs">■</a>
-        </nav>
-
-        <div class="instrument-strip__screws instrument-strip__screws--right">
-          <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
-          <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
-        </div>
-      </div>
-
-      <!-- Main hero content: LCD + terminal -->
+    <div class="rb-panel__body">
       <div class="hero-body">
-
-        <!-- Left column: identity + LCD stats -->
+        <!-- Left column: LCD stats -->
         <div class="hero-left">
-          <div class="lcd-display-panel rb-module">
-            <div class="rb-module__header">
-              <span class="rb-module__title">SYSTEM STATUS</span>
-              <span class="rb-led rb-led--online"><span class="rb-led__dot"></span></span>
+          <div class="lcd-stats">
+            <div aria-label="Songs count" class="rb-lcd">
+              <div class="lcd-label">SONGS</div>
+              <div class="lcd-value">2000<span class="lcd-unit">+</span></div>
             </div>
-            <div class="rb-module__body lcd-stats">
-              <div class="rb-lcd" aria-label="Songs count">
-                <div class="lcd-label">SONGS</div>
-                <div class="lcd-value">2000<span class="lcd-unit">+</span></div>
-              </div>
-              <div class="rb-lcd" aria-label="Mods count">
-                <div class="lcd-label">MODS</div>
-                <div class="lcd-value">500<span class="lcd-unit">+</span></div>
-              </div>
-              <div class="rb-lcd" aria-label="Version">
-                <div class="lcd-label">VERSION</div>
-                <div class="lcd-value lcd-value--sm">2.0.1</div>
-              </div>
-              <div class="rb-lcd" aria-label="Artists">
-                <div class="lcd-label">ARTISTS</div>
-                <div class="lcd-value">8</div>
-              </div>
+            <div aria-label="Mods count" class="rb-lcd">
+              <div class="lcd-label">MODS</div>
+              <div class="lcd-value">500<span class="lcd-unit">+</span></div>
             </div>
-          </div>
-
-          <!-- Knob panel -->
-          <div class="knob-panel rb-module">
-            <div class="rb-module__header">
-              <span class="rb-module__title">303 — CONTROLS</span>
+            <div aria-label="Version" class="rb-lcd">
+              <div class="lcd-label">VERSION</div>
+              <div class="lcd-value lcd-value--sm">2.0.1</div>
             </div>
-            <div class="rb-module__body">
-              <div class="rb-knob-row">
-                <div class="rb-knob">
-                  <div class="rb-knob__dial" style="transform: rotate(-20deg)" aria-hidden="true"></div>
-                  <span class="rb-knob__label">TUNE</span>
-                </div>
-                <div class="rb-knob">
-                  <div class="rb-knob__dial" style="transform: rotate(30deg)" aria-hidden="true"></div>
-                  <span class="rb-knob__label">CUT OFF</span>
-                </div>
-                <div class="rb-knob">
-                  <div class="rb-knob__dial" style="transform: rotate(-45deg)" aria-hidden="true"></div>
-                  <span class="rb-knob__label">RES</span>
-                </div>
-                <div class="rb-knob">
-                  <div class="rb-knob__dial" style="transform: rotate(10deg)" aria-hidden="true"></div>
-                  <span class="rb-knob__label">ENV MOD</span>
-                </div>
-                <div class="rb-knob">
-                  <div class="rb-knob__dial" style="transform: rotate(-30deg)" aria-hidden="true"></div>
-                  <span class="rb-knob__label">DECAY</span>
-                </div>
-                <div class="rb-knob">
-                  <div class="rb-knob__dial" style="transform: rotate(50deg)" aria-hidden="true"></div>
-                  <span class="rb-knob__label">ACCENT</span>
-                </div>
-              </div>
+            <div aria-label="Artists" class="rb-lcd">
+              <div class="lcd-label">ARTISTS</div>
+              <div class="lcd-value">8</div>
             </div>
-          </div>
-
-          <!-- Action buttons -->
-          <div class="action-btns">
-            <a class="rb-pattern-btn" href={`${import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL}/archive/songs`}>Browse Songs</a>
-            <a class="rb-mix-btn"     href={`${import.meta.env.BASE_URL}archive/mods`}>Browse Mods</a>
           </div>
         </div>
 
         <!-- Right column: terminal readout -->
-        <aside class="hero-right" aria-label="System readout">
-          <h1 id="hero-heading" class="sr-only">ReBirth RB-338 Community Archive</h1>
+        <aside aria-label="System readout" class="hero-right">
+          <h2 class="sr-only" id="hero-heading">ReBirth RB-338 Community Archive</h2>
           <div class="rb-terminal hero-terminal">
             <div class="rb-terminal__bar">
-              <span class="dot dot--red"   aria-hidden="true"></span>
-              <span class="dot dot--amber" aria-hidden="true"></span>
-              <span class="dot dot--green" aria-hidden="true"></span>
+              <span aria-hidden="true" class="dot dot--red"></span>
+              <span aria-hidden="true" class="dot dot--amber"></span>
+              <span aria-hidden="true" class="dot dot--green"></span>
               <span class="rb-terminal__title">rb338_archive.sh</span>
             </div>
-            <pre class="rb-terminal__body" aria-label="System status terminal"><code>$ rb338 --status
+            <pre aria-label="System status terminal" class="rb-terminal__body"><code>$ rb338 --status
 <span class="t-green">▶ ARCHIVE ONLINE</span>
   est    : <span class="t-amber">1997</span>
   songs  : <span class="t-green">2000+</span>
@@ -241,153 +205,211 @@ $ _<span class="cursor-blink">█</span></code></pre>
           </div>
         </aside>
       </div>
+    </div>
+  </section>
 
-      <!-- ── 303 Step Sequencer ─────────────────────────────── -->
-      <div class="sequencer-panel rb-module" aria-label="Step sequencer display">
-        <div class="rb-module__header">
-          <span class="rb-module__title">TB-303 — STEP SEQUENCER</span>
-          <div class="seq-track-labels" aria-hidden="true">
-            <span class="seq-label seq-label--song">SONG</span>
-            <span class="seq-label seq-label--bass">BASS</span>
-            <span class="seq-label seq-label--kick">KICK</span>
-          </div>
-          <span class="step-counter rb-led rb-led--online">
-            <span class="rb-led__dot"></span>16 STEPS
-          </span>
+  <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
+  <!-- ║  PANEL 3: 303 CONTROLS + ACTIONS                                    ║ -->
+  <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
+  <section aria-label="303 synthesizer controls and archive actions" class="rb-panel">
+    <span aria-hidden="true" class="rb-screw rb-screw--tl cross"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--tr"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--bl"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--br cross"></span>
+
+    <div class="rb-panel__header">
+      <span class="rb-panel__title">303 — CONTROLS</span>
+      <span class="rb-led rb-led--online">
+        <span class="rb-led__dot"></span>
+        ACTIVE
+      </span>
+    </div>
+
+    <div class="rb-panel__body">
+      <div class="rb-knob-row">
+        <div class="rb-knob">
+          <div aria-hidden="true" class="rb-knob__dial" style="transform: rotate(-20deg)"></div>
+          <span class="rb-knob__label">TUNE</span>
         </div>
-        <div class="seq-tracks">
-          <!-- Song pattern row -->
-          <div class="seq-row" role="group" aria-label="Song pattern">
-            <span class="seq-row__label">SONG</span>
-            <div class="rb-step-grid" aria-hidden="true">
-              {songPattern.map((active, i) => (
-                <button
-                  class={`rb-step-btn${active ? ' active' : ''}${i % 4 === 0 ? ' beat' : ''}`}
-                  aria-label={`Step ${i+1} ${active ? 'on' : 'off'}`}
-                  title={`Step ${i+1}`}
-                  tabindex="-1"
-                />
-              ))}
-            </div>
-          </div>
-          <!-- Bass pattern row -->
-          <div class="seq-row" role="group" aria-label="Bass pattern">
-            <span class="seq-row__label">BASS</span>
-            <div class="rb-step-grid" aria-hidden="true">
-              {bassPattern.map((active, i) => (
-                <button
-                  class={`rb-step-btn${active ? ' active' : ''}${i % 4 === 0 ? ' beat' : ''}`}
-                  aria-label={`Step ${i+1} ${active ? 'on' : 'off'}`}
-                  title={`Step ${i+1}`}
-                  tabindex="-1"
-                />
-              ))}
-            </div>
-          </div>
-          <!-- Kick pattern row -->
-          <div class="seq-row seq-row--kick" role="group" aria-label="Kick pattern">
-            <span class="seq-row__label">KICK</span>
-            <div class="rb-step-grid" aria-hidden="true">
-              {kickPattern.map((active, i) => (
-                <button
-                  class={`rb-step-btn${active ? ' beat' : ''}`}
-                  style={active ? 'background: linear-gradient(180deg,#ffb000 0%,#a07800 100%); border-color: #b37800; box-shadow: 0 0 8px rgba(255,176,0,0.4);' : ''}
-                  aria-label={`Step ${i+1} ${active ? 'on' : 'off'}`}
-                  title={`Step ${i+1}`}
-                  tabindex="-1"
-                />
-              ))}
-            </div>
+        <div class="rb-knob">
+          <div aria-hidden="true" class="rb-knob__dial" style="transform: rotate(30deg)"></div>
+          <span class="rb-knob__label">CUT OFF</span>
+        </div>
+        <div class="rb-knob">
+          <div aria-hidden="true" class="rb-knob__dial" style="transform: rotate(-45deg)"></div>
+          <span class="rb-knob__label">RES</span>
+        </div>
+        <div class="rb-knob">
+          <div aria-hidden="true" class="rb-knob__dial" style="transform: rotate(10deg)"></div>
+          <span class="rb-knob__label">ENV MOD</span>
+        </div>
+        <div class="rb-knob">
+          <div aria-hidden="true" class="rb-knob__dial" style="transform: rotate(-30deg)"></div>
+          <span class="rb-knob__label">DECAY</span>
+        </div>
+        <div class="rb-knob">
+          <div aria-hidden="true" class="rb-knob__dial" style="transform: rotate(50deg)"></div>
+          <span class="rb-knob__label">ACCENT</span>
+        </div>
+      </div>
+      <div class="action-btns">
+        <a class="rb-pattern-btn" href={`${base}/archive/songs`}>Browse Songs</a>
+        <a class="rb-mix-btn" href={`${base}/archive/mods`}>Browse Mods</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
+  <!-- ║  PANEL 4: STEP SEQUENCER (red accent)                              ║ -->
+  <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
+  <section aria-label="Step sequencer display" class="rb-panel rb-panel--red">
+    <span aria-hidden="true" class="rb-screw rb-screw--tl"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--tr cross"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--bl cross"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--br"></span>
+
+    <div class="rb-panel__header">
+      <span class="rb-panel__title">TB-303 — STEP SEQUENCER</span>
+      <div aria-hidden="true" class="seq-track-labels">
+        <span class="seq-label seq-label--song">SONG</span>
+        <span class="seq-label seq-label--bass">BASS</span>
+        <span class="seq-label seq-label--kick">KICK</span>
+      </div>
+      <span class="step-counter rb-led rb-led--online">
+        <span class="rb-led__dot"></span>
+        16 STEPS
+      </span>
+    </div>
+
+    <div class="rb-panel__body">
+      <div class="seq-tracks">
+        <!-- Song pattern row -->
+        <div aria-label="Song pattern" class="seq-row" role="group">
+          <span class="seq-row__label">SONG</span>
+          <div aria-hidden="true" class="rb-step-grid">
+            {songPattern.map((active, i) => (
+              <button
+                class={`rb-step-btn${active ? ' active' : ''}${i % 4 === 0 ? ' beat' : ''}`}
+                aria-label={`Step ${i+1} ${active ? 'on' : 'off'}`}
+                title={`Step ${i+1}`}
+                tabindex="-1"
+              />
+            ))}
           </div>
         </div>
-        <!-- Step numbers -->
-        <div class="seq-numbers" aria-hidden="true">
-          <span class="seq-row__label"></span>
-          <div class="seq-num-row">
-            {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].map(n => (
-              <span class="seq-num">{n}</span>
+        <!-- Bass pattern row -->
+        <div aria-label="Bass pattern" class="seq-row" role="group">
+          <span class="seq-row__label">BASS</span>
+          <div aria-hidden="true" class="rb-step-grid">
+            {bassPattern.map((active, i) => (
+              <button
+                class={`rb-step-btn${active ? ' active' : ''}${i % 4 === 0 ? ' beat' : ''}`}
+                aria-label={`Step ${i+1} ${active ? 'on' : 'off'}`}
+                title={`Step ${i+1}`}
+                tabindex="-1"
+              />
+            ))}
+          </div>
+        </div>
+        <!-- Kick pattern row -->
+        <div aria-label="Kick pattern" class="seq-row seq-row--kick" role="group">
+          <span class="seq-row__label">KICK</span>
+          <div aria-hidden="true" class="rb-step-grid">
+            {kickPattern.map((active, i) => (
+              <button
+                class={`rb-step-btn${active ? ' beat' : ''}`}
+                style={active ? 'background: linear-gradient(180deg,#ffb000 0%,#a07800 100%); border-color: #b37800; box-shadow: 0 0 8px rgba(255,176,0,0.4);' : ''}
+                aria-label={`Step ${i+1} ${active ? 'on' : 'off'}`}
+                title={`Step ${i+1}`}
+                tabindex="-1"
+              />
             ))}
           </div>
         </div>
       </div>
-
-    </section>
-  </div>
-
-  <hr class="etched" />
-
-  <!-- ╔══════════════════════════════════════════════════════════╗ -->
-  <!-- ║  ABOUT — Three 303-style modules                         ║ -->
-  <!-- ╚══════════════════════════════════════════════════════════╝ -->
-  <div class="rack-row about-row" aria-labelledby="about-heading">
-      <h2 id="about-heading" class="sr-only">About the Archive</h2>
-      <div class="about-modules">
-
-        <div class="rb-module about-module">
-          <div class="rb-module__header">
-            <span class="rb-module__title">WHAT IS REBIRTH?</span>
-            <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
-          </div>
-          <div class="rb-module__body">
-            <p>
-              Released by Propellerhead Software in <strong>1997</strong>,
-              <strong>ReBirth RB-338</strong> was one of the first software synthesizers
-              to faithfully emulate the <strong>Roland TB-303</strong> Bass Line and the
-              Roland TR-808 / TR-909 drum machines. It became a cornerstone of electronic
-              music production and is now freely available as abandonware.
-            </p>
-          </div>
+      <!-- Step numbers -->
+      <div aria-hidden="true" class="seq-numbers">
+        <span class="seq-row__label"></span>
+        <div class="seq-num-row">
+          {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].map(n => (
+            <span class="seq-num">{n}</span>
+          ))}
         </div>
-
-        <div class="rb-module about-module">
-          <div class="rb-module__header">
-            <span class="rb-module__title">WHAT IS THIS SITE?</span>
-            <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
-          </div>
-          <div class="rb-module__body">
-            <p>
-              This community archive preserves <code>.rbs</code> song files and
-              <code>.rbm</code> mod files contributed by enthusiasts worldwide.
-              It also hosts historical documentation spanning versions
-              <code>1.0</code> through <code>2.0.1</code> and lays the groundwork
-              for in-browser <code>.rbs</code> preview via WebAssembly.
-            </p>
-          </div>
-        </div>
-
-        <div class="rb-module about-module">
-          <div class="rb-module__header">
-            <span class="rb-module__title">HOW TO CONTRIBUTE?</span>
-            <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
-          </div>
-          <div class="rb-module__body">
-            <p>
-              Open a pull request on the
-              <a href="https://github.com/ford442/rebirth_website" rel="noopener noreferrer" target="_blank">GitHub repository</a>.
-              Place song files in <code>public/archive/rbs-songs/</code> and mod
-              files in <code>public/archive/rbm-mods/</code>. See the
-              <a href={`${import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL}/docs`}>documentation</a> for
-              naming conventions and metadata requirements.
-            </p>
-          </div>
-        </div>
-
       </div>
+    </div>
+  </section>
 
   <hr class="etched" />
 
-  <div class="rack-row">
-  <!-- ╔══════════════════════════════════════════════════════════╗ -->
-  <!-- ║  FEATURED SONGS — Pattern section (red)                  ║ -->
-  <!-- ╚══════════════════════════════════════════════════════════╝ -->
-  <div class="rb-module featured-module" aria-labelledby="songs-heading">
-    <div class="rb-module__header">
-       <span class="rb-module__title" id="songs-heading">FEATURED SONGS — .RBS</span>
-       <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
+  <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
+  <!-- ║  PANEL 5: ABOUT INFO (3-column grid)                                ║ -->
+  <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
+  <section aria-labelledby="about-heading" class="rb-panel">
+    <span aria-hidden="true" class="rb-screw rb-screw--tl"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--tr"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--bl"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--br"></span>
+
+    <div class="rb-panel__header">
+      <span class="rb-panel__title">INFORMATION MODULES</span>
+      <span class="rb-led rb-led--online">
+        <span class="rb-led__dot"></span>
+        OK
+      </span>
     </div>
-    <div class="rb-module__body">
+
+    <div class="rb-panel__body">
+      <h2 class="sr-only" id="about-heading">About the Archive</h2>
+      <div class="about-row">
+        <div class="about-modules">
+          <article class="rb-file-card">
+            <div class="rb-panel__header" style="background:none;border:none;padding:0;margin-bottom:.5rem;">
+              <span class="rb-panel__title">WHAT IS REBIRTH?</span>
+              <span aria-hidden="true" class="rb-screw" style="position:static;"></span>
+            </div>
+            <p>Released by Propellerhead Software in <strong>1997</strong>, <strong>ReBirth RB-338</strong> was one of the first software synthesizers to faithfully emulate the <strong>Roland TB-303</strong> Bass Line and the Roland TR-808 / TR-909 drum machines. It became a cornerstone of electronic music production and is now freely available as abandonware.</p>
+          </article>
+          <article class="rb-file-card">
+            <div class="rb-panel__header" style="background:none;border:none;padding:0;margin-bottom:.5rem;">
+              <span class="rb-panel__title">WHAT IS THIS SITE?</span>
+              <span aria-hidden="true" class="rb-screw" style="position:static;"></span>
+            </div>
+            <p>This community archive preserves <code>.rbs</code> song files and <code>.rbm</code> mod files contributed by enthusiasts worldwide. It also hosts historical documentation spanning versions <code>1.0</code> through <code>2.0.1</code> and lays the groundwork for in-browser <code>.rbs</code> preview via WebAssembly.</p>
+          </article>
+          <article class="rb-file-card">
+            <div class="rb-panel__header" style="background:none;border:none;padding:0;margin-bottom:.5rem;">
+              <span class="rb-panel__title">HOW TO CONTRIBUTE?</span>
+              <span aria-hidden="true" class="rb-screw" style="position:static;"></span>
+            </div>
+            <p>Open a pull request on the <a href="https://github.com/ford442/rebirth_website" rel="noopener noreferrer" target="_blank">GitHub repository</a>. Place song files in <code>public/archive/rbs-songs/</code> and mod files in <code>public/archive/rbm-mods/</code>. See the <a href={`${base}/docs`}>documentation</a> for naming conventions and metadata requirements.</p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="etched" />
+
+  <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
+  <!-- ║  PANEL 6: FEATURED SONGS (green accent)                             ║ -->
+  <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
+  <section aria-labelledby="songs-heading" class="rb-panel rb-panel--green">
+    <span aria-hidden="true" class="rb-screw rb-screw--tl"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--tr cross"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--bl cross"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--br"></span>
+
+    <div class="rb-panel__header">
+      <span class="rb-panel__title" id="songs-heading">FEATURED SONGS — .RBS</span>
+      <span class="rb-led rb-led--online">
+        <span class="rb-led__dot"></span>
+        2 FILES
+      </span>
+    </div>
+
+    <div class="rb-panel__body">
       <div class="featured-header">
-        <a class="rb-pattern-btn" href={`${import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL}/archive/songs`}>All Songs &rarr;</a>
+        <a class="rb-pattern-btn" href={`${base}/archive/songs`}>All Songs →</a>
       </div>
       <div class="card-grid">
         {featuredSongs.map((song) => (
@@ -395,19 +417,28 @@ $ _<span class="cursor-blink">█</span></code></pre>
         ))}
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- ╔══════════════════════════════════════════════════════════╗ -->
-  <!-- ║  FEATURED MODS — Mix section (green)                     ║ -->
-  <!-- ╚══════════════════════════════════════════════════════════╝ -->
-  <div class="rb-module featured-module" aria-labelledby="mods-heading">
-    <div class="rb-module__header">
-       <span class="rb-module__title" id="mods-heading">FEATURED MODS — .RBM</span>
-       <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
+  <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
+  <!-- ║  PANEL 7: FEATURED MODS (amber accent)                             ║ -->
+  <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
+  <section aria-labelledby="mods-heading" class="rb-panel rb-panel--amber">
+    <span aria-hidden="true" class="rb-screw rb-screw--tl"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--tr cross"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--bl cross"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--br"></span>
+
+    <div class="rb-panel__header">
+      <span class="rb-panel__title" id="mods-heading">FEATURED MODS — .RBM</span>
+      <span class="rb-led rb-led--online">
+        <span class="rb-led__dot"></span>
+        2 FILES
+      </span>
     </div>
-    <div class="rb-module__body">
+
+    <div class="rb-panel__body">
       <div class="featured-header">
-        <a class="rb-mix-btn" href={`${import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL}/archive/mods`}>All Mods &rarr;</a>
+        <a class="rb-mix-btn" href={`${base}/archive/mods`}>All Mods →</a>
       </div>
       <div class="card-grid">
         {featuredMods.map((mod) => (
@@ -415,570 +446,93 @@ $ _<span class="cursor-blink">█</span></code></pre>
         ))}
       </div>
     </div>
-  </div>
-  </div>
+  </section>
 
   <hr class="etched" />
 
-  <!-- ╔══════════════════════════════════════════════════════════╗ -->
-  <!-- ║  WASM TEASER — LCD panel                                 ║ -->
-  <!-- ╚══════════════════════════════════════════════════════════╝ -->
-  <div class="wasm-inner rb-module" aria-labelledby="wasm-heading">
-        <div class="rb-module__header">
-          <span class="rb-module__title">BROWSER PLAYBACK ENGINE</span>
-          <div style="display: flex; gap: 1rem; align-items: center;">
-            <span class="rb-led rb-led--pending"><span class="rb-led__dot"></span>PENDING</span>
-            <div class="instrument-strip__screws"><span class="rb-screw" aria-hidden="true"></span></div>
-          </div>
+  <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
+  <!-- ║  WASM TEASER — Browser Playback Engine                            ║ -->
+  <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
+  <section aria-labelledby="wasm-heading" class="rb-panel rb-panel--amber">
+    <span aria-hidden="true" class="rb-screw rb-screw--tl"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--tr"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--bl"></span>
+    <span aria-hidden="true" class="rb-screw rb-screw--br"></span>
+
+    <div class="rb-panel__header">
+      <span class="rb-panel__title">BROWSER PLAYBACK ENGINE</span>
+      <span class="rb-led rb-led--pending">
+        <span class="rb-led__dot"></span>
+        PENDING
+      </span>
+    </div>
+
+    <div class="rb-panel__body">
+      <div class="wasm-lcd-block">
+        <div class="rb-lcd wasm-lcd">
+          <div class="lcd-label">WASM ENGINE</div>
+          <div class="lcd-value lcd-value--sm">PENDING</div>
         </div>
-        <div class="rb-module__body wasm-body">
-          <div class="wasm-lcd-block">
-            <div class="rb-lcd wasm-lcd">
-              <div class="lcd-label">WASM ENGINE</div>
-              <div class="lcd-value lcd-value--sm">PENDING</div>
-            </div>
-            <div class="rb-lcd wasm-lcd">
-              <div class="lcd-label">WEB AUDIO</div>
-              <div class="lcd-value lcd-value--sm">READY</div>
-            </div>
-          </div>
-          <div class="wasm-text">
-            <h2 id="wasm-heading">Coming Soon: In-Browser .RBS Preview</h2>
-            <p>
-              We are building a WebAssembly audio engine that will allow you to
-              preview <code>.rbs</code> files directly in your browser — no
-              software installation required. The module lives under
-              <code>src/wasm/</code> and will parse the binary format, reconstruct
-              the pattern data, and route it through the Web Audio API.
-            </p>
-          </div>
+        <div class="rb-lcd wasm-lcd">
+          <div class="lcd-label">WEB AUDIO</div>
+          <div class="lcd-value lcd-value--sm">READY</div>
         </div>
       </div>
+      <div class="wasm-text">
+        <h2 id="wasm-heading">Coming Soon: In-Browser .RBS Preview</h2>
+        <p>We are building a WebAssembly audio engine that will allow you to preview <code>.rbs</code> files directly in your browser — no software installation required. The module lives under <code>src/wasm/</code> and will parse the binary format, reconstruct the pattern data, and route it through the Web Audio API.</p>
+      </div>
     </div>
-    </div>
-  </div>
+  </section>
+
 </BaseLayout>
 
 <style>
-  /* ── Master Header (Title section) ────────────────────────── */
-  .master-header {
-    position: relative;
-    margin-bottom: 2rem;
-    padding: 2.5rem 2rem;
-    text-align: center;
-    border-bottom: 4px solid #333;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
+  /* Container constraint for main content panels */
+  main > .rb-panel,
+  main > .instrument-strip,
+  main > hr.etched {
+    max-width: 1100px;
+    margin-inline: auto;
   }
 
-  .master-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 100%;
-    background: linear-gradient(180deg, rgba(255,176,0,0.08) 0%, transparent 100%);
-    pointer-events: none;
+  main > .instrument-strip {
+    margin-bottom: 1.5rem;
   }
 
-  .master-header__screws {
-    display: flex;
-    gap: 0.5rem;
-    flex-direction: column;
-    position: relative;
-    z-index: 20;
-    flex-shrink: 0;
+  /* Scoped knob sizing for the controls panel */
+  .rb-knob-row {
+    justify-content: space-around;
+    margin-bottom: 1rem;
   }
 
-  .master-header__screws--right {
-    margin-left: auto;
-    order: 3;
-  }
-
-  .master-header__content {
-    max-width: 100%;
-    flex: 1;
-    position: relative;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.2rem;
-  }
-
-  .master-title {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-
-  .master-title__label {
-    font-family: var(--rb-font-display);
-    font-size: 0.75rem;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--rb-silver-dim);
-  }
-
-  .master-title__main {
-    font-family: var(--rb-font-display);
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    font-weight: bold;
-    color: var(--rb-amber);
-    letter-spacing: 0.08em;
-    text-shadow: 0 0 20px rgba(255,176,0,0.4), 0 0 40px rgba(255,176,0,0.2);
-    line-height: 1.1;
-  }
-
-  .master-title__tagline {
-    font-family: var(--rb-font-display);
-    font-size: 0.8rem;
-    letter-spacing: 0.1em;
-    color: var(--rb-green-bright);
-    text-shadow: 0 0 10px rgba(61,186,102,0.3);
-    font-style: italic;
-  }
-
-  .master-leds {
-    display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-  }
-
-  .master-stats {
-    display: flex;
-    justify-content: center;
-    gap: 2.5rem;
-    flex-wrap: wrap;
-  }
-
-  .master-stat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.3rem;
-  }
-
-  .master-stat__value {
-    font-family: var(--rb-font-display);
-    font-size: clamp(1.1rem, 2.5vw, 1.6rem);
-    font-weight: bold;
-    color: var(--rb-amber);
-    text-shadow: 0 0 12px rgba(255,176,0,0.3);
-  }
-
-  .master-stat__label {
-    font-family: var(--rb-font-display);
-    font-size: 0.6rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--rb-silver-dim);
-  }
-
-  @media (max-width: 600px) {
-    .master-header {
-      flex-direction: column;
-      gap: 1rem;
-      padding: 1.5rem 1rem;
-    }
-
-    .master-header__screws {
-      flex-direction: row;
-      order: 0;
-      margin-bottom: 0;
-    }
-
-    .master-header__screws--right {
-      margin-left: 0;
-      order: 0;
-    }
-
-    .master-leds {
-      gap: 1rem;
-    }
-
-    .master-stats {
-      gap: 1.5rem;
-    }
-  }
-
-  /* ── Hero panel ───────────────────────────────────────────── */
-  .hero-panel {
-    background: linear-gradient(180deg, #2e2e2e 0%, #252525 100%);
-    border: 1px solid var(--rb-border);
-    border-top: 2px solid var(--rb-border-hi);
-    border-radius: 6px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
-    overflow: hidden;
-  }
-
-  /* Instrument strip (top bar with screws, model badge, transport) */
-  .instrument-strip {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.5rem 0.75rem;
-    background: linear-gradient(180deg, #2e2e2e 0%, #242424 100%);
-    border: 1px solid #111;
-    border-radius: 6px 6px 0 0;
-    margin-bottom: 2px;
-    flex-wrap: wrap;
-  }
-
-  .instrument-strip__screws {
-    display: flex;
-    gap: 0.4rem;
-    align-items: center;
-  }
-  .instrument-strip__screws--right {
-    margin-left: auto;
-  }
-
-  .model-badge {
-    display: flex;
-    flex-direction: column;
-    line-height: 1;
-  }
-
-  .model-badge__brand {
-    font-family: var(--font-mono);
-    font-size: 0.55rem;
-    letter-spacing: 0.3em;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-  }
-
-  .model-badge__model {
-    font-family: var(--font-mono);
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: var(--rb-amber, #ffb000);
-    letter-spacing: 0.12em;
-    text-shadow: 0 0 8px rgba(255,176,0,0.3);
-  }
-
-  .status-cluster {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    margin-left: 0.5rem;
-  }
-
-  /* Hero body grid */
-  .hero-body {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    background: #1a1a1a;
-    border: 1px solid #111;
-    border-top: none;
-    border-radius: 0 0 4px 4px;
-    padding: 1.25rem;
-  }
-
-  @media (min-width: 800px) {
-    .hero-body {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  .hero-left {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  /* LCD stats panel */
-  .lcd-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.6rem;
-  }
-
-  .lcd-unit {
-    font-size: 0.6em;
-    color: var(--rb-amber-dim, #b37800);
-    margin-left: 2px;
-  }
-
-  /* Knob panel */
-  .knob-panel .rb-knob__dial {
-    width: 34px;
-    height: 34px;
-  }
-
-  /* Action buttons row */
-  .action-btns {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-
-  /* Hero terminal */
-  .hero-right { align-self: stretch; }
-
-  .hero-terminal {
-    height: 100%;
-    min-height: 260px;
-  }
-
-  /* Cursor blink */
-  .cursor-blink {
-    animation: rb-blink 1s step-end infinite;
-    color: var(--rb-phosphor, #33ff66);
-  }
-
-  /* ── Sequencer panel ──────────────────────────────────────── */
-  .sequencer-panel {
+  /* WASM text spacing */
+  .wasm-text {
     margin-top: 1rem;
-    border-radius: 4px;
   }
 
-  .seq-tracks {
-    padding: 0.5rem 0.75rem 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+  .wasm-text h2 {
+    margin-bottom: 0.5em;
   }
 
-  .seq-row {
-    display: flex;
-    align-items: center;
+  /* About module inner card heading override */
+  .rb-file-card .rb-panel__header {
     gap: 0.5rem;
   }
 
-  .seq-row__label {
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--rb-silver-dim, #888);
-    width: 3rem;
-    flex-shrink: 0;
-    text-align: right;
-  }
-
-  .seq-row .rb-step-grid {
-    flex: 1;
-    padding: 0;
-    gap: 3px;
-  }
-
-  .seq-row--kick .rb-step-btn.beat {
-    background: linear-gradient(180deg, #ffb000 0%, #a07800 100%);
-    border-color: var(--rb-amber-dim, #b37800);
-    box-shadow: 0 0 6px rgba(255,176,0,0.4);
-  }
-
-  .seq-numbers {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0 0.75rem 0.5rem;
-  }
-
-  .seq-num-row {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(16, 1fr);
-    gap: 3px;
-  }
-
-  @media (max-width: 600px) {
-    .seq-num-row { grid-template-columns: repeat(8, 1fr); }
-    .seq-num:nth-child(n+9) { display: none; }
-  }
-
-  .seq-num {
-    font-family: var(--font-mono);
-    font-size: 0.5rem;
-    color: #444;
-    text-align: center;
-  }
-
-  .seq-track-labels { display: none; }
-  .step-counter { margin-left: auto; }
-
-  /* ── About modules ────────────────────────────────────────── */
-
-
+  /* Ensure about row grid works correctly inside panel body */
   .about-row {
+    display: grid;
     gap: 1rem;
   }
+
   @media (min-width: 800px) {
     .about-row {
       grid-template-columns: repeat(3, 1fr);
     }
   }
 
-  .about-module .rb-module__body p {
-    font-size: 0.88rem;
-    color: var(--color-text-muted);
-    line-height: 1.65;
-  }
-
-  .about-module .rb-module__body strong {
-    color: var(--rb-amber, #ffb000);
-  }
-
-  .about-module code {
-    font-family: var(--font-mono);
-    font-size: 0.85em;
-    background: rgba(255,176,0,0.08);
-    border: 1px solid rgba(255,176,0,0.2);
-    border-radius: 2px;
-    padding: 1px 5px;
-    color: var(--rb-amber, #ffb000);
-  }
-
-  .about-module a {
-    color: var(--rb-amber, #ffb000);
-    text-decoration: none;
-  }
-  .about-module a:hover { color: var(--rb-green-bright, #3dba66); }
-
-  /* ── Featured sections ────────────────────────────────────── */
-
-
-  .featured-header {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .featured-header .rb-section-heading {
-    margin-bottom: 0;
-    flex: 1;
-  }
-
-  /* Card grid */
-  .card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1rem;
-  }
-
-  /* ── WASM section ─────────────────────────────────────────── */
-  .wasm-inner {
-    max-width: 1100px;
-    margin-inline: auto;
-    padding-inline: var(--space-md);
-    width: 100%;
-  }
-
-  .wasm-body {
-    display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    align-items: flex-start;
-  }
-
-  .wasm-lcd-block {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    flex-shrink: 0;
-  }
-
-  .wasm-lcd {
-    min-width: 110px;
-  }
-
-  .wasm-text h2 {
-    font-family: var(--font-mono);
-    font-size: clamp(0.9rem, 2vw, 1.1rem);
-    color: var(--rb-amber, #ffb000);
-    letter-spacing: 0.05em;
-    margin-bottom: 0.75rem;
-  }
-
-  .wasm-text p {
-    color: var(--color-text-muted);
-    font-size: 0.875rem;
-    line-height: 1.65;
-  }
-
-  .wasm-text code {
-    font-family: var(--font-mono);
-    font-size: 0.85em;
-    background: rgba(255,176,0,0.08);
-    border: 1px solid rgba(255,176,0,0.2);
-    border-radius: 2px;
-    padding: 1px 5px;
-    color: var(--rb-amber, #ffb000);
-  }
-
-  /* ── Section shared ───────────────────────────────────────── */
-  .section { padding-block: var(--space-xl); }
-
-  /* Etched dividers */
-  hr.etched {
-    max-width: 1100px;
-    margin-inline: auto;
-    margin-block: 2rem;
-  }
-</style>
-
-
-<style>
-  /* Rack styling */
-  .rack-container {
-    margin-top: var(--space-xl);
-    margin-inline: auto;
-    max-width: 1100px;
-    width: 100%;
-    padding-inline: var(--space-md);
-    background-image: url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1h2v2H1z' fill='%23000000' fill-opacity='0.2' fill-rule='evenodd'/%3E%3C/svg%3E");
-    border: 1px solid #1a1a1a;
-    border-radius: 4px;
-    box-shadow: inset 0 0 40px rgba(0,0,0,0.8), inset 0 0 10px rgba(0,0,0,1);
-    padding: var(--space-xl) var(--space-lg);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
-  }
-
-  .rack-container.rb-chassis {
-    background-image: none;
-    border: none;
-    border-radius: 12px;
-    box-shadow: none;
-    padding: var(--space-xl) var(--space-lg);
-  }
-
-  .rack-row {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-lg);
-    max-width: 1100px;
-    margin-inline: auto;
-    padding-inline: var(--space-md);
-    width: 100%;
-  }
-
-  @media (min-width: 800px) {
-    .rack-row {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  /* Make sure modules in rack rows stretch to fill height */
-  .rack-row .rb-module {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .rack-row .rb-module__body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+  .about-modules {
+    display: contents;
   }
 </style>

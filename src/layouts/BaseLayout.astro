@@ -11,6 +11,7 @@ const {
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const currentPath = Astro.url.pathname;
 ---
 
 <!doctype html>
@@ -35,7 +36,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
 
     <!-- Global styles are imported via the component's style tag below -->
-    <link rel="stylesheet" href={`${import.meta.env.BASE_URL}styles/rebirth-theme.css`} />
+    <link rel="stylesheet" href={`${import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL}/styles/rebirth-theme.css`} />
   </head>
   <body class="rebirth-theme">
     <!-- Accessibility skip link -->
@@ -43,17 +44,58 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
     <!-- Site header -->
     <header class="site-header rb-header">
-      <div class="container">
+      <div class="container" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding-block:.75rem;">
         <a href={`${import.meta.env.BASE_URL}`} class="site-logo rb-logo" aria-label="ReBirth RB-338 Archive home">
-          <span class="logo-rb">RB</span><span class="logo-338">-338</span>
+          <span class="logo-rb">RB</span>
+          <span class="logo-338">-338</span>
           <span class="logo-sub">ARCHIVE</span>
         </a>
-        <nav class="rb-nav" aria-label="Primary navigation">
+
+        <!-- Mobile toggle -->
+        <button
+          aria-label="Toggle menu"
+          aria-expanded="false"
+          aria-controls="rb-mobile-menu"
+          class="rb-mobile-toggle"
+          id="rb-mobile-toggle"
+          type="button"
+        >
+          <span class="rb-mobile-toggle__bar"></span>
+          <span class="rb-mobile-toggle__bar"></span>
+          <span class="rb-mobile-toggle__bar"></span>
+          <span class="rb-menu-label" style="margin-top:2px;">
+            <span class="rb-menu-label__led" id="menu-led"></span>
+            MENU
+          </span>
+        </button>
+
+        <!-- Primary navigation -->
+        <nav aria-label="Primary navigation" class="rb-nav rb-mobile-menu" id="rb-mobile-menu">
           <ul role="list">
-            <li><a href={`${import.meta.env.BASE_URL}`} class="rb-nav-btn">Home</a></li>
-            <li><a href={`${import.meta.env.BASE_URL}archive/songs`} class="rb-nav-btn">Songs</a></li>
-            <li><a href={`${import.meta.env.BASE_URL}archive/mods`} class="rb-nav-btn">Mods</a></li>
-            <li><a href={`${import.meta.env.BASE_URL}docs`} class="rb-nav-btn">Docs</a></li>
+            <li>
+              <a
+                href={`${import.meta.env.BASE_URL}`}
+                class={`rb-nav-btn${currentPath === '/' || currentPath === '/rebirth_website/' || currentPath === '/rebirth_website' ? ' is-active' : ''}`}
+              >Home</a>
+            </li>
+            <li>
+              <a
+                href={`${import.meta.env.BASE_URL}archive/songs`}
+                class={`rb-nav-btn${currentPath.includes('/archive/songs') ? ' is-active' : ''}`}
+              >Songs</a>
+            </li>
+            <li>
+              <a
+                href={`${import.meta.env.BASE_URL}archive/mods`}
+                class={`rb-nav-btn${currentPath.includes('/archive/mods') ? ' is-active' : ''}`}
+              >Mods</a>
+            </li>
+            <li>
+              <a
+                href={`${import.meta.env.BASE_URL}docs`}
+                class={`rb-nav-btn${currentPath.includes('/docs') ? ' is-active' : ''}`}
+              >Docs</a>
+            </li>
           </ul>
         </nav>
       </div>
@@ -76,6 +118,29 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         </p>
       </div>
     </footer>
+
+    <!-- Mobile menu toggle script -->
+    <script>
+      (function() {
+        var toggle = document.getElementById('rb-mobile-toggle');
+        var menu = document.getElementById('rb-mobile-menu');
+        var led = document.getElementById('menu-led');
+        if (!toggle || !menu) return;
+        toggle.addEventListener('click', function() {
+          var isOpen = menu.classList.toggle('is-open');
+          toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          if (led) led.classList.toggle('is-on', isOpen);
+        });
+        // Close menu when clicking a nav link (mobile)
+        menu.querySelectorAll('a').forEach(function(link) {
+          link.addEventListener('click', function() {
+            menu.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+            if (led) led.classList.remove('is-on');
+          });
+        });
+      })();
+    </script>
   </body>
 </html>
 
@@ -88,7 +153,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
   .site-header {
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 1000;
   }
 
   .rb-nav ul {

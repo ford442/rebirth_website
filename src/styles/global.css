@@ -19,7 +19,7 @@
   --color-accent:      #e8533f;
 
   /* Typography */
-  --font-mono:   'Courier New', Courier, monospace;
+  --font-mono:   'Share Tech Mono', 'Courier New', Courier, monospace;
   --font-sans:   system-ui, -apple-system, sans-serif;
   --font-size-base: 1rem;
 
