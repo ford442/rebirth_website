@@ -214,7 +214,7 @@
     "description": "RBS (Rebirth Song) files are Rebirth music sequences created with Propellerhead Software's Rebirth synthesizer software"
   },
   "navigation": {
-    "browse": "/rbs-archive",
+    "browse": "/archive/songs",
     "manifest": "/rbs-manifest.json",
     "baseArchive": "http://test.1ink.us/rb338/archive/rbs-songs"
   }

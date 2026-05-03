@@ -37,6 +37,7 @@ const currentPath = Astro.url.pathname;
 
     <!-- Global styles are imported via the component's style tag below -->
     <link rel="stylesheet" href={`${import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL}/styles/rebirth-theme.css`} />
+    <slot name="head" />
   </head>
   <body class="rebirth-theme">
     <!-- Accessibility skip link -->
