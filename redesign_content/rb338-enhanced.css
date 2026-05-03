@@ -1,0 +1,1582 @@
+/**
+ * ReBirth RB-338 Archive - Enhanced Hardware Theme
+ * =================================================
+ * A dark, metallic, hardware-inspired CSS system emulating the
+ * Roland TB-303 / TR-909 / ReBirth RB-338 aesthetic.
+ *
+ * Colors:
+ *   Amber:  #ffb000 | #b37800 | rgba(255,176,0,0.4)
+ *   Green:  #39ff14 | #3dba66 | #1a5230 | rgba(57,255,20,0.4)
+ *   Red:    #c41e3a | #8a1528 | rgba(196,30,58,0.5)
+ *   Silver: #c0c0c0 | #888888
+ *   Dark:   #111111 | #1e1e1e | #262626 | #303030
+ *   Border: #3a3a3a | #555555
+ *   LCD:    #1a1a0a
+ *
+ * No external dependencies. Drop-in ready.
+ */
+
+/* ============================================================
+   1. CSS VARIABLES & RESET
+   ============================================================ */
+:root {
+  /* Amber */
+  --rb-amber: #ffb000;
+  --rb-amber-dim: #b37800;
+  --rb-amber-glow: rgba(255, 176, 0, 0.4);
+  --rb-amber-glow-strong: rgba(255, 176, 0, 0.7);
+
+  /* Green */
+  --rb-green: #39ff14;
+  --rb-green-bright: #3dba66;
+  --rb-green-dim: #1a5230;
+  --rb-green-glow: rgba(57, 255, 20, 0.4);
+  --rb-green-glow-strong: rgba(57, 255, 20, 0.7);
+
+  /* Red */
+  --rb-red: #c41e3a;
+  --rb-red-dim: #8a1528;
+  --rb-red-glow: rgba(196, 30, 58, 0.5);
+  --rb-red-glow-strong: rgba(196, 30, 58, 0.8);
+
+  /* Silver / Grey */
+  --rb-silver: #c0c0c0;
+  --rb-silver-dim: #888888;
+
+  /* Surfaces */
+  --rb-bg: #111111;
+  --rb-panel: #1e1e1e;
+  --rb-panel-raised: #262626;
+  --rb-panel-highlight: #303030;
+  --rb-border: #3a3a3a;
+  --rb-border-hi: #555555;
+  --rb-lcd-bg: #1a1a0a;
+
+  /* Typography */
+  --rb-font-mono: 'Share Tech Mono', 'Courier New', monospace;
+  --rb-font-body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Spacing scale */
+  --rb-space-xs: 0.25rem;
+  --rb-space-sm: 0.5rem;
+  --rb-space-md: 1rem;
+  --rb-space-lg: 1.5rem;
+  --rb-space-xl: 2rem;
+  --rb-space-2xl: 3rem;
+
+  /* Radii */
+  --rb-radius-sm: 4px;
+  --rb-radius-md: 6px;
+  --rb-radius-lg: 8px;
+
+  /* Shadows */
+  --rb-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --rb-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
+  --rb-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.7);
+  --rb-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  /* Animation timing */
+  --rb-transition-fast: 150ms ease;
+  --rb-transition-base: 250ms ease;
+  --rb-transition-slow: 400ms ease;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--rb-font-body);
+  background-color: var(--rb-bg);
+  color: var(--rb-silver);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   2. BODY & BACKGROUND EFFECTS
+   ============================================================ */
+
+/* CRT Scanline overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.08) 0px,
+      rgba(0, 0, 0, 0.08) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+  opacity: 0.35;
+}
+
+/* CRT Vignette */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+}
+
+/* Noise texture overlay using gradients */
+.rb-noise-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9997;
+  opacity: 0.04;
+  background-image:
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      rgba(255, 255, 255, 0.06) 0px,
+      rgba(0, 0, 0, 0.06) 1px,
+      transparent 2px
+    );
+  background-size: 4px 4px;
+}
+
+/* ============================================================
+   3. PANEL SYSTEM
+   ============================================================ */
+
+/* --- Base Panel --- */
+.rb-panel {
+  background:
+    linear-gradient(
+      180deg,
+      var(--rb-panel-highlight) 0%,
+      var(--rb-panel) 10%,
+      var(--rb-panel) 90%,
+      var(--rb-panel-raised) 100%
+    );
+  border: 1px solid var(--rb-border);
+  border-top-color: var(--rb-border-hi);
+  border-radius: var(--rb-radius-lg);
+  box-shadow:
+    var(--rb-shadow-md),
+    var(--rb-shadow-inset),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  position: relative;
+  transition: transform var(--rb-transition-base), box-shadow var(--rb-transition-base);
+}
+
+.rb-panel:hover {
+  box-shadow:
+    var(--rb-shadow-lg),
+    var(--rb-shadow-inset),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* --- Panel Variants --- */
+.rb-panel--dark {
+  background:
+    linear-gradient(
+      180deg,
+      #222222 0%,
+      #181818 10%,
+      #181818 90%,
+      #1e1e1e 100%
+    );
+  border-color: #2a2a2a;
+  border-top-color: #404040;
+}
+
+.rb-panel--amber {
+  border-color: var(--rb-amber-dim);
+  border-top-color: var(--rb-amber);
+  box-shadow:
+    var(--rb-shadow-md),
+    var(--rb-shadow-inset),
+    0 0 20px var(--rb-amber-glow),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.rb-panel--green {
+  border-color: var(--rb-green-dim);
+  border-top-color: var(--rb-green-bright);
+  box-shadow:
+    var(--rb-shadow-md),
+    var(--rb-shadow-inset),
+    0 0 20px var(--rb-green-glow),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.rb-panel--red {
+  border-color: var(--rb-red-dim);
+  border-top-color: var(--rb-red);
+  box-shadow:
+    var(--rb-shadow-md),
+    var(--rb-shadow-inset),
+    0 0 20px var(--rb-red-glow),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* --- Panel Header --- */
+.rb-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--rb-space-sm) var(--rb-space-md);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.03) 0%,
+      rgba(0, 0, 0, 0.1) 100%
+    );
+  border-bottom: 1px solid var(--rb-border);
+  position: relative;
+}
+
+/* Screw holes in header corners */
+.rb-panel__header::before,
+.rb-panel__header::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 35% 35%,
+      var(--rb-border-hi) 0%,
+      var(--rb-border) 40%,
+      #000 100%
+    );
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
+  flex-shrink: 0;
+}
+
+.rb-panel__header::before { margin-right: var(--rb-space-sm); }
+.rb-panel__header::after  { margin-left: var(--rb-space-sm); }
+
+/* --- Panel Title --- */
+.rb-panel__title {
+  font-family: var(--rb-font-mono);
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--rb-amber);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  text-shadow: 0 0 8px var(--rb-amber-glow);
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Panel Body --- */
+.rb-panel__body {
+  padding: var(--rb-space-md);
+  position: relative;
+}
+
+/* --- Panel Footer --- */
+.rb-panel__footer {
+  padding: var(--rb-space-sm) var(--rb-space-md);
+  background: rgba(0, 0, 0, 0.15);
+  border-top: 1px solid var(--rb-border);
+  font-family: var(--rb-font-mono);
+  font-size: 0.7rem;
+  color: var(--rb-silver-dim);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* --- Main Chassis --- */
+.rb-chassis {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--rb-space-xl);
+  position: relative;
+  border: 1px solid var(--rb-border);
+  border-radius: var(--rb-radius-lg);
+  background:
+    linear-gradient(
+      180deg,
+      var(--rb-panel-raised) 0%,
+      var(--rb-panel) 50%,
+      var(--rb-panel-raised) 100%
+    );
+  box-shadow:
+    var(--rb-shadow-lg),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Screw holes in chassis corners */
+.rb-chassis::before,
+.rb-chassis::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 35% 35%,
+      #666 0%,
+      #333 40%,
+      #000 100%
+    );
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+.rb-chassis::before { top: var(--rb-space-sm); left: var(--rb-space-sm); }
+.rb-chassis::after  { top: var(--rb-space-sm); right: var(--rb-space-sm); }
+
+/* Bottom screws via extra child requirement - use a dedicated element */
+.rb-chassis__screw {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 35% 35%,
+      #666 0%,
+      #333 40%,
+      #000 100%
+    );
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+.rb-chassis__screw--bl { bottom: var(--rb-space-sm); left: var(--rb-space-sm); }
+.rb-chassis__screw--br { bottom: var(--rb-space-sm); right: var(--rb-space-sm); }
+
+/* --- Decorative Screw Element --- */
+.rb-screw {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: relative;
+  background:
+    radial-gradient(
+      circle at 35% 35%,
+      #999 0%,
+      #666 30%,
+      #333 70%,
+      #111 100%
+    );
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.8),
+    0 1px 0 rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+/* Screw cross slot */
+.rb-screw::before,
+.rb-screw::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: #1a1a1a;
+  transform: translate(-50%, -50%);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.9);
+}
+
+.rb-screw::before {
+  width: 70%;
+  height: 2px;
+}
+
+.rb-screw::after {
+  width: 2px;
+  height: 70%;
+}
+
+/* ============================================================
+   4. ENHANCED NAVIGATION
+   ============================================================ */
+
+/* --- Nav Container --- */
+.rb-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--rb-space-sm);
+  padding: var(--rb-space-sm) var(--rb-space-md);
+  background:
+    linear-gradient(
+      180deg,
+      var(--rb-panel-raised) 0%,
+      var(--rb-panel) 100%
+    );
+  border-bottom: 1px solid var(--rb-border);
+  box-shadow: var(--rb-shadow-sm);
+  flex-wrap: wrap;
+}
+
+/* --- Nav Button --- */
+.rb-nav-btn {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rb-space-xs);
+  padding: var(--rb-space-sm) var(--rb-space-md);
+  font-family: var(--rb-font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--rb-silver-dim);
+  background:
+    linear-gradient(
+      180deg,
+      #2a2a2a 0%,
+      #1e1e1e 50%,
+      #181818 100%
+    );
+  border: 1px solid var(--rb-border);
+  border-top-color: var(--rb-border-hi);
+  border-radius: var(--rb-radius-md);
+  box-shadow:
+    var(--rb-shadow-sm),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition:
+    all var(--rb-transition-base);
+  text-decoration: none;
+  user-select: none;
+}
+
+.rb-nav-btn:hover {
+  color: var(--rb-amber);
+  border-color: var(--rb-amber-dim);
+  box-shadow:
+    var(--rb-shadow-sm),
+    0 0 12px var(--rb-amber-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transform: translateY(-1px);
+}
+
+/* LED dot on top of nav button */
+.rb-nav-btn::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #333;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
+  transition: all var(--rb-transition-base);
+}
+
+/* --- Active Nav Button --- */
+.rb-nav-btn.active {
+  color: var(--rb-amber);
+  border-color: var(--rb-amber-dim);
+  background:
+    linear-gradient(
+      180deg,
+      #2a2010 0%,
+      #1e1810 50%,
+      #181410 100%
+    );
+  box-shadow:
+    var(--rb-shadow-sm),
+    0 0 16px var(--rb-amber-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.rb-nav-btn.active::before {
+  background: var(--rb-amber);
+  box-shadow:
+    0 0 6px var(--rb-amber),
+    0 0 12px var(--rb-amber-glow-strong);
+}
+
+/* --- Mobile Toggle (Hamburger) --- */
+.rb-mobile-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--rb-space-sm);
+  background:
+    linear-gradient(
+      180deg,
+      #2a2a2a 0%,
+      #1e1e1e 100%
+    );
+  border: 1px solid var(--rb-border);
+  border-radius: var(--rb-radius-sm);
+  cursor: pointer;
+  box-shadow: var(--rb-shadow-sm);
+}
+
+.rb-mobile-toggle span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--rb-silver);
+  border-radius: 1px;
+  transition: all var(--rb-transition-fast);
+}
+
+.rb-mobile-toggle:hover span {
+  background: var(--rb-amber);
+}
+
+/* --- Mobile Menu Panel --- */
+.rb-mobile-menu {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(280px, 80vw);
+  height: 100vh;
+  background:
+    linear-gradient(
+      180deg,
+      var(--rb-panel-raised) 0%,
+      var(--rb-panel) 100%
+    );
+  border-left: 1px solid var(--rb-border);
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  padding: var(--rb-space-xl) var(--rb-space-md);
+  flex-direction: column;
+  gap: var(--rb-space-sm);
+  transform: translateX(100%);
+  transition: transform var(--rb-transition-slow);
+}
+
+.rb-mobile-menu.is-open {
+  transform: translateX(0);
+}
+
+.rb-mobile-menu .rb-nav-btn {
+  width: 100%;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: var(--rb-space-md);
+}
+
+.rb-mobile-menu .rb-nav-btn::before {
+  order: 0;
+}
+
+/* Mobile menu overlay */
+.rb-mobile-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity var(--rb-transition-base);
+}
+
+.rb-mobile-overlay.is-open {
+  display: block;
+  opacity: 1;
+}
+
+/* ============================================================
+   5. LED INDICATORS
+   ============================================================ */
+
+.rb-led {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rb-space-sm);
+  font-family: var(--rb-font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rb-silver-dim);
+}
+
+.rb-led__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #333;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
+  transition: all var(--rb-transition-base);
+  flex-shrink: 0;
+}
+
+/* --- Online (Green, pulsing) --- */
+.rb-led--online .rb-led__dot {
+  background: var(--rb-green);
+  box-shadow:
+    0 0 4px var(--rb-green),
+    0 0 10px var(--rb-green-glow),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+  animation: rb-pulse-green 1.6s ease-in-out infinite;
+}
+
+.rb-led--online {
+  color: var(--rb-green);
+  text-shadow: 0 0 8px var(--rb-green-glow);
+}
+
+/* --- Pending (Amber, pulsing) --- */
+.rb-led--pending .rb-led__dot {
+  background: var(--rb-amber);
+  box-shadow:
+    0 0 4px var(--rb-amber),
+    0 0 10px var(--rb-amber-glow),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+  animation: rb-pulse-amber 1.6s ease-in-out infinite;
+}
+
+.rb-led--pending {
+  color: var(--rb-amber);
+  text-shadow: 0 0 8px var(--rb-amber-glow);
+}
+
+/* --- Offline (Red, solid) --- */
+.rb-led--offline .rb-led__dot {
+  background: var(--rb-red);
+  box-shadow:
+    0 0 4px var(--rb-red),
+    0 0 8px var(--rb-red-glow),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.rb-led--offline {
+  color: var(--rb-red);
+  text-shadow: 0 0 8px var(--rb-red-glow);
+}
+
+/* ============================================================
+   6. LCD DISPLAY STYLES
+   ============================================================ */
+
+.rb-lcd {
+  background: var(--rb-lcd-bg);
+  border: 2px solid #0f0f0a;
+  border-radius: var(--rb-radius-md);
+  padding: var(--rb-space-md);
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.6),
+    inset 0 0 40px rgba(0, 0, 0, 0.4);
+}
+
+/* LCD scanline overlay */
+.rb-lcd::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15) 0px,
+      rgba(0, 0, 0, 0.15) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  opacity: 0.5;
+}
+
+/* LCD subtle glow */
+.rb-lcd::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 30%,
+    rgba(255, 176, 0, 0.04) 0%,
+    transparent 70%
+  );
+}
+
+.rb-lcd__label {
+  font-family: var(--rb-font-mono);
+  font-size: 0.65rem;
+  color: var(--rb-amber-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--rb-space-xs);
+  opacity: 0.7;
+}
+
+.rb-lcd__value {
+  font-family: var(--rb-font-mono);
+  font-size: 1.5rem;
+  color: var(--rb-amber);
+  text-shadow:
+    0 0 4px var(--rb-amber),
+    0 0 12px var(--rb-amber-glow),
+    0 0 24px var(--rb-amber-glow);
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+}
+
+.rb-lcd__value--green {
+  color: var(--rb-green);
+  text-shadow:
+    0 0 4px var(--rb-green),
+    0 0 12px var(--rb-green-glow),
+    0 0 24px var(--rb-green-glow);
+}
+
+/* ============================================================
+   7. BUTTON SYSTEM
+   ============================================================ */
+
+/* --- Base Metallic Button --- */
+[class^='rb-btn'] {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rb-space-sm);
+  padding: var(--rb-space-sm) var(--rb-space-md);
+  font-family: var(--rb-font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: none;
+  border-radius: var(--rb-radius-md);
+  cursor: pointer;
+  transition: all var(--rb-transition-base);
+  user-select: none;
+  text-decoration: none;
+  line-height: 1.4;
+}
+
+/* --- Pattern Button (Red) --- */
+.rb-btn-pattern {
+  color: #f0d0d5;
+  background:
+    linear-gradient(
+      180deg,
+      #d42a4a 0%,
+      var(--rb-red) 40%,
+      #a01830 100%
+    );
+  border: 1px solid var(--rb-red-dim);
+  border-top-color: #e04060;
+  box-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.rb-btn-pattern:hover {
+  background:
+    linear-gradient(
+      180deg,
+      #e04060 0%,
+      #d42a4a 40%,
+      #b02038 100%
+    );
+  box-shadow:
+    0 4px 12px var(--rb-red-glow),
+    0 0 20px var(--rb-red-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.rb-btn-pattern:active {
+  transform: translateY(0);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.4),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Mix Button (Green) --- */
+.rb-btn-mix {
+  color: #d0f0d8;
+  background:
+    linear-gradient(
+      180deg,
+      #4dd060 0%,
+      var(--rb-green-bright) 40%,
+      #2a9048 100%
+    );
+  border: 1px solid var(--rb-green-dim);
+  border-top-color: #6ee080;
+  box-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.rb-btn-mix:hover {
+  background:
+    linear-gradient(
+      180deg,
+      #5ee070 0%,
+      #4dd060 40%,
+      #34a050 100%
+    );
+  box-shadow:
+    0 4px 12px var(--rb-green-glow),
+    0 0 20px var(--rb-green-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.rb-btn-mix:active {
+  transform: translateY(0);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.4),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Transport Button --- */
+.rb-btn-transport {
+  color: var(--rb-silver);
+  background:
+    linear-gradient(
+      180deg,
+      #3a3a3a 0%,
+      #2a2a2a 40%,
+      #1e1e1e 100%
+    );
+  border: 1px solid var(--rb-border);
+  border-top-color: var(--rb-border-hi);
+  box-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  min-width: 60px;
+  min-height: 40px;
+}
+
+.rb-btn-transport:hover {
+  background:
+    linear-gradient(
+      180deg,
+      #444 0%,
+      #333 40%,
+      #262626 100%
+    );
+  border-color: var(--rb-border-hi);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.rb-btn-transport:active {
+  transform: translateY(0);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.4),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Transport variants */
+.rb-btn-transport--play:hover {
+  border-color: var(--rb-green-dim);
+  color: var(--rb-green);
+  box-shadow:
+    0 4px 12px var(--rb-green-glow),
+    0 0 16px var(--rb-green-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.rb-btn-transport--rec:hover {
+  border-color: var(--rb-red-dim);
+  color: var(--rb-red);
+  box-shadow:
+    0 4px 12px var(--rb-red-glow),
+    0 0 16px var(--rb-red-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.rb-btn-transport--stop:hover {
+  border-color: var(--rb-amber-dim);
+  color: var(--rb-amber);
+  box-shadow:
+    0 4px 12px var(--rb-amber-glow),
+    0 0 16px var(--rb-amber-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================================
+   8. STEP SEQUENCER GRID
+   ============================================================ */
+
+.rb-step-grid {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: var(--rb-space-xs);
+  padding: var(--rb-space-sm);
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--rb-radius-md);
+  border: 1px solid var(--rb-border);
+}
+
+.rb-step-btn {
+  aspect-ratio: 1;
+  min-width: 24px;
+  min-height: 24px;
+  background:
+    linear-gradient(
+      180deg,
+      #333 0%,
+      #222 50%,
+      #1a1a1a 100%
+    );
+  border: 1px solid var(--rb-border);
+  border-top-color: #444;
+  border-radius: var(--rb-radius-sm);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: all var(--rb-transition-fast);
+  position: relative;
+}
+
+.rb-step-btn:hover {
+  background:
+    linear-gradient(
+      180deg,
+      #3a3a3a 0%,
+      #2a2a2a 50%,
+      #222 100%
+    );
+  border-color: var(--rb-border-hi);
+}
+
+.rb-step-btn.active {
+  background:
+    linear-gradient(
+      180deg,
+      var(--rb-amber) 0%,
+      var(--rb-amber-dim) 100%
+    );
+  border-color: var(--rb-amber);
+  box-shadow:
+    0 0 8px var(--rb-amber-glow),
+    0 0 16px var(--rb-amber-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.rb-step-btn.active--green {
+  background:
+    linear-gradient(
+      180deg,
+      var(--rb-green) 0%,
+      var(--rb-green-bright) 100%
+    );
+  border-color: var(--rb-green);
+  box-shadow:
+    0 0 8px var(--rb-green-glow),
+    0 0 16px var(--rb-green-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.rb-step-btn.beat {
+  border-color: var(--rb-amber-dim);
+}
+
+.rb-step-btn.beat::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--rb-amber-dim);
+}
+
+/* ============================================================
+   9. FILE CARDS
+   ============================================================ */
+
+.rb-card {
+  position: relative;
+  background:
+    linear-gradient(
+      180deg,
+      var(--rb-panel-raised) 0%,
+      var(--rb-panel) 100%
+    );
+  border: 1px solid var(--rb-border);
+  border-radius: var(--rb-radius-md);
+  padding: var(--rb-space-md);
+  box-shadow: var(--rb-shadow-sm);
+  transition: all var(--rb-transition-base);
+  overflow: hidden;
+}
+
+.rb-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: var(--rb-radius-md) 0 0 var(--rb-radius-md);
+}
+
+.rb-card:hover {
+  box-shadow: var(--rb-shadow-md);
+  transform: translateY(-2px);
+  border-color: var(--rb-border-hi);
+}
+
+/* --- Song Card (Green accent) --- */
+.rb-card--song::before {
+  background: var(--rb-green);
+  box-shadow: 0 0 8px var(--rb-green-glow);
+}
+
+.rb-card--song:hover {
+  border-color: var(--rb-green-dim);
+  box-shadow:
+    var(--rb-shadow-md),
+    0 0 16px var(--rb-green-glow);
+}
+
+/* --- Mod Card (Amber accent) --- */
+.rb-card--mod::before {
+  background: var(--rb-amber);
+  box-shadow: 0 0 8px var(--rb-amber-glow);
+}
+
+.rb-card--mod:hover {
+  border-color: var(--rb-amber-dim);
+  box-shadow:
+    var(--rb-shadow-md),
+    0 0 16px var(--rb-amber-glow);
+}
+
+/* --- Card Badge --- */
+.rb-card__badge {
+  display: inline-block;
+  padding: var(--rb-space-xs) var(--rb-space-sm);
+  font-family: var(--rb-font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-radius: var(--rb-radius-sm);
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--rb-border);
+  color: var(--rb-silver-dim);
+}
+
+.rb-card__badge--green {
+  color: var(--rb-green);
+  border-color: var(--rb-green-dim);
+  background: rgba(57, 255, 20, 0.08);
+}
+
+.rb-card__badge--amber {
+  color: var(--rb-amber);
+  border-color: var(--rb-amber-dim);
+  background: rgba(255, 176, 0, 0.08);
+}
+
+/* --- Card Tag --- */
+.rb-card__tag {
+  display: inline-block;
+  padding: 1px var(--rb-space-sm);
+  font-family: var(--rb-font-mono);
+  font-size: 0.65rem;
+  border-radius: 9999px;
+  background: var(--rb-panel-raised);
+  border: 1px solid var(--rb-border);
+  color: var(--rb-silver-dim);
+  transition: all var(--rb-transition-fast);
+}
+
+.rb-card__tag:hover {
+  border-color: var(--rb-border-hi);
+  color: var(--rb-silver);
+}
+
+/* ============================================================
+   10. TERMINAL / CONSOLE
+   ============================================================ */
+
+.rb-terminal {
+  background: #0a0a0a;
+  border: 1px solid #222;
+  border-radius: var(--rb-radius-lg);
+  overflow: hidden;
+  box-shadow:
+    var(--rb-shadow-md),
+    inset 0 0 40px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Terminal Title Bar --- */
+.rb-terminal__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--rb-space-sm);
+  padding: var(--rb-space-sm) var(--rb-space-md);
+  background:
+    linear-gradient(
+      180deg,
+      #1e1e1e 0%,
+      #151515 100%
+    );
+  border-bottom: 1px solid #222;
+}
+
+/* Colored dots in title bar */
+.rb-terminal__bar::before {
+  content: '';
+  display: flex;
+  gap: 6px;
+}
+
+.rb-terminal__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rb-terminal__dot--red {
+  background: var(--rb-red);
+  box-shadow: 0 0 4px var(--rb-red-glow);
+}
+
+.rb-terminal__dot--amber {
+  background: var(--rb-amber);
+  box-shadow: 0 0 4px var(--rb-amber-glow);
+}
+
+.rb-terminal__dot--green {
+  background: var(--rb-green);
+  box-shadow: 0 0 4px var(--rb-green-glow);
+}
+
+.rb-terminal__title {
+  font-family: var(--rb-font-mono);
+  font-size: 0.75rem;
+  color: var(--rb-silver-dim);
+  margin-left: auto;
+}
+
+/* --- Terminal Body --- */
+.rb-terminal__body {
+  padding: var(--rb-space-md);
+  font-family: var(--rb-font-mono);
+  font-size: 0.8rem;
+  line-height: 1.7;
+  color: var(--rb-silver);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.rb-terminal__body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.rb-terminal__body::-webkit-scrollbar-track {
+  background: #111;
+}
+
+.rb-terminal__body::-webkit-scrollbar-thumb {
+  background: var(--rb-border);
+  border-radius: 3px;
+}
+
+/* Terminal text colors */
+.rb-terminal__body .t-amber {
+  color: var(--rb-amber);
+  text-shadow: 0 0 4px var(--rb-amber-glow);
+}
+
+.rb-terminal__body .t-green {
+  color: var(--rb-green);
+  text-shadow: 0 0 4px var(--rb-green-glow);
+}
+
+.rb-terminal__body .t-red {
+  color: var(--rb-red);
+  text-shadow: 0 0 4px var(--rb-red-glow);
+}
+
+/* --- Blinking Cursor --- */
+.cursor-blink {
+  display: inline-block;
+  width: 8px;
+  height: 1.1em;
+  background: var(--rb-amber);
+  box-shadow: 0 0 4px var(--rb-amber);
+  vertical-align: text-bottom;
+  margin-left: 2px;
+  animation: rb-cursor-blink 1s step-end infinite;
+}
+
+/* ============================================================
+   11. TYPOGRAPHY HELPERS
+   ============================================================ */
+
+.t-amber {
+  color: var(--rb-amber);
+}
+
+.t-green {
+  color: var(--rb-green);
+}
+
+.t-red {
+  color: var(--rb-red);
+}
+
+.t-dim {
+  color: var(--rb-silver-dim);
+}
+
+.t-silver {
+  color: var(--rb-silver);
+}
+
+/* Text glow variants */
+.t-amber-glow {
+  color: var(--rb-amber);
+  text-shadow: 0 0 8px var(--rb-amber-glow);
+}
+
+.t-green-glow {
+  color: var(--rb-green);
+  text-shadow: 0 0 8px var(--rb-green-glow);
+}
+
+.t-red-glow {
+  color: var(--rb-red);
+  text-shadow: 0 0 8px var(--rb-red-glow);
+}
+
+/* ============================================================
+   12. LAYOUT UTILITIES
+   ============================================================ */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--rb-space-md);
+  width: 100%;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--rb-space-lg);
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--rb-space-lg);
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.gap-sm { gap: var(--rb-space-sm); }
+.gap-md { gap: var(--rb-space-md); }
+.gap-lg { gap: var(--rb-space-lg); }
+
+.mt-sm { margin-top: var(--rb-space-sm); }
+.mt-md { margin-top: var(--rb-space-md); }
+.mt-lg { margin-top: var(--rb-space-lg); }
+
+.mb-sm { margin-bottom: var(--rb-space-sm); }
+.mb-md { margin-bottom: var(--rb-space-md); }
+.mb-lg { margin-bottom: var(--rb-space-lg); }
+
+/* ============================================================
+   13. RESPONSIVE BREAKPOINTS
+   ============================================================ */
+
+/* --- Mobile: < 768px --- */
+@media (max-width: 767px) {
+  .rb-nav {
+    display: none;
+  }
+
+  .rb-mobile-toggle {
+    display: flex;
+  }
+
+  .rb-mobile-menu {
+    display: flex;
+  }
+
+  .rb-chassis {
+    padding: var(--rb-space-md);
+    margin: var(--rb-space-sm);
+  }
+
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .rb-step-grid {
+    grid-template-columns: repeat(8, 1fr);
+  }
+
+  .rb-panel__title {
+    font-size: 0.75rem;
+  }
+
+  .rb-lcd__value {
+    font-size: 1.1rem;
+  }
+
+  .rb-terminal__body {
+    font-size: 0.7rem;
+  }
+}
+
+/* --- Tablet: 768px - 1024px --- */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .rb-nav {
+    display: flex;
+  }
+
+  .rb-mobile-toggle {
+    display: none;
+  }
+
+  .rb-mobile-menu {
+    display: none !important;
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rb-step-grid {
+    grid-template-columns: repeat(16, 1fr);
+  }
+}
+
+/* --- Desktop: > 1024px --- */
+@media (min-width: 1025px) {
+  .rb-nav {
+    display: flex;
+  }
+
+  .rb-mobile-toggle {
+    display: none;
+  }
+
+  .rb-mobile-menu {
+    display: none !important;
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .rb-step-grid {
+    grid-template-columns: repeat(16, 1fr);
+  }
+}
+
+/* ============================================================
+   14. ANIMATIONS
+   ============================================================ */
+
+/* --- LED Pulse - Green --- */
+@keyframes rb-pulse-green {
+  0%, 100% {
+    opacity: 1;
+    box-shadow:
+      0 0 4px var(--rb-green),
+      0 0 10px var(--rb-green-glow),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    opacity: 0.5;
+    box-shadow:
+      0 0 2px var(--rb-green),
+      0 0 5px var(--rb-green-glow),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* --- LED Pulse - Amber --- */
+@keyframes rb-pulse-amber {
+  0%, 100% {
+    opacity: 1;
+    box-shadow:
+      0 0 4px var(--rb-amber),
+      0 0 10px var(--rb-amber-glow),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    opacity: 0.5;
+    box-shadow:
+      0 0 2px var(--rb-amber),
+      0 0 5px var(--rb-amber-glow),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* --- Cursor Blink --- */
+@keyframes rb-cursor-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* --- Panel Slide In --- */
+@keyframes rb-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rb-panel {
+  animation: rb-panel-in 0.4s ease-out;
+}
+
+/* --- Glow Pulse (generic) --- */
+@keyframes rb-glow-pulse {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.15);
+  }
+}
+
+/* --- Menu Slide --- */
+@keyframes rb-menu-slide {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* --- Button Press Feedback --- */
+@keyframes rb-btn-press {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.96);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+[class^='rb-btn']:active {
+  animation: rb-btn-press 0.15s ease;
+}
+
+/* --- Subtle ambient glow for chassis --- */
+@keyframes rb-ambient-glow {
+  0%, 100% {
+    box-shadow:
+      var(--rb-shadow-lg),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+  50% {
+    box-shadow:
+      0 8px 30px rgba(0, 0, 0, 0.7),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+}
+
+/* ============================================================
+   UTILITY: Screen-reader only
+   ============================================================ */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================================
+   UTILITY: Scrollbar styling
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--rb-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--rb-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--rb-border-hi);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rb-border) var(--rb-bg);
+}
