@@ -46,7 +46,13 @@ const songPattern  = [1,0,0,0, 1,0,1,0, 0,0,1,0, 1,0,0,1];
 const bassPattern  = [1,0,1,0, 0,1,0,0, 1,0,0,1, 0,1,0,0];
 const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
 
-const base = import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL;
+const normalizeBase = (value: string) => {
+  const rawBase = value ?? '';
+  if (rawBase === '/' || rawBase === '') return '';
+  const trimmed = rawBase.replace(/\/+$/, '');
+  return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+};
+const base = normalizeBase(import.meta.env.BASE_URL);
 ---
 
 <BaseLayout
