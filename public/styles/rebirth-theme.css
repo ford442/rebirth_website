@@ -52,6 +52,16 @@
   --color-text: #d4cfc8;
   --color-text-muted: #7a7470;
   --color-accent: #e8533f;
+
+  /* Rackmount / futuristic accents */
+  --rb-cyan: #00e5ff;
+  --rb-cyan-dim: #0088aa;
+  --rb-cyan-glow: rgba(0, 229, 255, 0.35);
+  --rb-acid: #ccff00;
+  --rb-acid-dim: #88aa00;
+  --rb-acid-glow: rgba(204, 255, 0, 0.3);
+  --rb-metal-hi: #aaaaaa;
+  --rb-metal-lo: #1a1a1a;
 }
 
 /* ============================================================
@@ -179,16 +189,38 @@ pre {
    3. NEW PANEL SYSTEM
    ============================================================ */
 .rb-panel {
-  background: linear-gradient(180deg, #2e2e2e 0%, #252525 100%);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 4%),
+    linear-gradient(180deg, #2e2e2e 0%, #252525 100%);
   border: 1px solid var(--rb-border);
   border-top: 2px solid var(--rb-border-hi);
   border-radius: 8px;
   box-shadow:
-    0 4px 24px rgba(0,0,0,0.6),
-    inset 0 1px 0 rgba(255,255,255,0.04);
+    /* deep drop shadow */
+    0 8px 32px rgba(0,0,0,0.7),
+    0 2px 8px rgba(0,0,0,0.5),
+    /* top highlight bevel */
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    /* inner depth shadow */
+    inset 0 -2px 6px rgba(0,0,0,0.3);
   overflow: hidden;
   position: relative;
   margin-bottom: 1.5rem;
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 200ms ease,
+              border-color 200ms ease;
+}
+
+.rb-panel:hover {
+  border-color: #444;
+  border-top-color: #666;
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.75),
+    0 4px 12px rgba(0,0,0,0.5),
+    0 0 20px rgba(0, 229, 255, 0.06),
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 -2px 6px rgba(0,0,0,0.35);
+  transform: translateY(-2px);
 }
 
 .rb-panel--dark {
@@ -214,9 +246,47 @@ pre {
 .rb-panel--chassis {
   border-radius: 8px;
   border: 2px solid #111;
+  border-top: 2px solid #333;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 6%),
+    linear-gradient(180deg, #1a1a1a 0%, #141414 100%);
   box-shadow:
-    0 8px 32px rgba(0,0,0,0.8),
+    0 12px 40px rgba(0,0,0,0.85),
+    0 4px 12px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    inset 0 -3px 8px rgba(0,0,0,0.4);
+}
+
+.rb-panel--chassis:hover {
+  border-color: #222;
+  border-top-color: #444;
+  box-shadow:
+    0 16px 48px rgba(0,0,0,0.9),
+    0 6px 16px rgba(0,0,0,0.6),
+    0 0 24px rgba(0, 229, 255, 0.08),
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 -3px 8px rgba(0,0,0,0.45);
+}
+
+.rb-panel--compact .rb-panel__body {
+  padding: 0.75rem 1rem;
+}
+
+.rb-panel--compact .rb-panel__header {
+  padding: 0.4em 0.8em;
+}
+
+.rb-panel--flat {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+  border-color: #2a2a2a;
+}
+
+.rb-panel--raised {
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.7),
+    0 0 16px rgba(0,0,0,0.3),
     inset 0 1px 0 rgba(255,255,255,0.06);
+  border-top: 2px solid #666;
 }
 
 .rb-panel__header {
@@ -253,10 +323,10 @@ pre {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: linear-gradient(145deg, #666, #333);
+  background: conic-gradient(from 180deg, #444 0%, #777 25%, #aaa 50%, #777 75%, #444 100%);
   box-shadow:
-    inset 0 1px 2px rgba(255,255,255,0.2),
-    0 1px 2px rgba(0,0,0,0.5);
+    inset 0 1px 2px rgba(255,255,255,0.25),
+    0 1px 3px rgba(0,0,0,0.6);
   position: relative;
 }
 
@@ -264,7 +334,7 @@ pre {
 .rb-screw::after {
   content: '';
   position: absolute;
-  background: #222;
+  background: #1a1a1a;
   border-radius: 1px;
 }
 
@@ -288,6 +358,23 @@ pre {
   transform: translateX(-50%) rotate(45deg);
 }
 
+/* Screw sizing variants */
+.rb-screw--sm {
+  width: 10px;
+  height: 10px;
+}
+
+.rb-screw--sm::before { height: 1.5px; }
+.rb-screw--sm::after { width: 1.5px; }
+
+.rb-screw--lg {
+  width: 18px;
+  height: 18px;
+}
+
+.rb-screw--lg::before { height: 2.5px; }
+.rb-screw--lg::after { width: 2.5px; }
+
 /* Screw positioning helpers */
 .rb-screw--tl { position: absolute; top: 0.75rem; left: 0.75rem; z-index: 5; }
 .rb-screw--tr { position: absolute; top: 0.75rem; right: 0.75rem; z-index: 5; }
@@ -297,6 +384,12 @@ pre {
 .rb-chassis {
   position: relative;
   padding: 1.5rem 2rem;
+  background: linear-gradient(180deg, #1a1a1a 0%, #141414 100%);
+  border: 2px solid #111;
+  border-radius: 8px;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.8),
+    inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
 /* ============================================================
@@ -518,6 +611,27 @@ pre {
 .rb-led--offline .rb-led__dot {
   background: var(--rb-red-dim);
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+  animation: rb-pulse-red-slow 3s ease-in-out infinite;
+}
+
+.rb-led--dim .rb-led__dot {
+  opacity: 0.5;
+}
+
+.rb-led--fast .rb-led__dot {
+  animation-duration: 0.8s;
+}
+
+.rb-led--flicker .rb-led__dot {
+  animation: rb-flicker-amber 1.5s steps(8, end) infinite;
+}
+
+.rb-led--flicker-green .rb-led__dot {
+  animation: rb-flicker-green 1.5s steps(8, end) infinite;
+}
+
+.rb-led__label {
+  color: inherit;
 }
 
 @keyframes rb-pulse-green {
@@ -528,6 +642,33 @@ pre {
 @keyframes rb-pulse-amber {
   0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--rb-amber-glow), 0 0 12px var(--rb-amber-glow); }
   50% { opacity: 0.7; box-shadow: 0 0 2px var(--rb-amber-glow), 0 0 4px var(--rb-amber-glow); }
+}
+
+@keyframes rb-pulse-red-slow {
+  0%, 100% { opacity: 0.6; box-shadow: inset 0 1px 2px rgba(0,0,0,0.3); }
+  50% { opacity: 1; box-shadow: 0 0 4px var(--rb-red-glow), inset 0 1px 2px rgba(0,0,0,0.3); }
+}
+
+@keyframes rb-flicker-amber {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 6px var(--rb-amber-glow), 0 0 12px var(--rb-amber-glow);
+  }
+  20%, 24%, 55% {
+    opacity: 0.4;
+    box-shadow: 0 0 2px var(--rb-amber-glow);
+  }
+}
+
+@keyframes rb-flicker-green {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 6px var(--rb-green-glow), 0 0 12px var(--rb-green-glow);
+  }
+  20%, 24%, 55% {
+    opacity: 0.4;
+    box-shadow: 0 0 2px var(--rb-green-glow);
+  }
 }
 
 /* ============================================================
@@ -610,6 +751,7 @@ pre {
   text-decoration: none;
   color: #fff;
   padding: 0.5em 1.1em;
+  min-height: 36px;
   background: linear-gradient(180deg, #d42040 0%, #a0182e 60%, #8a1525 100%);
   border: 1px solid var(--rb-red-dim);
   border-bottom: 3px solid #600a18;
@@ -632,11 +774,14 @@ pre {
 }
 
 .rb-pattern-btn:hover,
-.rb-btn-pattern:hover {
+.rb-pattern-btn:focus-visible,
+.rb-btn-pattern:hover,
+.rb-btn-pattern:focus-visible {
   background: linear-gradient(180deg, #e82548 0%, #b81e34 60%, #9a1a2c 100%);
   box-shadow: 0 0 12px var(--rb-red-glow), 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
   transform: translateY(-1px);
   color: #fff;
+  outline: none;
 }
 
 .rb-pattern-btn:active,
@@ -658,6 +803,7 @@ pre {
   text-decoration: none;
   color: #fff;
   padding: 0.5em 1.1em;
+  min-height: 36px;
   background: linear-gradient(180deg, #339958 0%, #236e3e 60%, #1a5230 100%);
   border: 1px solid var(--rb-green-dim);
   border-bottom: 3px solid #0d3020;
@@ -680,11 +826,14 @@ pre {
 }
 
 .rb-mix-btn:hover,
-.rb-btn-mix:hover {
+.rb-mix-btn:focus-visible,
+.rb-btn-mix:hover,
+.rb-btn-mix:focus-visible {
   background: linear-gradient(180deg, #3dba66 0%, #2d8a4e 60%, #1e6038 100%);
   box-shadow: 0 0 14px var(--rb-green-glow), 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
   transform: translateY(-1px);
   color: #fff;
+  outline: none;
 }
 
 .rb-mix-btn:active,
@@ -706,8 +855,8 @@ pre {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   font-family: var(--rb-font-display);
   font-size: 1rem;
   text-decoration: none;
@@ -722,17 +871,22 @@ pre {
 }
 
 .rb-transport-btn:hover,
-.rb-btn-transport:hover {
+.rb-transport-btn:focus-visible,
+.rb-btn-transport:hover,
+.rb-btn-transport:focus-visible {
   color: var(--rb-amber);
   border-color: var(--rb-amber-dim);
   box-shadow: 0 0 8px var(--rb-amber-glow), inset 0 1px 0 rgba(255,255,255,0.1);
+  outline: none;
 }
 
 .rb-transport-btn--play { color: var(--rb-green); }
-.rb-transport-btn--play:hover { color: var(--rb-green-bright); box-shadow: 0 0 8px var(--rb-green-glow); }
+.rb-transport-btn--play:hover,
+.rb-transport-btn--play:focus-visible { color: var(--rb-green-bright); box-shadow: 0 0 8px var(--rb-green-glow); }
 
 .rb-transport-btn--rec { color: var(--rb-red); }
-.rb-transport-btn--rec:hover { color: #ff4060; box-shadow: 0 0 8px var(--rb-red-glow); }
+.rb-transport-btn--rec:hover,
+.rb-transport-btn--rec:focus-visible { color: #ff4060; box-shadow: 0 0 8px var(--rb-red-glow); }
 
 /* ============================================================
    8. STEP SEQUENCER
@@ -746,6 +900,8 @@ pre {
 
 .rb-step-btn {
   aspect-ratio: 1;
+  min-width: 28px;
+  min-height: 28px;
   border: 1px solid var(--rb-border);
   border-radius: 2px;
   background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
@@ -954,10 +1110,10 @@ pre {
    ============================================================ */
 .rb-terminal {
   background: linear-gradient(180deg, #1a1a1a 0%, #141414 100%);
-  border: 1px solid #111;
+  border: 1px solid var(--rb-border);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.03);
 }
 
 .rb-terminal__bar {
@@ -1160,7 +1316,7 @@ pre {
   padding: 1.25rem;
 }
 
-@media (min-width: 800px) {
+@media (min-width: 768px) {
   .hero-body {
     grid-template-columns: 1fr 1fr;
   }
@@ -1188,10 +1344,12 @@ pre {
   gap: 1rem;
   padding: 0.5rem 0.75rem;
   background: linear-gradient(180deg, #262626, #1e1e1e);
-  border: 1px solid #111;
+  border: 1px solid var(--rb-border);
+  border-bottom: 1px solid #111;
   border-radius: 6px 6px 0 0;
   margin-bottom: 2px;
   flex-wrap: wrap;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
 .instrument-strip__screws {
@@ -1262,9 +1420,15 @@ pre {
   border-radius: 50%;
   background: conic-gradient(from 180deg, #333 0%, #555 25%, #777 50%, #555 75%, #333 100%);
   box-shadow:
-    0 2px 4px rgba(0,0,0,0.5),
-    inset 0 1px 2px rgba(255,255,255,0.1);
+    0 2px 6px rgba(0,0,0,0.6),
+    inset 0 1px 3px rgba(255,255,255,0.12),
+    inset 0 -1px 2px rgba(0,0,0,0.3);
   position: relative;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.rb-knob:hover .rb-knob__dial {
+  transform: rotate(15deg);
 }
 
 .rb-knob__dial::after {
@@ -1277,7 +1441,7 @@ pre {
   height: 35%;
   background: var(--rb-amber);
   border-radius: 2px;
-  box-shadow: 0 0 4px var(--rb-amber-glow);
+  box-shadow: 0 0 4px var(--rb-amber-glow), 0 0 8px rgba(255,176,0,0.2);
 }
 
 .rb-knob__label {
@@ -1385,7 +1549,7 @@ pre {
   gap: 1rem;
 }
 
-@media (min-width: 800px) {
+@media (min-width: 768px) {
   .about-row {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -1538,7 +1702,407 @@ pre {
 }
 
 /* ============================================================
-   14. ANIMATIONS
+   14. RACKMOUNT 303 SYSTEM
+   ============================================================ */
+
+/* Base rackmount panel — heavy industrial chassis feel */
+.rb-rack {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 6%),
+    linear-gradient(180deg, #2a2a2a 0%, #1e1e1e 40%, #181818 100%);
+  border: 1px solid #2a2a2a;
+  border-top: 2px solid #555;
+  border-bottom: 2px solid #0d0d0d;
+  border-radius: 6px;
+  box-shadow:
+    /* outer deep shadow */
+    0 10px 40px rgba(0,0,0,0.75),
+    0 4px 12px rgba(0,0,0,0.55),
+    /* top metallic highlight */
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    /* inner side shadows for depth */
+    inset 0 -3px 10px rgba(0,0,0,0.4),
+    inset 3px 0 8px rgba(0,0,0,0.15),
+    inset -3px 0 8px rgba(0,0,0,0.15);
+  overflow: hidden;
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 220ms ease,
+              border-color 220ms ease;
+}
+
+.rb-rack:hover {
+  border-color: #3a3a3a;
+  border-top-color: #666;
+  box-shadow:
+    0 14px 48px rgba(0,0,0,0.8),
+    0 6px 16px rgba(0,0,0,0.6),
+    0 0 28px rgba(0, 229, 255, 0.08),
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    inset 0 -3px 10px rgba(0,0,0,0.45),
+    inset 3px 0 8px rgba(0,0,0,0.2),
+    inset -3px 0 8px rgba(0,0,0,0.2);
+  transform: translateY(-3px);
+}
+
+/* Inner bezel ring */
+.rb-rack::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Cyan circuit accent line */
+.rb-rack::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--rb-cyan-dim) 20%,
+    var(--rb-cyan) 50%,
+    var(--rb-cyan-dim) 80%,
+    transparent 100%
+  );
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.rb-rack:hover::after {
+  opacity: 0.5;
+}
+
+/* Rack module variant — 303 bassline style */
+.rb-rack--module {
+  border-left: 3px solid var(--rb-cyan-dim);
+  border-top: 2px solid #555;
+}
+
+.rb-rack--module::after {
+  background: linear-gradient(90deg,
+    var(--rb-cyan-dim) 0%,
+    var(--rb-cyan) 30%,
+    transparent 60%
+  );
+  opacity: 0.3;
+}
+
+/* Heavy chassis variant */
+.rb-rack--chassis {
+  border: 2px solid #111;
+  border-top: 2px solid #444;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 8%),
+    linear-gradient(180deg, #1c1c1c 0%, #131313 100%);
+  box-shadow:
+    0 14px 48px rgba(0,0,0,0.85),
+    0 6px 16px rgba(0,0,0,0.65),
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 -4px 12px rgba(0,0,0,0.5),
+    inset 4px 0 10px rgba(0,0,0,0.2),
+    inset -4px 0 10px rgba(0,0,0,0.2);
+}
+
+.rb-rack--chassis:hover {
+  border-color: #1a1a1a;
+  border-top-color: #555;
+  box-shadow:
+    0 18px 56px rgba(0,0,0,0.9),
+    0 8px 20px rgba(0,0,0,0.7),
+    0 0 32px rgba(0, 229, 255, 0.1),
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    inset 0 -4px 12px rgba(0,0,0,0.55),
+    inset 4px 0 10px rgba(0,0,0,0.25),
+    inset -4px 0 10px rgba(0,0,0,0.25);
+}
+
+/* Rack ears (inset side mounting tabs) */
+.rb-rack__ear {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 50px;
+  background: linear-gradient(180deg, #3a3a3a 0%, #222 100%);
+  border: 1px solid #222;
+  z-index: 0;
+}
+
+.rb-rack__ear--left {
+  left: 3px;
+  border-radius: 0 2px 2px 0;
+  border-left: none;
+}
+
+.rb-rack__ear--right {
+  right: 3px;
+  border-radius: 2px 0 0 2px;
+  border-right: none;
+}
+
+.rb-rack__ear::before,
+.rb-rack__ear::after {
+  content: '';
+  position: absolute;
+  left: 1px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #111;
+  border: 1px solid #444;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
+}
+
+.rb-rack__ear::before { top: 6px; }
+.rb-rack__ear::after  { bottom: 6px; }
+
+/* Ventilation grill pattern */
+.rb-vent {
+  position: relative;
+  overflow: hidden;
+}
+
+.rb-vent::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.25) 3px,
+    rgba(0,0,0,0.25) 5px
+  );
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 1;
+}
+
+.rb-vent::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 8px,
+    rgba(0,0,0,0.15) 8px,
+    rgba(0,0,0,0.15) 9px
+  );
+  pointer-events: none;
+  opacity: 0.4;
+  z-index: 1;
+}
+
+/* Hex-head screw variant */
+.rb-screw--hex {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background: conic-gradient(from 180deg, #555 0%, #888 25%, #bbb 50%, #888 75%, #555 100%);
+  box-shadow:
+    inset 0 1px 2px rgba(255,255,255,0.3),
+    0 2px 4px rgba(0,0,0,0.7);
+}
+
+.rb-screw--hex::before {
+  width: 50%; height: 2.5px;
+  left: 25%;
+}
+
+.rb-screw--hex::after {
+  width: 2.5px; height: 50%;
+  top: 25%;
+}
+
+.rb-screw--hex.rb-screw--lg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Cyan/acid glow accent utilities */
+.rb-glow-cyan {
+  box-shadow: 0 0 12px var(--rb-cyan-glow), 0 0 24px rgba(0,229,255,0.15);
+}
+
+.rb-glow-acid {
+  box-shadow: 0 0 12px var(--rb-acid-glow), 0 0 24px rgba(204,255,0,0.12);
+}
+
+/* Rackmount header — machined metal strip */
+.rb-rack__header {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 3%),
+    linear-gradient(180deg, #363636 0%, #2a2a2a 50%, #222 100%);
+  border-bottom: 1px solid #111;
+  padding: 0.7em 1.2em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+  position: relative;
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,0.03);
+}
+
+.rb-rack__header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--rb-cyan-dim), transparent);
+  opacity: 0.4;
+}
+
+/* Rackmount body */
+.rb-rack__body {
+  padding: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Enhanced card rackmount style */
+.rb-card-rack {
+  background:
+    linear-gradient(160deg, rgba(255,255,255,0.03) 0%, transparent 20%),
+    linear-gradient(160deg, #2a2a2a 0%, #1e1e1e 100%);
+  border: 1px solid #333;
+  border-top: 2px solid #555;
+  border-bottom: 2px solid #1a1a1a;
+  border-radius: 6px;
+  box-shadow:
+    0 6px 24px rgba(0,0,0,0.65),
+    0 2px 6px rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    inset 0 -2px 6px rgba(0,0,0,0.3);
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 200ms ease,
+              border-color 200ms ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.rb-card-rack::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,229,255,0.3), transparent);
+  opacity: 0.3;
+}
+
+.rb-card-rack:hover {
+  border-color: #444;
+  border-top-color: #777;
+  box-shadow:
+    0 10px 32px rgba(0,0,0,0.7),
+    0 4px 10px rgba(0,0,0,0.5),
+    0 0 20px rgba(0, 229, 255, 0.08),
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    inset 0 -2px 6px rgba(0,0,0,0.35);
+  transform: translateY(-3px);
+}
+
+/* Collection section rackmount variant */
+.collection-section.rb-rack-variant {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 6%),
+    linear-gradient(180deg, #2c2c2c 0%, #222 40%, #1a1a1a 100%);
+  border: 1px solid #333;
+  border-top: 2px solid #555;
+  border-bottom: 2px solid #111;
+  box-shadow:
+    0 8px 28px rgba(0,0,0,0.65),
+    0 3px 8px rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.07),
+    inset 0 -2px 8px rgba(0,0,0,0.3);
+}
+
+.collection-section.rb-rack-variant:hover {
+  border-color: #444;
+  border-top-color: #666;
+  box-shadow:
+    0 12px 36px rgba(0,0,0,0.7),
+    0 5px 12px rgba(0,0,0,0.5),
+    0 0 24px rgba(0, 229, 255, 0.07),
+    inset 0 1px 0 rgba(255,255,255,0.09),
+    inset 0 -2px 8px rgba(0,0,0,0.35);
+}
+
+.collection-section.rb-rack-variant .section-header {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 3%),
+    linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+  border-bottom: 1px solid #111;
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,0.02);
+}
+
+/* Mod card rackmount variant */
+.mod-card.rb-rack-variant {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 8%),
+    linear-gradient(180deg, #2c2c2c 0%, #242424 50%, #1a1a1a 100%);
+  border: 1px solid #333;
+  border-top: 2px solid #555;
+  border-bottom: 2px solid #111;
+  box-shadow:
+    0 6px 24px rgba(0,0,0,0.65),
+    0 2px 6px rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    inset 0 -2px 6px rgba(0,0,0,0.3);
+}
+
+.mod-card.rb-rack-variant:hover {
+  border-color: #444;
+  border-top-color: #777;
+  box-shadow:
+    0 10px 32px rgba(0,0,0,0.7),
+    0 0 20px rgba(0, 229, 255, 0.1),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+/* Acid-green variant accent for specific modules */
+.rb-rack--acid {
+  border-left: 3px solid var(--rb-acid-dim);
+}
+
+.rb-rack--acid::after {
+  background: linear-gradient(90deg,
+    var(--rb-acid-dim) 0%,
+    var(--rb-acid) 30%,
+    transparent 60%
+  );
+  opacity: 0.25;
+}
+
+.rb-rack--acid:hover {
+  box-shadow:
+    0 14px 48px rgba(0,0,0,0.8),
+    0 6px 16px rgba(0,0,0,0.6),
+    0 0 28px rgba(204, 255, 0, 0.08),
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    inset 0 -3px 10px rgba(0,0,0,0.45);
+}
+
+/* Responsive rackmount */
+@media (max-width: 767px) {
+  .rb-rack__ear { display: none; }
+  .rb-rack { border-radius: 5px; }
+  .rb-rack__body { padding: 1rem; }
+}
+
+/* ============================================================
+   15. ANIMATIONS
    ============================================================ */
 @keyframes rb-panel-in {
   from {
@@ -1551,17 +2115,17 @@ pre {
   }
 }
 
-.rb-panel {
+.rb-panel--animate {
   animation: rb-panel-in 0.5s ease-out both;
 }
 
-.rb-panel:nth-child(1) { animation-delay: 0.05s; }
-.rb-panel:nth-child(2) { animation-delay: 0.1s; }
-.rb-panel:nth-child(3) { animation-delay: 0.15s; }
-.rb-panel:nth-child(4) { animation-delay: 0.2s; }
-.rb-panel:nth-child(5) { animation-delay: 0.25s; }
-.rb-panel:nth-child(6) { animation-delay: 0.3s; }
-.rb-panel:nth-child(7) { animation-delay: 0.35s; }
+.rb-panel--animate:nth-child(1) { animation-delay: 0.05s; }
+.rb-panel--animate:nth-child(2) { animation-delay: 0.1s; }
+.rb-panel--animate:nth-child(3) { animation-delay: 0.15s; }
+.rb-panel--animate:nth-child(4) { animation-delay: 0.2s; }
+.rb-panel--animate:nth-child(5) { animation-delay: 0.25s; }
+.rb-panel--animate:nth-child(6) { animation-delay: 0.3s; }
+.rb-panel--animate:nth-child(7) { animation-delay: 0.35s; }
 
 /* ============================================================
    15. RESPONSIVE
@@ -1661,6 +2225,80 @@ pre {
   .action-btns {
     justify-content: center;
   }
+
+  /* Knob row: smaller dials on mobile */
+  .rb-knob__dial {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Instrument strip: full column layout */
+  .instrument-strip {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .instrument-strip__screws--right {
+    margin-left: 0;
+  }
+
+  .rb-transport {
+    justify-content: center;
+  }
+
+  /* Player responsive */
+  .player-status-row {
+    justify-content: center;
+  }
+
+  .player-led {
+    margin-left: 0;
+  }
+
+  .player-stepbar {
+    gap: 0.25rem;
+    padding: 0.35rem;
+  }
+
+  .step-dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  /* Collection card: larger tap targets */
+  .folder-item {
+    padding: 0.75rem 1rem;
+    min-height: 44px;
+  }
+
+  /* Archive table: horizontal scroll wrapper */
+  .list-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .archive-table {
+    min-width: 520px;
+  }
+
+  /* Sequencer labels: slightly smaller */
+  .seq-row__label {
+    width: 2.5rem;
+    font-size: 0.55rem;
+  }
+
+  /* Hero title sizing */
+  .master-title__main {
+    font-size: clamp(1.6rem, 6vw, 2.8rem);
+  }
+
+  /* Search input: full width on tiny screens */
+  .rb-search-input {
+    min-width: 0;
+    width: 100%;
+  }
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
@@ -1670,6 +2308,10 @@ pre {
 
   .about-row {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hero-body {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -1701,35 +2343,191 @@ pre {
 }
 
 /* ============================================================
-   17. RACK MODULE LEGACY
+   17. RACK MODULE LEGACY (unified with rb-panel)
    ============================================================ */
-.rb-module {
+.rb-module,
+.rb-panel {
   background: linear-gradient(180deg, #2e2e2e 0%, #252525 100%);
   border: 1px solid var(--rb-border);
   border-top: 2px solid var(--rb-border-hi);
-  border-radius: 6px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+  border-radius: 8px;
+  box-shadow:
+    0 4px 24px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.04);
   overflow: hidden;
+  position: relative;
 }
 
-.rb-module__header {
+.rb-module__header,
+.rb-panel__header {
   background: linear-gradient(180deg, #333 0%, #2a2a2a 100%);
   border-bottom: 1px solid #111;
-  padding: 0.5em 1em;
+  padding: 0.6em 1em;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.5em;
 }
 
-.rb-module__title {
+.rb-module__title,
+.rb-panel__title {
   font-family: var(--rb-font-display);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--rb-silver-dim);
 }
 
-.rb-module__body {
-  padding: 1rem;
+.rb-module__body,
+.rb-panel__body {
+  padding: 1.25rem;
+}
+
+/* Hero panel is now an alias of rb-panel */
+.hero-panel {
+  background: linear-gradient(180deg, #2e2e2e 0%, #252525 100%);
+  border: 1px solid var(--rb-border);
+  border-top: 2px solid var(--rb-border-hi);
+  border-radius: 8px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+  overflow: hidden;
+}
+
+
+/* ============================================================
+   18. UTILITY CLASSES — shared by component library
+   ============================================================ */
+
+/* Panel layout utilities */
+.rb-panel--center-header .rb-panel__header {
+  justify-content: center;
+}
+
+.rb-panel--padded-body .rb-panel__body {
+  padding: 1.5rem 1rem;
+}
+
+.rb-panel--clean-header .rb-panel__header {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 0.5rem;
+}
+
+.rb-panel--clean-header .rb-screw {
+  position: static;
+}
+
+.rb-screw--static {
+  position: static;
+}
+
+/* Search input (shared across archive pages) */
+.rb-search-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.5em 0.8em;
+  background: #111;
+  border: 1px solid #3a3a3a;
+  border-radius: 3px;
+  color: var(--rb-silver);
+  font-family: var(--rb-font-display);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.rb-search-input:focus {
+  border-color: var(--rb-amber);
+  box-shadow: 0 0 0 2px rgba(255, 176, 0, 0.15);
+}
+
+.rb-search-input::placeholder {
+  color: #555;
+}
+
+/* Quick filter buttons (songs page) */
+.rb-filter-btn {
+  font-family: var(--rb-font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.35em 0.75em;
+  min-height: 36px;
+  min-width: 44px;
+  background: linear-gradient(180deg, #363636 0%, #282828 100%);
+  border: 1px solid var(--rb-border);
+  border-bottom: 2px solid #111;
+  border-radius: 3px;
+  color: var(--rb-silver-dim);
+  cursor: pointer;
+  transition: all 120ms ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.rb-filter-btn:hover {
+  border-color: var(--rb-amber-dim);
+  color: var(--rb-amber);
+}
+
+.rb-filter-btn.active {
+  background: linear-gradient(180deg, #3a3a2a 0%, #2a2a1a 100%);
+  border-color: var(--rb-amber-dim);
+  color: var(--rb-amber);
+  box-shadow: 0 0 8px rgba(255, 176, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.rb-filter-btn:focus-visible {
+  outline: none;
+  border-color: var(--rb-amber);
+  box-shadow: 0 0 0 2px rgba(255, 176, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: var(--rb-amber);
+}
+
+/* Tag filter buttons (mods page) */
+.rb-tag-filter {
+  padding: 0.4em 0.8em;
+  min-height: 36px;
+  min-width: 44px;
+  background: transparent;
+  border: 1px solid var(--rb-border);
+  border-radius: 3px;
+  color: var(--rb-silver-dim);
+  font-family: var(--rb-font-display);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.rb-tag-filter:hover {
+  border-color: var(--rb-amber);
+  color: var(--rb-amber);
+}
+
+.rb-tag-filter.active {
+  background: rgba(255, 176, 0, 0.15);
+  border-color: var(--rb-amber);
+  color: var(--rb-amber);
+}
+
+/* Empty state utilities */
+.rb-empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-family: var(--rb-font-display);
+}
+
+.rb-table-empty {
+  text-align: center;
+  color: #666;
+  padding: 2rem;
+  font-family: var(--rb-font-display);
+}
+
+/* Visibility utilities */
+.is-hidden {
+  display: none !important;
 }

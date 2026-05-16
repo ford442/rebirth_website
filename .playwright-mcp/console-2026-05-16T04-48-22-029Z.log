@@ -1,0 +1,37 @@
+[     864ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/node_modules/.vite/deps/chunk-2MPRXHHW.js?v=cc878b04:20102
+[    1391ms] [WARNING] using deprecated parameters for the initialization function; pass a single object instead @ http://localhost:3000/node_modules/.vite/deps/@dimforge_rapier3d-compat.js?v=cc878b04:2518
+[    1457ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/favicon.ico:0
+[    1877ms] [WARNING] [.WebGL-0xd9c023b9000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ http://localhost:3000/archive/mods/:0
+[    1926ms] [WARNING] [.WebGL-0xd9c023b9000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ http://localhost:3000/archive/mods/:0
+[    1955ms] [WARNING] [.WebGL-0xd9c023b9000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ http://localhost:3000/archive/mods/:0
+[    2043ms] [WARNING] using deprecated parameters for the initialization function; pass a single object instead @ http://localhost:3000/node_modules/.vite/deps/chunk-UJK3BQQO.js?v=cc878b04:2516
+[    2046ms] [WARNING] [.WebGL-0xd9c023b9000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat) @ http://localhost:3000/archive/mods/:0
+[    2359ms] [ERROR] [Global Error Handler] {message: Uncaught Error: Could not load ./Rock031_1K-JPG_Color.jpg: undefined, source: http://localhost:3000/node_modules/.vite/deps/chunk-55OMOSV4.js?v=cc878b04, lineno: 13297, colno: 38, error: Error: Could not load ./Rock031_1K-JPG_Color.jpg: undefined
+    at http://localhost:3000/node_modul…} @ http://localhost:3000/src/index.tsx?t=1778901796979:5
+[    2366ms] Error: Could not load ./Rock031_1K-JPG_Color.jpg: undefined
+    at http://localhost:3000/node_modules/.vite/deps/chunk-55OMOSV4.js?v=cc878b04:13297:38
+    at HTMLImageElement.onImageError (http://localhost:3000/node_modules/.vite/deps/chunk-NAPKAS2G.js?v=cc878b04:26199:20)
+[    2375ms] [ERROR] [ErrorBoundary] Error caught: Error: Could not load ./Rock031_1K-JPG_Color.jpg: undefined
+    at http://localhost:3000/node_modules/.vite/deps/chunk-55OMOSV4.js?v=cc878b04:13297:38
+    at HTMLImageElement.onImageError (http://localhost:3000/node_modules/.vite/deps/chunk-NAPKAS2G.js?v=cc878b04:26199:20) @ http://localhost:3000/src/components/ErrorBoundary.tsx:12
+[    2378ms] [ERROR] [ErrorBoundary] Error caught: Error: Could not load ./Rock031_1K-JPG_Color.jpg: undefined
+    at http://localhost:3000/node_modules/.vite/deps/chunk-55OMOSV4.js?v=cc878b04:13297:38
+    at HTMLImageElement.onImageError (http://localhost:3000/node_modules/.vite/deps/chunk-NAPKAS2G.js?v=cc878b04:26199:20) @ http://localhost:3000/src/components/ErrorBoundary.tsx:12
+[    2382ms] [ERROR] %o
+
+%s
+
+%s
+ Error: Could not load ./Rock031_1K-JPG_Color.jpg: undefined
+    at http://localhost:3000/node_modules/.vite/deps/chunk-55OMOSV4.js?v=cc878b04:13297:38
+    at HTMLImageElement.onImageError (http://localhost:3000/node_modules/.vite/deps/chunk-NAPKAS2G.js?v=cc878b04:26199:20) The above error occurred in the <CanvasImpl> component. React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary. @ http://localhost:3000/node_modules/.vite/deps/chunk-2MPRXHHW.js?v=cc878b04:7000
+[    2382ms] [ERROR] [ErrorBoundary] Component stack: 
+    at CanvasImpl (http://localhost:3000/node_modules/.vite/deps/chunk-55OMOSV4.js?v=cc878b04:14414:3)
+    at m (http://localhost:3000/node_modules/.vite/deps/chunk-55OMOSV4.js?v=cc878b04:12326:9)
+    at Canvas (<anonymous>)
+    at ErrorBoundary (http://localhost:3000/src/components/ErrorBoundary.tsx:5:5)
+    at App (http://localhost:3000/src/App.tsx?t=1778901796979:32:29) @ http://localhost:3000/src/components/ErrorBoundary.tsx:20
+[    2382ms] [ERROR] [ErrorBoundary] Error details: Error: Could not load ./Rock031_1K-JPG_Color.jpg: undefined
+    at http://localhost:3000/node_modules/.vite/deps/chunk-55OMOSV4.js?v=cc878b04:13297:38
+    at HTMLImageElement.onImageError (http://localhost:3000/node_modules/.vite/deps/chunk-NAPKAS2G.js?v=cc878b04:26199:20) @ http://localhost:3000/src/components/ErrorBoundary.tsx:21
+[    2920ms] [LOG] THREE.WebGLRenderer: Context Lost. @ http://localhost:3000/node_modules/.vite/deps/chunk-NAPKAS2G.js?v=cc878b04:17742

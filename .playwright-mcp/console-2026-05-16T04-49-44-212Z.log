@@ -1,0 +1,3 @@
+[      70ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:3001/rb338/_assets/mods@_@astro.Bh-PjW7t.css:0
+[      70ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:3001/rb338/styles/rebirth-theme.css:0
+[     173ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:3001/favicon.ico:0

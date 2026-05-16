@@ -1,29 +1,91 @@
 ---
 // CollectionCard.astro — reusable card for displaying collection sections
-export interface Props {
-  /** Section object with name and folders */
-  section: {
-    name: string;
-    folders: Array<{
-      name: string;
-      path: string;
-    }>;
-  };
-  /** Base URL for the archive */
-  archiveUrl: string;
+import ScrewCorners from './ui/ScrewCorners.astro';
+import Led from './ui/Led.astro';
+
+export interface CollectionFolder {
+  name: string;
+  path: string;
+  count?: number;
 }
 
-const { section, archiveUrl } = Astro.props;
+export interface CollectionSection {
+  name: string;
+  folders: CollectionFolder[];
+  isActive?: boolean;
+}
+
+export interface CollectionMeta {
+  description?: string;
+  tags?: string[];
+  curator?: string;
+  lastUpdated?: string;
+  totalItems?: number;
+}
+
+export interface Props {
+  /** Section object with name and folders */
+  section: CollectionSection;
+  /** Optional metadata for richer display */
+  meta?: CollectionMeta;
+  /** Base URL for the archive */
+  archiveUrl: string;
+  /** Apply rackmount hardware styling */
+  rackmount?: boolean;
+}
+
+const { section, meta, archiveUrl, rackmount = false } = Astro.props;
+const isActive = section.isActive ?? true;
+const folderCount = section.folders.length;
+const itemTotal = meta?.totalItems ?? section.folders.reduce((sum, f) => sum + (f.count ?? 0), 0);
 ---
 
-<div class="collection-section">
-  <div class="section-header">{section.name}</div>
+<div class={`collection-section ${rackmount ? 'rb-rack-variant' : ''}`} role="region" aria-label={`${section.name} collection`}>
+  <ScrewCorners cross />
+
+  <div class="section-header">
+    <span class="section-title">{section.name}</span>
+    <Led
+      status={isActive ? 'online' : 'offline'}
+      label={`${folderCount} ${folderCount === 1 ? 'FOLDER' : 'FOLDERS'}`}
+      ariaHidden={true}
+    />
+  </div>
+
+  {meta && (
+    <div class="section-meta">
+      {meta.description && <p class="meta-desc">{meta.description}</p>}
+      <div class="meta-row">
+        {meta.tags && meta.tags.length > 0 && (
+          <div class="meta-tags" aria-label="Collection tags">
+            {meta.tags.map(tag => (
+              <span class="meta-tag">{tag}</span>
+            ))}
+          </div>
+        )}
+        <span class="meta-stats" aria-label="Collection stats">
+          {itemTotal > 0 && <span class="meta-stat">{itemTotal} items</span>}
+          {meta.curator && <span class="meta-stat">Curator: {meta.curator}</span>}
+          {meta.lastUpdated && <span class="meta-stat">Updated: {meta.lastUpdated}</span>}
+        </span>
+      </div>
+    </div>
+  )}
+
   <div class="folder-list">
     {section.folders.map(folder => (
-      <a href={`${archiveUrl}/${folder.path}`} target="_blank" class="folder-item">
-        <span class="folder-icon">📁</span>
+      <a
+        href={`${archiveUrl}/${folder.path}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="folder-item"
+      >
+        <span class="folder-icon" aria-hidden="true">📁</span>
         <span class="folder-name">{folder.name}</span>
-        <span class="external-link">↗</span>
+        {typeof folder.count === 'number' && folder.count > 0 && (
+          <span class="folder-count-badge">{folder.count} files</span>
+        )}
+        <span class="external-link" aria-hidden="true">↗</span>
       </a>
     ))}
   </div>
@@ -33,17 +95,30 @@ const { section, archiveUrl } = Astro.props;
   .collection-section {
     background: linear-gradient(180deg, #2e2e2e 0%, #252525 100%);
     padding: 0;
-    border-radius: 6px;
+    border-radius: 8px;
     overflow: hidden;
     border: 1px solid #3a3a3a;
     border-top: 2px solid #555;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
-    transition: border-color 120ms ease, box-shadow 120ms ease;
+    box-shadow:
+      0 4px 16px rgba(0,0,0,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.04),
+      inset 0 -1px 0 rgba(0,0,0,0.2);
+    transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 180ms ease,
+                border-color 180ms ease;
+    position: relative;
+    will-change: transform;
   }
 
   .collection-section:hover {
-    border-color: #ffb000;
-    box-shadow: 0 0 16px rgba(0,0,0,0.5), 0 0 10px rgba(255,176,0,0.15);
+    border-color: #4a4a4a;
+    border-top-color: #666;
+    box-shadow:
+      0 8px 28px rgba(0,0,0,0.65),
+      0 0 10px rgba(255,176,0,0.08),
+      inset 0 1px 0 rgba(255,255,255,0.06),
+      inset 0 -1px 0 rgba(0,0,0,0.25);
+    transform: translateY(-2px);
   }
 
   .section-header {
@@ -51,16 +126,25 @@ const { section, archiveUrl } = Astro.props;
     border-bottom: 1px solid #111;
     color: #c0c0c0;
     padding: 0.6em 1em;
-    font-family: 'Courier New', Courier, monospace;
+    font-family: var(--rb-font-display, 'Courier New', Courier, monospace);
     font-size: 0.72rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 0.5em;
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
     gap: 0.5em;
   }
 
-  .section-header::before {
+  .section-title::before {
     content: '';
     display: inline-block;
     width: 7px;
@@ -71,9 +155,71 @@ const { section, archiveUrl } = Astro.props;
     flex-shrink: 0;
   }
 
+  /* Metadata strip */
+  .section-meta {
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid #2a2a2a;
+    background: rgba(0,0,0,0.15);
+  }
+
+  .meta-desc {
+    margin: 0 0 0.4rem;
+    font-size: 0.8rem;
+    color: #888;
+    line-height: 1.5;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: space-between;
+  }
+
+  .meta-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .meta-tag {
+    font-family: var(--rb-font-display, 'Courier New', Courier, monospace);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 5px;
+    border-radius: 2px;
+    background: rgba(255, 176, 0, 0.08);
+    color: var(--rb-amber-dim, #b37800);
+    border: 1px solid rgba(255, 176, 0, 0.15);
+  }
+
+  .meta-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-family: var(--rb-font-display, 'Courier New', Courier, monospace);
+    font-size: 0.65rem;
+    color: #666;
+    letter-spacing: 0.05em;
+  }
+
+  .meta-stat {
+    white-space: nowrap;
+  }
+
+  .meta-stat:not(:last-child)::after {
+    content: '•';
+    margin-left: 0.5rem;
+    color: #444;
+  }
+
   .folder-list {
     display: flex;
     flex-direction: column;
+    position: relative;
+    z-index: 1;
   }
 
   .folder-item {
@@ -83,12 +229,24 @@ const { section, archiveUrl } = Astro.props;
     align-items: center;
     gap: 0.6rem;
     cursor: pointer;
-    transition: background-color 120ms ease;
+    transition: background-color 120ms ease, color 120ms ease;
     text-decoration: none;
     color: #888;
-    font-family: 'Courier New', Courier, monospace;
+    font-family: var(--rb-font-display, 'Courier New', Courier, monospace);
     font-size: 0.8rem;
     letter-spacing: 0.05em;
+    position: relative;
+  }
+
+  .folder-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: transparent;
+    transition: background 120ms ease;
   }
 
   .folder-item:last-child {
@@ -96,35 +254,95 @@ const { section, archiveUrl } = Astro.props;
   }
 
   .folder-item:hover {
-    background-color: rgba(255, 176, 0, 0.06);
+    background-color: rgba(255, 176, 0, 0.05);
     color: #ffb000;
   }
 
-  .folder-item a {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    text-decoration: none;
-    color: inherit;
+  .folder-item:hover::before {
+    background: #ffb000;
+    box-shadow: 0 0 6px rgba(255,176,0,0.3);
+  }
+
+  .folder-item:active {
+    background-color: rgba(255, 176, 0, 0.08);
   }
 
   .folder-icon {
     font-size: 0.9em;
     opacity: 0.6;
+    flex-shrink: 0;
   }
 
   .folder-name {
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .folder-count-badge {
+    font-family: var(--rb-font-display, 'Courier New', Courier, monospace);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    background: rgba(57, 255, 20, 0.08);
+    color: var(--rb-green-bright, #3dba66);
+    border: 1px solid var(--rb-green-dim, #1a5230);
+    transition: background 120ms ease, border-color 120ms ease;
+  }
+
+  .folder-item:hover .folder-count-badge {
+    background: rgba(57, 255, 20, 0.14);
+    border-color: var(--rb-green, #39ff14);
   }
 
   .external-link {
     color: #555;
     font-size: 0.85em;
-    transition: color 120ms ease;
+    transition: color 120ms ease, transform 120ms ease;
+    flex-shrink: 0;
   }
 
   .folder-item:hover .external-link {
     color: #ffb000;
+    transform: translate(1px, -1px);
+  }
+
+  @media (max-width: 480px) {
+    .section-header {
+      padding: 0.75em 1em;
+    }
+
+    .folder-item {
+      padding: 0.75rem 1rem;
+      min-height: 44px;
+    }
+
+    .meta-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+
+    .meta-stats {
+      gap: 0.35rem;
+    }
+  }
+
+  /* Focus visible for accessibility */
+  .folder-item:focus-visible {
+    outline: none;
+    background-color: rgba(255, 176, 0, 0.06);
+    color: #ffb000;
+  }
+
+  .folder-item:focus-visible::before {
+    background: #ffb000;
+    box-shadow: 0 0 6px rgba(255,176,0,0.3);
   }
 </style>

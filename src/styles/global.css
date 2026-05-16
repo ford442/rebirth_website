@@ -49,28 +49,12 @@ html {
 }
 
 body {
-  background-color: var(--color-bg);
+  background-color: var(--rb-darkest, #111111);
   color: var(--color-text);
   font-family: var(--font-sans);
   font-size: var(--font-size-base);
   line-height: 1.6;
   min-height: 100dvh;
-}
-
-/* CRT scanline overlay */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.06) 2px,
-    rgba(0, 0, 0, 0.06) 4px
-  );
-  pointer-events: none;
-  z-index: 9999;
 }
 
 /* ── Typography ─────────────────────────────────────────────── */

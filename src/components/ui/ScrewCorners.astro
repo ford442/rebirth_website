@@ -1,0 +1,13 @@
+---
+import type { ScrewCornersProps } from './types';
+
+interface Props extends ScrewCornersProps {}
+
+const { cross = false } = Astro.props;
+const crossClass = cross ? 'cross' : '';
+---
+
+<span class={`rb-screw rb-screw--tl ${crossClass}`} aria-hidden="true"></span>
+<span class={`rb-screw rb-screw--tr ${crossClass}`} aria-hidden="true"></span>
+<span class={`rb-screw rb-screw--bl ${crossClass}`} aria-hidden="true"></span>
+<span class={`rb-screw rb-screw--br ${crossClass}`} aria-hidden="true"></span>

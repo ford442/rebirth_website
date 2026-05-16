@@ -1,0 +1,1998 @@
+{
+  "mods": [
+    {
+      "filename": "030microdot.rbm",
+      "size": "8.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "030microdot100.rbm",
+      "size": "8.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "5emedia_1.828.rbm",
+      "size": "5.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "5emedia_2.0.rbm",
+      "size": "5.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "5emedia_v1.83.rbm",
+      "size": "5.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "707&727.rbm",
+      "size": "1.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "7mbFunkbox_v1.2.rbm",
+      "size": "2.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "AFX_1.rbm",
+      "size": "542K",
+      "hasMeta": false
+    },
+    {
+      "filename": "AJUV2.rbm",
+      "size": "2.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "AlienBirth[a].rbm",
+      "size": "2.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "AloNaNbox 2.0.rbm",
+      "size": "1.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Alpha Jungle 2.rbm",
+      "size": "1.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Alpha2.rbm",
+      "size": "2.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Alpha3.rbm",
+      "size": "2.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Aluwerk.rbm",
+      "size": "3.2M",
+      "hasMeta": true,
+      "title": "Aluwerk",
+      "author": "Dr Bruno & Syrusate",
+      "tags": [
+        "industrial",
+        "metallic",
+        "concept"
+      ]
+    },
+    {
+      "filename": "AmberVision.rbm",
+      "size": "5.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "animalinhob2.rbm",
+      "size": "7.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Anokha.rbm",
+      "size": "2.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "AnokhaV2.rbm",
+      "size": "2.4M",
+      "hasMeta": true,
+      "title": "AnokhaV2",
+      "author": "Sam Laleo Singh",
+      "tags": [
+        "ethnic",
+        "world",
+        "tribal",
+        "sitar"
+      ]
+    },
+    {
+      "filename": "Anomaly 2.0.rbm",
+      "size": "4.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Antrop.rbm",
+      "size": "4.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Aqueous.rbm",
+      "size": "4.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ashiko.rbm",
+      "size": "2.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ATOMiK.rbm",
+      "size": "2.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "AUSBOX!.rbm",
+      "size": "3.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "AUSBOX-339.rbm",
+      "size": "2.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Axiom(b2).rbm",
+      "size": "2.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Axiom(b3).rbm",
+      "size": "2.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "AXIOM.rbm",
+      "size": "2.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "AXIOM_Link.rbm",
+      "size": "5.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "AXIOM_Linx.rbm",
+      "size": "5.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "AXIOM_peace.rbm",
+      "size": "5.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "AxiomB.rbm",
+      "size": "3.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "AXIOMpeace.rbm",
+      "size": "5.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "BadRat.rbm",
+      "size": "1.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "BeachMod_(Beta 2.01).rbm",
+      "size": "3.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Beatnik.rbm",
+      "size": "3.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "beta3.rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Binary[a].rbm",
+      "size": "1.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "BINvsDOXY[a].rbm",
+      "size": "3.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "BjoergisBeBirth20.rbm",
+      "size": "3.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "blackbox.rbm",
+      "size": "3.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Blackfish2[a].rbm",
+      "size": "2.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "bLADErUNNER.rbm",
+      "size": "3.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "blplanet.rbm",
+      "size": "2.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Bluefish[a].rbm",
+      "size": "1.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "BLUENOTE.rbm",
+      "size": "4.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Bluesteel2.rbm",
+      "size": "2.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "bo's-haq_(alpha).rbm",
+      "size": "2.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Bone_Vibes.rbm",
+      "size": "5.1M",
+      "hasMeta": true,
+      "title": "Bone Vibes",
+      "author": "Syrusate",
+      "tags": [
+        "dark",
+        "industrial",
+        "darkwave",
+        "percussion"
+      ]
+    },
+    {
+      "filename": "BoneVibes.rbm",
+      "size": "5.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "buchla_m.rbm",
+      "size": "1.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "cbt.rbm",
+      "size": "2.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Chezio[a].rbm",
+      "size": "1.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Chezio[l].rbm",
+      "size": "441K",
+      "hasMeta": false
+    },
+    {
+      "filename": "ChoiceCutz_v1.0.rbm",
+      "size": "4.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ChoiceCutz_v1.2.rbm",
+      "size": "4.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Circuit.rbm",
+      "size": "3.3M",
+      "hasMeta": true,
+      "title": "Circuit",
+      "author": "Epilogue",
+      "tags": [
+        "industrial",
+        "electronic",
+        "techno",
+        "bass"
+      ]
+    },
+    {
+      "filename": "circuit.rbm",
+      "size": "3.3M",
+      "hasMeta": true,
+      "title": "Circuit",
+      "author": "Epilogue",
+      "tags": [
+        "industrial",
+        "electronic",
+        "techno",
+        "bass"
+      ]
+    },
+    {
+      "filename": "Circuitbreak_Theorem_(beta3).rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Circuitbreak_Theorem_(cbt).rbm",
+      "size": "2.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Circuitbreak_Theorem_(final_version).rbm",
+      "size": "3.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Circuitbreaker_Theorem.rbm",
+      "size": "3.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "CircuitbreakerTheorem.rbm",
+      "size": "3.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "cold-rolled.rbm",
+      "size": "2.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "composer.rbm",
+      "size": "2.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Composit.rbm",
+      "size": "3.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "CoNaNBox.rbm",
+      "size": "1.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Construction#1.rbm",
+      "size": "394K",
+      "hasMeta": false
+    },
+    {
+      "filename": "contest.rbm",
+      "size": "3.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "contest_copy.rbm",
+      "size": "4.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Controllerism.rbm",
+      "size": "8.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "DarkStar.rbm",
+      "size": "3.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "degenerate_oxide(old).rbm",
+      "size": "3.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "degenerate_oxide.rbm",
+      "size": "3.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "degenerate_oxidized.rbm",
+      "size": "3.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "dejenerate(b3).rbm",
+      "size": "2.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "dejenerate(b4).rbm",
+      "size": "2.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "dejenerate.rbm",
+      "size": "2.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "dejenerate_oxide.rbm",
+      "size": "3.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "dejenerate_oxide5.rbm",
+      "size": "5.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Delirium.rbm",
+      "size": "4.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "digalog.rbm",
+      "size": "5.3M",
+      "hasMeta": true,
+      "title": "Digalog",
+      "author": "Einzelg\u00e4nger",
+      "tags": [
+        "electronic",
+        "synth",
+        "futuristic",
+        "bleeps"
+      ]
+    },
+    {
+      "filename": "DIGITAL_M.rbm",
+      "size": "3.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "disko1.rbm",
+      "size": "4.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "DJ Turn's_MOD.rbm",
+      "size": "3.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "DJ_Turn's_8-Track.rbm",
+      "size": "3.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "DnB5000.rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Dogma.rbm",
+      "size": "4.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "domino.rbm",
+      "size": "2.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "DR-330[a].rbm",
+      "size": "1.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Dubwiser.rbm",
+      "size": "2.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "dubwiser.rbm",
+      "size": "2.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Dunkel_Mod.rbm",
+      "size": "4.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Eden_Machine.rbm",
+      "size": "4.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "electrolyte.rbm",
+      "size": "4.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ElekD2.0 _\u0092.rbm",
+      "size": "6.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ElekD2.0.rbm",
+      "size": "1.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ElekD2.02.rbm",
+      "size": "7.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ElekD2.02b.rbm",
+      "size": "7.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Experience2.0.rbm",
+      "size": "4.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Experience2.12.rbm",
+      "size": "2.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "FatBoy[a].rbm",
+      "size": "2.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Fatboy_v2_Beta2.rbm",
+      "size": "3.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Fatboy_v2_Beta3.1.rbm",
+      "size": "4.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Fatboy_v2_Beta3.4.rbm",
+      "size": "4.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Fatboy_v2_Beta3.rbm",
+      "size": "4.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ferrari27.rbm",
+      "size": "2.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "final_version.rbm",
+      "size": "3.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "FlipDog.rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Funkbox.rbm",
+      "size": "2.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "FunkPeffomenon2.0.rbm",
+      "size": "2.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Gaia.rbm",
+      "size": "4.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "galena.rbm",
+      "size": "2.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Ghetto_Technics.rbm",
+      "size": "2.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Groove_engine.rbm",
+      "size": "5.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "GrooveENGINE.rbm",
+      "size": "5.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "GunBirth.rbm",
+      "size": "3.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "H2-69_MIXED.rbm",
+      "size": "3.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Heavy_Rhythm_Machine.rbm",
+      "size": "2.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Hempomat[a].rbm",
+      "size": "1.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "House_of_love_Juam1.rbm",
+      "size": "3.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "House_of_love_Juam\u00c3.rbm",
+      "size": "3.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "HouseMOD.rbm",
+      "size": "2.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Houser.rbm",
+      "size": "2.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "hypnosyz.rbm",
+      "size": "3.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ibex.rbm",
+      "size": "4.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ibex_mkII.rbm",
+      "size": "4.0M",
+      "hasMeta": true,
+      "title": "ibex mkII",
+      "author": "Unknown",
+      "tags": [
+        "varied",
+        "tribal",
+        "drums",
+        "synth"
+      ]
+    },
+    {
+      "filename": "iBirth.rbm",
+      "size": "2.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ice_RB20Mod.rbm",
+      "size": "6.6M",
+      "hasMeta": true,
+      "title": "iCE!",
+      "author": "Entropy/SiNGULARiTY",
+      "tags": [
+        "chilly",
+        "experimental",
+        "original"
+      ]
+    },
+    {
+      "filename": "Illumitech.rbm",
+      "size": "2.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Illumitech2.rbm",
+      "size": "2.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "illumitech2soundonly.rbm",
+      "size": "2.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Illusion.rbm",
+      "size": "4.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "InCubus.rbm",
+      "size": "3.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "INFERNALIZER.rbm",
+      "size": "5.2M",
+      "hasMeta": true,
+      "title": "Infernalizer",
+      "author": "Jesuspark",
+      "tags": [
+        "dark",
+        "organ",
+        "sharp",
+        "award-winning"
+      ]
+    },
+    {
+      "filename": "INFERNALIZERfinal.rbm",
+      "size": "5.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "inferno.rbm",
+      "size": "2.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Inner_mod.rbm",
+      "size": "4.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "IQ.rbm",
+      "size": "4.6M",
+      "hasMeta": true,
+      "title": "IQ",
+      "author": "Dr. Bruno & Syrusate",
+      "tags": [
+        "funk",
+        "collaboration",
+        "funky"
+      ]
+    },
+    {
+      "filename": "IQ_mod.rbm",
+      "size": "4.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "K-3-0-3.rbm",
+      "size": "4.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Kali.rbm",
+      "size": "4.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Kashmir.rbm",
+      "size": "2.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "l2bl.mod.rbm",
+      "size": "4.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "l2bl.mod_3.rbm",
+      "size": "4.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "l2bl.rbm",
+      "size": "4.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "L_u_c_a_t_r_o_n.rbm",
+      "size": "3.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Ladiesnight.rbm",
+      "size": "2.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "lamb_birthb1.rbm",
+      "size": "5.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "lets_roll.rbm",
+      "size": "966K",
+      "hasMeta": false
+    },
+    {
+      "filename": "Linn_Drum_2.0.rbm",
+      "size": "2.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "liquid.rbm",
+      "size": "2.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Liquidator.rbm",
+      "size": "3.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "LiquidBirthII.rbm",
+      "size": "2.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "LongLoops.rbm",
+      "size": "5.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "LongLoops_copy.rbm",
+      "size": "2.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "LoopTech2.rbm",
+      "size": "2.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "LoopTech2[a].rbm",
+      "size": "2.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "LoWRiDeR.rbm",
+      "size": "2.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "LTvsDO.rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "LTvsO2.rbm",
+      "size": "4.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "LTvsO2[a].rbm",
+      "size": "4.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "LTvsRS.rbm",
+      "size": "3.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "LTvsRS[a].rbm",
+      "size": "3.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "LuPbe2.rbm",
+      "size": "3.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "macroserv.rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "MAGIC_CORNFLAKES_MOD.rbm",
+      "size": "1.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Magica.rbm",
+      "size": "2.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ManicBox.rbm",
+      "size": "2.2M",
+      "hasMeta": true,
+      "title": "Manic Box",
+      "author": "DJ LuVcHiLE",
+      "tags": [
+        "tribal",
+        "percussion",
+        "house",
+        "dark"
+      ]
+    },
+    {
+      "filename": "MaShMoD.rbm",
+      "size": "3.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "MassenRedTop2.rbm",
+      "size": "1.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "mellow.rbm",
+      "size": "2.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Mellow_(SouthPark).rbm",
+      "size": "2.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Metallicon.rbm",
+      "size": "3.4M",
+      "hasMeta": true,
+      "title": "Metallicon",
+      "author": "Propellerhead",
+      "tags": [
+        "official",
+        "default",
+        "classic",
+        "metal"
+      ]
+    },
+    {
+      "filename": "MiDiMoD.rbm",
+      "size": "2.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Millennium.rbm",
+      "size": "3.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "minimod(a2).rbm",
+      "size": "2.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "minimod(b5).rbm",
+      "size": "2.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "minimod(b6).rbm",
+      "size": "2.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "minimod.rbm",
+      "size": "2.8M",
+      "hasMeta": true,
+      "title": "minimod",
+      "author": "Peff",
+      "tags": [
+        "house",
+        "organ",
+        "piano",
+        "toolbox"
+      ]
+    },
+    {
+      "filename": "minimod2.rbm",
+      "size": "3.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "minimod23.rbm",
+      "size": "3.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "minimod3.rbm",
+      "size": "7.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "minimod3d.rbm",
+      "size": "7.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "minimod=b.rbm",
+      "size": "2.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "minimod_b.rbm",
+      "size": "2.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "minimod_b3.rbm",
+      "size": "2.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "minimod_copy.rbm",
+      "size": "2.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "minimodIIIc.rbm",
+      "size": "7.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "minimodIIId.rbm",
+      "size": "7.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "MMax3000_2.rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ModeBox.rbm",
+      "size": "4.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "MODesty.rbm",
+      "size": "3.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Modivarius.rbm",
+      "size": "3.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "modname.rbm",
+      "size": "2.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Modulus.rbm",
+      "size": "3.2M",
+      "hasMeta": true,
+      "title": "Modulus",
+      "author": "Tristan",
+      "tags": [
+        "house",
+        "drums",
+        "brass",
+        "clean"
+      ]
+    },
+    {
+      "filename": "modulus.rbm",
+      "size": "3.2M",
+      "hasMeta": true,
+      "title": "Modulus",
+      "author": "Tristan",
+      "tags": [
+        "house",
+        "drums",
+        "brass",
+        "clean"
+      ]
+    },
+    {
+      "filename": "Modyssey.rbm",
+      "size": "1.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "MSM2.rbm",
+      "size": "2.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Nag_Champa_OM-3T3.rbm",
+      "size": "3.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "No_Remorse.rbm",
+      "size": "2.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "noize.rbm",
+      "size": "2.2M",
+      "hasMeta": true,
+      "title": "Noize",
+      "author": "Einzelg\u00e4nger",
+      "tags": [
+        "minimalist",
+        "electronic",
+        "futuristic",
+        "electro"
+      ]
+    },
+    {
+      "filename": "Nord_Beat.rbm",
+      "size": "2.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "nordbeat.rbm",
+      "size": "2.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "nordbeat_[m].rbm",
+      "size": "2.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "NotePad.rbm",
+      "size": "430K",
+      "hasMeta": false
+    },
+    {
+      "filename": "OMEGA.rbm",
+      "size": "6.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "omega_x2.rbm",
+      "size": "5.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Orbit2.rbm",
+      "size": "4.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Orion.rbm",
+      "size": "2.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Orion_b.rbm",
+      "size": "2.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "OSeX.rbm",
+      "size": "3.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "PBE2.rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Peace_AXIOM.rbm",
+      "size": "4.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "PeffEdit-b.rbm",
+      "size": "1.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "PeffEdit.rbm",
+      "size": "536K",
+      "hasMeta": false
+    },
+    {
+      "filename": "PeffEdit2.rbm",
+      "size": "939K",
+      "hasMeta": false
+    },
+    {
+      "filename": "PeffEdit_2.rbm",
+      "size": "922K",
+      "hasMeta": false
+    },
+    {
+      "filename": "PeffEdition.rbm",
+      "size": "517K",
+      "hasMeta": false
+    },
+    {
+      "filename": "PeffMOD.rbm",
+      "size": "2.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "PhaseII(dev).rbm",
+      "size": "3.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "PhaseII.2.rbm",
+      "size": "3.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "PhaseII.rbm",
+      "size": "3.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Phat_Boy.rbm",
+      "size": "4.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Pierce.rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "PITCH_TUNE.rbm",
+      "size": "198K",
+      "hasMeta": false
+    },
+    {
+      "filename": "Plasmafire.rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Plasmafire.rbm..rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Platinum.rbm",
+      "size": "311K",
+      "hasMeta": false
+    },
+    {
+      "filename": "Poison.rbm",
+      "size": "3.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Polar(a1).rbm",
+      "size": "4.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Polar.rbm",
+      "size": "5.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Polar_[v].rbm",
+      "size": "5.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Polar_[vx3].rbm",
+      "size": "5.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Polar_[vx3]_2.rbm",
+      "size": "5.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Polar_[vx3a].rbm",
+      "size": "5.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Polar_[vx4].rbm",
+      "size": "5.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Polar_[vx].rbm",
+      "size": "5.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Polar_final.rbm",
+      "size": "5.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Polar_Mo_Bass.rbm",
+      "size": "5.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "PolyVibe.rbm",
+      "size": "3.2M",
+      "hasMeta": true,
+      "title": "Polyvibe",
+      "author": "Jonas H.",
+      "tags": [
+        "jazz",
+        "acid-jazz",
+        "piano",
+        "brass"
+      ]
+    },
+    {
+      "filename": "polyvibe.rbm",
+      "size": "3.2M",
+      "hasMeta": true,
+      "title": "Polyvibe",
+      "author": "Jonas H.",
+      "tags": [
+        "jazz",
+        "acid-jazz",
+        "piano",
+        "brass"
+      ]
+    },
+    {
+      "filename": "Pornstar.rbm",
+      "size": "1.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Prop10_Dev.rbm",
+      "size": "8.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "PWE[a].rbm",
+      "size": "2.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Pxl9000.rbm",
+      "size": "4.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "qbsfx.rbm",
+      "size": "2.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Quake_II_-_Drop_Pod.rbm",
+      "size": "4.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "qup.rbm",
+      "size": "1.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "R-SP_1200.2.rbm",
+      "size": "3.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "R-SP_1200.rbm",
+      "size": "2.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "RADIUM_A.B.S.U._EDITION.rbm",
+      "size": "5.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "RamaMod120.rbm",
+      "size": "5.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "RB-33L[a].rbm",
+      "size": "1.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "RB-SEMx.rbm",
+      "size": "2.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "RB-SEMx_rev2.rbm",
+      "size": "2.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "rb339[a].rbm",
+      "size": "1.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "rb339_plus.rbm",
+      "size": "2.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "RB_Pitchshifter.rbm",
+      "size": "3.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "RBerv.rbm",
+      "size": "1.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "RBillusion.rbm",
+      "size": "4.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "rbjazz_humm!!_b2.rbm",
+      "size": "2.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "RBMP3.rbm",
+      "size": "186K",
+      "hasMeta": false
+    },
+    {
+      "filename": "RDX303.rbm",
+      "size": "2.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ReACID[a].rbm",
+      "size": "1.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "RealSound.rbm",
+      "size": "3.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ReBasX.rbm",
+      "size": "3.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ReBirth_One.rbm",
+      "size": "1.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ReBirthday.rbm",
+      "size": "8.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ReBorn.rbm",
+      "size": "2.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ReConstruct.rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ReConstructed.rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Red_Stripe_a6.1.rbm",
+      "size": "5.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Red_Stripe_a6.rbm",
+      "size": "5.4M",
+      "hasMeta": true,
+      "title": "Red Stripe",
+      "author": "Thomas & Wolfgang Merkle",
+      "tags": [
+        "official",
+        "campaign",
+        "dnb",
+        "fast"
+      ]
+    },
+    {
+      "filename": "red_stripe_b1.rbm",
+      "size": "6.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "redi.rbm",
+      "size": "3.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ReDirt.rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "redirt_zabo.rbm",
+      "size": "3.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "RedShift.rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "redstripe-dnb.rbm",
+      "size": "6.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "RedTop2.rbm",
+      "size": "2.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ReEvilb1p.rbm",
+      "size": "3.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "regulator.rbm",
+      "size": "3.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "remix.rbm",
+      "size": "4.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Retro_Funk.rbm",
+      "size": "4.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ReUVerb.rbm",
+      "size": "4.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ReVerb+.rbm",
+      "size": "3.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ReVerb.rbm",
+      "size": "1.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ReVerbed.rbm",
+      "size": "1.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ReVerse.rbm",
+      "size": "1.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "ReVerse808.rbm",
+      "size": "667K",
+      "hasMeta": false
+    },
+    {
+      "filename": "revision2.rbm",
+      "size": "150K",
+      "hasMeta": false
+    },
+    {
+      "filename": "revision9(hami's version).rbm",
+      "size": "289K",
+      "hasMeta": false
+    },
+    {
+      "filename": "revisionj9.rbm",
+      "size": "254K",
+      "hasMeta": false
+    },
+    {
+      "filename": "RMX.rbm",
+      "size": "3.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "rrevision_r26.rbm",
+      "size": "376K",
+      "hasMeta": false
+    },
+    {
+      "filename": "rrevision_r26[].rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "RunStopRestore.rbm",
+      "size": "4.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "SBvAXP.rbm",
+      "size": "2.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "SBvAXPold.rbm",
+      "size": "3.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "senction_birth.rbm",
+      "size": "4.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "sensual_dreams.rbm",
+      "size": "2.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Shaft.rbm",
+      "size": "3.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "SidstationMod2.0.rbm",
+      "size": "3.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "SidstationMod20.rbm",
+      "size": "3.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "snapCrackler.rbm",
+      "size": "1.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "SoftBlue.rbm",
+      "size": "3.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Sonor.rbm",
+      "size": "3.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "SpaceMixer.rbm",
+      "size": "2.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Spassiba.rbm",
+      "size": "4.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Spider.rbm",
+      "size": "3.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Star_Wars_-_Dark_Jedi_MoD.rbm",
+      "size": "7.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Streets_of_Rage.rbm",
+      "size": "3.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Structure.rbm",
+      "size": "4.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "SuB_-_X.rbm",
+      "size": "4.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "sync-b1.rbm",
+      "size": "3.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "sync.rbm",
+      "size": "3.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "sync2.rbm",
+      "size": "1.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "sync3.rbm",
+      "size": "3.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "sync5.rbm",
+      "size": "3.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "sync6.rbm",
+      "size": "3.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "TB-909e_mkII.rbm",
+      "size": "2.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "TB-909e_mkII_b7x9.rbm",
+      "size": "2.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "TB-CodeVoder.rbm",
+      "size": "2.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Techno_Box_II.rbm",
+      "size": "2.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "TechnoBox.rbm",
+      "size": "2.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "TechnoBox_mkII.rbm",
+      "size": "2.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "test.rbm",
+      "size": "130K",
+      "hasMeta": false
+    },
+    {
+      "filename": "The_Funkateer.rbm",
+      "size": "3.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "theTWEAK.rbm",
+      "size": "2.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "THUNDER(Beta).rbm",
+      "size": "4.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "THUNDER_BETA2.rbm",
+      "size": "4.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "timing_test.rbm",
+      "size": "5.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "TR-707mod.rbm",
+      "size": "2.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Tracy2[a].rbm",
+      "size": "2.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Trancer.rbm",
+      "size": "3.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Trancerb.rbm",
+      "size": "3.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "transformer.rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "TreeBirth.rbm",
+      "size": "2.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "TurnMod.rbm",
+      "size": "3.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "u_Gene.rbm",
+      "size": "4.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Unleasher.rbm",
+      "size": "2.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Untidy_House.rbm",
+      "size": "3.7M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Upsetter.rbm",
+      "size": "4.2M",
+      "hasMeta": false
+    },
+    {
+      "filename": "UVJ.rbm",
+      "size": "2.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Vinyl_Stimulation(a1).rbm",
+      "size": "377K",
+      "hasMeta": false
+    },
+    {
+      "filename": "Visions.rbm",
+      "size": "2.9M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Visions_Drums.rbm",
+      "size": "4.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Voltage2.rbm",
+      "size": "3.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Voltage[a].rbm",
+      "size": "2.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Vortexx.rbm",
+      "size": "3.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Voxbox[a].rbm",
+      "size": "2.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "VR-tigo.rbm",
+      "size": "3.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "WAR_FEVER.rbm",
+      "size": "2.8M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Warp_2.rbm",
+      "size": "2.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Warp_3.rbm",
+      "size": "4.3M",
+      "hasMeta": false
+    },
+    {
+      "filename": "whirlwind.rbm",
+      "size": "2.6M",
+      "hasMeta": false
+    },
+    {
+      "filename": "whirlwind2.rbm",
+      "size": "2.4M",
+      "hasMeta": false
+    },
+    {
+      "filename": "wicked.rbm",
+      "size": "2.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Wobble[a].rbm",
+      "size": "2.1M",
+      "hasMeta": false
+    },
+    {
+      "filename": "Woven_Mod.rbm",
+      "size": "468K",
+      "hasMeta": false
+    },
+    {
+      "filename": "X-Anvers.rbm",
+      "size": "4.1M",
+      "hasMeta": true,
+      "title": "X-Anvers",
+      "author": "Unknown",
+      "tags": [
+        "house",
+        "pads",
+        "synth",
+        "experimental"
+      ]
+    },
+    {
+      "filename": "X-Static_2.0.rbm",
+      "size": "2.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "xt4c.rbm",
+      "size": "3.0M",
+      "hasMeta": false
+    },
+    {
+      "filename": "xt4c2.rbm",
+      "size": "3.5M",
+      "hasMeta": false
+    },
+    {
+      "filename": "xt4c_b.rbm",
+      "size": "3.0M",
+      "hasMeta": false
+    }
+  ],
+  "total": 367,
+  "documented": 20
+}

@@ -2,63 +2,12 @@
 // Song Archive Browser — /archive/songs
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import CollectionCard from '../../components/CollectionCard.astro';
-
-const archiveBaseUrl = "http://test.1ink.us/rb338/archive/rbs-songs";
-
-interface Collection {
-  name: string;
-  path: string;
-  type: "folder" | "file";
-  modified?: string;
-  count?: number;
-}
-
-const collections = {
-  featured: {
-    name: "Featured Collections",
-    folders: [
-      { name: "Contests", path: "Featured_Collections/Contests" },
-      { name: "MODs", path: "Featured_Collections/MODs" }
-    ]
-  },
-  bySource: {
-    name: "By Source",
-    folders: [
-      { name: "Rebirth 1.5", path: "By_Source/Rebirth_1.5" },
-      { name: "Rebirth 2.0", path: "By_Source/Rebirth_2.0" },
-      { name: "Archives", path: "By_Source/Archives" }
-    ]
-  },
-  artists: {
-    name: "Artists",
-    folders: [
-      { name: "Cavey", path: "Artists/Cavey" },
-      { name: "DJ Caspa", path: "Artists/DJ Caspa" },
-      { name: "DJ Knightmare", path: "Artists/DJ Knightmare" },
-      { name: "Fanatic", path: "Artists/Fanatic" },
-      { name: "Noah Cohn", path: "Artists/Noah Cohn" },
-      { name: "Noah Cohn Complete", path: "Artists/Noah_Cohn_Complete" },
-      { name: "Noah Cohn Extended", path: "Artists/Noah_Cohn_Extended" },
-      { name: "Rotorkopf", path: "Artists/Rotorkopf" }
-    ]
-  },
-  monthly: {
-    name: "Monthly Archive",
-    folders: [
-      { name: "January to December", path: "Monthly_Archive" }
-    ]
-  },
-  other: {
-    name: "Other Collections",
-    folders: [
-      { name: "Color X", path: "Other_Collections/Color X" },
-      { name: "Euro Pack", path: "Other_Collections/Euro Pack" },
-      { name: "Freestyle Pack", path: "Other_Collections/Freestyle Pack" },
-      { name: "Rotorkopf 2", path: "Other_Collections/Rotorkopf 2" },
-      { name: "Saturday Morning", path: "Other_Collections/Saturday Morning" }
-    ]
-  }
-};
+import HardwarePanel from '../../components/ui/HardwarePanel.astro';
+import Led from '../../components/ui/Led.astro';
+import Lcd from '../../components/ui/Lcd.astro';
+import ActionButton from '../../components/ui/ActionButton.astro';
+import collectionsMeta from '../../data/collections-metadata.json';
+import { songCollections, archiveBaseUrl } from '../../data/song-collections';
 ---
 
 <BaseLayout title="RBS Song Archive" description="Browse and explore ReBirth RB-338 song collections, artists, and sources.">
@@ -69,90 +18,98 @@ const collections = {
       <div class="rb-heading rb-heading-blue">RBS Song Archive</div>
 
       <!-- Page header module -->
-      <div class="archive-header rb-module">
-        <div class="rb-module__header">
-          <span class="rb-module__title">RBS SONG ARCHIVE BROWSER</span>
-          <span class="rb-led rb-led--online"><span class="rb-led__dot"></span>2000+ FILES</span>
+      <HardwarePanel
+        animate
+        variant="rackmount-chassis"
+        class="archive-header"
+        title="RBS SONG ARCHIVE BROWSER"
+        ledStatus="online"
+        ledLabel="2000+ FILES"
+      >
+        <p class="archive-subtitle">Browse and explore Rebirth songs from various collections, artists, and sources</p>
+        <div class="search-bar">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search collections and artists... (Press / to focus)"
+            class="rb-search-input"
+            aria-label="Search collections"
+          />
+          <ActionButton variant="mix" onclick="clearAllFilters()">Clear All</ActionButton>
         </div>
-        <div class="rb-module__body archive-header-body">
-          <p class="archive-subtitle">Browse and explore Rebirth songs from various collections, artists, and sources</p>
-          <div class="search-bar">
-            <input
-              type="text"
-              id="searchInput"
-              placeholder="Search collections and artists..."
-              class="rb-search-input"
-              aria-label="Search collections"
-            />
-            <button onclick="clearSearch()" class="rb-mix-btn search-clear-btn" type="button">Clear</button>
-          </div>
+        <div class="filter-bar" role="group" aria-label="Quick filters">
+          <button class="rb-filter-btn active" data-filter="all" type="button" aria-pressed="true">All</button>
+          <button class="rb-filter-btn" data-filter="featured" type="button" aria-pressed="false">Featured</button>
+          <button class="rb-filter-btn" data-filter="bySource" type="button" aria-pressed="false">By Source</button>
+          <button class="rb-filter-btn" data-filter="artists" type="button" aria-pressed="false">Artists</button>
+          <button class="rb-filter-btn" data-filter="monthly" type="button" aria-pressed="false">Monthly</button>
+          <button class="rb-filter-btn" data-filter="other" type="button" aria-pressed="false">Other</button>
         </div>
-      </div>
+        <div class="results-bar" aria-live="polite" aria-atomic="true">
+          <Led status="online" label="" ariaHidden={true} />
+          <span id="resultCount" class="result-count">Showing all collections</span>
+        </div>
+      </HardwarePanel>
 
       <!-- LCD stats bar -->
       <div class="archive-stats">
-        <div class="rb-lcd" aria-label="Main collections">
-          <div class="lcd-label">COLLECTIONS</div>
-          <div class="lcd-value">5</div>
-        </div>
-        <div class="rb-lcd" aria-label="Featured artists">
-          <div class="lcd-label">ARTISTS</div>
-          <div class="lcd-value">8</div>
-        </div>
-        <div class="rb-lcd" aria-label="Total songs">
-          <div class="lcd-label">SONGS</div>
-          <div class="lcd-value">2000<span class="lcd-unit">+</span></div>
-        </div>
-        <div class="rb-lcd" aria-label="Monthly archives">
-          <div class="lcd-label">ARCHIVES</div>
-          <div class="lcd-value">12</div>
-        </div>
+        <Lcd label="COLLECTIONS" value={5} ariaLabel="Main collections" />
+        <Lcd label="ARTISTS" value={8} ariaLabel="Featured artists" />
+        <Lcd label="SONGS" value="2000" unit="+" ariaLabel="Total songs" />
+        <Lcd label="ARCHIVES" value={12} ariaLabel="Monthly archives" />
       </div>
 
       <!-- View toggle -->
       <div class="view-toggle" role="group" aria-label="View mode">
-        <button class="rb-pattern-btn view-btn active" id="btnGrid" onclick="switchView('grid')" type="button">Grid View</button>
-        <button class="rb-mix-btn view-btn"    id="btnList" onclick="switchView('list')" type="button">List View</button>
+        <button class="rb-pattern-btn view-btn active" id="btnGrid" onclick="switchView('grid')" type="button" aria-pressed="true" aria-controls="gridView listView">Grid View</button>
+        <button class="rb-mix-btn view-btn" id="btnList" onclick="switchView('list')" type="button" aria-pressed="false" aria-controls="gridView listView">List View</button>
       </div>
 
       <!-- Grid view -->
       <div id="gridView" class="collections-grid" role="main">
-        {collections.featured && (
-          <CollectionCard section={collections.featured} archiveUrl={archiveBaseUrl} />
-        )}
-        {collections.bySource && (
-          <CollectionCard section={collections.bySource} archiveUrl={archiveBaseUrl} />
-        )}
-        {collections.artists && (
-          <CollectionCard section={collections.artists} archiveUrl={archiveBaseUrl} />
-        )}
-        {collections.monthly && (
-          <CollectionCard section={collections.monthly} archiveUrl={archiveBaseUrl} />
-        )}
-        {collections.other && (
-          <CollectionCard section={collections.other} archiveUrl={archiveBaseUrl} />
-        )}
+        <div data-section-key="featured" class="collection-wrapper">
+          {songCollections.featured && (
+            <CollectionCard section={songCollections.featured} meta={collectionsMeta.featured} archiveUrl={archiveBaseUrl} rackmount={true} />
+          )}
+        </div>
+        <div data-section-key="bySource" class="collection-wrapper">
+          {songCollections.bySource && (
+            <CollectionCard section={songCollections.bySource} meta={collectionsMeta.bySource} archiveUrl={archiveBaseUrl} rackmount={true} />
+          )}
+        </div>
+        <div data-section-key="artists" class="collection-wrapper">
+          {songCollections.artists && (
+            <CollectionCard section={songCollections.artists} meta={collectionsMeta.artists} archiveUrl={archiveBaseUrl} rackmount={true} />
+          )}
+        </div>
+        <div data-section-key="monthly" class="collection-wrapper">
+          {songCollections.monthly && (
+            <CollectionCard section={songCollections.monthly} meta={collectionsMeta.monthly} archiveUrl={archiveBaseUrl} rackmount={true} />
+          )}
+        </div>
+        <div data-section-key="other" class="collection-wrapper">
+          {songCollections.other && (
+            <CollectionCard section={songCollections.other} meta={collectionsMeta.other} archiveUrl={archiveBaseUrl} rackmount={true} />
+          )}
+        </div>
       </div>
 
       <!-- List view -->
-      <div id="listView" style="display:none" role="main">
-        <div class="rb-module list-table-wrapper">
-          <div class="rb-module__header">
-            <span class="rb-module__title">ALL COLLECTIONS</span>
-          </div>
-          <div class="rb-module__body" style="padding:0">
+      <div id="listView" class="is-hidden" role="main">
+        <HardwarePanel variant="rackmount" class="list-table-wrapper" title="ALL COLLECTIONS">
+          <div class="table-scroll">
             <table class="archive-table">
-              <thead>
-                <tr>
-                  <th>Collection</th>
-                  <th>Path</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="listTableBody"></tbody>
-            </table>
+            <thead>
+              <tr>
+                <th scope="col">Collection</th>
+                <th scope="col">Section</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody id="listTableBody"></tbody>
+          </table>
           </div>
-        </div>
+        </HardwarePanel>
       </div>
 
     </div>
@@ -170,7 +127,7 @@ const collections = {
   /* Header module */
   .archive-header { margin-bottom: 1rem; }
 
-  .archive-header-body {
+  .archive-header :global(.rb-panel__body) {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -189,28 +146,33 @@ const collections = {
     flex-wrap: wrap;
   }
 
-  .rb-search-input {
-    flex: 1;
-    min-width: 200px;
-    padding: 0.5em 0.8em;
-    background: #111;
-    border: 1px solid #3a3a3a;
-    border-radius: 3px;
-    color: #c0c0c0;
-    font-family: 'Courier New', monospace;
-    font-size: 0.85rem;
-    outline: none;
-    transition: border-color 120ms ease;
+  .search-bar :global(.rb-mix-btn) {
+    align-self: flex-start;
   }
 
-  .rb-search-input:focus {
-    border-color: #ffb000;
-    box-shadow: 0 0 0 2px rgba(255,176,0,0.15);
+  /* Filter buttons styled via rebirth-theme.css .rb-filter-btn */
+  .filter-bar {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
   }
 
-  .rb-search-input::placeholder { color: #555; }
+  /* Results bar */
+  .results-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.75rem;
+    color: var(--rb-silver-dim, #888);
+    letter-spacing: 0.05em;
+  }
 
-  .search-clear-btn { align-self: flex-start; }
+  .result-count {
+    text-transform: uppercase;
+  }
 
   /* Stats row */
   .archive-stats {
@@ -218,12 +180,6 @@ const collections = {
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     gap: 0.6rem;
     margin-bottom: 1rem;
-  }
-
-  .lcd-unit {
-    font-size: 0.6em;
-    color: #b37800;
-    margin-left: 1px;
   }
 
   /* View toggle */
@@ -241,11 +197,22 @@ const collections = {
 
   .view-btn.active { opacity: 1; }
 
+  .view-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255,176,0,0.25);
+  }
+
   /* Collections grid */
   .collections-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: 1fr;
     gap: 1rem;
+  }
+
+  @media (min-width: 480px) {
+    .collections-grid {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
   }
 
   /* List table */
@@ -290,127 +257,48 @@ const collections = {
   .archive-table .open-link:hover {
     color: #3dba66;
   }
+
+  .archive-table .open-link:focus-visible {
+    outline: none;
+    color: #3dba66;
+    text-decoration: underline;
+    box-shadow: 0 0 0 2px rgba(57,255,20,0.15);
+    border-radius: 2px;
+  }
+
+  /* List view cell helpers (replaces inline styles) */
+  .archive-table .cell-name {
+    font-weight: bold;
+    color: #c0c0c0;
+  }
+
+  .archive-table .cell-section {
+    color: #555;
+  }
+
+  .archive-table .cell-section-desc {
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 2px;
+  }
+
+  .archive-table .cell-tags {
+    color: #b37800;
+    font-size: 0.7rem;
+  }
+
+  /* Responsive table wrapper */
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-scroll .archive-table {
+    min-width: 480px;
+  }
 </style>
 
 <script>
-  const archiveBaseUrl = "http://test.1ink.us/rb338/archive/rbs-songs";
-
-  const allCollections = {
-    featured: {
-      name: "Featured Collections",
-      folders: [
-        { name: "Contests", path: "Featured_Collections/Contests" },
-        { name: "MODs", path: "Featured_Collections/MODs" }
-      ]
-    },
-    bySource: {
-      name: "By Source",
-      folders: [
-        { name: "Rebirth 1.5", path: "By_Source/Rebirth_1.5" },
-        { name: "Rebirth 2.0", path: "By_Source/Rebirth_2.0" },
-        { name: "Archives", path: "By_Source/Archives" }
-      ]
-    },
-    artists: {
-      name: "Artists",
-      folders: [
-        { name: "Cavey", path: "Artists/Cavey" },
-        { name: "DJ Caspa", path: "Artists/DJ Caspa" },
-        { name: "DJ Knightmare", path: "Artists/DJ Knightmare" },
-        { name: "Fanatic", path: "Artists/Fanatic" },
-        { name: "Noah Cohn", path: "Artists/Noah Cohn" },
-        { name: "Noah Cohn Complete", path: "Artists/Noah_Cohn_Complete" },
-        { name: "Noah Cohn Extended", path: "Artists/Noah_Cohn_Extended" },
-        { name: "Rotorkopf", path: "Artists/Rotorkopf" }
-      ]
-    },
-    monthly: {
-      name: "Monthly Archive",
-      folders: [
-        { name: "January to December", path: "Monthly_Archive" }
-      ]
-    },
-    other: {
-      name: "Other Collections",
-      folders: [
-        { name: "Color X", path: "Other_Collections/Color X" },
-        { name: "Euro Pack", path: "Other_Collections/Euro Pack" },
-        { name: "Freestyle Pack", path: "Other_Collections/Freestyle Pack" },
-        { name: "Rotorkopf 2", path: "Other_Collections/Rotorkopf 2" },
-        { name: "Saturday Morning", path: "Other_Collections/Saturday Morning" }
-      ]
-    }
-  };
-
-  // Search functionality
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      const query = (e.target as HTMLInputElement).value.toLowerCase();
-      const sections = document.querySelectorAll('.collection-section');
-
-      sections.forEach(section => {
-        const sectionTitle = section.querySelector('.section-header')?.textContent?.toLowerCase() ?? '';
-        const folderItems = section.querySelectorAll('.folder-item');
-        let hasVisibleItems = false;
-
-        folderItems.forEach(item => {
-          const folderName = item.querySelector('.folder-name')?.textContent?.toLowerCase() ?? '';
-          const matches = sectionTitle.includes(query) || folderName.includes(query) || query === '';
-          (item as HTMLElement).style.display = matches ? '' : 'none';
-          if (matches) hasVisibleItems = true;
-        });
-
-        (section as HTMLElement).style.display = hasVisibleItems || query === '' ? '' : 'none';
-      });
-    });
-  }
-
-  function clearSearch() {
-    const inp = document.getElementById('searchInput') as HTMLInputElement | null;
-    if (inp) {
-      inp.value = '';
-      inp.dispatchEvent(new Event('input'));
-    }
-  }
-
-  function switchView(view: string) {
-    const gridView = document.getElementById('gridView');
-    const listView = document.getElementById('listView');
-    const btnGrid  = document.getElementById('btnGrid');
-    const btnList  = document.getElementById('btnList');
-
-    if (!gridView || !listView) return;
-
-    if (view === 'grid') {
-      gridView.style.display = 'grid';
-      listView.style.display = 'none';
-      btnGrid?.classList.add('active');
-      btnList?.classList.remove('active');
-    } else {
-      gridView.style.display = 'none';
-      listView.style.display = 'block';
-      btnList?.classList.add('active');
-      btnGrid?.classList.remove('active');
-      renderListView();
-    }
-  }
-
-  function renderListView() {
-    const tbody = document.getElementById('listTableBody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    Object.values(allCollections).forEach(section => {
-      section.folders.forEach(folder => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${folder.name}</td>
-          <td style="color:#555">${folder.path}</td>
-          <td><a href="${archiveBaseUrl}/${folder.path}" target="_blank" class="open-link" rel="noopener noreferrer">Open ↗</a></td>
-        `;
-        tbody.appendChild(row);
-      });
-    });
-  }
+  import { initArchiveBrowser } from '../../scripts/archive-browser';
+  initArchiveBrowser();
 </script>

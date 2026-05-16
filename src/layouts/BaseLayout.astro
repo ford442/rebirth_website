@@ -10,14 +10,10 @@ const {
   description = 'Community archive for the ReBirth RB-338 software synthesizer — songs, mods, and history preserved.',
 } = Astro.props;
 
+import { normalizeBase } from '../lib/url';
+
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const currentPath = Astro.url.pathname;
-const normalizeBase = (value: string) => {
-  const rawBase = value ?? '';
-  if (rawBase === '/' || rawBase === '') return '';
-  const trimmed = rawBase.replace(/\/+$/, '');
-  return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-};
 const base = normalizeBase(import.meta.env.BASE_URL);
 ---
 
@@ -100,6 +96,12 @@ const base = normalizeBase(import.meta.env.BASE_URL);
             </li>
             <li>
               <a
+                href={`${base}/history/index.html`}
+                class={`rb-nav-btn${currentPath.includes('/history') ? ' is-active' : ''}`}
+              >History</a>
+            </li>
+            <li>
+              <a
                 href={`${base}/docs`}
                 class={`rb-nav-btn${currentPath.includes('/docs') ? ' is-active' : ''}`}
               >Docs</a>
@@ -135,15 +137,15 @@ const base = normalizeBase(import.meta.env.BASE_URL);
         var led = document.getElementById('menu-led');
         if (!toggle || !menu) return;
         toggle.addEventListener('click', function() {
-          var isOpen = menu.classList.toggle('is-open');
-          toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          var isOpen = menu!.classList.toggle('is-open');
+          toggle!.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
           if (led) led.classList.toggle('is-on', isOpen);
         });
         // Close menu when clicking a nav link (mobile)
         menu.querySelectorAll('a').forEach(function(link) {
           link.addEventListener('click', function() {
-            menu.classList.remove('is-open');
-            toggle.setAttribute('aria-expanded', 'false');
+            menu!.classList.remove('is-open');
+            toggle!.setAttribute('aria-expanded', 'false');
             if (led) led.classList.remove('is-on');
           });
         });

@@ -8,6 +8,7 @@ export interface Props {
   description?: string;
   tags?: string[];
   downloadUrl?: string;
+  rackmount?: boolean;
 }
 
 const {
@@ -18,13 +19,14 @@ const {
   description,
   tags = [],
   downloadUrl,
+  rackmount = false,
 } = Astro.props;
 
 const baseModsUrl = 'https://storage.1ink.us/rebirth_mods';
 const modUrl = downloadUrl || `${baseModsUrl}/${filename}`;
 ---
 
-<div class="mod-card">
+<div class={`mod-card ${rackmount ? 'rb-rack-variant' : ''}`}>
   <div class="mod-card__header">
     <h3 class="mod-card__title">{title}</h3>
     {year && <span class="mod-card__year">{year}</span>}

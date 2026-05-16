@@ -1,6 +1,8 @@
 ---
 // Redirect: /rbs-archive → /archive/songs
 import BaseLayout from '../layouts/BaseLayout.astro';
+import HardwarePanel from '../components/ui/HardwarePanel.astro';
+import ActionButton from '../components/ui/ActionButton.astro';
 
 const normalizeBase = (value: string) => {
   const rawBase = value ?? '';
@@ -17,18 +19,16 @@ const target = `${base}/archive/songs/index.html`;
 
   <div class="redirect-page">
     <div class="container">
-      <div class="rb-panel">
-        <div class="rb-panel__header">
-          <span class="rb-panel__title">REDIRECT</span>
-          <span class="rb-led rb-led--pending"><span class="rb-led__dot"></span>MOVED</span>
-        </div>
-        <div class="rb-panel__body" style="text-align:center;padding:2rem;">
-          <p>The song archive has moved to a new location.</p>
-          <p>
-            <a class="rb-pattern-btn" href={target}>Go to Song Archive →</a>
-          </p>
-        </div>
-      </div>
+      <HardwarePanel
+        title="REDIRECT"
+        ledStatus="pending"
+        ledLabel="MOVED"
+      >
+        <p style="text-align:center;color:#888;margin:0 0 1rem;">The song archive has moved to a new location.</p>
+        <p style="text-align:center;">
+          <ActionButton variant="pattern" href={target}>Go to Song Archive →</ActionButton>
+        </p>
+      </HardwarePanel>
     </div>
   </div>
 </BaseLayout>

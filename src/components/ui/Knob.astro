@@ -1,0 +1,12 @@
+---
+import type { KnobProps } from './types';
+
+interface Props extends KnobProps {}
+
+const { label, rotation = 0 } = Astro.props;
+---
+
+<div class="rb-knob">
+  <div aria-hidden="true" class="rb-knob__dial" style={`transform: rotate(${rotation}deg)`}></div>
+  <span class="rb-knob__label">{label}</span>
+</div>

@@ -1,0 +1,37 @@
+{
+  "featured": {
+    "description": "Contest winners and curated MOD song packs hand-picked from the community.",
+    "tags": ["contests", "curated", "highlights"],
+    "curator": "Community",
+    "lastUpdated": "2024-06",
+    "totalItems": 80
+  },
+  "bySource": {
+    "description": "Songs organized by the ReBirth version they were created with — from 1.5 through 2.0.",
+    "tags": ["by-version", "legacy", "source"],
+    "curator": "Archive Team",
+    "lastUpdated": "2024-05",
+    "totalItems": 711
+  },
+  "artists": {
+    "description": "Individual artist folders spanning acid, industrial, techno, and melodic styles.",
+    "tags": ["artists", "acid", "industrial", "techno"],
+    "curator": "Community",
+    "lastUpdated": "2024-08",
+    "totalItems": 233
+  },
+  "monthly": {
+    "description": "A full year of monthly song drops archived in chronological order.",
+    "tags": ["monthly", "chronological", "archive"],
+    "curator": "Archive Team",
+    "lastUpdated": "2024-01",
+    "totalItems": 624
+  },
+  "other": {
+    "description": "Themed packs and special collections: Euro, freestyle, Color X, and more.",
+    "tags": ["themed", "packs", "special"],
+    "curator": "Community",
+    "lastUpdated": "2024-04",
+    "totalItems": 111
+  }
+}

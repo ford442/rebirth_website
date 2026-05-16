@@ -1,0 +1,19 @@
+---
+import type { StepButtonProps } from './types';
+
+interface Props extends StepButtonProps {}
+
+const { active = false, beat = false, ariaLabel, title, style } = Astro.props;
+
+const classes = ['rb-step-btn'];
+if (active) classes.push('active');
+if (beat) classes.push('beat');
+---
+
+<button
+  class={classes.join(' ')}
+  aria-label={ariaLabel}
+  title={title ?? ariaLabel}
+  tabindex="-1"
+  style={style}
+/>

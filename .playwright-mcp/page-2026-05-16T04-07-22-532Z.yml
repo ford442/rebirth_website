@@ -1,0 +1,254 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "ReBirth RB-338 Archive home" [ref=e5] [cursor=pointer]:
+        - /url: /rb338/
+        - generic [ref=e6]: RB
+        - generic [ref=e7]: "-338"
+        - generic [ref=e8]: ARCHIVE
+      - button "Toggle menu" [ref=e9] [cursor=pointer]:
+        - generic [ref=e13]: MENU
+  - main [ref=e15]:
+    - generic [ref=e17]:
+      - generic [ref=e18]: RBS Song Archive
+      - generic [ref=e19]:
+        - generic [ref=e24]:
+          - generic [ref=e25]: RBS SONG ARCHIVE BROWSER
+          - generic [ref=e28]: 2000+ FILES
+        - generic [ref=e29]:
+          - paragraph [ref=e30]: Browse and explore Rebirth songs from various collections, artists, and sources
+          - generic [ref=e31]:
+            - textbox "Search collections" [ref=e32]:
+              - /placeholder: Search collections and artists... (Press / to focus)
+            - button "Clear All" [ref=e33] [cursor=pointer]
+          - group "Quick filters" [ref=e34]:
+            - button "All" [pressed] [ref=e35] [cursor=pointer]
+            - button "Featured" [ref=e36] [cursor=pointer]
+            - button "By Source" [ref=e37] [cursor=pointer]
+            - button "Artists" [ref=e38] [cursor=pointer]
+            - button "Monthly" [ref=e39] [cursor=pointer]
+            - button "Other" [ref=e40] [cursor=pointer]
+          - generic [ref=e44]: Showing all 5 collections (19 folders)
+      - generic [ref=e45]:
+        - generic "Main collections" [ref=e46]:
+          - generic [ref=e47]: COLLECTIONS
+          - generic [ref=e48]: "5"
+        - generic "Featured artists" [ref=e49]:
+          - generic [ref=e50]: ARTISTS
+          - generic [ref=e51]: "8"
+        - generic "Total songs" [ref=e52]:
+          - generic [ref=e53]: SONGS
+          - generic [ref=e54]: 2000+
+        - generic "Monthly archives" [ref=e55]:
+          - generic [ref=e56]: ARCHIVES
+          - generic [ref=e57]: "12"
+      - group "View mode" [ref=e58]:
+        - button "Grid View" [pressed] [ref=e59] [cursor=pointer]
+        - button "List View" [ref=e60] [cursor=pointer]
+      - main [ref=e61]:
+        - region "Featured Collections collection" [ref=e63]:
+          - generic [ref=e68]:
+            - generic [ref=e69]: Featured Collections
+            - generic [ref=e72]: 2 FOLDERS
+          - generic [ref=e73]:
+            - paragraph [ref=e74]: Contest winners and curated MOD song packs hand-picked from the community.
+            - generic [ref=e75]:
+              - generic "Collection tags" [ref=e76]:
+                - generic [ref=e77]: contests
+                - generic [ref=e78]: curated
+                - generic [ref=e79]: highlights
+              - generic "Collection stats" [ref=e80]:
+                - generic [ref=e81]: 80 items•
+                - generic [ref=e82]: "Curator: Community•"
+                - generic [ref=e83]: "Updated: 2024-06"
+          - generic [ref=e84]:
+            - link "Contests 48 files" [ref=e85] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/Featured_Collections/Contests
+              - generic [ref=e86]: 📁
+              - generic [ref=e87]: Contests
+              - generic [ref=e88]: 48 files
+              - generic [ref=e89]: ↗
+            - link "MODs 32 files" [ref=e90] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/Featured_Collections/MODs
+              - generic [ref=e91]: 📁
+              - generic [ref=e92]: MODs
+              - generic [ref=e93]: 32 files
+              - generic [ref=e94]: ↗
+        - region "By Source collection" [ref=e96]:
+          - generic [ref=e101]:
+            - generic [ref=e102]: By Source
+            - generic [ref=e105]: 3 FOLDERS
+          - generic [ref=e106]:
+            - paragraph [ref=e107]: Songs organized by the ReBirth version they were created with — from 1.5 through 2.0.
+            - generic [ref=e108]:
+              - generic "Collection tags" [ref=e109]:
+                - generic [ref=e110]: by-version
+                - generic [ref=e111]: legacy
+                - generic [ref=e112]: source
+              - generic "Collection stats" [ref=e113]:
+                - generic [ref=e114]: 711 items•
+                - generic [ref=e115]: "Curator: Archive Team•"
+                - generic [ref=e116]: "Updated: 2024-05"
+          - generic [ref=e117]:
+            - link "Rebirth 1.5 215 files" [ref=e118] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/By_Source/Rebirth_1.5
+              - generic [ref=e119]: 📁
+              - generic [ref=e120]: Rebirth 1.5
+              - generic [ref=e121]: 215 files
+              - generic [ref=e122]: ↗
+            - link "Rebirth 2.0 340 files" [ref=e123] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/By_Source/Rebirth_2.0
+              - generic [ref=e124]: 📁
+              - generic [ref=e125]: Rebirth 2.0
+              - generic [ref=e126]: 340 files
+              - generic [ref=e127]: ↗
+            - link "Archives 156 files" [ref=e128] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/By_Source/Archives
+              - generic [ref=e129]: 📁
+              - generic [ref=e130]: Archives
+              - generic [ref=e131]: 156 files
+              - generic [ref=e132]: ↗
+        - region "Artists collection" [ref=e134]:
+          - generic [ref=e139]:
+            - generic [ref=e140]: Artists
+            - generic [ref=e143]: 8 FOLDERS
+          - generic [ref=e144]:
+            - paragraph [ref=e145]: Individual artist folders spanning acid, industrial, techno, and melodic styles.
+            - generic [ref=e146]:
+              - generic "Collection tags" [ref=e147]:
+                - generic [ref=e148]: artists
+                - generic [ref=e149]: acid
+                - generic [ref=e150]: industrial
+                - generic [ref=e151]: techno
+              - generic "Collection stats" [ref=e152]:
+                - generic [ref=e153]: 233 items•
+                - generic [ref=e154]: "Curator: Community•"
+                - generic [ref=e155]: "Updated: 2024-08"
+          - generic [ref=e156]:
+            - link "Cavey 22 files" [ref=e157] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/Artists/Cavey
+              - generic [ref=e158]: 📁
+              - generic [ref=e159]: Cavey
+              - generic [ref=e160]: 22 files
+              - generic [ref=e161]: ↗
+            - link "DJ Caspa 14 files" [ref=e162] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/Artists/DJ Caspa
+              - generic [ref=e163]: 📁
+              - generic [ref=e164]: DJ Caspa
+              - generic [ref=e165]: 14 files
+              - generic [ref=e166]: ↗
+            - link "DJ Knightmare 18 files" [ref=e167] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/Artists/DJ Knightmare
+              - generic [ref=e168]: 📁
+              - generic [ref=e169]: DJ Knightmare
+              - generic [ref=e170]: 18 files
+              - generic [ref=e171]: ↗
+            - link "Fanatic 26 files" [ref=e172] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/Artists/Fanatic
+              - generic [ref=e173]: 📁
+              - generic [ref=e174]: Fanatic
+              - generic [ref=e175]: 26 files
+              - generic [ref=e176]: ↗
+            - link "Noah Cohn 34 files" [ref=e177] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/Artists/Noah Cohn
+              - generic [ref=e178]: 📁
+              - generic [ref=e179]: Noah Cohn
+              - generic [ref=e180]: 34 files
+              - generic [ref=e181]: ↗
+            - link "Noah Cohn Complete 52 files" [ref=e182] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/Artists/Noah_Cohn_Complete
+              - generic [ref=e183]: 📁
+              - generic [ref=e184]: Noah Cohn Complete
+              - generic [ref=e185]: 52 files
+              - generic [ref=e186]: ↗
+            - link "Noah Cohn Extended 41 files" [ref=e187] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/Artists/Noah_Cohn_Extended
+              - generic [ref=e188]: 📁
+              - generic [ref=e189]: Noah Cohn Extended
+              - generic [ref=e190]: 41 files
+              - generic [ref=e191]: ↗
+            - link "Rotorkopf 28 files" [ref=e192] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/Artists/Rotorkopf
+              - generic [ref=e193]: 📁
+              - generic [ref=e194]: Rotorkopf
+              - generic [ref=e195]: 28 files
+              - generic [ref=e196]: ↗
+        - region "Monthly Archive collection" [ref=e198]:
+          - generic [ref=e203]:
+            - generic [ref=e204]: Monthly Archive
+            - generic [ref=e207]: 1 FOLDER
+          - generic [ref=e208]:
+            - paragraph [ref=e209]: A full year of monthly song drops archived in chronological order.
+            - generic [ref=e210]:
+              - generic "Collection tags" [ref=e211]:
+                - generic [ref=e212]: monthly
+                - generic [ref=e213]: chronological
+                - generic [ref=e214]: archive
+              - generic "Collection stats" [ref=e215]:
+                - generic [ref=e216]: 624 items•
+                - generic [ref=e217]: "Curator: Archive Team•"
+                - generic [ref=e218]: "Updated: 2024-01"
+          - link "January to December 624 files" [ref=e220] [cursor=pointer]:
+            - /url: http://test.1ink.us/rb338/archive/rbs-songs/Monthly_Archive
+            - generic [ref=e221]: 📁
+            - generic [ref=e222]: January to December
+            - generic [ref=e223]: 624 files
+            - generic [ref=e224]: ↗
+        - region "Other Collections collection" [ref=e226]:
+          - generic [ref=e231]:
+            - generic [ref=e232]: Other Collections
+            - generic [ref=e235]: 5 FOLDERS
+          - generic [ref=e236]:
+            - paragraph [ref=e237]: "Themed packs and special collections: Euro, freestyle, Color X, and more."
+            - generic [ref=e238]:
+              - generic "Collection tags" [ref=e239]:
+                - generic [ref=e240]: themed
+                - generic [ref=e241]: packs
+                - generic [ref=e242]: special
+              - generic "Collection stats" [ref=e243]:
+                - generic [ref=e244]: 111 items•
+                - generic [ref=e245]: "Curator: Community•"
+                - generic [ref=e246]: "Updated: 2024-04"
+          - generic [ref=e247]:
+            - link "Color X 30 files" [ref=e248] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/Other_Collections/Color X
+              - generic [ref=e249]: 📁
+              - generic [ref=e250]: Color X
+              - generic [ref=e251]: 30 files
+              - generic [ref=e252]: ↗
+            - link "Euro Pack 24 files" [ref=e253] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/Other_Collections/Euro Pack
+              - generic [ref=e254]: 📁
+              - generic [ref=e255]: Euro Pack
+              - generic [ref=e256]: 24 files
+              - generic [ref=e257]: ↗
+            - link "Freestyle Pack 22 files" [ref=e258] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/Other_Collections/Freestyle Pack
+              - generic [ref=e259]: 📁
+              - generic [ref=e260]: Freestyle Pack
+              - generic [ref=e261]: 22 files
+              - generic [ref=e262]: ↗
+            - link "Rotorkopf 2 19 files" [ref=e263] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/Other_Collections/Rotorkopf 2
+              - generic [ref=e264]: 📁
+              - generic [ref=e265]: Rotorkopf 2
+              - generic [ref=e266]: 19 files
+              - generic [ref=e267]: ↗
+            - link "Saturday Morning 16 files" [ref=e268] [cursor=pointer]:
+              - /url: http://test.1ink.us/rb338/archive/rbs-songs/Other_Collections/Saturday Morning
+              - generic [ref=e269]: 📁
+              - generic [ref=e270]: Saturday Morning
+              - generic [ref=e271]: 16 files
+              - generic [ref=e272]: ↗
+  - contentinfo [ref=e273]:
+    - generic [ref=e274]:
+      - paragraph [ref=e275]: ReBirth RB-338 Archive — Community-maintained. Not affiliated with Propellerhead Software.
+      - paragraph [ref=e276]:
+        - text: Built with
+        - link "Astro" [ref=e277] [cursor=pointer]:
+          - /url: https://astro.build
+        - text: —
+        - link "Contribute on GitHub" [ref=e278] [cursor=pointer]:
+          - /url: https://github.com/ford442/rebirth_website

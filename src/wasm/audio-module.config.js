@@ -1,80 +1,62 @@
 /**
  * src/wasm/audio-module.config.js
  *
- * Configuration stub for the future ReBirth RB-338 WebAssembly audio engine.
+ * Runtime configuration for the ReBirth RB-338 WebAssembly audio engine.
  *
- * PLANNED FUNCTIONALITY
- * ─────────────────────
- * This module will expose a WebAssembly build of an `.rbs` file parser and
- * real-time audio synthesis engine, allowing users to preview ReBirth song
- * files directly in the browser via the Web Audio API.
+ * ARCHITECTURE
+ * ────────────
+ *   .rbs file (ArrayBuffer)
+ *        │
+ *   RbsParser (WASM, C++) ──► ParsedSong struct
+ *        │
+ *   RbsAudioEngine (WASM, C++)
+ *   ├── Sequencer ──► Event list per block
+ *   ├── Tb303Voice ×2
+ *   ├── Tr808Voice
+ *   ├── Tr909Voice
+ *   └── Mixer (stereo + FX)
+ *        │
+ *   Wasm Audio Worklet ──► Web Audio API ──► speakers
  *
- * ARCHITECTURE (target)
- * ──────────────────────
- *   ┌─────────────────────────────────────────────────────────────┐
- *   │  .rbs file (binary)                                         │
- *   │      │                                                       │
- *   │  rbsParser.wasm  ──► JS bindings (rbsParser.js)             │
- *   │      │                                                       │
- *   │  PatternData  ──► AudioWorkletProcessor (wasm-backed)       │
- *   │                         │                                   │
- *   │                   Web Audio API ──► <audio> output          │
- *   └─────────────────────────────────────────────────────────────┘
+ * BUILD
+ * ─────
+ *   cd src/wasm/cpp && ./build.sh
  *
- * BUILD TOOLCHAIN (planned)
- * ─────────────────────────
- *   Source language : C or Rust
- *   Compiler        : Emscripten (C) or wasm-pack (Rust)
- *   Output          : rbsParser.wasm + rbsParser.js glue
- *   Integration     : Astro vite plugin or manual public/ placement
- *
- * USAGE (future API, subject to change)
- * ──────────────────────────────────────
- *   import { loadRbsParser } from '../wasm/rbsParser.js';
- *
- *   const parser = await loadRbsParser();
- *   const song   = await parser.parse(arrayBuffer);   // ArrayBuffer of .rbs file
- *   const player = parser.createPlayer(song);
- *   player.connect(audioContext.destination);
- *   player.start();
+ *   Requires: Emscripten (latest), bash
+ *   Outputs : ../../../public/wasm/rbsParser.js
+ *             ../../../public/wasm/rbsParser.wasm
+ *             ../../../public/wasm/rbsWorklet.js
  */
 
 /** @type {WasmAudioModuleConfig} */
 export const wasmAudioConfig = {
-  /** Relative path (from /public) where the compiled .wasm binary will be served */
+  /** Path (from site root) of the compiled .wasm binary */
   wasmPath: '/wasm/rbsParser.wasm',
 
-  /** Relative path (from /public) of the JS glue/bindings emitted by Emscripten/wasm-pack */
+  /** Path of the Emscripten JS glue / bindings */
   glueScriptPath: '/wasm/rbsParser.js',
 
-  /**
-   * AudioWorklet processor script path.
-   * The worklet is responsible for running the synthesis loop in a dedicated
-   * audio-rendering thread, keeping the main thread free of jank.
-   */
-  workletPath: '/wasm/rbsWorkletProcessor.js',
+  /** Path of the AudioWorklet processor script */
+  workletPath: '/wasm/rbsWorklet.js',
 
-  /** Preferred sample rate for the AudioContext (Hz) */
+  /** Preferred AudioContext sample rate (Hz) */
   sampleRate: 44100,
 
-  /** Buffer size (frames) handed to the AudioWorklet per render quantum */
+  /** Render quantum size in frames (standard Web Audio = 128) */
   bufferSize: 128,
 
-  /** Maximum polyphony for the TB-303 emulation (hardware is monophonic = 1) */
+  /** Maximum TB-303 polyphony (hardware is monophonic = 1) */
   maxVoices: 1,
 
-  /**
-   * Feature flags — enable or disable sub-modules at runtime.
-   * Useful for progressive enhancement on low-power devices.
-   */
+  /** Runtime feature flags — disable modules on low-power devices */
   features: {
-    tb303_a:    true,   // First TB-303 emulation channel
-    tb303_b:    true,   // Second TB-303 emulation channel
-    tr808:      true,   // TR-808 drum machine
-    tr909:      true,   // TR-909 drum machine
-    distortion: true,   // Master distortion effect
-    compressor: true,   // Master compressor
-    delay:      true,   // Pattern delay
+    tb303_a:    true,
+    tb303_b:    true,
+    tr808:      true,
+    tr909:      true,
+    distortion: true,
+    compressor: true,
+    delay:      true,
   },
 };
 

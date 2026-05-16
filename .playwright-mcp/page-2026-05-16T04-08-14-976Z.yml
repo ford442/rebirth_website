@@ -1,0 +1,315 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "ReBirth RB-338 Archive home" [ref=e5] [cursor=pointer]:
+        - /url: /rb338/
+        - generic [ref=e6]: RB
+        - generic [ref=e7]: "-338"
+        - generic [ref=e8]: ARCHIVE
+      - navigation "Primary navigation" [ref=e9]:
+        - list [ref=e10]:
+          - listitem [ref=e11]:
+            - link "Home" [ref=e12] [cursor=pointer]:
+              - /url: /rb338/
+          - listitem [ref=e13]:
+            - link "Songs" [ref=e14] [cursor=pointer]:
+              - /url: /rb338/archive/songs/index.html
+          - listitem [ref=e15]:
+            - link "Mods" [ref=e16] [cursor=pointer]:
+              - /url: /rb338/archive/mods/index.html
+          - listitem [ref=e17]:
+            - link "Docs" [ref=e18] [cursor=pointer]:
+              - /url: /rb338/docs
+  - main [ref=e19]:
+    - generic [ref=e21]:
+      - generic [ref=e22]: RBM Mods Archive
+      - generic [ref=e23]:
+        - generic [ref=e28]:
+          - generic [ref=e29]: RBM MODS ARCHIVE
+          - generic [ref=e32]: 600+ FILES
+        - generic [ref=e33]:
+          - paragraph [ref=e34]: Download custom ReBirth module modifications and skins
+          - paragraph [ref=e35]:
+            - text: Currently documenting 17 of 600+ available mods. Missing metadata?
+            - link "Contribute on GitHub →" [ref=e36] [cursor=pointer]:
+              - /url: https://github.com/ford442/rebirth_website
+      - generic [ref=e37]:
+        - generic "Documented mods" [ref=e38]:
+          - generic [ref=e39]: DOCUMENTED
+          - generic [ref=e40]: "17"
+        - generic "Total available" [ref=e41]:
+          - generic [ref=e42]: TOTAL
+          - generic [ref=e43]: 600+
+        - generic "Source" [ref=e44]:
+          - generic [ref=e45]: SOURCE
+          - generic [ref=e46]: storage.1ink.us
+        - generic "Status" [ref=e47]:
+          - generic [ref=e48]: STATUS
+          - generic [ref=e49]: ACTIVE
+      - generic [ref=e50]:
+        - textbox "Search mods" [ref=e51]:
+          - /placeholder: Search by title, author, or tag...
+        - generic [ref=e52]:
+          - button "Show all mods" [ref=e53] [cursor=pointer]: All
+          - button "Filter industrial mods" [ref=e54] [cursor=pointer]: Industrial
+          - button "Filter house mods" [ref=e55] [cursor=pointer]: House
+          - button "Filter dark mods" [ref=e56] [cursor=pointer]: Dark
+          - button "Filter synth mods" [ref=e57] [cursor=pointer]: Synth
+          - button "Filter official mods" [ref=e58] [cursor=pointer]: Official
+      - main [ref=e59]:
+        - generic [ref=e60]:
+          - heading "Aluwerk" [level=3] [ref=e62]
+          - generic [ref=e63]: Dr Bruno & Syrusate
+          - paragraph [ref=e64]: A true concept-mod with a metallic look and sound, highly appealing to producers of industrial music.
+          - generic [ref=e65]:
+            - generic [ref=e66]: industrial
+            - generic [ref=e67]: metallic
+            - generic [ref=e68]: concept
+          - generic [ref=e69]:
+            - generic [ref=e70]: Aluwerk.rbm
+            - link "Download Aluwerk" [ref=e71] [cursor=pointer]:
+              - /url: https://storage.1ink.us/rebirth_mods/Aluwerk.rbm
+              - text: ↓ Download
+        - generic [ref=e72]:
+          - heading "AnokhaV2" [level=3] [ref=e74]
+          - generic [ref=e75]: Sam Laleo Singh
+          - paragraph [ref=e76]: Features sitar loops, tabla samples, and a graphical interface decorated with Indian deities to create a definite ethnic vibe.
+          - generic [ref=e77]:
+            - generic [ref=e78]: ethnic
+            - generic [ref=e79]: world
+            - generic [ref=e80]: tribal
+            - generic [ref=e81]: sitar
+          - generic [ref=e82]:
+            - generic [ref=e83]: AnokhaV2.rbm
+            - link "Download AnokhaV2" [ref=e84] [cursor=pointer]:
+              - /url: https://storage.1ink.us/rebirth_mods/AnokhaV2.rbm
+              - text: ↓ Download
+        - generic [ref=e85]:
+          - heading "Bone Vibes" [level=3] [ref=e87]
+          - generic [ref=e88]: Syrusate
+          - paragraph [ref=e89]: A black and dark mod with lots of rattling bones and skulls (including an 808 drum selection knob), suited for industrial and darkwave.
+          - generic [ref=e90]:
+            - generic [ref=e91]: dark
+            - generic [ref=e92]: industrial
+            - generic [ref=e93]: darkwave
+            - generic [ref=e94]: percussion
+          - generic [ref=e95]:
+            - generic [ref=e96]: Bone_Vibes.rbm
+            - link "Download Bone Vibes" [ref=e97] [cursor=pointer]:
+              - /url: https://storage.1ink.us/rebirth_mods/Bone_Vibes.rbm
+              - text: ↓ Download
+        - generic [ref=e98]:
+          - heading "Circuit" [level=3] [ref=e100]
+          - generic [ref=e101]: Epilogue
+          - paragraph [ref=e102]: Has a green glowing electric look and features a collection of industrial-type basses and snares.
+          - generic [ref=e103]:
+            - generic [ref=e104]: industrial
+            - generic [ref=e105]: electronic
+            - generic [ref=e106]: techno
+            - generic [ref=e107]: bass
+          - generic [ref=e108]:
+            - generic [ref=e109]: Circuit.rbm
+            - link "Download Circuit" [ref=e110] [cursor=pointer]:
+              - /url: https://storage.1ink.us/rebirth_mods/Circuit.rbm
+              - text: ↓ Download
+        - generic [ref=e111]:
+          - heading "Digalog" [level=3] [ref=e113]
+          - generic [ref=e114]: Einzelgänger
+          - paragraph [ref=e115]: Features a very plastic blue interface with highly electronic, synthetic percussion sounds and bleeps.
+          - generic [ref=e116]:
+            - generic [ref=e117]: electronic
+            - generic [ref=e118]: synth
+            - generic [ref=e119]: futuristic
+            - generic [ref=e120]: bleeps
+          - generic [ref=e121]:
+            - generic [ref=e122]: digalog.rbm
+            - link "Download Digalog" [ref=e123] [cursor=pointer]:
+              - /url: https://storage.1ink.us/rebirth_mods/digalog.rbm
+              - text: ↓ Download
+        - generic [ref=e124]:
+          - heading "ibex mkII" [level=3] [ref=e126]
+          - generic [ref=e127]: Unknown
+          - paragraph [ref=e128]: Contains a very varied set of sounds, ranging from a tribal didgeridoo to assorted synths and full drums.
+          - generic [ref=e129]:
+            - generic [ref=e130]: varied
+            - generic [ref=e131]: tribal
+            - generic [ref=e132]: drums
+            - generic [ref=e133]: synth
+          - generic [ref=e134]:
+            - generic [ref=e135]: ibex_mkII.rbm
+            - link "Download ibex mkII" [ref=e136] [cursor=pointer]:
+              - /url: https://storage.1ink.us/rebirth_mods/ibex_mkII.rbm
+              - text: ↓ Download
+        - generic [ref=e137]:
+          - heading "iCE!" [level=3] [ref=e139]
+          - generic [ref=e140]: Entropy/SiNGULARiTY
+          - paragraph [ref=e141]: Described directly by the author as 'chilly and cheezy' with many original sounds left intact.
+          - generic [ref=e142]:
+            - generic [ref=e143]: chilly
+            - generic [ref=e144]: experimental
+            - generic [ref=e145]: original
+          - generic [ref=e146]:
+            - generic [ref=e147]: ice_RB20Mod.rbm
+            - link "Download iCE!" [ref=e148] [cursor=pointer]:
+              - /url: https://storage.1ink.us/rebirth_mods/ice_RB20Mod.rbm
+              - text: ↓ Download
+        - generic [ref=e149]:
+          - heading "Infernalizer" [level=3] [ref=e151]
+          - generic [ref=e152]: Jesuspark
+          - paragraph [ref=e153]: Hailed historically as 'The Most Beautiful Mod Ever,' it features sharp drums, synths, and a church organ tailored for dark or loud styles.
+          - generic [ref=e154]:
+            - generic [ref=e155]: dark
+            - generic [ref=e156]: organ
+            - generic [ref=e157]: sharp
+            - generic [ref=e158]: award-winning
+          - generic [ref=e159]:
+            - generic [ref=e160]: INFERNALIZER.rbm
+            - link "Download Infernalizer" [ref=e161] [cursor=pointer]:
+              - /url: https://storage.1ink.us/rebirth_mods/INFERNALIZER.rbm
+              - text: ↓ Download
+        - generic [ref=e162]:
+          - heading "IQ" [level=3] [ref=e164]
+          - generic [ref=e165]: Dr. Bruno & Syrusate
+          - paragraph [ref=e166]: A funky, collaborative mod from the same creators of the Aluwerk mod.
+          - generic [ref=e167]:
+            - generic [ref=e168]: funk
+            - generic [ref=e169]: collaboration
+            - generic [ref=e170]: funky
+          - generic [ref=e171]:
+            - generic [ref=e172]: IQ.rbm
+            - link "Download IQ" [ref=e173] [cursor=pointer]:
+              - /url: https://storage.1ink.us/rebirth_mods/IQ.rbm
+              - text: ↓ Download
+        - generic [ref=e174]:
+          - heading "Manic Box" [level=3] [ref=e176]
+          - generic [ref=e177]: DJ LuVcHiLE
+          - paragraph [ref=e178]: A mean, black interface packed with phat percussion sounds tailored for tribal-minded producers.
+          - generic [ref=e179]:
+            - generic [ref=e180]: tribal
+            - generic [ref=e181]: percussion
+            - generic [ref=e182]: house
+            - generic [ref=e183]: dark
+          - generic [ref=e184]:
+            - generic [ref=e185]: ManicBox.rbm
+            - link "Download Manic Box" [ref=e186] [cursor=pointer]:
+              - /url: https://storage.1ink.us/rebirth_mods/ManicBox.rbm
+              - text: ↓ Download
+        - generic [ref=e187]:
+          - generic [ref=e188]:
+            - heading "Metallicon" [level=3] [ref=e189]
+            - generic [ref=e190]: "1998"
+          - generic [ref=e191]: Propellerhead
+          - paragraph [ref=e192]: One of the four official default mods included on the original ReBirth 2.0.1 CD-ROM.
+          - generic [ref=e193]:
+            - generic [ref=e194]: official
+            - generic [ref=e195]: default
+            - generic [ref=e196]: classic
+            - generic [ref=e197]: metal
+          - generic [ref=e198]:
+            - generic [ref=e199]: Metallicon.rbm
+            - link "Download Metallicon" [ref=e200] [cursor=pointer]:
+              - /url: https://storage.1ink.us/rebirth_mods/Metallicon.rbm
+              - text: ↓ Download
+        - generic [ref=e201]:
+          - heading "minimod" [level=3] [ref=e203]
+          - generic [ref=e204]: Peff
+          - paragraph [ref=e205]: A house producer's toolbox featuring house organs, basses, pianos, and a beautifully crafted GUI that mimics a classic synth brand.
+          - generic [ref=e206]:
+            - generic [ref=e207]: house
+            - generic [ref=e208]: organ
+            - generic [ref=e209]: piano
+            - generic [ref=e210]: toolbox
+          - generic [ref=e211]:
+            - generic [ref=e212]: minimod.rbm
+            - link "Download minimod" [ref=e213] [cursor=pointer]:
+              - /url: https://storage.1ink.us/rebirth_mods/minimod.rbm
+              - text: ↓ Download
+        - generic [ref=e214]:
+          - heading "Modulus" [level=3] [ref=e216]
+          - generic [ref=e217]: Tristan
+          - paragraph [ref=e218]: Bread-and-butter clean drums mapped to the 909, and wacky FX and brass stabs mapped to the 808.
+          - generic [ref=e219]:
+            - generic [ref=e220]: house
+            - generic [ref=e221]: drums
+            - generic [ref=e222]: brass
+            - generic [ref=e223]: clean
+          - generic [ref=e224]:
+            - generic [ref=e225]: Modulus.rbm
+            - link "Download Modulus" [ref=e226] [cursor=pointer]:
+              - /url: https://storage.1ink.us/rebirth_mods/Modulus.rbm
+              - text: ↓ Download
+        - generic [ref=e227]:
+          - heading "Noize" [level=3] [ref=e229]
+          - generic [ref=e230]: Einzelgänger
+          - paragraph [ref=e231]: A minimalistic, futuristic interface with electro/plastic sounds that follow a similar design philosophy to the Digalog mod.
+          - generic [ref=e232]:
+            - generic [ref=e233]: minimalist
+            - generic [ref=e234]: electronic
+            - generic [ref=e235]: futuristic
+            - generic [ref=e236]: electro
+          - generic [ref=e237]:
+            - generic [ref=e238]: noize.rbm
+            - link "Download Noize" [ref=e239] [cursor=pointer]:
+              - /url: https://storage.1ink.us/rebirth_mods/noize.rbm
+              - text: ↓ Download
+        - generic [ref=e240]:
+          - heading "Polyvibe" [level=3] [ref=e242]
+          - generic [ref=e243]: Jonas H.
+          - paragraph [ref=e244]: An Acid Jazz mod featuring pianos, brass, jazzy drums, and a blend of blue-note samples.
+          - generic [ref=e245]:
+            - generic [ref=e246]: jazz
+            - generic [ref=e247]: acid-jazz
+            - generic [ref=e248]: piano
+            - generic [ref=e249]: brass
+          - generic [ref=e250]:
+            - generic [ref=e251]: polyvibe.rbm
+            - link "Download Polyvibe" [ref=e252] [cursor=pointer]:
+              - /url: https://storage.1ink.us/rebirth_mods/polyvibe.rbm
+              - text: ↓ Download
+        - generic [ref=e253]:
+          - generic [ref=e254]:
+            - heading "Red Stripe" [level=3] [ref=e255]
+            - generic [ref=e256]: "1999"
+          - generic [ref=e257]: Thomas & Wolfgang Merkle
+          - paragraph [ref=e258]: An official branding campaign mod created through UK agency 5emedia; requires transport at 338 BPM for fast drum roll effects.
+          - generic [ref=e259]:
+            - generic [ref=e260]: official
+            - generic [ref=e261]: campaign
+            - generic [ref=e262]: dnb
+            - generic [ref=e263]: fast
+          - generic [ref=e264]:
+            - generic [ref=e265]: Red_Stripe_a6.rbm
+            - link "Download Red Stripe" [ref=e266] [cursor=pointer]:
+              - /url: https://storage.1ink.us/rebirth_mods/Red_Stripe_a6.rbm
+              - text: ↓ Download
+        - generic [ref=e267]:
+          - heading "X-Anvers" [level=3] [ref=e269]
+          - generic [ref=e270]: Unknown
+          - paragraph [ref=e271]: A house-style mod featuring pads and synth bleeps that react beautifully to the Pattern Controlled Filter.
+          - generic [ref=e272]:
+            - generic [ref=e273]: house
+            - generic [ref=e274]: pads
+            - generic [ref=e275]: synth
+            - generic [ref=e276]: experimental
+          - generic [ref=e277]:
+            - generic [ref=e278]: X-Anvers.rbm
+            - link "Download X-Anvers" [ref=e279] [cursor=pointer]:
+              - /url: https://storage.1ink.us/rebirth_mods/X-Anvers.rbm
+              - text: ↓ Download
+      - paragraph [ref=e281]:
+        - text: Want to add documentation for a mod?
+        - link "Open an issue on GitHub" [ref=e282] [cursor=pointer]:
+          - /url: https://github.com/ford442/rebirth_website/issues
+        - text: with the mod filename and details.
+  - contentinfo [ref=e283]:
+    - generic [ref=e284]:
+      - paragraph [ref=e285]: ReBirth RB-338 Archive — Community-maintained. Not affiliated with Propellerhead Software.
+      - paragraph [ref=e286]:
+        - text: Built with
+        - link "Astro" [ref=e287] [cursor=pointer]:
+          - /url: https://astro.build
+        - text: —
+        - link "Contribute on GitHub" [ref=e288] [cursor=pointer]:
+          - /url: https://github.com/ford442/rebirth_website

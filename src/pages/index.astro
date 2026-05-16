@@ -1,43 +1,114 @@
 ---
 // src/pages/index.astro — Landing page for the ReBirth RB-338 Community Archive
 import BaseLayout from '../layouts/BaseLayout.astro';
+import HardwarePanel from '../components/ui/HardwarePanel.astro';
+import Led from '../components/ui/Led.astro';
+import Lcd from '../components/ui/Lcd.astro';
+import Knob from '../components/ui/Knob.astro';
+import StepButton from '../components/ui/StepButton.astro';
+import ActionButton from '../components/ui/ActionButton.astro';
+import TransportButton from '../components/ui/TransportButton.astro';
+import RbsPlayer from '../components/RbsPlayer.astro';
 import ModCard from '../components/ModCard.astro';
 
-const featuredSongs = [
+/* ── Types ─────────────────────────────────────────────────────── */
+
+interface FeaturedItem {
+  title: string;
+  fileType: '.rbm' | '.rbs';
+  description: string;
+  author: string;
+  tags: string[];
+  href: string;
+  target?: string;
+  rel?: string;
+}
+
+/* ── Data ──────────────────────────────────────────────────────── */
+
+const featuredSongs: FeaturedItem[] = [
   {
-    title: 'AcidLine303',
+    title: 'Cavey — Acid Lockdown',
     fileType: '.rbs',
-    description: 'Classic TB-303-inspired acid bassline with 909 kick pattern.',
-    author: 'ford442',
-    tags: ['acid', '303', '909'],
-    href: '#',
+    description: 'Razor-sharp 303 lines locked into a hypnotic groove. From the legendary Cavey artist collection.',
+    author: 'Cavey',
+    tags: ['acid', '303', 'lockgroove'],
+    href: 'http://test.1ink.us/rb338/archive/rbs-songs/Artists/Cavey',
+    target: '_blank',
+    rel: 'noopener noreferrer',
   },
   {
-    title: 'IndustrialBeat01',
+    title: 'DJ Knightmare — Factory Sequence',
     fileType: '.rbs',
-    description: 'Hard-driving industrial percussion sequence demonstrating RB-338 pattern chaining.',
-    author: 'archive',
-    tags: ['industrial', 'percussion'],
-    href: '#',
+    description: 'Dark industrial percussion and distorted synth stabs built for warehouse playback.',
+    author: 'DJ Knightmare',
+    tags: ['industrial', 'techno', 'dark'],
+    href: 'http://test.1ink.us/rb338/archive/rbs-songs/Artists/DJ%20Knightmare',
+    target: '_blank',
+    rel: 'noopener noreferrer',
+  },
+  {
+    title: 'Noah Cohn — Euro Acid Line',
+    fileType: '.rbs',
+    description: 'Extended acid journey through European rave aesthetics. One of the most complete artist archives on the site.',
+    author: 'Noah Cohn',
+    tags: ['acid', 'euro', 'classic'],
+    href: 'http://test.1ink.us/rb338/archive/rbs-songs/Artists/Noah_Cohn_Complete',
+    target: '_blank',
+    rel: 'noopener noreferrer',
+  },
+  {
+    title: 'Fanatic — Saturday Morning Sessions',
+    fileType: '.rbs',
+    description: 'Eclectic breaks and melodic hooks that channel retro cartoon energy into ReBirth patterns.',
+    author: 'Fanatic',
+    tags: ['breaks', 'eclectic', 'melodic'],
+    href: 'http://test.1ink.us/rb338/archive/rbs-songs/Artists/Fanatic',
+    target: '_blank',
+    rel: 'noopener noreferrer',
   },
 ];
 
-const featuredMods = [
+const featuredMods: FeaturedItem[] = [
   {
-    title: 'TB303_Silver',
+    title: 'Metallicon',
     fileType: '.rbm',
-    description: 'Silver-panel skin for the 303 emulation module. Faithful recreation of the hardware finish.',
-    author: 'archive',
-    tags: ['skin', '303', 'silver'],
-    href: '#',
+    description: 'One of the four official default mods from the original ReBirth 2.0.1 CD-ROM. Classic metal drums and aggressive bass.',
+    author: 'Propellerhead',
+    tags: ['official', 'classic', 'metal'],
+    href: 'https://storage.1ink.us/rebirth_mods/Metallicon.rbm',
+    target: '_blank',
+    rel: 'noopener noreferrer',
   },
   {
-    title: 'BassStation_Mk2',
+    title: 'Red Stripe',
     fileType: '.rbm',
-    description: 'Alternate waveform table mod introducing a sawtooth variant not present in stock firmware.',
-    author: 'archive',
-    tags: ['waveform', 'bass'],
-    href: '#',
+    description: 'Official UK campaign mod built for a branding push. Run it at 338 BPM for full drum-roll chaos.',
+    author: 'Thomas & Wolfgang Merkle',
+    tags: ['official', 'dnb', 'fast'],
+    href: 'https://storage.1ink.us/rebirth_mods/Red_Stripe_a6.rbm',
+    target: '_blank',
+    rel: 'noopener noreferrer',
+  },
+  {
+    title: 'Infernalizer',
+    fileType: '.rbm',
+    description: 'Hailed historically as "The Most Beautiful Mod Ever." Church organ, sharp drums, and dark synths.',
+    author: 'Jesuspark',
+    tags: ['dark', 'organ', 'award-winning'],
+    href: 'https://storage.1ink.us/rebirth_mods/INFERNALIZER.rbm',
+    target: '_blank',
+    rel: 'noopener noreferrer',
+  },
+  {
+    title: 'AnokhaV2',
+    fileType: '.rbm',
+    description: 'Sitar loops, tabla samples, and Indian deity artwork. A world-music mod unlike anything else in the archive.',
+    author: 'Sam Laleo Singh',
+    tags: ['ethnic', 'world', 'sitar'],
+    href: 'https://storage.1ink.us/rebirth_mods/AnokhaV2.rbm',
+    target: '_blank',
+    rel: 'noopener noreferrer',
   },
 ];
 
@@ -46,12 +117,8 @@ const songPattern  = [1,0,0,0, 1,0,1,0, 0,0,1,0, 1,0,0,1];
 const bassPattern  = [1,0,1,0, 0,1,0,0, 1,0,0,1, 0,1,0,0];
 const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
 
-const normalizeBase = (value: string) => {
-  const rawBase = value ?? '';
-  if (rawBase === '/' || rawBase === '') return '';
-  const trimmed = rawBase.replace(/\/+$/, '');
-  return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-};
+import { normalizeBase } from '../lib/url';
+
 const base = normalizeBase(import.meta.env.BASE_URL);
 ---
 
@@ -63,52 +130,36 @@ const base = normalizeBase(import.meta.env.BASE_URL);
   <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
   <!-- ║  PANEL 1: MASTER HEADER — Chassis panel                              ║ -->
   <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
-  <section aria-label="Archive master header" class="rb-panel rb-panel--chassis">
-    <span aria-hidden="true" class="rb-screw rb-screw--tl cross"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--tr"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--bl"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--br cross"></span>
-
-    <div class="rb-panel__header" style="justify-content:center;">
-      <span class="rb-panel__title">MASTER CONTROL</span>
-      <span class="rb-led rb-led--online">
-        <span class="rb-led__dot"></span>
-        ONLINE
-      </span>
+  <HardwarePanel
+    ariaLabel="Archive master header"
+    variant="rackmount-chassis"
+    animate
+    class="rb-panel--center-header rb-panel--padded-body"
+  >
+    <h1 class="master-title">
+      <span class="master-title__label">COMMUNITY ARCHIVE</span>
+      <span class="master-title__main">ReBirth RB-338</span>
+      <span class="master-title__tagline">Legacy Software Synthesizer</span>
+    </h1>
+    <div class="master-leds">
+      <Led status="online" label="ARCHIVE ONLINE" />
+      <Led status="pending" label="WASM PENDING" />
     </div>
-
-    <div class="rb-panel__body" style="padding:1.5rem 1rem;">
-      <h1 class="master-title">
-        <span class="master-title__label">COMMUNITY ARCHIVE</span>
-        <span class="master-title__main">ReBirth RB-338</span>
-        <span class="master-title__tagline">Legacy Software Synthesizer</span>
-      </h1>
-      <div class="master-leds">
-        <span aria-label="Archive online" class="rb-led rb-led--online">
-          <span class="rb-led__dot"></span>
-          ARCHIVE ONLINE
-        </span>
-        <span aria-label="WASM engine pending" class="rb-led rb-led--pending">
-          <span class="rb-led__dot"></span>
-          WASM PENDING
-        </span>
+    <div class="master-stats">
+      <div class="master-stat">
+        <span class="master-stat__value">2000+</span>
+        <span class="master-stat__label">Songs</span>
       </div>
-      <div class="master-stats">
-        <div class="master-stat">
-          <span class="master-stat__value">2000+</span>
-          <span class="master-stat__label">Songs</span>
-        </div>
-        <div class="master-stat">
-          <span class="master-stat__value">500+</span>
-          <span class="master-stat__label">Mods</span>
-        </div>
-        <div class="master-stat">
-          <span class="master-stat__value">v2.0.1</span>
-          <span class="master-stat__label">Latest</span>
-        </div>
+      <div class="master-stat">
+        <span class="master-stat__value">500+</span>
+        <span class="master-stat__label">Mods</span>
+      </div>
+      <div class="master-stat">
+        <span class="master-stat__value">v2.0.1</span>
+        <span class="master-stat__label">Latest</span>
       </div>
     </div>
-  </section>
+  </HardwarePanel>
 
   <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
   <!-- ║  INSTRUMENT STRIP (between panels — model badge + status + transport) ║ -->
@@ -119,78 +170,50 @@ const base = normalizeBase(import.meta.env.BASE_URL);
       <span class="model-badge__model">RB-338</span>
     </div>
     <div aria-label="System status" class="status-cluster" role="status">
-      <span class="rb-led rb-led--online">
-        <span class="rb-led__dot"></span>
-        ARCHIVE ONLINE
-      </span>
-      <span class="rb-led rb-led--pending">
-        <span class="rb-led__dot"></span>
-        WASM PENDING
-      </span>
-      <span class="rb-led rb-led--offline">
-        <span class="rb-led__dot"></span>
-        MIDI OFFLINE
-      </span>
+      <Led status="online" label="ARCHIVE ONLINE" />
+      <Led status="pending" label="WASM PENDING" />
+      <Led status="offline" label="MIDI OFFLINE" />
     </div>
     <nav aria-label="Transport controls" class="rb-transport">
-      <a aria-label="Browse Songs" class="rb-transport-btn rb-transport-btn--play" href={`${base}/archive/songs/index.html`} title="Browse Songs">▶</a>
-      <a aria-label="Browse Mods" class="rb-transport-btn rb-transport-btn--rec" href={`${base}/archive/mods/index.html`} title="Browse Mods">●</a>
-      <a aria-label="Docs" class="rb-transport-btn" href={`${base}/docs`} title="Documentation">■</a>
+      <TransportButton variant="play" href={`${base}/archive/songs/index.html`} ariaLabel="Browse Songs" title="Browse Songs">▶</TransportButton>
+      <TransportButton variant="rec" href={`${base}/archive/mods/index.html`} ariaLabel="Browse Mods" title="Browse Mods">●</TransportButton>
+      <TransportButton href={`${base}/docs`} ariaLabel="Docs" title="Documentation">■</TransportButton>
     </nav>
   </div>
 
   <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
   <!-- ║  PANEL 2: SYSTEM STATUS + TERMINAL (side by side on desktop)       ║ -->
   <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
-  <section aria-label="System status and terminal readout" class="rb-panel rb-panel--amber">
-    <span aria-hidden="true" class="rb-screw rb-screw--tl"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--tr cross"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--bl cross"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--br"></span>
-
-    <div class="rb-panel__header">
-      <span class="rb-panel__title">SYSTEM STATUS</span>
-      <span class="rb-led rb-led--online">
-        <span class="rb-led__dot"></span>
-        LIVE
-      </span>
-    </div>
-
-    <div class="rb-panel__body">
-      <div class="hero-body">
-        <!-- Left column: LCD stats -->
-        <div class="hero-left">
-          <div class="lcd-stats">
-            <div aria-label="Songs count" class="rb-lcd">
-              <div class="lcd-label">SONGS</div>
-              <div class="lcd-value">2000<span class="lcd-unit">+</span></div>
-            </div>
-            <div aria-label="Mods count" class="rb-lcd">
-              <div class="lcd-label">MODS</div>
-              <div class="lcd-value">500<span class="lcd-unit">+</span></div>
-            </div>
-            <div aria-label="Version" class="rb-lcd">
-              <div class="lcd-label">VERSION</div>
-              <div class="lcd-value lcd-value--sm">2.0.1</div>
-            </div>
-            <div aria-label="Artists" class="rb-lcd">
-              <div class="lcd-label">ARTISTS</div>
-              <div class="lcd-value">8</div>
-            </div>
-          </div>
+  <HardwarePanel
+    ariaLabel="System status and terminal readout"
+    variant="rackmount-module"
+    animate
+    title="SYSTEM STATUS"
+    ledStatus="online"
+    ledLabel="LIVE"
+  >
+    <div class="hero-body">
+      <!-- Left column: LCD stats -->
+      <div class="hero-left">
+        <div class="lcd-stats">
+          <Lcd label="SONGS" value="2000" unit="+" ariaLabel="Songs count" />
+          <Lcd label="MODS" value="500" unit="+" ariaLabel="Mods count" />
+          <Lcd label="VERSION" value="2.0.1" size="sm" ariaLabel="Version" />
+          <Lcd label="ARTISTS" value="8" ariaLabel="Artists" />
         </div>
+      </div>
 
-        <!-- Right column: terminal readout -->
-        <aside aria-label="System readout" class="hero-right">
-          <h2 class="sr-only" id="hero-heading">ReBirth RB-338 Community Archive</h2>
-          <div class="rb-terminal hero-terminal">
-            <div class="rb-terminal__bar">
-              <span aria-hidden="true" class="dot dot--red"></span>
-              <span aria-hidden="true" class="dot dot--amber"></span>
-              <span aria-hidden="true" class="dot dot--green"></span>
-              <span class="rb-terminal__title">rb338_archive.sh</span>
-            </div>
-            <pre aria-label="System status terminal" class="rb-terminal__body"><code>$ rb338 --status
+      <!-- Right column: terminal readout -->
+      <aside aria-label="System readout" class="hero-right">
+        <h2 class="sr-only" id="hero-heading">ReBirth RB-338 Community Archive</h2>
+        <div class="rb-terminal hero-terminal">
+          <div class="rb-terminal__bar">
+            <span aria-hidden="true" class="dot dot--red"></span>
+            <span aria-hidden="true" class="dot dot--amber"></span>
+            <span aria-hidden="true" class="dot dot--green"></span>
+            <span class="rb-terminal__title">rb338_archive.sh</span>
+          </div>
+          <pre aria-label="System status terminal" class="rb-terminal__body"><code>$ rb338 --status
 <span class="t-green">▶ ARCHIVE ONLINE</span>
   est    : <span class="t-amber">1997</span>
   songs  : <span class="t-green">2000+</span>
@@ -208,288 +231,200 @@ $ rb338 --about
   Released <span class="t-amber">1997</span> · Abandonware <span class="t-amber">2005</span>
 
 $ _<span class="cursor-blink">█</span></code></pre>
-          </div>
-        </aside>
-      </div>
+        </div>
+      </aside>
     </div>
-  </section>
+  </HardwarePanel>
 
   <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
   <!-- ║  PANEL 3: 303 CONTROLS + ACTIONS                                    ║ -->
   <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
-  <section aria-label="303 synthesizer controls and archive actions" class="rb-panel">
-    <span aria-hidden="true" class="rb-screw rb-screw--tl cross"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--tr"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--bl"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--br cross"></span>
-
-    <div class="rb-panel__header">
-      <span class="rb-panel__title">303 — CONTROLS</span>
-      <span class="rb-led rb-led--online">
-        <span class="rb-led__dot"></span>
-        ACTIVE
-      </span>
+  <HardwarePanel
+    ariaLabel="303 synthesizer controls and archive actions"
+    animate
+    variant="rackmount"
+    title="303 — CONTROLS"
+    ledStatus="online"
+    ledLabel="ACTIVE"
+  >
+    <div class="rb-knob-row">
+      <Knob label="TUNE" rotation={-20} />
+      <Knob label="CUT OFF" rotation={30} />
+      <Knob label="RES" rotation={-45} />
+      <Knob label="ENV MOD" rotation={10} />
+      <Knob label="DECAY" rotation={-30} />
+      <Knob label="ACCENT" rotation={50} />
     </div>
-
-    <div class="rb-panel__body">
-      <div class="rb-knob-row">
-        <div class="rb-knob">
-          <div aria-hidden="true" class="rb-knob__dial" style="transform: rotate(-20deg)"></div>
-          <span class="rb-knob__label">TUNE</span>
-        </div>
-        <div class="rb-knob">
-          <div aria-hidden="true" class="rb-knob__dial" style="transform: rotate(30deg)"></div>
-          <span class="rb-knob__label">CUT OFF</span>
-        </div>
-        <div class="rb-knob">
-          <div aria-hidden="true" class="rb-knob__dial" style="transform: rotate(-45deg)"></div>
-          <span class="rb-knob__label">RES</span>
-        </div>
-        <div class="rb-knob">
-          <div aria-hidden="true" class="rb-knob__dial" style="transform: rotate(10deg)"></div>
-          <span class="rb-knob__label">ENV MOD</span>
-        </div>
-        <div class="rb-knob">
-          <div aria-hidden="true" class="rb-knob__dial" style="transform: rotate(-30deg)"></div>
-          <span class="rb-knob__label">DECAY</span>
-        </div>
-        <div class="rb-knob">
-          <div aria-hidden="true" class="rb-knob__dial" style="transform: rotate(50deg)"></div>
-          <span class="rb-knob__label">ACCENT</span>
-        </div>
-      </div>
-      <div class="action-btns">
-        <a class="rb-pattern-btn" href={`${base}/archive/songs/index.html`}>Browse Songs</a>
-        <a class="rb-mix-btn" href={`${base}/archive/mods/index.html`}>Browse Mods</a>
-      </div>
+    <div class="action-btns">
+      <ActionButton variant="pattern" href={`${base}/archive/songs/index.html`}>Browse Songs</ActionButton>
+      <ActionButton variant="mix" href={`${base}/archive/mods/index.html`}>Browse Mods</ActionButton>
     </div>
-  </section>
+  </HardwarePanel>
 
   <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
   <!-- ║  PANEL 4: STEP SEQUENCER (red accent)                              ║ -->
   <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
-  <section aria-label="Step sequencer display" class="rb-panel rb-panel--red">
-    <span aria-hidden="true" class="rb-screw rb-screw--tl"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--tr cross"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--bl cross"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--br"></span>
-
-    <div class="rb-panel__header">
+  <HardwarePanel
+    ariaLabel="Step sequencer display"
+    variant="rackmount-module"
+    animate
+  >
+    <div class="rb-panel__header" slot="header">
       <span class="rb-panel__title">TB-303 — STEP SEQUENCER</span>
       <div aria-hidden="true" class="seq-track-labels">
         <span class="seq-label seq-label--song">SONG</span>
         <span class="seq-label seq-label--bass">BASS</span>
         <span class="seq-label seq-label--kick">KICK</span>
       </div>
-      <span class="step-counter rb-led rb-led--online">
-        <span class="rb-led__dot"></span>
-        16 STEPS
-      </span>
+      <Led status="online" label="16 STEPS" ariaHidden={true} />
     </div>
 
-    <div class="rb-panel__body">
-      <div class="seq-tracks">
-        <!-- Song pattern row -->
-        <div aria-label="Song pattern" class="seq-row" role="group">
-          <span class="seq-row__label">SONG</span>
-          <div aria-hidden="true" class="rb-step-grid">
-            {songPattern.map((active, i) => (
-              <button
-                class={`rb-step-btn${active ? ' active' : ''}${i % 4 === 0 ? ' beat' : ''}`}
-                aria-label={`Step ${i+1} ${active ? 'on' : 'off'}`}
-                title={`Step ${i+1}`}
-                tabindex="-1"
-              />
-            ))}
-          </div>
-        </div>
-        <!-- Bass pattern row -->
-        <div aria-label="Bass pattern" class="seq-row" role="group">
-          <span class="seq-row__label">BASS</span>
-          <div aria-hidden="true" class="rb-step-grid">
-            {bassPattern.map((active, i) => (
-              <button
-                class={`rb-step-btn${active ? ' active' : ''}${i % 4 === 0 ? ' beat' : ''}`}
-                aria-label={`Step ${i+1} ${active ? 'on' : 'off'}`}
-                title={`Step ${i+1}`}
-                tabindex="-1"
-              />
-            ))}
-          </div>
-        </div>
-        <!-- Kick pattern row -->
-        <div aria-label="Kick pattern" class="seq-row seq-row--kick" role="group">
-          <span class="seq-row__label">KICK</span>
-          <div aria-hidden="true" class="rb-step-grid">
-            {kickPattern.map((active, i) => (
-              <button
-                class={`rb-step-btn${active ? ' beat' : ''}`}
-                style={active ? 'background: linear-gradient(180deg,#ffb000 0%,#a07800 100%); border-color: #b37800; box-shadow: 0 0 8px rgba(255,176,0,0.4);' : ''}
-                aria-label={`Step ${i+1} ${active ? 'on' : 'off'}`}
-                title={`Step ${i+1}`}
-                tabindex="-1"
-              />
-            ))}
-          </div>
+    <div class="seq-tracks">
+      <!-- Song pattern row -->
+      <div aria-label="Song pattern" class="seq-row" role="group">
+        <span class="seq-row__label">SONG</span>
+        <div aria-hidden="true" class="rb-step-grid">
+          {songPattern.map((active, i) => (
+            <StepButton
+              active={active === 1}
+              beat={i % 4 === 0}
+              ariaLabel={`Step ${i+1} ${active ? 'on' : 'off'}`}
+              title={`Step ${i+1}`}
+            />
+          ))}
         </div>
       </div>
-      <!-- Step numbers -->
-      <div aria-hidden="true" class="seq-numbers">
-        <span class="seq-row__label"></span>
-        <div class="seq-num-row">
-          {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].map(n => (
-            <span class="seq-num">{n}</span>
+      <!-- Bass pattern row -->
+      <div aria-label="Bass pattern" class="seq-row" role="group">
+        <span class="seq-row__label">BASS</span>
+        <div aria-hidden="true" class="rb-step-grid">
+          {bassPattern.map((active, i) => (
+            <StepButton
+              active={active === 1}
+              beat={i % 4 === 0}
+              ariaLabel={`Step ${i+1} ${active ? 'on' : 'off'}`}
+              title={`Step ${i+1}`}
+            />
+          ))}
+        </div>
+      </div>
+      <!-- Kick pattern row -->
+      <div aria-label="Kick pattern" class="seq-row seq-row--kick" role="group">
+        <span class="seq-row__label">KICK</span>
+        <div aria-hidden="true" class="rb-step-grid">
+          {kickPattern.map((active, i) => (
+            <StepButton
+              active={active === 1}
+              beat={i % 4 === 0}
+              ariaLabel={`Step ${i+1} ${active ? 'on' : 'off'}`}
+              title={`Step ${i+1}`}
+            />
           ))}
         </div>
       </div>
     </div>
-  </section>
+    <!-- Step numbers -->
+    <div aria-hidden="true" class="seq-numbers">
+      <span class="seq-row__label"></span>
+      <div class="seq-num-row">
+        {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].map(n => (
+          <span class="seq-num">{n}</span>
+        ))}
+      </div>
+    </div>
+  </HardwarePanel>
 
   <hr class="etched" />
 
   <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
   <!-- ║  PANEL 5: ABOUT INFO (3-column grid)                                ║ -->
   <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
-  <section aria-labelledby="about-heading" class="rb-panel">
-    <span aria-hidden="true" class="rb-screw rb-screw--tl"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--tr"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--bl"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--br"></span>
-
-    <div class="rb-panel__header">
-      <span class="rb-panel__title">INFORMATION MODULES</span>
-      <span class="rb-led rb-led--online">
-        <span class="rb-led__dot"></span>
-        OK
-      </span>
-    </div>
-
-    <div class="rb-panel__body">
-      <h2 class="sr-only" id="about-heading">About the Archive</h2>
-      <div class="about-row">
-        <div class="about-modules">
-          <article class="rb-file-card">
-            <div class="rb-panel__header" style="background:none;border:none;padding:0;margin-bottom:.5rem;">
-              <span class="rb-panel__title">WHAT IS REBIRTH?</span>
-              <span aria-hidden="true" class="rb-screw" style="position:static;"></span>
-            </div>
-            <p>Released by Propellerhead Software in <strong>1997</strong>, <strong>ReBirth RB-338</strong> was one of the first software synthesizers to faithfully emulate the <strong>Roland TB-303</strong> Bass Line and the Roland TR-808 / TR-909 drum machines. It became a cornerstone of electronic music production and is now freely available as abandonware.</p>
-          </article>
-          <article class="rb-file-card">
-            <div class="rb-panel__header" style="background:none;border:none;padding:0;margin-bottom:.5rem;">
-              <span class="rb-panel__title">WHAT IS THIS SITE?</span>
-              <span aria-hidden="true" class="rb-screw" style="position:static;"></span>
-            </div>
-            <p>This community archive preserves <code>.rbs</code> song files and <code>.rbm</code> mod files contributed by enthusiasts worldwide. It also hosts historical documentation spanning versions <code>1.0</code> through <code>2.0.1</code> and lays the groundwork for in-browser <code>.rbs</code> preview via WebAssembly.</p>
-          </article>
-          <article class="rb-file-card">
-            <div class="rb-panel__header" style="background:none;border:none;padding:0;margin-bottom:.5rem;">
-              <span class="rb-panel__title">HOW TO CONTRIBUTE?</span>
-              <span aria-hidden="true" class="rb-screw" style="position:static;"></span>
-            </div>
-            <p>Open a pull request on the <a href="https://github.com/ford442/rebirth_website" rel="noopener noreferrer" target="_blank">GitHub repository</a>. Place song files in <code>public/archive/rbs-songs/</code> and mod files in <code>public/archive/rbm-mods/</code>. See the <a href={`${base}/docs`}>documentation</a> for naming conventions and metadata requirements.</p>
-          </article>
-        </div>
+  <HardwarePanel
+    ariaLabelledBy="about-heading"
+    animate
+    variant="rackmount"
+    title="INFORMATION MODULES"
+    ledStatus="online"
+    ledLabel="OK"
+  >
+    <h2 class="sr-only" id="about-heading">About the Archive</h2>
+    <div class="about-row">
+      <div class="about-modules">
+        <article class="rb-file-card rb-card-rack">
+          <div class="rb-panel__header rb-panel--clean-header">
+            <span class="rb-panel__title">WHAT IS REBIRTH?</span>
+            <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
+          </div>
+          <p>Released by Propellerhead Software in <strong>1997</strong>, <strong>ReBirth RB-338</strong> was one of the first software synthesizers to faithfully emulate the <strong>Roland TB-303</strong> Bass Line and the Roland TR-808 / TR-909 drum machines. It became a cornerstone of electronic music production and is now freely available as abandonware.</p>
+        </article>
+        <article class="rb-file-card rb-card-rack">
+          <div class="rb-panel__header rb-panel--clean-header">
+            <span class="rb-panel__title">WHAT IS THIS SITE?</span>
+            <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
+          </div>
+          <p>This community archive preserves <code>.rbs</code> song files and <code>.rbm</code> mod files contributed by enthusiasts worldwide. It also hosts historical documentation spanning versions <code>1.0</code> through <code>2.0.1</code> and lays the groundwork for in-browser <code>.rbs</code> preview via WebAssembly.</p>
+        </article>
+        <article class="rb-file-card rb-card-rack">
+          <div class="rb-panel__header rb-panel--clean-header">
+            <span class="rb-panel__title">HOW TO CONTRIBUTE?</span>
+            <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
+          </div>
+          <p>Open a pull request on the <a href="https://github.com/ford442/rebirth_website" rel="noopener noreferrer" target="_blank">GitHub repository</a>. Place song files in <code>public/archive/rbs-songs/</code> and mod files in <code>public/archive/rbm-mods/</code>. See the <a href={`${base}/docs`}>documentation</a> for naming conventions and metadata requirements.</p>
+        </article>
       </div>
     </div>
-  </section>
+  </HardwarePanel>
 
   <hr class="etched" />
 
   <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
   <!-- ║  PANEL 6: FEATURED SONGS (green accent)                             ║ -->
   <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
-  <section aria-labelledby="songs-heading" class="rb-panel rb-panel--green">
-    <span aria-hidden="true" class="rb-screw rb-screw--tl"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--tr cross"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--bl cross"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--br"></span>
-
-    <div class="rb-panel__header">
-      <span class="rb-panel__title" id="songs-heading">FEATURED SONGS — .RBS</span>
-      <span class="rb-led rb-led--online">
-        <span class="rb-led__dot"></span>
-        2 FILES
-      </span>
+  <HardwarePanel
+    ariaLabelledBy="songs-heading"
+    variant="rackmount-module"
+    animate
+    title="FEATURED SONGS — .RBS"
+    ledStatus="online"
+    ledLabel="4 FILES"
+  >
+    <div class="featured-header">
+      <ActionButton variant="pattern" href={`${base}/archive/songs/index.html`}>All Songs →</ActionButton>
     </div>
-
-    <div class="rb-panel__body">
-      <div class="featured-header">
-        <a class="rb-pattern-btn" href={`${base}/archive/songs/index.html`}>All Songs →</a>
-      </div>
-      <div class="card-grid">
-        {featuredSongs.map((song) => (
-          <ModCard {...song} />
-        ))}
-      </div>
+    <div class="card-grid">
+      {featuredSongs.map((song) => (
+        <ModCard {...song} rackmount={true} />
+      ))}
     </div>
-  </section>
+  </HardwarePanel>
 
   <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
   <!-- ║  PANEL 7: FEATURED MODS (amber accent)                             ║ -->
   <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
-  <section aria-labelledby="mods-heading" class="rb-panel rb-panel--amber">
-    <span aria-hidden="true" class="rb-screw rb-screw--tl"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--tr cross"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--bl cross"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--br"></span>
-
-    <div class="rb-panel__header">
-      <span class="rb-panel__title" id="mods-heading">FEATURED MODS — .RBM</span>
-      <span class="rb-led rb-led--online">
-        <span class="rb-led__dot"></span>
-        2 FILES
-      </span>
+  <HardwarePanel
+    ariaLabelledBy="mods-heading"
+    variant="rackmount-module"
+    animate
+    title="FEATURED MODS — .RBM"
+    ledStatus="online"
+    ledLabel="4 FILES"
+  >
+    <div class="featured-header">
+      <ActionButton variant="mix" href={`${base}/archive/mods/index.html`}>All Mods →</ActionButton>
     </div>
-
-    <div class="rb-panel__body">
-      <div class="featured-header">
-        <a class="rb-mix-btn" href={`${base}/archive/mods/index.html`}>All Mods →</a>
-      </div>
-      <div class="card-grid">
-        {featuredMods.map((mod) => (
-          <ModCard {...mod} />
-        ))}
-      </div>
+    <div class="card-grid">
+      {featuredMods.map((mod) => (
+        <ModCard {...mod} rackmount={true} />
+      ))}
     </div>
-  </section>
+  </HardwarePanel>
 
   <hr class="etched" />
 
   <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
-  <!-- ║  WASM TEASER — Browser Playback Engine                            ║ -->
+  <!-- ║  WASM PLAYER — In-browser .rbs preview engine                       ║ -->
   <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
-  <section aria-labelledby="wasm-heading" class="rb-panel rb-panel--amber">
-    <span aria-hidden="true" class="rb-screw rb-screw--tl"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--tr"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--bl"></span>
-    <span aria-hidden="true" class="rb-screw rb-screw--br"></span>
-
-    <div class="rb-panel__header">
-      <span class="rb-panel__title">BROWSER PLAYBACK ENGINE</span>
-      <span class="rb-led rb-led--pending">
-        <span class="rb-led__dot"></span>
-        PENDING
-      </span>
-    </div>
-
-    <div class="rb-panel__body">
-      <div class="wasm-lcd-block">
-        <div class="rb-lcd wasm-lcd">
-          <div class="lcd-label">WASM ENGINE</div>
-          <div class="lcd-value lcd-value--sm">PENDING</div>
-        </div>
-        <div class="rb-lcd wasm-lcd">
-          <div class="lcd-label">WEB AUDIO</div>
-          <div class="lcd-value lcd-value--sm">READY</div>
-        </div>
-      </div>
-      <div class="wasm-text">
-        <h2 id="wasm-heading">Coming Soon: In-Browser .RBS Preview</h2>
-        <p>We are building a WebAssembly audio engine that will allow you to preview <code>.rbs</code> files directly in your browser — no software installation required. The module lives under <code>src/wasm/</code> and will parse the binary format, reconstruct the pattern data, and route it through the Web Audio API.</p>
-      </div>
-    </div>
-  </section>
+  <RbsPlayer title="BROWSER PLAYBACK ENGINE" />
 
 </BaseLayout>
 
@@ -512,15 +447,6 @@ $ _<span class="cursor-blink">█</span></code></pre>
     margin-bottom: 1rem;
   }
 
-  /* WASM text spacing */
-  .wasm-text {
-    margin-top: 1rem;
-  }
-
-  .wasm-text h2 {
-    margin-bottom: 0.5em;
-  }
-
   /* About module inner card heading override */
   .rb-file-card .rb-panel__header {
     gap: 0.5rem;
@@ -532,7 +458,13 @@ $ _<span class="cursor-blink">█</span></code></pre>
     gap: 1rem;
   }
 
-  @media (min-width: 800px) {
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .about-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
     .about-row {
       grid-template-columns: repeat(3, 1fr);
     }

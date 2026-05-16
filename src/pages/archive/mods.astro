@@ -2,10 +2,31 @@
 // src/pages/archive/mods.astro — Interactive RBM mods browser
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ModBrowserCard from '../../components/ModBrowserCard.astro';
+import HardwarePanel from '../../components/ui/HardwarePanel.astro';
+import Lcd from '../../components/ui/Lcd.astro';
+import Led from '../../components/ui/Led.astro';
 import modsData from '../../data/mods-metadata.json';
+import fullIndex from '../../data/mods-full-index.json';
 
 const documentedMods = modsData.mods || [];
 const totalDocumented = documentedMods.length;
+const allMods = fullIndex.mods || [];
+const totalRaw = allMods.length;
+
+// Group raw mods by first letter
+const letters = new Set<string>();
+allMods.forEach(m => {
+  const c = m.filename?.charAt(0)?.toUpperCase();
+  if (c) letters.add(c);
+});
+const alphaLetters = Array.from(letters).sort();
+
+const grouped = alphaLetters.map(letter => ({
+  letter,
+  mods: allMods.filter(m => m.filename?.charAt(0)?.toUpperCase() === letter),
+}));
+
+const baseModsUrl = 'https://storage.1ink.us/rebirth_mods';
 ---
 
 <BaseLayout 
@@ -19,57 +40,56 @@ const totalDocumented = documentedMods.length;
     <div class="rb-heading rb-heading-yellow">RBM Mods Archive</div>
 
     <!-- Header module -->
-    <div class="mods-header rb-module">
-      <div class="rb-module__header">
-        <span class="rb-module__title">RBM MODS ARCHIVE</span>
-        <span class="rb-led rb-led--online"><span class="rb-led__dot"></span>600+ FILES</span>
-      </div>
-      <div class="rb-module__body mods-header-body">
-        <p class="mods-subtitle">Download custom ReBirth module modifications and skins</p>
-        <p class="mods-info">Currently documenting {totalDocumented} of 600+ available mods. Missing metadata? <a href="https://github.com/ford442/rebirth_website" rel="noopener noreferrer" target="_blank">Contribute on GitHub →</a></p>
-      </div>
-    </div>
+    <HardwarePanel
+      animate
+      variant="rackmount-chassis"
+      class="mods-header"
+      title="RBM MODS ARCHIVE"
+      ledStatus="online"
+      ledLabel={`${totalRaw} FILES`}
+    >
+      <p class="mods-subtitle">Download custom ReBirth module modifications and skins</p>
+      <p class="mods-info">
+        <strong>{totalDocumented}</strong> mods fully documented with metadata. 
+        <strong>{totalRaw - totalDocumented}</strong> additional files available as raw downloads.
+        Missing info? <a href="https://github.com/ford442/rebirth_website" rel="noopener noreferrer" target="_blank">Contribute on GitHub →</a>
+      </p>
+    </HardwarePanel>
 
     <!-- Stats bar -->
     <div class="mods-stats">
-      <div class="rb-lcd" aria-label="Documented mods">
-        <div class="lcd-label">DOCUMENTED</div>
-        <div class="lcd-value">{totalDocumented}</div>
-      </div>
-      <div class="rb-lcd" aria-label="Total available">
-        <div class="lcd-label">TOTAL</div>
-        <div class="lcd-value">600<span class="lcd-unit">+</span></div>
-      </div>
-      <div class="rb-lcd" aria-label="Source">
-        <div class="lcd-label">SOURCE</div>
-        <div class="lcd-value">storage.1ink.us</div>
-      </div>
-      <div class="rb-lcd" aria-label="Status">
-        <div class="lcd-label">STATUS</div>
-        <div class="lcd-value">ACTIVE</div>
-      </div>
+      <Lcd label="DOCUMENTED" value={totalDocumented} ariaLabel="Documented mods" />
+      <Lcd label="TOTAL" value={totalRaw} ariaLabel="Total available" />
+      <Lcd label="SOURCE" value="storage.1ink.us" ariaLabel="Source" />
+      <Lcd label="STATUS" value="ACTIVE" ariaLabel="Status" />
     </div>
 
-    <!-- Search & Filter -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!--  DOCUMENTED MODS (rich cards)                                  -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="section-divider">
+      <span class="section-divider__label">Featured &amp; Documented Mods</span>
+    </div>
+
+    <!-- Search & Filter (documented only) -->
     <div class="search-filter-bar">
       <input
         type="text"
         id="modSearch"
-        placeholder="Search by title, author, or tag..."
+        placeholder="Search documented mods by title, author, or tag..."
         class="rb-search-input"
-        aria-label="Search mods"
+        aria-label="Search documented mods"
       />
       <div class="filter-tags">
-        <button class="tag-filter active" data-tag="" aria-label="Show all mods">All</button>
-        <button class="tag-filter" data-tag="industrial" aria-label="Filter industrial mods">Industrial</button>
-        <button class="tag-filter" data-tag="house" aria-label="Filter house mods">House</button>
-        <button class="tag-filter" data-tag="dark" aria-label="Filter dark mods">Dark</button>
-        <button class="tag-filter" data-tag="synth" aria-label="Filter synth mods">Synth</button>
-        <button class="tag-filter" data-tag="official" aria-label="Filter official mods">Official</button>
+        <button class="rb-tag-filter active" data-tag="" aria-label="Show all mods">All</button>
+        <button class="rb-tag-filter" data-tag="industrial" aria-label="Filter industrial mods">Industrial</button>
+        <button class="rb-tag-filter" data-tag="house" aria-label="Filter house mods">House</button>
+        <button class="rb-tag-filter" data-tag="dark" aria-label="Filter dark mods">Dark</button>
+        <button class="rb-tag-filter" data-tag="synth" aria-label="Filter synth mods">Synth</button>
+        <button class="rb-tag-filter" data-tag="official" aria-label="Filter official mods">Official</button>
       </div>
     </div>
 
-    <!-- Mods grid -->
     <div id="modsGrid" class="mods-grid" role="main">
       {documentedMods.map((mod: any) => (
         <ModBrowserCard
@@ -79,14 +99,100 @@ const totalDocumented = documentedMods.length;
           year={mod.year}
           description={mod.description}
           tags={mod.tags}
+          rackmount={true}
         />
       ))}
     </div>
 
-    <!-- Empty state -->
-    <div id="emptyState" style="display:none" class="empty-state">
-      <p>No mods match your search. Try different keywords or filters.</p>
+    <div id="emptyState" class="rb-empty-state is-hidden">
+      <p>No documented mods match your search. Try different keywords or browse the complete index below.</p>
     </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!--  COMPLETE MOD INDEX (all 367 files)                            -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="section-divider">
+      <span class="section-divider__label">Complete Mod Index</span>
+    </div>
+
+    <HardwarePanel
+      variant="rackmount"
+      animate
+      title="ALL AVAILABLE .RBM FILES"
+      ledStatus="online"
+      ledLabel={`${totalRaw} FILES`}
+    >
+      <!-- Raw index search -->
+      <div class="raw-search-row">
+        <input
+          type="text"
+          id="rawSearch"
+          placeholder="Filter all {totalRaw} filenames..."
+          class="rb-search-input"
+          aria-label="Filter complete mod index"
+        />
+        <span id="rawCount" class="raw-count">{totalRaw} files</span>
+      </div>
+
+      <!-- A-Z jump nav -->
+      <nav class="az-nav" aria-label="Jump to letter">
+        {alphaLetters.map(letter => (
+          <a href={`#letter-${letter}`} class="az-nav__link">{letter}</a>
+        ))}
+      </nav>
+
+      <!-- Grouped list -->
+      <div id="rawIndex" class="raw-index">
+        {grouped.map(({ letter, mods }) => (
+          <section class="raw-group" id={`letter-${letter}`} data-letter={letter}>
+            <h2 class="raw-group__heading">
+              <span class="raw-group__letter">{letter}</span>
+              <Led status="online" label={`${mods.length} FILE${mods.length !== 1 ? 'S' : ''}`} ariaHidden={true} />
+            </h2>
+            <div class="raw-list">
+              {mods.map(m => (
+                <div class={`raw-item ${m.hasMeta ? 'raw-item--documented' : ''}`} data-filename={m.filename.toLowerCase()}>
+                  <div class="raw-item__main">
+                    <span class="raw-item__name">
+                      {m.filename.replace(/\.rbm$/i, '')}
+                    </span>
+                    <span class="raw-item__size">{m.size}</span>
+                    {m.hasMeta && (
+                      <span class="raw-item__badge">DOC</span>
+                    )}
+                  </div>
+                  {m.hasMeta && m.title && (
+                    <div class="raw-item__meta">
+                      <span class="raw-item__title">{m.title}</span>
+                      {m.author && <span class="raw-item__author">by {m.author}</span>}
+                      {m.tags && m.tags.length > 0 && (
+                        <span class="raw-item__tags">
+                          {m.tags.slice(0, 3).map((tag: string) => (
+                            <span class="raw-tag">{tag}</span>
+                          ))}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  <a
+                    href={`${baseModsUrl}/${encodeURIComponent(m.filename)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="raw-item__link"
+                    aria-label={`Download ${m.filename}`}
+                    title="Download"
+                  >↓</a>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      <div id="rawEmpty" class="rb-empty-state is-hidden">
+        <p>No files match your filter.</p>
+      </div>
+    </HardwarePanel>
 
     <!-- Stats footer -->
     <div class="mods-footer">
@@ -105,11 +211,9 @@ const totalDocumented = documentedMods.length;
     min-height: 80vh;
   }
 
-  .mods-header {
-    margin-bottom: 1.5rem;
-  }
+  .mods-header { margin-bottom: 1.5rem; }
 
-  .mods-header-body {
+  .mods-header :global(.rb-panel__body) {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -145,10 +249,28 @@ const totalDocumented = documentedMods.length;
     margin-bottom: 2rem;
   }
 
-  .lcd-unit {
-    font-size: 0.6em;
-    color: #b37800;
-    margin-left: 1px;
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 2.5rem 0 1.5rem;
+  }
+
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #333, transparent);
+  }
+
+  .section-divider__label {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--rb-silver-dim);
+    white-space: nowrap;
   }
 
   .search-filter-bar {
@@ -158,70 +280,260 @@ const totalDocumented = documentedMods.length;
     margin-bottom: 2rem;
   }
 
-  .rb-search-input {
-    padding: 0.6em 1em;
-    background: #111;
-    border: 1px solid #3a3a3a;
-    border-radius: 3px;
-    color: #c0c0c0;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9rem;
-    outline: none;
-    transition: border-color 120ms ease;
-  }
-
-  .rb-search-input:focus {
-    border-color: #ffb000;
-    box-shadow: 0 0 0 2px rgba(255,176,0,0.15);
-  }
-
-  .rb-search-input::placeholder {
-    color: #555;
-  }
-
   .filter-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
   }
 
-  .tag-filter {
-    padding: 0.4em 0.8em;
-    background: transparent;
-    border: 1px solid #3a3a3a;
-    border-radius: 3px;
-    color: #888;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    cursor: pointer;
-    transition: all 120ms ease;
-  }
-
-  .tag-filter:hover {
-    border-color: #ffb000;
-    color: #ffb000;
-  }
-
-  .tag-filter.active {
-    background: rgba(255,176,0,0.15);
-    border-color: #ffb000;
-    color: #ffb000;
-  }
-
   .mods-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: 1fr;
     gap: 1.5rem;
     margin-bottom: 2rem;
   }
 
-  .empty-state {
-    text-align: center;
-    padding: 4rem 1rem;
+  @media (min-width: 640px) {
+    .mods-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .mods-grid {
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+  }
+
+  /* Raw index styling */
+  .raw-search-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .raw-search-row .rb-search-input {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .raw-count {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.75rem;
+    color: var(--rb-silver-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .az-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  .az-nav__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    min-height: 28px;
+    padding: 0.2em 0.5em;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: var(--rb-silver-dim);
+    background: linear-gradient(180deg, #2a2a2a 0%, #222 100%);
+    border: 1px solid var(--rb-border);
+    border-radius: 3px;
+    text-decoration: none;
+    transition: all 120ms ease;
+  }
+
+  .az-nav__link:hover {
+    color: var(--rb-amber);
+    border-color: var(--rb-amber-dim);
+    box-shadow: 0 0 8px rgba(255,176,0,0.1);
+  }
+
+  .raw-index {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .raw-group__heading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 0.5rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  .raw-group__letter {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--rb-amber);
+    text-shadow: 0 0 10px rgba(255,176,0,0.25);
+    min-width: 24px;
+  }
+
+  .raw-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  @media (min-width: 640px) {
+    .raw-list {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .raw-list {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .raw-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.6rem;
+    background: rgba(0,0,0,0.15);
+    border: 1px solid transparent;
+    border-radius: 4px;
+    transition: background 120ms ease, border-color 120ms ease;
+    position: relative;
+    flex-wrap: wrap;
+  }
+
+  .raw-item:hover {
+    background: rgba(255,176,0,0.04);
+    border-color: rgba(255,176,0,0.15);
+  }
+
+  .raw-item--documented {
+    background: rgba(57,255,20,0.03);
+    border-left: 2px solid var(--rb-green-dim);
+  }
+
+  .raw-item--documented:hover {
+    background: rgba(57,255,20,0.06);
+    border-color: rgba(57,255,20,0.2);
+  }
+
+  .raw-item__main {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .raw-item__name {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.8rem;
+    color: #aaa;
+    letter-spacing: 0.02em;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .raw-item__size {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.65rem;
+    color: #555;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .raw-item__badge {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 1px 4px;
+    border-radius: 2px;
+    background: rgba(57,255,20,0.1);
+    color: var(--rb-green-bright);
+    border: 1px solid var(--rb-green-dim);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .raw-item__meta {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    padding-top: 0.25rem;
+    margin-top: 0.25rem;
+    border-top: 1px solid rgba(255,255,255,0.03);
+  }
+
+  .raw-item__title {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.75rem;
+    color: var(--rb-amber);
+  }
+
+  .raw-item__author {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.7rem;
     color: #666;
-    font-size: 1rem;
+  }
+
+  .raw-item__tags {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+
+  .raw-tag {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.6rem;
+    padding: 1px 4px;
+    border-radius: 2px;
+    background: rgba(255,176,0,0.08);
+    color: var(--rb-amber-dim);
+    border: 1px solid rgba(255,176,0,0.15);
+  }
+
+  .raw-item__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.9rem;
+    color: var(--rb-silver-dim);
+    background: linear-gradient(180deg, #363636 0%, #282828 100%);
+    border: 1px solid var(--rb-border);
+    border-bottom: 2px solid #111;
+    border-radius: 3px;
+    text-decoration: none;
+    transition: all 120ms ease;
+  }
+
+  .raw-item__link:hover {
+    color: var(--rb-amber);
+    border-color: var(--rb-amber-dim);
+    box-shadow: 0 0 8px rgba(255,176,0,0.15);
   }
 
   .mods-footer {
@@ -232,6 +544,7 @@ const totalDocumented = documentedMods.length;
     background: linear-gradient(180deg, #1e1e1e 0%, #151515 100%);
     font-size: 0.85rem;
     color: #666;
+    margin-top: 2rem;
   }
 
   .mods-footer a {
@@ -244,24 +557,18 @@ const totalDocumented = documentedMods.length;
     color: #3dba66;
     text-decoration: underline;
   }
-
-  @media (max-width: 768px) {
-    .mods-grid {
-      grid-template-columns: 1fr;
-    }
-  }
 </style>
 
 <script>
+  /* ── Documented mods filter (existing) ───────────────────────── */
   const modSearch = document.getElementById('modSearch');
-  const tagFilters = document.querySelectorAll('.tag-filter');
+  const tagFilters = document.querySelectorAll('.rb-tag-filter');
   const emptyState = document.getElementById('emptyState');
   const modCards = document.querySelectorAll('.mod-card');
 
   function filterMods() {
-    const searchTerm = modSearch?.value.toLowerCase() ?? '';
-    const activeTag = document.querySelector('.tag-filter.active')?.getAttribute('data-tag') ?? '';
-    
+    const searchTerm = (modSearch as HTMLInputElement | null)?.value.toLowerCase() ?? '';
+    const activeTag = document.querySelector('.rb-tag-filter.active')?.getAttribute('data-tag') ?? '';
     let visibleCount = 0;
 
     modCards.forEach((card) => {
@@ -272,15 +579,13 @@ const totalDocumented = documentedMods.length;
       
       const matchesSearch = !searchTerm || title.includes(searchTerm) || author.includes(searchTerm) || description.includes(searchTerm);
       const matchesTag = !activeTag || tags.includes(activeTag);
-      
       const isVisible = matchesSearch && matchesTag;
       (card as HTMLElement).style.display = isVisible ? '' : 'none';
-      
       if (isVisible) visibleCount++;
     });
 
     if (emptyState) {
-      emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+      emptyState.classList.toggle('is-hidden', visibleCount !== 0);
     }
   }
 
@@ -295,4 +600,44 @@ const totalDocumented = documentedMods.length;
       filterMods();
     });
   });
+
+  /* ── Raw index filter ────────────────────────────────────────── */
+  const rawSearch = document.getElementById('rawSearch');
+  const rawItems = document.querySelectorAll('.raw-item');
+  const rawGroups = document.querySelectorAll('.raw-group');
+  const rawEmpty = document.getElementById('rawEmpty');
+  const rawCount = document.getElementById('rawCount');
+
+  function filterRaw() {
+    const term = (rawSearch as HTMLInputElement | null)?.value.toLowerCase() ?? '';
+    let visibleFiles = 0;
+    let visibleGroups = 0;
+
+    rawGroups.forEach((group) => {
+      let groupVisible = 0;
+      const items = group.querySelectorAll('.raw-item');
+      items.forEach((item) => {
+        const filename = item.getAttribute('data-filename') ?? '';
+        const isVisible = !term || filename.includes(term);
+        (item as HTMLElement).style.display = isVisible ? '' : 'none';
+        if (isVisible) {
+          groupVisible++;
+          visibleFiles++;
+        }
+      });
+      (group as HTMLElement).style.display = groupVisible > 0 ? '' : 'none';
+      if (groupVisible > 0) visibleGroups++;
+    });
+
+    if (rawCount) {
+      rawCount.textContent = term ? `${visibleFiles} of ${rawItems.length} files` : `${rawItems.length} files`;
+    }
+    if (rawEmpty) {
+      rawEmpty.classList.toggle('is-hidden', visibleFiles > 0);
+    }
+  }
+
+  if (rawSearch) {
+    rawSearch.addEventListener('input', filterRaw);
+  }
 </script>

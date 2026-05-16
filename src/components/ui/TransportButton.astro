@@ -1,0 +1,18 @@
+---
+import type { TransportButtonProps } from './types';
+
+interface Props extends TransportButtonProps {}
+
+const { variant = 'default', href, ariaLabel, title } = Astro.props;
+
+const variantClass = variant === 'default' ? '' : `rb-transport-btn--${variant}`;
+---
+
+<a
+  class={`rb-transport-btn ${variantClass}`}
+  href={href}
+  aria-label={ariaLabel}
+  title={title ?? ariaLabel}
+>
+  <slot />
+</a>

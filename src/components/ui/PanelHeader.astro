@@ -1,0 +1,16 @@
+---
+import Led from './Led.astro';
+import type { PanelHeaderProps } from './types';
+
+interface Props extends PanelHeaderProps {}
+
+const { title, ledStatus, ledLabel, class: className = '' } = Astro.props;
+---
+
+<div class={`rb-panel__header ${className}`}>
+  <span class="rb-panel__title">{title}</span>
+  {ledStatus && ledLabel ? (
+    <Led status={ledStatus} label={ledLabel} ariaHidden={true} />
+  ) : null}
+  <slot />
+</div>

@@ -1,0 +1,30 @@
+---
+import type { ActionButtonProps } from './types';
+
+interface Props extends ActionButtonProps {}
+
+const { variant = 'pattern', href, target, rel, onclick, ariaLabel, type = 'button' } = Astro.props;
+
+const variantClass = variant === 'mix' ? 'rb-mix-btn' : 'rb-pattern-btn';
+---
+
+{href ? (
+  <a
+    class={variantClass}
+    href={href}
+    target={target}
+    rel={rel}
+    aria-label={ariaLabel}
+  >
+    <slot />
+  </a>
+) : (
+  <button
+    class={variantClass}
+    type={type}
+    onclick={onclick}
+    aria-label={ariaLabel}
+  >
+    <slot />
+  </button>
+)}
