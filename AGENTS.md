@@ -255,7 +255,7 @@ Structured metadata for documented `.rbm` mod files:
 - `year` is nullable
 - `tags` is an array of lowercase kebab-case strings
 
-Currently **17 mods** are documented out of **600+** available.
+Currently **26 mods** are documented out of **600+** available (17 with full metadata, 9 with minimal metadata).
 
 ### `public/rbs-manifest.json`
 
