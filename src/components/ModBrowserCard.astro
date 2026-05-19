@@ -26,7 +26,7 @@ const baseModsUrl = 'https://storage.1ink.us/rebirth_mods';
 const modUrl = downloadUrl || `${baseModsUrl}/${filename}`;
 ---
 
-<div class={`mod-card ${rackmount ? 'rb-rack-variant' : ''}`}>
+<div class={`mod-card ${rackmount ? 'rb-rack-variant' : ''} ${!description ? 'mod-card--minimal' : ''}`}>
   <div class="mod-card__header">
     <h3 class="mod-card__title">{title}</h3>
     {year && <span class="mod-card__year">{year}</span>}
@@ -156,5 +156,15 @@ const modUrl = downloadUrl || `${baseModsUrl}/${filename}`;
     flex-shrink: 0;
     padding: 0.4em 0.8em;
     font-size: 0.75rem;
+  }
+
+  /* Minimal metadata variant (no description) */
+  .mod-card--minimal {
+    border-left: 2px solid var(--rb-amber, #ffb000);
+    opacity: 0.95;
+  }
+
+  .mod-card--minimal:hover {
+    opacity: 1;
   }
 </style>

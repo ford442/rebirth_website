@@ -7,7 +7,7 @@ A searchable, filterable browser for ReBirth RB-338 RBM mod files (modifications
 
 ### 1. **Metadata File** (`src/data/mods-metadata.json`)
 - Central repository for mod documentation
-- 17 documented mods with metadata (title, author, year, description, tags)
+- 26 documented mods with metadata: 17 with full descriptions, 9 with minimal metadata (title, author, tags only)
 - Easily extendable with more mods
 
 ```json

@@ -2,13 +2,13 @@
 
 ## Quick Start
 
-The 600+ RBM mods are already hosted at `https://storage.1ink.us/rebirth_mods/` and automatically downloadable. The 17 documented mods are currently in `src/data/mods-metadata.json`. 
+The 600+ RBM mods are already hosted at `https://storage.1ink.us/rebirth_mods/` and automatically downloadable. The 26 mods in `src/data/mods-metadata.json` are displayed in the featured section (17 with full descriptions, 9 with minimal metadata).
 
-To add the remaining ~580 mods:
+To add more mods:
 
 ## Option 1: Minimal Metadata (Fast)
 
-If you have just filenames, create basic entries with placeholders:
+If you have just filenames, create basic entries **without descriptions**:
 
 ```json
 {
@@ -16,23 +16,22 @@ If you have just filenames, create basic entries with placeholders:
   "title": "030 Microdot",
   "author": "Unknown",
   "year": null,
-  "description": "RBM mod file. Submit metadata via GitHub issues.",
   "tags": []
 }
 ```
 
-Then contributors can enhance them later with real metadata.
+Descriptions are optional! Mods without descriptions will still be displayed with a subtle visual indicator. Contributors can enhance them later with real metadata.
 
 ## Option 2: Batch Import from Directory
 
-To auto-populate entries from the remote mod directory:
+To auto-populate entries from the remote mod directory (without descriptions):
 
 ```bash
 # 1. Fetch the mod listing (if server provides it)
 curl https://storage.1ink.us/rebirth_mods/ -l 2>/dev/null | grep ".rbm" | \
   sed 's/.*>\([^<]*\.rbm\)<.*/\1/' | sort > /tmp/all_mods.txt
 
-# 2. Create JSON entries for all files
+# 2. Create JSON entries for all files (without descriptions)
 node -e "
 const fs = require('fs');
 const mods = fs.readFileSync('/tmp/all_mods.txt', 'utf-8').trim().split('\n');
@@ -41,7 +40,6 @@ const entries = mods.map(filename => ({
   title: filename.replace('.rbm', '').replace(/[-_]/g, ' '),
   author: 'Unknown',
   year: null,
-  description: 'RBM mod file. Documentation needed.',
   tags: []
 }));
 console.log(JSON.stringify({ mods: entries }, null, 2));

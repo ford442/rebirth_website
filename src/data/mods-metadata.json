@@ -135,6 +135,69 @@
       "year": null,
       "description": "A house-style mod featuring pads and synth bleeps that react beautifully to the Pattern Controlled Filter.",
       "tags": ["house", "pads", "synth", "experimental"]
+    },
+    {
+      "filename": "030microdot.rbm",
+      "title": "030 Microdot",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental", "minimal"]
+    },
+    {
+      "filename": "AmberVision.rbm",
+      "title": "Amber Vision",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["ambient", "vision"]
+    },
+    {
+      "filename": "Controllerism.rbm",
+      "title": "Controllerism",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["control", "experimental"]
+    },
+    {
+      "filename": "ElekD2.02.rbm",
+      "title": "ElekD 2.02",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["electronic", "synth"]
+    },
+    {
+      "filename": "ManiaC.rbm",
+      "title": "ManiaC",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["manic", "chaotic", "dark"]
+    },
+    {
+      "filename": "nordbeat.rbm",
+      "title": "Nordbeat",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["nord", "beat", "techno"]
+    },
+    {
+      "filename": "OMEGA.rbm",
+      "title": "OMEGA",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental", "powerful"]
+    },
+    {
+      "filename": "Orbit2.rbm",
+      "title": "Orbit 2",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["space", "ambient", "futuristic"]
+    },
+    {
+      "filename": "Prop10_Dev.rbm",
+      "title": "Prop10 Dev",
+      "author": "Propellerhead",
+      "year": null,
+      "tags": ["development", "experimental"]
     }
   ]
 }
