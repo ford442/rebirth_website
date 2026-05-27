@@ -92,6 +92,9 @@ import { songCollections, archiveBaseUrl } from '../../data/song-collections';
             <CollectionCard section={songCollections.other} meta={collectionsMeta.other} archiveUrl={archiveBaseUrl} rackmount={true} />
           )}
         </div>
+        <div id="gridEmptyState" class="rb-empty-state is-hidden" aria-live="polite">
+          <p>No collections match your search. Try different keywords or clear the filter.</p>
+        </div>
       </div>
 
       <!-- List view -->
