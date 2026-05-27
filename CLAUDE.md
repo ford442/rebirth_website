@@ -35,7 +35,7 @@ src/
 │   ├── config.ts             # Content collection schema (docs)
 │   └── docs/                 # Historical markdown documentation
 ├── styles/
-│   └── global.css            # Design tokens & base styles
+│   └── (legacy, consolidated into public/styles/rebirth-theme.css)
 └── wasm/
     └── README.md             # Planned browser playback engine (not implemented)
 
@@ -94,7 +94,7 @@ The site uses a **retro-industrial hardware aesthetic** modeled after TB-303 and
 
 Apply theme via semantic class names: `rb-header`, `rb-nav`, `rb-logo`, `rb-panel`, `rb-module`, `rb-button`, `rb-knob`, etc.
 
-**Styling approach**: Global styles in `src/styles/global.css` (imported in BaseLayout), theme in `public/styles/rebirth-theme.css` (linked in BaseLayout `<head>`). Component styles use scoped `<style>` blocks in `.astro` files. Pure CSS; no frameworks.
+**Styling approach**: Consolidated theme in `public/styles/rebirth-theme.css` (linked in BaseLayout `<head>`). Contains all global styles including design tokens, base styles, resets, typography, and accessibility features. Component styles use scoped `<style>` blocks in `.astro` files. Pure CSS; no frameworks.
 
 ### TypeScript & Component Props
 

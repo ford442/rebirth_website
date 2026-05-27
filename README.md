@@ -73,7 +73,7 @@ Astro automatically reloads the page when you edit source files.
 │   ├── pages/
 │   │   └── index.astro          ← Landing page
 │   ├── styles/
-│   │   └── global.css           ← Design tokens & base styles
+│   │   └── (consolidated into public/styles/rebirth-theme.css)
 │   └── wasm/
 │       ├── audio-module.config.js  ← WASM config stub
 │       └── README.md               ← WASM architecture notes
@@ -147,7 +147,7 @@ contributions to this module are especially welcome.
 
 - **Astro** components use `.astro` file extension
 - **TypeScript** strict mode is enabled; avoid `any`
-- **CSS** custom properties are defined in `src/styles/global.css`
+- **CSS** custom properties and base styles are consolidated in `public/styles/rebirth-theme.css`
 - Keep the **retro-industrial aesthetic**: dark background, amber/green palette, monospace
   headings — but always prioritise accessibility (WCAG 2.1 AA)
 

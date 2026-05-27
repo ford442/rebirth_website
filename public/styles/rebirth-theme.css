@@ -62,6 +62,21 @@
   --rb-acid-glow: rgba(204, 255, 0, 0.3);
   --rb-metal-hi: #aaaaaa;
   --rb-metal-lo: #1a1a1a;
+
+  /* Typography */
+  --font-mono: 'Share Tech Mono', 'Courier New', Courier, monospace;
+  --font-sans: system-ui, -apple-system, sans-serif;
+  --font-size-base: 1rem;
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 2rem;
+  --space-xl: 4rem;
+
+  /* Transitions */
+  --transition-fast: 120ms ease;
 }
 
 /* ============================================================

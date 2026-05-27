@@ -106,20 +106,19 @@ The site uses a **retro-industrial hardware aesthetic** modeled after the Roland
 
 ### CSS Architecture
 
-1. **`src/styles/global.css`** — Imported via `BaseLayout.astro` `<style is:global>`. Contains:
-   - CSS custom properties (design tokens: colors, fonts, spacing)
-   - CSS reset
+1. **`public/styles/rebirth-theme.css`** — Main consolidated theme file, linked in `BaseLayout.astro` `<head>`. Contains:
+   - CSS custom properties (design tokens: colors, fonts, spacing, transitions)
+   - CSS reset and base styles
    - Base typography
    - Layout utilities (`.container`, `.sr-only`)
-   - Accessibility features (skip nav, focus-visible, scrollbars)
-
-2. **`public/styles/rebirth-theme.css`** — Linked in `BaseLayout.astro` `<head>`. Contains:
+   - Accessibility features (skip nav, focus-visible, scrollbars, reduced-motion support)
    - Hardware-themed component classes (`.rb-module`, `.rb-lcd`, `.rb-knob`, `.rb-step-btn`, `.rb-terminal`, etc.)
    - Button variants (`.rb-pattern-btn` = red, `.rb-mix-btn` = green)
    - LED indicators (`.rb-led--online`, `.rb-led--pending`, `.rb-led--offline`)
    - Transport controls, screws, chassis styling
+   - Scanline and vignette effects
 
-3. **Scoped `<style>` blocks** in individual `.astro` files for page-specific layout.
+2. **Scoped `<style>` blocks** in individual `.astro` files for page-specific layout and component-specific styling.
 
 ### Key Theme Variables
 
