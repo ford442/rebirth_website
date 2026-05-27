@@ -69,6 +69,24 @@ const featuredSongs: FeaturedItem[] = [
   },
 ];
 
+const demoSongs = [
+  {
+    label: 'Cavey — Acid Lockdown (Archive Demo)',
+    src: 'http://test.1ink.us/rb338/archive/rbs-songs/demo/Cavey_Acid_Lockdown.rbs',
+    bpm: 128,
+  },
+  {
+    label: 'DJ Knightmare — Factory Sequence (Archive Demo)',
+    src: 'http://test.1ink.us/rb338/archive/rbs-songs/demo/DJ_Knightmare_Factory_Sequence.rbs',
+    bpm: 134,
+  },
+  {
+    label: 'Noah Cohn — Euro Acid Line (Archive Demo)',
+    src: 'http://test.1ink.us/rb338/archive/rbs-songs/demo/Noah_Cohn_Euro_Acid_Line.rbs',
+    bpm: 132,
+  },
+];
+
 const featuredMods: FeaturedItem[] = [
   {
     title: 'Metallicon',
@@ -424,7 +442,7 @@ $ _<span class="cursor-blink">█</span></code></pre>
   <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
   <!-- ║  WASM PLAYER — In-browser .rbs preview engine                       ║ -->
   <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
-  <RbsPlayer title="BROWSER PLAYBACK ENGINE" />
+  <RbsPlayer title="BROWSER PLAYBACK ENGINE" demos={demoSongs} />
 
 </BaseLayout>
 

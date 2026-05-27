@@ -8,6 +8,15 @@ In-browser playback engine for ReBirth RB-338 `.rbs` song files.
 > C++ source files are scaffolded with TODO stubs. No compiled WASM binaries exist yet.  
 > The UI component (`RbsPlayer.astro`) is functional and will show a graceful fallback on unsupported browsers.
 
+## Integration Roadmap (Phase Plan)
+
+1. **Parser completion** — finish `RbsParser` so metadata, patterns, and arrangement decode from real `.rbs` payloads.
+2. **Audio engine parity** — implement TB-303 / TR-808 / TR-909 playback voices and mixer routing in `RbsAudioEngine`.
+3. **Realtime control API** — expose embind tempo/volume/transport hooks used by `WasmAudioBridge`.
+4. **Archive demo pipeline** — add curated demo `.rbs` files under `public/archive/rbs-songs/demo/` for direct browser previews.
+5. **Fallback mode** — if WASM init fails, provide a Web Audio sample-preview path so the UI remains usable.
+6. **End-to-end validation** — add browser tests that cover upload, demo loading, transport controls, and fallback behaviour.
+
 ## Quick Start
 
 ```bash

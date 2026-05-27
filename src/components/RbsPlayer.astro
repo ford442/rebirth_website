@@ -19,9 +19,16 @@ export interface Props {
   autoplay?: boolean;
   /** Panel title */
   title?: string;
+  /** Optional demo songs with direct .rbs URLs */
+  demos?: { label: string; src: string; bpm?: number }[];
 }
 
-const { src, autoplay = false, title = 'BROWSER PLAYBACK ENGINE' } = Astro.props;
+const {
+  src,
+  autoplay = false,
+  title = 'BROWSER PLAYBACK ENGINE',
+  demos = [],
+} = Astro.props;
 
 // LED status derived from props
 const hasSrc = !!src;
@@ -33,7 +40,12 @@ const hasSrc = !!src;
   animate
   title={title}
 >
-  <div class="rbs-player" data-autoplay={String(autoplay)} data-src={src ?? ''}>
+  <div
+    class="rbs-player"
+    data-autoplay={String(autoplay)}
+    data-src={src ?? ''}
+    data-demos={JSON.stringify(demos)}
+  >
 
     <!-- Status row: LCDs + LED -->
     <div class="player-status-row">
@@ -66,6 +78,16 @@ const hasSrc = !!src;
       <span class="meta-author" id="rbsMetaAuthor">—</span>
     </div>
 
+    <div class="player-message" id="rbsMessage" aria-live="polite">Ready to initialise WASM bridge…</div>
+
+    <div class="player-demo-controls">
+      <label for="rbsDemoSelect" class="player-control-label">DEMO</label>
+      <select id="rbsDemoSelect" class="player-select">
+        <option value="">Select archive demo…</option>
+      </select>
+      <button class="rb-pattern-btn" id="rbsBtnDemoLoad" type="button">Load Demo</button>
+    </div>
+
     <!-- Mini 16-step sequencer visualiser -->
     <div class="player-stepbar" aria-label="Step sequencer visualiser" role="img">
       {Array.from({ length: 16 }, (_, i) => (
@@ -75,6 +97,21 @@ const hasSrc = !!src;
           aria-hidden="true"
         />
       ))}
+    </div>
+
+    <div class="player-levelmeter" aria-hidden="true">
+      {Array.from({ length: 12 }, (_, i) => (
+        <span class="meter-segment" data-meter={i}></span>
+      ))}
+    </div>
+
+    <div class="player-controls">
+      <label for="rbsVolume" class="player-control-label">VOL</label>
+      <input id="rbsVolume" class="player-slider" type="range" min="0" max="1" step="0.05" value="0.8" />
+      <span id="rbsVolumeValue" class="player-control-value">80%</span>
+      <label for="rbsTempo" class="player-control-label">TEMPO</label>
+      <input id="rbsTempo" class="player-slider" type="range" min="70" max="170" step="1" value="120" />
+      <span id="rbsTempoValue" class="player-control-value">120 BPM</span>
     </div>
 
     <!-- Transport controls -->
@@ -202,6 +239,33 @@ const hasSrc = !!src;
     color: var(--rb-silver-dim, #888);
   }
 
+  .player-message {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.75rem;
+    color: var(--rb-silver-dim, #888);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .player-demo-controls {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .player-select {
+    width: 100%;
+    min-height: 36px;
+    border: 1px solid var(--rb-border, #3a3a3a);
+    background: #111;
+    color: #c0c0c0;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.75rem;
+    border-radius: 4px;
+    padding: 0.45rem 0.6rem;
+  }
+
   /* Step bar */
   .player-stepbar {
     display: flex;
@@ -238,6 +302,48 @@ const hasSrc = !!src;
     background: linear-gradient(180deg, var(--rb-green, #39ff14) 0%, #1a7a33 100%);
     border-color: var(--rb-green-dim, #1a5230);
     box-shadow: 0 0 6px rgba(57, 255, 20, 0.4);
+  }
+
+  .player-levelmeter {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 0.2rem;
+  }
+
+  .meter-segment {
+    height: 6px;
+    border-radius: 1px;
+    background: #232323;
+    border: 1px solid #343434;
+    transition: background 90ms ease, box-shadow 90ms ease;
+  }
+
+  .meter-segment.is-active {
+    background: linear-gradient(180deg, #39ff14 0%, #25773d 100%);
+    border-color: #2e8d4a;
+    box-shadow: 0 0 5px rgba(57, 255, 20, 0.35);
+  }
+
+  .player-controls {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.5rem 0.75rem;
+    align-items: center;
+  }
+
+  .player-control-label,
+  .player-control-value {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.65rem;
+    color: #888;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .player-slider {
+    width: 100%;
+    accent-color: var(--rb-amber, #ffb000);
   }
 
   /* Transport */
@@ -293,6 +399,10 @@ const hasSrc = !!src;
     .dropzone-text {
       font-size: 0.8rem;
     }
+
+    .player-demo-controls {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 
@@ -312,14 +422,33 @@ const hasSrc = !!src;
     const metaEl = document.getElementById('rbsMeta') as HTMLElement | null;
     const metaTitle = document.getElementById('rbsMetaTitle') as HTMLElement | null;
     const metaAuthor = document.getElementById('rbsMetaAuthor') as HTMLElement | null;
+    const messageEl = document.getElementById('rbsMessage') as HTMLElement | null;
+    const demoSelect = document.getElementById('rbsDemoSelect') as HTMLSelectElement | null;
+    const btnDemoLoad = document.getElementById('rbsBtnDemoLoad') as HTMLButtonElement | null;
+    const volumeSlider = document.getElementById('rbsVolume') as HTMLInputElement | null;
+    const volumeValue = document.getElementById('rbsVolumeValue') as HTMLElement | null;
+    const tempoSlider = document.getElementById('rbsTempo') as HTMLInputElement | null;
+    const tempoValue = document.getElementById('rbsTempoValue') as HTMLElement | null;
     const fallbackEl = document.getElementById('rbsFallback') as HTMLElement | null;
     const lcdStatus = playerEl.querySelector('.player-lcd-status .lcd-value') as HTMLElement | null;
     const lcdBpm = playerEl.querySelector('.player-lcd-bpm .lcd-value') as HTMLElement | null;
     const lcdBar = playerEl.querySelector('.player-lcd-bar .lcd-value') as HTMLElement | null;
     const ledLabel = playerEl.querySelector('.player-led') as HTMLElement | null;
     const stepDots = playerEl.querySelectorAll('.step-dot');
+    const meterSegments = playerEl.querySelectorAll('.meter-segment');
 
     const bridge = new WasmAudioBridge();
+    const demos = (() => {
+      try {
+        return JSON.parse(playerEl.dataset.demos || '[]') as { label: string; src: string; bpm?: number }[];
+      } catch {
+        return [];
+      }
+    })();
+
+    function setMessage(message: string) {
+      if (messageEl) messageEl.textContent = message;
+    }
 
     // ── Status updates ──────────────────────────────────────────────
 
@@ -333,11 +462,17 @@ const hasSrc = !!src;
           lcdStatus.textContent = 'IDLE';
           ledLabel.className = 'rb-led rb-led--pending player-led';
           if (labelText) labelText.textContent = 'PENDING';
+          if (btnPlay) {
+            btnPlay.textContent = '▶';
+            btnPlay.title = 'Play';
+            btnPlay.setAttribute('aria-label', 'Play');
+          }
           break;
         case 'loading':
           lcdStatus.textContent = 'LOAD…';
           ledLabel.className = 'rb-led rb-led--pending player-led';
           if (labelText) labelText.textContent = 'LOADING';
+          setMessage('Loading song data…');
           break;
         case 'ready':
           lcdStatus.textContent = 'READY';
@@ -345,16 +480,28 @@ const hasSrc = !!src;
           if (labelText) labelText.textContent = 'ONLINE';
           if (btnPlay) btnPlay.disabled = false;
           if (btnStop) btnStop.disabled = false;
+          if (btnPlay) {
+            btnPlay.textContent = '▶';
+            btnPlay.title = 'Play';
+            btnPlay.setAttribute('aria-label', 'Play');
+          }
           break;
         case 'playing':
           lcdStatus.textContent = 'PLAY';
           ledLabel.className = 'rb-led rb-led--online player-led';
           if (labelText) labelText.textContent = 'PLAYING';
+          if (btnPlay) {
+            btnPlay.textContent = '❚❚';
+            btnPlay.title = 'Pause';
+            btnPlay.setAttribute('aria-label', 'Pause');
+          }
+          setMessage('Playback active');
           break;
         case 'error':
           lcdStatus.textContent = 'ERR';
           ledLabel.className = 'rb-led rb-led--offline player-led';
           if (labelText) labelText.textContent = 'ERROR';
+          setMessage('Playback unavailable — check console for details');
           break;
       }
     }
@@ -365,32 +512,60 @@ const hasSrc = !!src;
 
     bridge.setPositionCallback((bar, step) => {
       if (lcdBar) lcdBar.textContent = String(bar).padStart(2, '0');
+      const currentStep = ((step % 16) + 16) % 16;
       stepDots.forEach((dot, i) => {
-        dot.classList.toggle('is-current', i === step);
+        dot.classList.toggle('is-current', i === currentStep);
+        dot.classList.toggle('is-active', i <= currentStep);
+      });
+      const litSegments = Math.min(12, Math.max(1, Math.floor(((currentStep + 1) / 16) * 12)));
+      meterSegments.forEach((segment, i) => {
+        segment.classList.toggle('is-active', i < litSegments);
       });
     });
 
     // ── File handling ───────────────────────────────────────────────
 
-    async function loadFile(buffer: ArrayBuffer) {
+    async function loadFile(buffer: ArrayBuffer, sourceLabel?: string) {
       try {
+        setMessage('Parsing .rbs payload…');
         const song = await bridge.loadRbsFile(buffer);
         if (metaTitle) metaTitle.textContent = song.title || 'Untitled';
         if (metaAuthor) metaAuthor.textContent = song.author || 'Unknown';
         if (metaEl) metaEl.classList.remove('is-hidden');
         if (lcdBpm) lcdBpm.textContent = String(Math.round(song.bpm));
+        if (tempoSlider) tempoSlider.value = String(Math.round(song.bpm));
+        if (tempoValue) tempoValue.textContent = `${Math.round(song.bpm)} BPM`;
         if (lcdBar) lcdBar.textContent = '01';
+        setMessage(`Loaded ${sourceLabel || 'song file'}`);
       } catch (err) {
         console.error('Failed to load .rbs:', err);
-        alert('Failed to parse .rbs file. See console for details.');
+        setMessage(`Failed to load .rbs file${sourceLabel ? ` (${sourceLabel})` : ''}`);
       }
+    }
+
+    async function loadDemoSong(url: string, label: string) {
+      setMessage(`Fetching demo: ${label}…`);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const buf = await res.arrayBuffer();
+      await loadFile(buf, label);
+    }
+
+    if (demoSelect) {
+      demos.forEach((demo) => {
+        const opt = document.createElement('option');
+        opt.value = demo.src;
+        opt.textContent = demo.label;
+        opt.dataset.bpm = demo.bpm ? String(demo.bpm) : '';
+        demoSelect.appendChild(opt);
+      });
     }
 
     if (fileInput) {
       fileInput.addEventListener('change', (e) => {
         const file = (e.target as HTMLInputElement).files?.[0];
         if (!file) return;
-        file.arrayBuffer().then(loadFile);
+        file.arrayBuffer().then((buffer) => loadFile(buffer, file.name));
       });
     }
 
@@ -408,7 +583,7 @@ const hasSrc = !!src;
         dropZone.classList.remove('drag-over');
         const file = e.dataTransfer?.files[0];
         if (file && file.name.endsWith('.rbs')) {
-          file.arrayBuffer().then(loadFile);
+          file.arrayBuffer().then((buffer) => loadFile(buffer, file.name));
         }
       });
     }
@@ -431,19 +606,56 @@ const hasSrc = !!src;
       fileInput?.click();
     });
 
+    btnDemoLoad?.addEventListener('click', async () => {
+      if (!demoSelect?.value) return;
+      try {
+        await loadDemoSong(demoSelect.value, demoSelect.selectedOptions[0]?.textContent || 'demo song');
+      } catch (err) {
+        console.error('Failed to load demo song:', err);
+        setMessage('Demo fetch failed. Use local file load as fallback.');
+      }
+    });
+
+    volumeSlider?.addEventListener('input', () => {
+      const value = Number(volumeSlider.value);
+      bridge.setVolume(value);
+      if (volumeValue) volumeValue.textContent = `${Math.round(value * 100)}%`;
+    });
+
+    tempoSlider?.addEventListener('input', () => {
+      const bpm = Number(tempoSlider.value);
+      if (tempoValue) tempoValue.textContent = `${Math.round(bpm)} BPM`;
+      const didApply = bridge.setTempoBpm(bpm);
+      if (didApply && lcdBpm) lcdBpm.textContent = String(Math.round(bpm));
+    });
+
     // ── Init ────────────────────────────────────────────────────────
 
     try {
+      setMessage('Initialising audio engine…');
       await bridge.init();
+      bridge.setVolume(Number(volumeSlider?.value ?? bridge.outputVolume));
+
+      const tempoSupported = bridge.canSetTempo();
+      if (tempoSlider && !tempoSupported) {
+        tempoSlider.disabled = true;
+        tempoSlider.title = 'Tempo control will unlock when WASM tempo API is implemented';
+      }
+      if (tempoValue && !tempoSupported) tempoValue.textContent = 'WASM TBD';
+
+      if (!demos.length && btnDemoLoad) {
+        btnDemoLoad.disabled = true;
+      }
+      if (!demos.length) setMessage('No demos configured — drop an .rbs file to preview.');
 
       const autoplay = playerEl.dataset.autoplay === 'true';
       const srcUrl = playerEl.dataset.src;
 
       if (srcUrl) {
-        const res = await fetch(srcUrl);
-        const buf = await res.arrayBuffer();
-        await loadFile(buf);
+        await loadDemoSong(srcUrl, 'initial source');
         if (autoplay) bridge.play();
+      } else if (demos[0] && demoSelect) {
+        demoSelect.value = demos[0].src;
       }
     } catch (err) {
       console.error('WASM init failed:', err);
@@ -451,6 +663,10 @@ const hasSrc = !!src;
       dropZone?.classList.add('is-hidden');
       if (btnPlay) btnPlay.disabled = true;
       if (btnStop) btnStop.disabled = true;
+      if (btnDemoLoad) btnDemoLoad.disabled = true;
+      if (tempoSlider) tempoSlider.disabled = true;
+      if (volumeSlider) volumeSlider.disabled = true;
+      setMessage('WASM engine failed to initialise.');
     }
   })();
 </script>

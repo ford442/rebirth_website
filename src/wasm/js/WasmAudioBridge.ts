@@ -35,10 +35,12 @@ export class WasmAudioBridge {
   private module: any = null;
   private audioContext: AudioContext | null = null;
   private workletNode: AudioWorkletNode | null = null;
+  private gainNode: GainNode | null = null;
   private enginePtr: any = null;
   private status: PlayerStatus = 'idle';
   private onPosition: PositionCallback | null = null;
   private onStatus: StatusCallback | null = null;
+  private volume = 0.8;
 
   /** Is the bridge initialised and ready to load files? */
   get isReady(): boolean {
@@ -48,6 +50,11 @@ export class WasmAudioBridge {
   /** Current player status. */
   get playerStatus(): PlayerStatus {
     return this.status;
+  }
+
+  /** Current output volume (0.0–1.0). */
+  get outputVolume(): number {
+    return this.volume;
   }
 
   /** Register a callback for playback position updates. */
@@ -122,7 +129,10 @@ export class WasmAudioBridge {
         }
       );
 
-      this.workletNode.connect(this.audioContext.destination);
+      this.gainNode = this.audioContext.createGain();
+      this.gainNode.gain.value = this.volume;
+      this.workletNode.connect(this.gainNode);
+      this.gainNode.connect(this.audioContext.destination);
 
       // 7. Start position polling loop
       this._startPositionPolling();
@@ -221,10 +231,43 @@ export class WasmAudioBridge {
     this.enginePtr.seek(bar);
   }
 
+  /** Set master output volume (0.0–1.0). */
+  setVolume(level: number): void {
+    const clamped = Math.max(0, Math.min(1, Number.isFinite(level) ? level : this.volume));
+    this.volume = clamped;
+    if (this.gainNode && this.audioContext) {
+      this.gainNode.gain.setValueAtTime(clamped, this.audioContext.currentTime);
+    }
+  }
+
+  /** Return true if the WASM engine exposes tempo control hooks. */
+  canSetTempo(): boolean {
+    return !!(this.enginePtr?.setTempo || this.enginePtr?.setTempoMultiplier);
+  }
+
+  /**
+   * Attempt to set tempo in BPM.
+   * Returns false when tempo control is not implemented in the current WASM build.
+   */
+  setTempoBpm(bpm: number): boolean {
+    if (!this.enginePtr) return false;
+    const safeBpm = Math.max(40, Math.min(250, Math.round(bpm)));
+    if (typeof this.enginePtr.setTempo === 'function') {
+      this.enginePtr.setTempo(safeBpm);
+      return true;
+    }
+    if (typeof this.enginePtr.setTempoMultiplier === 'function') {
+      this.enginePtr.setTempoMultiplier(safeBpm / 120);
+      return true;
+    }
+    return false;
+  }
+
   /** Clean up resources. */
   dispose(): void {
     this.stop();
     this.workletNode?.disconnect();
+    this.gainNode?.disconnect();
     this.audioContext?.close();
     this.enginePtr?.delete?.();
     this.module = null;
