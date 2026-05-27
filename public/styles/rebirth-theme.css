@@ -101,6 +101,13 @@ body::before {
   z-index: 9999;
 }
 
+/* Disable scanline overlay for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    display: none;
+  }
+}
+
 /* Vignette */
 body::after {
   content: '';
@@ -109,6 +116,13 @@ body::after {
   background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.4) 100%);
   pointer-events: none;
   z-index: 9998;
+}
+
+/* Disable vignette for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  body::after {
+    display: none;
+  }
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -127,6 +141,19 @@ a {
   transition: color 0.12s ease;
 }
 a:hover, a:focus-visible { color: var(--rb-green); }
+
+/* ============================================================
+   Accessibility: Reduce Motion Support
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable all transitions and animations for users preferring reduced motion */
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
 
 code, pre, kbd, samp {
   font-family: var(--rb-font-display);
@@ -701,6 +728,13 @@ pre {
     rgba(0,0,0,0.15) 4px
   );
   pointer-events: none;
+}
+
+/* Disable LCD scanlines for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .rb-lcd::before {
+    display: none;
+  }
 }
 
 .lcd-label,
@@ -1901,6 +1935,14 @@ pre {
   pointer-events: none;
   opacity: 0.4;
   z-index: 1;
+}
+
+/* Disable ventilation grill patterns for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .rb-vent::before,
+  .rb-vent::after {
+    display: none;
+  }
 }
 
 /* Hex-head screw variant */
