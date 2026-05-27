@@ -41,7 +41,7 @@ src/
 ├── content/
 │   └── docs/               # Historical markdown docs with frontmatter
 ├── styles/
-│   └── global.css          # Design tokens & base styles
+│   └── (consolidated into public/styles/rebirth-theme.css)
 └── wasm/
     └── README.md           # Planned architecture for browser .rbs playback
 
@@ -58,7 +58,7 @@ public/
 
 The site uses a **retro-industrial hardware aesthetic** modeled after TB-303 and TR-909 synthesizers. All styling is CSS-based with CSS custom properties for theming.
 
-**Key theme CSS variables** (defined in `public/styles/rebirth-theme.css`):
+**Key theme CSS variables** (all defined in `public/styles/rebirth-theme.css`):
 - `--rb-amber`: Primary accent color (#ffb000, LCD glow)
 - `--rb-red`: Danger/pattern button (#c41e3a)
 - `--rb-green`: Success/pattern indicator (#3dba66)
@@ -66,7 +66,7 @@ The site uses a **retro-industrial hardware aesthetic** modeled after TB-303 and
 - `--rb-darkest`: Black background (#111111)
 - `--rb-panel`: Module background (#262626)
 
-**Base theme variables** (defined in `src/styles/global.css`):
+**Base theme variables** (all defined in `public/styles/rebirth-theme.css`):
 - `--color-amber`, `--color-green`: Primary/secondary accents
 - `--font-mono`: Monospace for headings/displays
 - `--font-sans`: System font for body
@@ -125,8 +125,12 @@ All internal links must use `${import.meta.env.BASE_URL}` because the site is de
 
 ### CSS & Styling
 
-- **Global styles**: `src/styles/global.css` (imported in `BaseLayout.astro`)
-- **Theme**: `public/styles/rebirth-theme.css` (linked in BaseLayout `<head>`)
+- **Consolidated theme**: All global styles defined in `public/styles/rebirth-theme.css` (linked in BaseLayout `<head>`)
+  - Design tokens (colors, fonts, spacing, transitions)
+  - CSS reset and base styles
+  - Layout utilities (.container, .sr-only)
+  - Accessibility features (skip nav, focus-visible, scrollbars, reduced-motion support)
+  - Hardware component styles (panels, LEDs, buttons, terminals, etc.)
 - **Component styles**: Scoped `<style>` blocks in `.astro` files (use `is:global` for global sheets)
 - **No external frameworks**: Pure CSS. Use CSS Grid/Flexbox for layouts.
 
