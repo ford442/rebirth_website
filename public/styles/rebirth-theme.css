@@ -250,6 +250,25 @@ pre {
   transform: translateY(-2px);
 }
 
+/* Focus states for accessibility */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--rb-green);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible {
+    outline-offset: 1px;
+  }
+}
+
 .rb-panel--dark {
   background: linear-gradient(180deg, #222222 0%, #1a1a1a 100%);
   border-color: #2a2a2a;
@@ -336,6 +355,7 @@ pre {
 
 .rb-panel__body {
   padding: 1.25rem;
+  overflow-x: hidden;
 }
 
 .rb-panel__footer {
@@ -930,6 +950,9 @@ pre {
   grid-template-columns: repeat(16, 1fr);
   gap: 3px;
   padding: 0.25rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: -ms-autohiding-scrollbar;
 }
 
 .rb-step-btn {
@@ -942,9 +965,22 @@ pre {
   cursor: pointer;
   transition: all 0.1s ease;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .rb-step-btn {
+    min-width: 36px;
+    min-height: 36px;
+  }
 }
 
 .rb-step-btn:hover {
+  border-color: var(--rb-border-hi);
+  background: linear-gradient(180deg, #444 0%, #333 100%);
+}
+
+.rb-step-btn:active {
   border-color: var(--rb-border-hi);
   background: linear-gradient(180deg, #444 0%, #333 100%);
 }
@@ -1439,6 +1475,7 @@ pre {
   gap: 0.75rem;
   flex-wrap: wrap;
   justify-content: space-around;
+  overflow-x: hidden;
 }
 
 .rb-knob {
@@ -1446,6 +1483,10 @@ pre {
   flex-direction: column;
   align-items: center;
   gap: 0.3rem;
+  flex: 0 1 auto;
+  min-width: 0;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .rb-knob__dial {
@@ -1459,10 +1500,23 @@ pre {
     inset 0 -1px 2px rgba(0,0,0,0.3);
   position: relative;
   transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: grab;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rb-knob__dial:active {
+  cursor: grabbing;
 }
 
 .rb-knob:hover .rb-knob__dial {
   transform: rotate(15deg);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .rb-knob__dial {
+    width: 48px;
+    height: 48px;
+  }
 }
 
 .rb-knob__dial::after {
@@ -1491,6 +1545,23 @@ pre {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  justify-content: center;
+}
+
+.action-btns button,
+.action-btns a {
+  min-height: 40px;
+  padding: 0.5rem 1rem;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .action-btns button,
+  .action-btns a {
+    min-height: 44px;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+  }
 }
 
 /* Sequencer */
@@ -2172,6 +2243,107 @@ pre {
 /* ============================================================
    15. RESPONSIVE
    ============================================================ */
+/* Extra-small mobile devices (under 480px) */
+@media (max-width: 479px) {
+  .rb-panel {
+    margin-inline: 0.5rem;
+    border-radius: 2px;
+  }
+
+  .rb-panel__body {
+    padding: 0.75rem;
+  }
+
+  .rb-knob-row {
+    gap: 0.5rem;
+  }
+
+  .rb-knob {
+    gap: 0.25rem;
+  }
+
+  .rb-knob__dial {
+    width: 36px;
+    height: 36px;
+  }
+
+  .rb-knob__label {
+    font-size: 0.5rem;
+  }
+
+  .rb-step-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 2px;
+    padding: 0.5rem;
+  }
+
+  .rb-step-btn {
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .rb-step-btn:nth-child(n+7) {
+    display: none;
+  }
+
+  .seq-row {
+    gap: 0.25rem;
+  }
+
+  .seq-row__label {
+    width: 2rem;
+    font-size: 0.5rem;
+  }
+
+  .seq-num {
+    font-size: 0.4rem;
+  }
+
+  .seq-track-labels {
+    display: none;
+  }
+
+  .action-btns {
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .action-btns button {
+    width: 100%;
+  }
+
+  .rb-knob__dial::after {
+    width: 2px;
+  }
+
+  .master-header {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .master-title__main {
+    font-size: clamp(1.2rem, 5vw, 1.8rem);
+  }
+
+  .master-stats {
+    gap: 1rem;
+  }
+
+  .instrument-strip {
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .hero-body {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .container {
+    padding-inline: 0.5rem;
+  }
+}
+
 @media (max-width: 767px) {
   .rb-mobile-toggle {
     display: flex;
@@ -2248,6 +2420,19 @@ pre {
     display: none;
   }
 
+  /* Larger step buttons for touch on mobile */
+  .rb-step-btn {
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  @supports (pointer: coarse) {
+    .rb-step-btn {
+      min-width: 40px;
+      min-height: 40px;
+    }
+  }
+
   .card-grid {
     grid-template-columns: 1fr;
   }
@@ -2270,8 +2455,16 @@ pre {
 
   /* Knob row: smaller dials on mobile */
   .rb-knob__dial {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Touch-friendly knob sizing for small phones */
+  @supports (pointer: coarse) {
+    .rb-knob__dial {
+      width: 44px;
+      height: 44px;
+    }
   }
 
   /* Instrument strip: full column layout */
@@ -2354,6 +2547,23 @@ pre {
 
   .hero-body {
     grid-template-columns: 1fr 1fr;
+  }
+
+  /* Tablet: optimize knob and step sizing */
+  @media (hover: none) and (pointer: coarse) {
+    .rb-knob__dial {
+      width: 44px;
+      height: 44px;
+    }
+
+    .rb-step-btn {
+      min-width: 38px;
+      min-height: 38px;
+    }
+
+    .rb-step-grid {
+      gap: 4px;
+    }
   }
 }
 
