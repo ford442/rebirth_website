@@ -567,6 +567,15 @@ select:focus-visible {
   color: var(--rb-amber);
   border-color: var(--rb-amber-dim);
   background: linear-gradient(180deg, #3a3a2a 0%, #2a2a1a 100%);
+  box-shadow: 0 0 10px var(--rb-amber-glow), inset 0 1px 0 rgba(255,255,255,0.08);
+  transform: translateY(-1px);
+}
+
+.rb-nav-btn:active {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+  box-shadow: none;
+  transition-duration: 60ms;
 }
 
 .rb-nav-btn:hover::before,
@@ -947,6 +956,15 @@ select:focus-visible {
   border-color: var(--rb-amber-dim);
   box-shadow: 0 0 8px var(--rb-amber-glow), inset 0 1px 0 rgba(255,255,255,0.1);
   outline: none;
+  transform: translateY(-1px);
+}
+
+.rb-transport-btn:active,
+.rb-btn-transport:active {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+  box-shadow: none;
+  transition-duration: 60ms;
 }
 
 .rb-transport-btn--play { color: var(--rb-green); }
@@ -1032,8 +1050,9 @@ select:focus-visible {
   flex-direction: column;
   gap: 0.5rem;
   position: relative;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms cubic-bezier(0.22, 1, 0.36, 1);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.4);
+  will-change: transform;
 }
 
 .rb-card::before,
@@ -1068,7 +1087,16 @@ select:focus-visible {
 .mod-card:hover,
 .rb-file-card:hover {
   border-color: var(--rb-border-hi);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.5);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.6);
+  transform: translateY(-2px);
+}
+
+.rb-card:active,
+.mod-card:active,
+.rb-file-card:active {
+  transform: translateY(0);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.4);
+  transition-duration: 60ms;
 }
 
 .rb-card--song:hover,
@@ -1521,6 +1549,13 @@ select:focus-visible {
 
 .rb-knob__dial:active {
   cursor: grabbing;
+  box-shadow:
+    0 1px 3px rgba(0,0,0,0.8),
+    inset 0 1px 3px rgba(255,255,255,0.08),
+    inset 0 -1px 2px rgba(0,0,0,0.4),
+    0 0 12px var(--rb-amber-glow);
+  transform: rotate(20deg) scale(0.97);
+  transition-duration: 60ms;
 }
 
 .rb-knob:hover .rb-knob__dial {
@@ -2623,6 +2658,17 @@ select:focus-visible {
     inset 0 1px 0 rgba(255,255,255,0.04);
   overflow: hidden;
   position: relative;
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 200ms ease,
+              border-color 200ms ease;
+}
+
+.rb-module:hover {
+  border-top-color: #666;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.7),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  transform: translateY(-2px);
 }
 
 .rb-module__header,
@@ -2735,6 +2781,15 @@ select:focus-visible {
 .rb-filter-btn:hover {
   border-color: var(--rb-amber-dim);
   color: var(--rb-amber);
+  transform: translateY(-1px);
+  box-shadow: 0 0 8px rgba(255, 176, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.rb-filter-btn:active {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+  box-shadow: none;
+  transition-duration: 60ms;
 }
 
 .rb-filter-btn.active {
@@ -2771,6 +2826,14 @@ select:focus-visible {
 .rb-tag-filter:hover {
   border-color: var(--rb-amber);
   color: var(--rb-amber);
+  transform: translateY(-1px);
+  box-shadow: 0 0 8px rgba(255, 176, 0, 0.1);
+}
+
+.rb-tag-filter:active {
+  transform: translateY(1px);
+  box-shadow: none;
+  transition-duration: 60ms;
 }
 
 .rb-tag-filter.active {
@@ -2782,19 +2845,238 @@ select:focus-visible {
 /* Empty state utilities */
 .rb-empty-state {
   text-align: center;
-  padding: 2rem;
-  color: #666;
+  padding: 3rem 2rem;
+  color: var(--rb-silver-dim);
   font-family: var(--rb-font-display);
+  border: 1px solid var(--rb-border);
+  border-radius: 5px;
+  background: linear-gradient(180deg, #1c1c1c 0%, #181818 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.rb-empty-state::before {
+  content: '[ NO SIGNAL ]';
+  display: block;
+  font-size: 0.58rem;
+  letter-spacing: 0.45em;
+  color: var(--rb-border-hi);
+  margin-bottom: 1.25rem;
+  opacity: 0.8;
+}
+
+.rb-empty-state p {
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: var(--rb-silver-dim);
+  margin: 0;
+  line-height: 1.6;
 }
 
 .rb-table-empty {
   text-align: center;
-  color: #666;
-  padding: 2rem;
+  color: var(--rb-silver-dim);
+  padding: 2.5rem 2rem;
   font-family: var(--rb-font-display);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  background: linear-gradient(180deg, #1c1c1c 0%, #181818 100%);
+}
+
+.rb-table-empty::before {
+  content: '⊘  ';
+  color: var(--rb-border-hi);
+  font-size: 1em;
 }
 
 /* Visibility utilities */
 .is-hidden {
   display: none !important;
+}
+
+/* ============================================================
+   19. SKELETON LOADERS / SHIMMER
+   ============================================================ */
+@keyframes rb-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* Base skeleton: apply to any placeholder element */
+.rb-skeleton {
+  background: linear-gradient(
+    90deg,
+    #1e1e1e 25%,
+    #2a2a2a 50%,
+    #1e1e1e 75%
+  );
+  background-size: 200% 100%;
+  animation: rb-shimmer 1.4s ease-in-out infinite;
+  border-radius: 3px;
+  color: transparent !important;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Skeleton size variants */
+.rb-skeleton--line {
+  height: 0.8em;
+  border-radius: 2px;
+  display: block;
+  margin-block: 0.35em;
+}
+
+.rb-skeleton--title {
+  height: 1.05em;
+  width: 55%;
+  border-radius: 2px;
+  display: block;
+  margin-block: 0.3em;
+}
+
+.rb-skeleton--badge {
+  height: 1.4em;
+  width: 4.5em;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+/* Skeleton card shell */
+.rb-skeleton--card {
+  padding: 0.85rem;
+  border: 1px solid var(--rb-border);
+  border-radius: 5px;
+  background: #1e1e1e;
+  min-height: 7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Disable shimmer for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .rb-skeleton {
+    animation: none;
+    background: #222;
+  }
+}
+
+/* ============================================================
+   20. MICRO-INTERACTIONS
+   ============================================================ */
+
+/* Knob tweak — play on .rb-knob--tweaking (add/remove via JS on click) */
+@keyframes rb-knob-tweak {
+  0%   { transform: rotate(0deg) scale(1); }
+  30%  { transform: rotate(28deg) scale(0.96); }
+  65%  { transform: rotate(10deg) scale(1.02); }
+  100% { transform: rotate(18deg) scale(1); }
+}
+
+.rb-knob--tweaking .rb-knob__dial {
+  animation: rb-knob-tweak 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* LED click flash */
+@keyframes rb-led-flash {
+  0%   { opacity: 1; }
+  25%  { opacity: 0.2; }
+  50%  { opacity: 1; }
+  75%  { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.rb-led--flash .rb-led__dot {
+  animation: rb-led-flash 0.3s ease-out;
+}
+
+/* Gentle panel entrance — elements that animate in */
+@keyframes rb-panel-lift {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rb-panel--animate-in {
+  animation: rb-panel-lift 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Disable knob tweak + panel lift for reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .rb-knob--tweaking .rb-knob__dial,
+  .rb-led--flash .rb-led__dot,
+  .rb-panel--animate-in {
+    animation: none !important;
+  }
+}
+
+/* ============================================================
+   21. CRISP RENDERING — screws, bevels, dividers
+   ============================================================ */
+
+/* Force sub-pixel crisp edges on decorative geometry */
+.rb-screw,
+.rb-screw--hex,
+.etched,
+.rb-rack::before,
+.rb-rack::after {
+  image-rendering: crisp-edges;
+  image-rendering: -webkit-optimize-contrast; /* Safari */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Etched divider — sharper, higher-contrast on all densities */
+.etched {
+  border: none;
+  height: 0;
+  border-top: 1px solid #1a1a1a;
+  border-bottom: 1px solid #444;
+  margin: 2rem 0;
+  background: none;
+}
+
+/* Section divider — ensure crisp label borders */
+.rb-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 2rem 0;
+  color: var(--rb-silver-dim);
+  font-family: var(--rb-font-display);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.rb-divider::before,
+.rb-divider::after {
+  content: '';
+  flex: 1;
+  height: 0;
+  border-top: 1px solid #1a1a1a;
+  border-bottom: 1px solid #3a3a3a;
+}
+
+/* Screw hover — subtle gleam on pointer-capable devices */
+@media (hover: hover) and (pointer: fine) {
+  .rb-screw {
+    transition: box-shadow 150ms ease;
+  }
+  .rb-screw:hover {
+    box-shadow:
+      inset 0 1px 3px rgba(255,255,255,0.4),
+      0 1px 4px rgba(0,0,0,0.7);
+  }
+}
+
+/* card-rack subtle panel lift */
+.rb-card-rack {
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 200ms ease;
 }

@@ -10,3 +10,18 @@ const { label, rotation = 0 } = Astro.props;
   <div aria-hidden="true" class="rb-knob__dial" style={`transform: rotate(${rotation}deg)`}></div>
   <span class="rb-knob__label">{label}</span>
 </div>
+
+<script>
+  // Knob tweak micro-interaction: add .rb-knob--tweaking on click, remove when done
+  document.querySelectorAll<HTMLElement>('.rb-knob').forEach((knob) => {
+    knob.addEventListener('click', () => {
+      knob.classList.remove('rb-knob--tweaking');
+      // Force reflow so the animation restarts cleanly
+      void knob.offsetWidth;
+      knob.classList.add('rb-knob--tweaking');
+    });
+    knob.addEventListener('animationend', () => {
+      knob.classList.remove('rb-knob--tweaking');
+    }, { capture: true });
+  });
+</script>

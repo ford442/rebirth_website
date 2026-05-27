@@ -46,6 +46,7 @@ const dom = {
   listTableBody: document.getElementById('listTableBody'),
   gridView: document.getElementById('gridView'),
   listView: document.getElementById('listView'),
+  gridEmptyState: document.getElementById('gridEmptyState'),
   btnGrid: document.getElementById('btnGrid'),
   btnList: document.getElementById('btnList'),
   wrappers: () =>
@@ -126,6 +127,11 @@ function updateGridView(results: FilterResult[]) {
       item.classList.toggle('is-hidden', !visibleFolders.has(folderName));
     });
   });
+
+  // Show/hide grid empty state
+  if (dom.gridEmptyState) {
+    dom.gridEmptyState.classList.toggle('is-hidden', visibleSections.size > 0);
+  }
 
   return { visibleSections: visibleSections.size, visibleFolders: visibleFolders.size };
 }
