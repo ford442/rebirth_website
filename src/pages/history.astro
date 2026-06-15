@@ -1,8 +1,10 @@
 ---
 // History / Deep Analysis page — The Digital Acid Revolution
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
 import HardwarePanel from '../components/ui/HardwarePanel.astro';
 import Led from '../components/ui/Led.astro';
+import { formatStatRange, totalSongsIndexed, totalMods } from '../data/archive-stats';
 ---
 
 <BaseLayout
@@ -12,6 +14,11 @@ import Led from '../components/ui/Led.astro';
 
   <div class="history-page">
     <div class="container">
+
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'History', href: '/history' },
+      ]} />
 
       <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
       <!-- ║  HERO HEADER                                                        ║ -->
@@ -32,13 +39,13 @@ import Led from '../components/ui/Led.astro';
             <span class="master-stat__value">1996</span>
             <span class="master-stat__label">Origin</span>
           </div>
-          <div class="master-stat">
-            <span class="master-stat__value">3,604+</span>
+          <div class="master-stat" title={`${totalSongsIndexed.toLocaleString()} indexed .rbs files`}>
+            <span class="master-stat__value">{formatStatRange(totalSongsIndexed)}</span>
             <span class="master-stat__label">Archived Songs</span>
           </div>
-          <div class="master-stat">
-            <span class="master-stat__value">600+</span>
-            <span class="master-stat__label">Documented Mods</span>
+          <div class="master-stat" title={`${totalMods.toLocaleString()} .rbm mod files`}>
+            <span class="master-stat__value">{formatStatRange(totalMods)}</span>
+            <span class="master-stat__label">Total Mods</span>
           </div>
         </div>
       </HardwarePanel>
@@ -585,4 +592,65 @@ import Led from '../components/ui/Led.astro';
       grid-template-columns: 1fr;
     }
   }
+
+  @media (max-width: 480px) {
+    .history-table,
+    .history-table thead,
+    .history-table tbody,
+    .history-table tr,
+    .history-table th,
+    .history-table td {
+      display: block;
+      width: 100%;
+    }
+
+    .history-table thead {
+      display: none;
+    }
+
+    .history-table tr {
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      background: #161616;
+    }
+
+    .history-table td {
+      padding: 0.35rem 0;
+      border-bottom: 1px solid #222;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .history-table td:last-child {
+      border-bottom: none;
+    }
+
+    .history-table td::before {
+      content: attr(data-label);
+      font-family: var(--rb-font-display, 'Courier New', monospace);
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--rb-amber-dim, #b37800);
+    }
+  }
 </style>
+
+<script>
+  (function () {
+    function labelHistoryTables() {
+      document.querySelectorAll('.history-table').forEach((table) => {
+        const headers = Array.from(table.querySelectorAll('thead th')).map((th) => th.textContent?.trim() ?? '');
+        table.querySelectorAll('tbody tr').forEach((row) => {
+          row.querySelectorAll('td').forEach((td, i) => {
+            if (headers[i]) td.dataset.label = headers[i];
+          });
+        });
+      });
+    }
+    labelHistoryTables();
+  })();
+</script>

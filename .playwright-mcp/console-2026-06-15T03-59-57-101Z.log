@@ -1,0 +1,4 @@
+[     590ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:4321/wasm/rbsParser.js:0
+[     591ms] [ERROR] [WasmAudioBridge] init failed: TypeError: Failed to fetch dynamically imported module: http://127.0.0.1:4321/wasm/rbsParser.js @ http://127.0.0.1:4321/rb338/_assets/RbsPlayer.astro_astro_type_script_index_0_lang.DCLmpYEV.js:0
+[     592ms] [ERROR] WASM init failed: TypeError: Failed to fetch dynamically imported module: http://127.0.0.1:4321/wasm/rbsParser.js @ http://127.0.0.1:4321/rb338/_assets/RbsPlayer.astro_astro_type_script_index_0_lang.DCLmpYEV.js:0
+[     949ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:4321/favicon.ico:0

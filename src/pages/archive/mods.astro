@@ -1,17 +1,18 @@
 ---
 // src/pages/archive/mods.astro — Interactive RBM mods browser
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import ModBrowserCard from '../../components/ModBrowserCard.astro';
 import HardwarePanel from '../../components/ui/HardwarePanel.astro';
 import Lcd from '../../components/ui/Lcd.astro';
 import Led from '../../components/ui/Led.astro';
 import modsData from '../../data/mods-metadata.json';
 import fullIndex from '../../data/mods-full-index.json';
+import { totalMods, documentedMods as totalDocumented, modCoveragePercent } from '../../data/archive-stats';
 
 const documentedMods = modsData.mods || [];
-const totalDocumented = documentedMods.length;
 const allMods = fullIndex.mods || [];
-const totalRaw = allMods.length;
+const totalRaw = totalMods;
 
 // Group raw mods by first letter
 const letters = new Set<string>();
@@ -28,7 +29,7 @@ const grouped = alphaLetters.map(letter => ({
 
 const baseModsUrl = 'https://storage.1ink.us/rebirth_mods';
 const issueBaseUrl = 'https://github.com/ford442/rebirth_website/issues/new';
-const coveragePercent = totalRaw > 0 ? Math.round((totalDocumented / totalRaw) * 100) : 0;
+const coveragePercent = modCoveragePercent;
 ---
 
 <BaseLayout 
@@ -38,6 +39,11 @@ const coveragePercent = totalRaw > 0 ? Math.round((totalDocumented / totalRaw) *
 
 <div class="mods-page">
   <div class="container">
+
+    <Breadcrumbs items={[
+      { label: 'Home', href: '/' },
+      { label: 'Mods', href: '/archive/mods/' },
+    ]} />
 
     <div class="rb-heading rb-heading-yellow">RBM Mods Archive</div>
 
@@ -95,25 +101,27 @@ const coveragePercent = totalRaw > 0 ? Math.round((totalDocumented / totalRaw) *
     </div>
 
     <!-- Search & Filter (documented only) -->
-    <div class="search-filter-bar">
-      <input
-        type="text"
-        id="modSearch"
-        placeholder="Search documented mods by title, author, or tag..."
-        class="rb-search-input"
-        aria-label="Search documented mods"
-        aria-describedby="modsResultCount"
-      />
-      <div class="filter-tags">
-        <button class="rb-tag-filter active" data-tag="" aria-label="Show all mods">All</button>
-        <button class="rb-tag-filter" data-tag="industrial" aria-label="Filter industrial mods">Industrial</button>
-        <button class="rb-tag-filter" data-tag="house" aria-label="Filter house mods">House</button>
-        <button class="rb-tag-filter" data-tag="dark" aria-label="Filter dark mods">Dark</button>
-        <button class="rb-tag-filter" data-tag="synth" aria-label="Filter synth mods">Synth</button>
-        <button class="rb-tag-filter" data-tag="official" aria-label="Filter official mods">Official</button>
-      </div>
-      <div id="modsResultCount" class="mods-result-count" aria-live="polite" aria-atomic="true">
-        Showing all documented mods
+    <div class="sticky-search">
+      <div class="search-filter-bar">
+        <input
+          type="text"
+          id="modSearch"
+          placeholder="Search documented mods by title, author, or tag..."
+          class="rb-search-input"
+          aria-label="Search documented mods"
+          aria-describedby="modsResultCount"
+        />
+        <div class="filter-tags">
+          <button class="rb-tag-filter active" data-tag="" aria-label="Show all mods">All</button>
+          <button class="rb-tag-filter" data-tag="industrial" aria-label="Filter industrial mods">Industrial</button>
+          <button class="rb-tag-filter" data-tag="house" aria-label="Filter house mods">House</button>
+          <button class="rb-tag-filter" data-tag="dark" aria-label="Filter dark mods">Dark</button>
+          <button class="rb-tag-filter" data-tag="synth" aria-label="Filter synth mods">Synth</button>
+          <button class="rb-tag-filter" data-tag="official" aria-label="Filter official mods">Official</button>
+        </div>
+        <div id="modsResultCount" class="mods-result-count" aria-live="polite" aria-atomic="true">
+          Showing all documented mods
+        </div>
       </div>
     </div>
 
@@ -207,18 +215,22 @@ const coveragePercent = totalRaw > 0 ? Math.round((totalDocumented / totalRaw) *
                       target="_blank"
                       rel="noopener noreferrer"
                       class="raw-item__link"
-                      aria-label={`Download ${m.filename}`}
-                      title="Download"
-                    >↓</a>
+                      aria-label={`Download ${m.filename} from storage.1ink.us, opens in new tab`}
+                      title={`Download ${m.filename} from storage.1ink.us (opens in new tab)`}
+                    >
+                      <span aria-hidden="true">↓</span>
+                    </a>
                   ) : (
                     <a
                       href={`${issueBaseUrl}?template=mod-metadata.yml&title=${encodeURIComponent(`Add metadata for: ${m.filename}`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       class="raw-item__link raw-item__link--document"
-                      aria-label={`Help document ${m.filename}`}
-                      title="Help document this mod"
-                    >?</a>
+                      aria-label={`Help document ${m.filename} on GitHub, opens in new tab`}
+                      title={`Help document ${m.filename} on GitHub (opens in new tab)`}
+                    >
+                      <span aria-hidden="true">?</span>
+                    </a>
                   )}
                 </div>
               ))}
@@ -674,6 +686,82 @@ const coveragePercent = totalRaw > 0 ? Math.round((totalDocumented / totalRaw) *
   .mods-footer a:hover {
     color: #3dba66;
     text-decoration: underline;
+  }
+
+  .sticky-search {
+    position: sticky;
+    top: 3.75rem;
+    z-index: 50;
+    background: rgba(15, 15, 15, 0.96);
+    backdrop-filter: blur(8px);
+    margin: 0 -1.25rem;
+    padding: 0.5rem 1.25rem;
+    border-block: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .filter-tags {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .filter-tags::-webkit-scrollbar {
+    display: none;
+  }
+
+  .az-nav {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .az-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (max-width: 767px) {
+    .sticky-search {
+      top: 3.5rem;
+      margin: 0 -1rem;
+      padding: 0.5rem 1rem;
+    }
+
+    .filter-tags {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: 0.5rem;
+      padding-bottom: 0.35rem;
+      mask-image: linear-gradient(to right, black calc(100% - 1.5rem), transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, black calc(100% - 1.5rem), transparent 100%);
+    }
+
+    .filter-tags .rb-tag-filter {
+      flex-shrink: 0;
+      scroll-snap-align: start;
+      min-height: 44px;
+    }
+
+    .az-nav {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: 0.4rem;
+      padding-bottom: 0.35rem;
+      border-bottom: none;
+    }
+
+    .az-nav__link {
+      flex-shrink: 0;
+      scroll-snap-align: start;
+      min-width: 40px;
+      min-height: 44px;
+      padding: 0.35em 0.65em;
+    }
+
+    .raw-item__link {
+      width: 44px;
+      height: 44px;
+      font-size: 1.1rem;
+    }
   }
 </style>
 

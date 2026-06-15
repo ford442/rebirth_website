@@ -1,6 +1,7 @@
 ---
 // Dynamic on-site folder page — /archive/songs/<section>/<folder>/...
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
 import HardwarePanel from '../../../components/ui/HardwarePanel.astro';
 import Lcd from '../../../components/ui/Lcd.astro';
 import { normalizeBase } from '../../../lib/url';
@@ -110,22 +111,12 @@ const pageTitle = `${folderName} — ${sectionName}`;
   <div class="folder-page">
     <div class="container">
 
-      <nav class="breadcrumbs" aria-label="Breadcrumb">
-        <ol class="breadcrumbs__list">
-          <li class="breadcrumbs__item">
-            <a class="breadcrumbs__link" href={`${baseUrl}/`}>Home</a>
-          </li>
-          <li class="breadcrumbs__item">
-            <a class="breadcrumbs__link" href={`${baseUrl}/archive/songs/`}>Songs</a>
-          </li>
-          <li class="breadcrumbs__item" aria-current="false">
-            <a class="breadcrumbs__link" href={`${baseUrl}/archive/songs/`}>{sectionName}</a>
-          </li>
-          <li class="breadcrumbs__item breadcrumbs__item--current" aria-current="page">
-            {folderName}
-          </li>
-        </ol>
-      </nav>
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Songs', href: '/archive/songs/' },
+        { label: sectionName, href: '/archive/songs/' },
+        { label: folderName },
+      ]} />
 
       <div class="rb-heading rb-heading-blue">{sectionName}</div>
 
@@ -212,8 +203,8 @@ const pageTitle = `${folderName} — ${sectionName}`;
                         target="_blank"
                         rel="noopener noreferrer"
                         class="download-btn"
-                        aria-label={`Download ${song.filename}`}
-                        title={`Download ${song.filename}`}
+                        aria-label={`Download ${song.filename} from test.1ink.us, opens in new tab`}
+                        title={`Download ${song.filename} from test.1ink.us (opens in new tab)`}
                       >
                         <span class="download-icon" aria-hidden="true">↓</span>
                         <span class="sr-only">Download</span>
@@ -240,6 +231,8 @@ const pageTitle = `${folderName} — ${sectionName}`;
               target="_blank"
               rel="noopener noreferrer"
               class="open-link"
+              aria-label="Browse directory listing on test.1ink.us, opens in new tab"
+              title="Browse directory listing on test.1ink.us (opens in new tab)"
             >
               Browse directory listing on test.1ink.us ↗
             </a>
@@ -256,49 +249,6 @@ const pageTitle = `${folderName} — ${sectionName}`;
     padding-block: 2rem 4rem;
     background: #0f0f0f;
     min-height: 60vh;
-  }
-
-  /* Breadcrumbs */
-  .breadcrumbs {
-    margin-bottom: 1.25rem;
-    font-family: var(--rb-font-display, 'Courier New', monospace);
-    font-size: 0.75rem;
-    color: #666;
-  }
-
-  .breadcrumbs__list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .breadcrumbs__item {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-  }
-
-  .breadcrumbs__item:not(:last-child)::after {
-    content: '/';
-    color: #444;
-  }
-
-  .breadcrumbs__link {
-    color: #888;
-    text-decoration: none;
-    transition: color 120ms ease;
-  }
-
-  .breadcrumbs__link:hover {
-    color: var(--rb-amber);
-    text-decoration: underline;
-  }
-
-  .breadcrumbs__item--current {
-    color: var(--rb-amber-dim);
   }
 
   /* Header */
@@ -613,4 +563,15 @@ const pageTitle = `${folderName} — ${sectionName}`;
       if (col) sortRows(col);
     });
   });
+
+  (function labelFolderTable() {
+    const table = document.querySelector('.folder-table');
+    if (!table) return;
+    const headers = Array.from(table.querySelectorAll('thead th')).map((th) => th.textContent?.trim() ?? '');
+    table.querySelectorAll('tbody tr').forEach((row) => {
+      row.querySelectorAll('td').forEach((td, i) => {
+        if (headers[i]) td.dataset.label = headers[i];
+      });
+    });
+  })();
 </script>

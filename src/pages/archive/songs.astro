@@ -1,6 +1,7 @@
 ---
 // Song Archive Browser — /archive/songs
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import CollectionCard from '../../components/CollectionCard.astro';
 import HardwarePanel from '../../components/ui/HardwarePanel.astro';
 import Led from '../../components/ui/Led.astro';
@@ -9,6 +10,7 @@ import ActionButton from '../../components/ui/ActionButton.astro';
 import collectionsMeta from '../../data/collections-metadata.json';
 import { songCollections, archiveBaseUrl } from '../../data/song-collections';
 import fullIndexRaw from '../../data/songs-full-index.json';
+import { formatStatRange, totalSongsIndexed, mainCollectionCount, artistCount, monthlyArchiveCount } from '../../data/archive-stats';
 
 interface SongEntry {
   filename: string;
@@ -55,6 +57,11 @@ const grouped = alphaLetters.map((letter) => ({
   <div class="archive-page">
     <div class="container">
 
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Songs', href: '/archive/songs/' },
+      ]} />
+
       <div class="rb-heading rb-heading-blue">RBS Song Archive</div>
 
       <!-- Page header module -->
@@ -64,39 +71,41 @@ const grouped = alphaLetters.map((letter) => ({
         class="archive-header"
         title="RBS SONG ARCHIVE BROWSER"
         ledStatus="online"
-        ledLabel="2000+ FILES"
+        ledLabel={`${formatStatRange(totalSongsIndexed)} INDEXED`}
       >
         <p class="archive-subtitle">Browse collections and search every catalogued .rbs file in the archive</p>
-        <div class="search-bar">
-          <input
-            type="text"
-            id="searchInput"
-            placeholder="Search collections and artists... (Press / to focus)"
-            class="rb-search-input"
-            aria-label="Search collections"
-          />
-          <ActionButton variant="mix" onclick="clearAllFilters()">Clear All</ActionButton>
-        </div>
-        <div class="filter-bar" role="group" aria-label="Quick filters">
-          <button class="rb-filter-btn active" data-filter="all" type="button" aria-pressed="true">All</button>
-          <button class="rb-filter-btn" data-filter="featured" type="button" aria-pressed="false">Featured</button>
-          <button class="rb-filter-btn" data-filter="bySource" type="button" aria-pressed="false">By Source</button>
-          <button class="rb-filter-btn" data-filter="artists" type="button" aria-pressed="false">Artists</button>
-          <button class="rb-filter-btn" data-filter="monthly" type="button" aria-pressed="false">Monthly</button>
-          <button class="rb-filter-btn" data-filter="other" type="button" aria-pressed="false">Other</button>
-        </div>
-        <div class="results-bar" aria-live="polite" aria-atomic="true">
-          <Led status="online" label="" ariaHidden={true} />
-          <span id="resultCount" class="result-count">Showing all collections</span>
+        <div class="sticky-search">
+          <div class="search-bar">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search collections and artists... (Press / to focus)"
+              class="rb-search-input"
+              aria-label="Search collections"
+            />
+            <ActionButton variant="mix" onclick="clearAllFilters()">Clear All</ActionButton>
+          </div>
+          <div class="filter-bar" role="group" aria-label="Quick filters">
+            <button class="rb-filter-btn active" data-filter="all" type="button" aria-pressed="true">All</button>
+            <button class="rb-filter-btn" data-filter="featured" type="button" aria-pressed="false">Featured</button>
+            <button class="rb-filter-btn" data-filter="bySource" type="button" aria-pressed="false">By Source</button>
+            <button class="rb-filter-btn" data-filter="artists" type="button" aria-pressed="false">Artists</button>
+            <button class="rb-filter-btn" data-filter="monthly" type="button" aria-pressed="false">Monthly</button>
+            <button class="rb-filter-btn" data-filter="other" type="button" aria-pressed="false">Other</button>
+          </div>
+          <div class="results-bar" aria-live="polite" aria-atomic="true">
+            <Led status="online" label="" ariaHidden={true} />
+            <span id="resultCount" class="result-count">Showing all collections</span>
+          </div>
         </div>
       </HardwarePanel>
 
       <!-- LCD stats bar -->
-      <div class="archive-stats">
-        <Lcd label="COLLECTIONS" value={5} ariaLabel="Main collections" />
-        <Lcd label="ARTISTS" value={8} ariaLabel="Featured artists" />
-        <Lcd label="SONGS" value={totalRaw.toLocaleString()} ariaLabel="Total indexed songs" />
-        <Lcd label="ARCHIVES" value={12} ariaLabel="Monthly archives" />
+      <div class="archive-stats" title={`${totalSongsIndexed.toLocaleString()} files indexed from the remote archive`}>
+        <Lcd label="COLLECTIONS" value={mainCollectionCount} ariaLabel="Main collections" />
+        <Lcd label="ARTISTS" value={artistCount} ariaLabel="Featured artists" />
+        <Lcd label="SONGS" value={formatStatRange(totalSongsIndexed)} ariaLabel="Total indexed songs" />
+        <Lcd label="ARCHIVES" value={monthlyArchiveCount} ariaLabel="Monthly archives" />
       </div>
 
       <!-- View toggle -->
@@ -251,9 +260,11 @@ const grouped = alphaLetters.map((letter) => ({
                       target="_blank"
                       rel="noopener noreferrer"
                       class="raw-item__link"
-                      aria-label={`Download ${song.filename}`}
-                      title="Download"
-                    >↓</a>
+                      aria-label={`Download ${song.filename} from test.1ink.us, opens in new tab`}
+                      title={`Download ${song.filename} from test.1ink.us (opens in new tab)`}
+                    >
+                      <span aria-hidden="true">↓</span>
+                    </a>
                   </div>
                 ))}
               </div>
@@ -755,6 +766,82 @@ const grouped = alphaLetters.map((letter) => ({
     color: var(--rb-amber);
     border-color: var(--rb-amber-dim);
     box-shadow: 0 0 8px rgba(255,176,0,0.15);
+  }
+
+  .sticky-search {
+    position: sticky;
+    top: 3.75rem;
+    z-index: 50;
+    background: rgba(15, 15, 15, 0.96);
+    backdrop-filter: blur(8px);
+    margin: 0 -1.25rem;
+    padding: 0.5rem 1.25rem;
+    border-block: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .filter-bar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .az-nav {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .az-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (max-width: 767px) {
+    .sticky-search {
+      top: 3.5rem;
+      margin: 0 -1rem;
+      padding: 0.5rem 1rem;
+    }
+
+    .filter-bar {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: 0.5rem;
+      padding-bottom: 0.35rem;
+      mask-image: linear-gradient(to right, black calc(100% - 1.5rem), transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, black calc(100% - 1.5rem), transparent 100%);
+    }
+
+    .filter-bar .rb-filter-btn {
+      flex-shrink: 0;
+      scroll-snap-align: start;
+      min-height: 44px;
+    }
+
+    .az-nav {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: 0.4rem;
+      padding-bottom: 0.35rem;
+      border-bottom: none;
+    }
+
+    .az-nav__link {
+      flex-shrink: 0;
+      scroll-snap-align: start;
+      min-width: 40px;
+      min-height: 44px;
+      padding: 0.35em 0.65em;
+    }
+
+    .raw-item__link {
+      width: 44px;
+      height: 44px;
+      font-size: 1.1rem;
+    }
   }
 </style>
 

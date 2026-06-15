@@ -1,0 +1,106 @@
+---
+// ExternalLink.astro — consistent external archive link indicator
+export interface Props {
+  /** Destination URL */
+  href: string;
+  /** Link intent — drives label and icon */
+  kind?: 'browse-folder' | 'download-rbs' | 'download-rbm' | 'external';
+  /** Explicit host label (defaults to parsed hostname) */
+  host?: string;
+  /** Extra CSS classes */
+  class?: string;
+  /** Explicit title (defaults to descriptive text) */
+  title?: string;
+  /** Explicit aria-label (defaults to descriptive text) */
+  ariaLabel?: string;
+  /** Optional target override (defaults to _blank) */
+  target?: string;
+  /** Optional rel override (defaults to noopener noreferrer) */
+  rel?: string;
+}
+
+const {
+  href,
+  kind = 'external',
+  host: hostProp,
+  class: className = '',
+  title,
+  ariaLabel,
+  target,
+  rel,
+} = Astro.props;
+
+const labels: Record<NonNullable<Props['kind']>, string> = {
+  'browse-folder': 'Browse folder',
+  'download-rbs': 'Download .rbs',
+  'download-rbm': 'Download .rbm',
+  external: 'Open external link',
+};
+
+const label = labels[kind];
+const icon = kind.startsWith('download') ? '↓' : '↗';
+
+let parsedHost = hostProp ?? '';
+if (!parsedHost) {
+  try {
+    parsedHost = new URL(href).hostname.replace(/^www\./, '');
+  } catch {
+    parsedHost = '';
+  }
+}
+
+const defaultTitle = `${label}${parsedHost ? ` on ${parsedHost}` : ''} (opens in new tab)`;
+const finalTitle = title ?? defaultTitle;
+const finalAriaLabel = ariaLabel ?? defaultTitle;
+const finalTarget = target ?? '_blank';
+const finalRel = rel ?? 'noopener noreferrer';
+---
+
+<a
+  href={href}
+  target={finalTarget}
+  rel={finalRel}
+  class={`external-link ${className}`}
+  title={finalTitle}
+  aria-label={finalAriaLabel}
+>
+  <span class="external-link__label">{label}</span>
+  {parsedHost ? (
+    <span class="external-link__host" aria-hidden="true">
+      <span class="external-link__icon">{icon}</span>
+      <span class="external-link__host-name">{parsedHost}</span>
+    </span>
+  ) : (
+    <span class="external-link__icon" aria-hidden="true">{icon}</span>
+  )}
+</a>
+
+<style>
+  .external-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+  }
+
+  .external-link__label {
+    white-space: nowrap;
+  }
+
+  .external-link__host {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    opacity: 0.9;
+    white-space: nowrap;
+  }
+
+  .external-link__host-name {
+    font-size: 0.78em;
+    text-transform: none;
+    letter-spacing: 0.02em;
+  }
+
+  .external-link__icon {
+    opacity: 0.9;
+  }
+</style>

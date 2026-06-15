@@ -1,5 +1,7 @@
 ---
 // ModBrowserCard.astro — display a single RBM mod with metadata
+import ExternalLink from './ExternalLink.astro';
+
 export interface Props {
   filename: string;
   title: string;
@@ -48,15 +50,12 @@ const modUrl = downloadUrl || `${baseModsUrl}/${filename}`;
   
   <div class="mod-card__footer">
     <span class="mod-card__filename">{filename}</span>
-    <a 
+    <ExternalLink
       href={modUrl}
-      target="_blank" 
-      rel="noopener noreferrer"
+      kind="download-rbm"
       class="rb-pattern-btn mod-download-btn"
-      aria-label={`Download ${title}`}
-    >
-      ↓ Download
-    </a>
+      ariaLabel={`Download ${title} from storage.1ink.us, opens in new tab`}
+    />
   </div>
 </div>
 

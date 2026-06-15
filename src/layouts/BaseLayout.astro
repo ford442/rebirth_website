@@ -11,6 +11,7 @@ const {
 } = Astro.props;
 
 import { normalizeBase } from '../lib/url';
+import { formatStatRange, totalSongsIndexed, totalMods, latestVersion } from '../data/archive-stats';
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const currentPath = Astro.url.pathname;
@@ -119,12 +120,46 @@ const base = normalizeBase(import.meta.env.BASE_URL);
     <!-- Site footer -->
     <footer class="site-footer">
       <div class="container">
-        <p>
-          ReBirth RB-338 Archive &mdash; Community-maintained. Not affiliated with Propellerhead Software.
-        </p>
+        <div class="footer-grid">
+          <section class="footer-col" aria-labelledby="footer-archive-heading">
+            <h2 id="footer-archive-heading" class="footer-heading">Archive</h2>
+            <ul class="footer-links" role="list">
+              <li><a href={`${base}/archive/songs/index.html`}>Browse Songs</a></li>
+              <li><a href={`${base}/archive/mods/index.html`}>Browse Mods</a></li>
+              <li><a href={`${base}/archive/songs?filter=artists`}>Featured Artists</a></li>
+              <li><a href={`${base}/archive/mods#rawIndex`}>Complete Mod Index</a></li>
+            </ul>
+          </section>
+
+          <section class="footer-col" aria-labelledby="footer-resources-heading">
+            <h2 id="footer-resources-heading" class="footer-heading">Resources</h2>
+            <ul class="footer-links" role="list">
+              <li><a href={`${base}/history`}>History</a></li>
+              <li><a href={`${base}/docs`}>Documentation</a></li>
+              <li><a href="https://github.com/ford442/rebirth_website/issues/new?template=mod-metadata.yml" target="_blank" rel="noopener noreferrer">Contributing</a></li>
+              <li><a href="https://github.com/ford442/rebirth_website" target="_blank" rel="noopener noreferrer">GitHub Repository</a></li>
+            </ul>
+          </section>
+
+          <section class="footer-col" aria-labelledby="footer-about-heading">
+            <h2 id="footer-about-heading" class="footer-heading">About</h2>
+            <p class="footer-about">
+              ReBirth RB-338 is a virtual emulation of the Roland TB-303, TR-808, and TR-909 grooveboxes, originally released by Propellerhead Software.
+            </p>
+            <p class="footer-stats">
+              {formatStatRange(totalSongsIndexed)} songs · {formatStatRange(totalMods)} mods · v{latestVersion}
+            </p>
+            <p class="footer-disclaimer">
+              Community-maintained archive. Not affiliated with Propellerhead Software / Reason Studios.
+            </p>
+          </section>
+        </div>
+      </div>
+
+      <div class="container footer-build-row">
         <p class="footer-build">
-          Built with <a href="https://astro.build" rel="noopener noreferrer" target="_blank">Astro</a> &mdash;
-          <a href="https://github.com/ford442/rebirth_website" rel="noopener noreferrer" target="_blank">Contribute on GitHub</a>
+          Built with <a href="https://astro.build" target="_blank" rel="noopener noreferrer">Astro</a> ·
+          <a href="https://github.com/ford442/rebirth_website" target="_blank" rel="noopener noreferrer">Contribute on GitHub</a>
         </p>
       </div>
     </footer>
@@ -182,22 +217,94 @@ const base = normalizeBase(import.meta.env.BASE_URL);
     color: var(--color-text-muted);
   }
 
-  .site-footer .container {
+  .footer-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    text-align: left;
+  }
+
+  .footer-col {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs);
+    gap: 0.75rem;
+  }
+
+  .footer-heading {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--rb-amber, #ffb000);
+  }
+
+  .footer-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .footer-links a {
+    display: inline-flex;
     align-items: center;
+    min-height: 36px;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color 120ms ease;
+  }
+
+  .footer-links a:hover,
+  .footer-links a:focus-visible {
+    color: var(--rb-amber, #ffb000);
+    text-decoration: underline;
+    outline: none;
+  }
+
+  .footer-about,
+  .footer-stats,
+  .footer-disclaimer {
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .footer-stats {
+    font-family: var(--font-mono);
+    color: var(--rb-green-bright, #3dba66);
+  }
+
+  .footer-disclaimer {
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+    opacity: 0.8;
+  }
+
+  .footer-build-row {
+    margin-top: 2.5rem;
     text-align: center;
   }
 
-  .site-footer a {
+  .footer-build-row a {
     color: #666;
     text-decoration: none;
   }
 
-  .site-footer a:hover {
+  .footer-build-row a:hover {
     color: var(--rb-amber, #ffb000);
   }
 
   .footer-build { opacity: 0.5; }
+
+  @media (max-width: 767px) {
+    .footer-grid {
+      grid-template-columns: 1fr;
+      gap: 1.75rem;
+    }
+
+    .footer-links a {
+      min-height: 44px;
+    }
+  }
 </style>

@@ -1,5 +1,7 @@
 ---
 // ModCard.astro — reusable card for displaying individual mods or songs
+import ExternalLink from './ExternalLink.astro';
+
 export interface Props {
   /** Display title of the mod or song */
   title: string;
@@ -60,8 +62,6 @@ const {
 const isSong = fileType === '.rbs';
 const isMod  = fileType === '.rbm';
 const typeClass = isSong ? 'type--song' : isMod ? 'type--mod' : 'type--other';
-const primaryCta = isSong ? 'Open Folder' : 'Download Mod';
-const hostBadge = externalHostLabel ? `↗ ${externalHostLabel}` : '';
 ---
 
 <article class={`mod-card rb-file-card ${typeClass} ${rackmount ? 'rb-rack-variant' : ''}`} aria-label={`${fileType} — ${title}`}>
@@ -69,7 +69,6 @@ const hostBadge = externalHostLabel ? `↗ ${externalHostLabel}` : '';
     <span class={`mod-card__badge rb-badge ${isSong ? 'rb-badge--song' : isMod ? 'rb-badge--mod' : ''}`} aria-hidden="true">{fileType}</span>
     <div class="mod-card__title-block">
       <h3 class="mod-card__title">{title}</h3>
-      {hostBadge && <span class="mod-card__host-badge">{hostBadge}</span>}
     </div>
   </header>
 
@@ -148,9 +147,14 @@ const hostBadge = externalHostLabel ? `↗ ${externalHostLabel}` : '';
       )}
 
       {href && (
-        <a class="mod-card__action mod-card__action--primary" href={href} target={target} rel={rel}>
-          {primaryCta} <span aria-hidden="true">&rarr;</span>
-        </a>
+        <ExternalLink
+          href={href}
+          kind={isSong ? 'browse-folder' : isMod ? 'download-rbm' : 'external'}
+          host={externalHostLabel}
+          target={target}
+          rel={rel}
+          class="mod-card__action mod-card__action--primary"
+        />
       )}
     </div>
   </footer>

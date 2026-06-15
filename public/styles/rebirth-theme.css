@@ -3080,3 +3080,36 @@ select:focus-visible {
   transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
               box-shadow 200ms ease;
 }
+
+
+/* ============================================================
+   Mobile touch-target overrides
+   ============================================================ */
+@media (max-width: 767px) {
+  .rb-pattern-btn,
+  .rb-mix-btn,
+  .rb-transport-btn,
+  .rb-btn-pattern,
+  .rb-btn-mix,
+  .rb-btn-transport {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .rb-filter-btn,
+  .rb-tag-filter {
+    min-height: 44px;
+    min-width: 48px;
+  }
+
+  .rb-step-btn {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .rb-nav-btn {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}

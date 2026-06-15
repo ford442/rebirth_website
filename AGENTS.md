@@ -5,7 +5,7 @@
 This is a **static website archive** for the legendary **ReBirth RB-338** software synthesizer by Propellerhead Software (1997–2005, now abandonware). The site preserves and catalogs community-contributed `.rbs` song files, `.rbm` mod files, and historical documentation spanning versions 1.0 through 2.0.1.
 
 - **Repository**: `ford442/rebirth_website`
-- **Live URL**: `https://ford442.github.io/rebirth_website`
+- **Live URL**: `https://ford442.github.io/rb338`
 - **Framework**: [Astro](https://astro.build) v6 (static site generator)
 - **Language**: TypeScript with strict mode
 - **Styling**: Pure CSS — no Tailwind, no UI frameworks
@@ -67,16 +67,19 @@ npm run astro check
 │   ├── layouts/
 │   │   └── BaseLayout.astro    ← Shared HTML shell (head, header, nav, footer)
 │   ├── components/
+│   │   ├── Breadcrumbs.astro   ← Hardware-styled breadcrumb navigation
 │   │   ├── ModCard.astro       ← Reusable card for songs/mods
 │   │   ├── CollectionCard.astro← Card for archive folder sections
-│   │   └── ModBrowserCard.astro← Detailed mod card with download link
+│   │   ├── ModBrowserCard.astro← Detailed mod card with download link
+│   │   └── ExternalLink.astro  ← External archive link indicator
 │   ├── content/
 │   │   └── docs/               ← Historical markdown docs (v1.0, v1.5, v2.0, v2.0.1, etc.)
 │   ├── data/
-│   │   ├── mods-metadata.json  ← Documented mod metadata (17 of 600+)
+│   │   ├── mods-metadata.json  ← Documented mod metadata (26 of 367)
 │   │   ├── mods-full-index.json← All 367 .rbm files with sizes
 │   │   ├── songs-full-index.json← All catalogued .rbs files with metadata
-│   │   └── song-collections.ts ← Shared collection section definitions
+│   │   ├── song-collections.ts ← Shared collection section definitions
+│   │   └── archive-stats.ts    ← Single source of truth for archive stats
 │   ├── styles/
 │   │   └── global.css          ← Global reset, design tokens, base styles
 │   ├── wasm/
@@ -107,8 +110,9 @@ Astro uses file-based routing under `src/pages/`:
 | `src/pages/archive/songs.astro` | `/archive/songs` |
 | `src/pages/archive/songs/[...slug].astro` | `/archive/songs/<section>/<folder>/...` |
 | `src/pages/archive/mods.astro` | `/archive/mods` |
-
-**Important**: There is **no `src/pages/docs/` route** currently implemented. The navigation bar in `BaseLayout.astro` links to `${import.meta.env.BASE_URL}docs`, but this page does not exist — it will 404. The content collection for docs is configured in `src/content.config.ts`, but no page renders it.
+| `src/pages/history.astro` | `/history` |
+| `src/pages/docs/index.astro` | `/docs` |
+| `src/pages/docs/[...slug].astro` | `/docs/<slug>` |
 
 ## Design System & Styling
 
@@ -240,7 +244,7 @@ description: "One-sentence summary."
 
 **Note**: Only `title` and `version` are required. `releaseDate` and `description` are optional.
 
-**Current gap**: The docs collection is configured but not rendered. To make `/docs` work, create a `src/pages/docs/[...slug].astro` or `src/pages/docs/index.astro` that uses `getCollection('docs')`.
+Docs are rendered by `src/pages/docs/index.astro` (listing) and `src/pages/docs/[...slug].astro` (individual pages).
 
 ## Data Files
 
@@ -267,7 +271,7 @@ Structured metadata for documented `.rbm` mod files:
 - `year` is nullable
 - `tags` is an array of lowercase kebab-case strings
 
-Currently **26 mods** are documented out of **600+** available (17 with full metadata, 9 with minimal metadata).
+Currently **26 mods** are documented out of **367** available (17 with full metadata, 9 with minimal metadata).
 
 ### `public/rbs-manifest.json`
 
@@ -398,8 +402,8 @@ For manual verification:
 
 ## Known Gaps & TODOs
 
-1. **Missing `/docs` page**: The content collection exists but has no rendering page. The nav link 404s.
-2. **Incomplete mod metadata**: 25 of 367 mods are documented in `mods-metadata.json`. A GitHub issue template (`.github/ISSUE_TEMPLATE/mod-metadata.yml`) and helper scripts (`check-mod-metadata.py`, `sync-mod-metadata.py`) now exist to close this gap.
+1. **External link clarity**: Archive downloads and folder browse links now use the `ExternalLink` component with host labels and `(opens in new tab)` cues.
+2. **Incomplete mod metadata**: 26 of 367 mods are documented in `mods-metadata.json`. A GitHub issue template (`.github/ISSUE_TEMPLATE/mod-metadata.yml`) and helper scripts (`check-mod-metadata.py`, `sync-mod-metadata.py`) now exist to close this gap.
 3. **Empty archive directories**: `public/archive/rbs-songs/` and `public/archive/rbm-mods/` contain only `.gitkeep` files; actual assets are hosted externally.
 4. **WASM module**: Not yet implemented — purely architectural stubs.
 5. **No tests**: No unit, integration, or E2E tests exist.

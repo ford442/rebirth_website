@@ -11,6 +11,7 @@ import RbsPlayer from '../components/RbsPlayer.astro';
 import ModCard from '../components/ModCard.astro';
 import { songCollections } from '../data/song-collections';
 import { normalizeBase } from '../lib/url';
+import { formatStatRange, totalSongsIndexed, totalMods, latestVersion } from '../data/archive-stats';
 
 /* ── Types ─────────────────────────────────────────────────────── */
 
@@ -212,12 +213,12 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
           <Led status="pending" label="WASM PENDING" />
         </div>
         <div class="master-stats" aria-label="Archive stats">
-          <div class="master-stat">
-            <span class="master-stat__value">2000+</span>
+          <div class="master-stat" title={`${totalSongsIndexed.toLocaleString()} indexed .rbs files`}>
+            <span class="master-stat__value">{formatStatRange(totalSongsIndexed)}</span>
             <span class="master-stat__label">Songs</span>
           </div>
-          <div class="master-stat">
-            <span class="master-stat__value">500+</span>
+          <div class="master-stat" title={`${totalMods.toLocaleString()} .rbm mod files`}>
+            <span class="master-stat__value">{formatStatRange(totalMods)}</span>
             <span class="master-stat__label">Mods</span>
           </div>
           <div class="master-stat">
@@ -307,38 +308,41 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
 
   <hr class="etched" />
 
-  <HardwarePanel
-    ariaLabel="Hardware-themed archive details"
-    variant="rackmount-module"
-    animate
-    title="ABOUT THE HARDWARE"
-    ledStatus="pending"
-    ledLabel="OPTIONAL"
-  >
-    <div class="hardware-story">
-      <div class="rb-knob-row">
-        <Knob label="TUNE" rotation={-20} />
-        <Knob label="CUT OFF" rotation={30} />
-        <Knob label="RES" rotation={-45} />
-        <Knob label="ENV MOD" rotation={10} />
-        <Knob label="DECAY" rotation={-30} />
-        <Knob label="ACCENT" rotation={50} />
-      </div>
-      <div class="hero-body">
-        <aside aria-label="System readout" class="hero-right">
-          <div class="rb-terminal hero-terminal">
-            <div class="rb-terminal__bar">
-              <span aria-hidden="true" class="dot dot--red"></span>
-              <span aria-hidden="true" class="dot dot--amber"></span>
-              <span aria-hidden="true" class="dot dot--green"></span>
-              <span class="rb-terminal__title">rb338_archive.sh</span>
-            </div>
-            <pre aria-label="System status terminal" class="rb-terminal__body"><code>$ rb338 --status
+  <details class="mobile-accordion" open>
+    <summary class="mobile-accordion__summary">About the hardware</summary>
+    <div class="mobile-accordion__content">
+      <HardwarePanel
+        ariaLabel="Hardware-themed archive details"
+        variant="rackmount-module"
+        animate
+        title="ABOUT THE HARDWARE"
+        ledStatus="pending"
+        ledLabel="OPTIONAL"
+      >
+        <div class="hardware-story">
+          <div class="rb-knob-row">
+            <Knob label="TUNE" rotation={-20} />
+            <Knob label="CUT OFF" rotation={30} />
+            <Knob label="RES" rotation={-45} />
+            <Knob label="ENV MOD" rotation={10} />
+            <Knob label="DECAY" rotation={-30} />
+            <Knob label="ACCENT" rotation={50} />
+          </div>
+          <div class="hero-body">
+            <aside aria-label="System readout" class="hero-right">
+              <div class="rb-terminal hero-terminal">
+                <div class="rb-terminal__bar">
+                  <span aria-hidden="true" class="dot dot--red"></span>
+                  <span aria-hidden="true" class="dot dot--amber"></span>
+                  <span aria-hidden="true" class="dot dot--green"></span>
+                  <span class="rb-terminal__title">rb338_archive.sh</span>
+                </div>
+                <pre aria-label="System status terminal" class="rb-terminal__body"><code>$ rb338 --status
 <span class="t-green">▶ ARCHIVE ONLINE</span>
   est    : <span class="t-amber">1997</span>
-  songs  : <span class="t-green">2000+</span>
-  mods   : <span class="t-green">500+</span>
-  version: <span class="t-amber">2.0.1</span>
+  songs  : <span class="t-green">{formatStatRange(totalSongsIndexed)}</span>
+  mods   : <span class="t-green">{formatStatRange(totalMods)}</span>
+  version: <span class="t-amber">{latestVersion}</span>
   wasm   : <span class="t-dim">pending</span>
 
 $ rb338 --formats
@@ -351,98 +355,105 @@ $ rb338 --about
   Released <span class="t-amber">1997</span> · Abandonware <span class="t-amber">2005</span>
 
 $ _<span class="cursor-blink">█</span></code></pre>
-          </div>
-        </aside>
-        <div class="hero-left">
-          <div class="seq-tracks">
-            <div aria-label="Song pattern" class="seq-row" role="group">
-              <span class="seq-row__label">SONG</span>
-              <div aria-hidden="true" class="rb-step-grid">
-                {songPattern.map((active, i) => (
-                  <StepButton
-                    active={active === 1}
-                    beat={i % 4 === 0}
-                    ariaLabel={`Step ${i+1} ${active ? 'on' : 'off'}`}
-                    title={`Step ${i+1}`}
-                  />
-                ))}
               </div>
-            </div>
-            <div aria-label="Bass pattern" class="seq-row" role="group">
-              <span class="seq-row__label">BASS</span>
-              <div aria-hidden="true" class="rb-step-grid">
-                {bassPattern.map((active, i) => (
-                  <StepButton
-                    active={active === 1}
-                    beat={i % 4 === 0}
-                    ariaLabel={`Step ${i+1} ${active ? 'on' : 'off'}`}
-                    title={`Step ${i+1}`}
-                  />
-                ))}
+            </aside>
+            <div class="hero-left">
+              <div class="seq-tracks">
+                <div aria-label="Song pattern" class="seq-row" role="group">
+                  <span class="seq-row__label">SONG</span>
+                  <div aria-hidden="true" class="rb-step-grid">
+                    {songPattern.map((active, i) => (
+                      <StepButton
+                        active={active === 1}
+                        beat={i % 4 === 0}
+                        ariaLabel={`Step ${i+1} ${active ? 'on' : 'off'}`}
+                        title={`Step ${i+1}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div aria-label="Bass pattern" class="seq-row" role="group">
+                  <span class="seq-row__label">BASS</span>
+                  <div aria-hidden="true" class="rb-step-grid">
+                    {bassPattern.map((active, i) => (
+                      <StepButton
+                        active={active === 1}
+                        beat={i % 4 === 0}
+                        ariaLabel={`Step ${i+1} ${active ? 'on' : 'off'}`}
+                        title={`Step ${i+1}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div aria-label="Kick pattern" class="seq-row seq-row--kick" role="group">
+                  <span class="seq-row__label">KICK</span>
+                  <div aria-hidden="true" class="rb-step-grid">
+                    {kickPattern.map((active, i) => (
+                      <StepButton
+                        active={active === 1}
+                        beat={i % 4 === 0}
+                        ariaLabel={`Step ${i+1} ${active ? 'on' : 'off'}`}
+                        title={`Step ${i+1}`}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div aria-label="Kick pattern" class="seq-row seq-row--kick" role="group">
-              <span class="seq-row__label">KICK</span>
-              <div aria-hidden="true" class="rb-step-grid">
-                {kickPattern.map((active, i) => (
-                  <StepButton
-                    active={active === 1}
-                    beat={i % 4 === 0}
-                    ariaLabel={`Step ${i+1} ${active ? 'on' : 'off'}`}
-                    title={`Step ${i+1}`}
-                  />
-                ))}
+              <div aria-hidden="true" class="seq-numbers">
+                <span class="seq-row__label"></span>
+                <div class="seq-num-row">
+                  {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].map(n => (
+                    <span class="seq-num">{n}</span>
+                  ))}
+                </div>
               </div>
-            </div>
-          </div>
-          <div aria-hidden="true" class="seq-numbers">
-            <span class="seq-row__label"></span>
-            <div class="seq-num-row">
-              {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].map(n => (
-                <span class="seq-num">{n}</span>
-              ))}
             </div>
           </div>
         </div>
-      </div>
+      </HardwarePanel>
     </div>
-  </HardwarePanel>
+  </details>
 
-  <HardwarePanel
-    ariaLabelledBy="about-heading"
-    animate
-    variant="rackmount"
-    title="INFORMATION MODULES"
-    ledStatus="online"
-    ledLabel="OK"
-  >
-    <h2 class="sr-only" id="about-heading">About the Archive</h2>
-    <div class="about-row">
-      <div class="about-modules">
-        <article class="rb-file-card rb-card-rack">
-          <div class="rb-panel__header rb-panel--clean-header">
-            <span class="rb-panel__title">WHAT IS REBIRTH?</span>
-            <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
+  <details class="mobile-accordion" open>
+    <summary class="mobile-accordion__summary">Information modules</summary>
+    <div class="mobile-accordion__content">
+      <HardwarePanel
+        ariaLabelledBy="about-heading"
+        animate
+        variant="rackmount"
+        title="INFORMATION MODULES"
+        ledStatus="online"
+        ledLabel="OK"
+      >
+        <h2 class="sr-only" id="about-heading">About the Archive</h2>
+        <div class="about-row">
+          <div class="about-modules">
+            <article class="rb-file-card rb-card-rack">
+              <div class="rb-panel__header rb-panel--clean-header">
+                <span class="rb-panel__title">WHAT IS REBIRTH?</span>
+                <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
+              </div>
+              <p>Released by Propellerhead Software in <strong>1997</strong>, <strong>ReBirth RB-338</strong> was one of the first software synthesizers to faithfully emulate the <strong>Roland TB-303</strong> Bass Line and the Roland TR-808 / TR-909 drum machines. It became a cornerstone of electronic music production and is now freely available as abandonware.</p>
+            </article>
+            <article class="rb-file-card rb-card-rack">
+              <div class="rb-panel__header rb-panel--clean-header">
+                <span class="rb-panel__title">WHAT IS THIS SITE?</span>
+                <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
+              </div>
+              <p>This community archive preserves <code>.rbs</code> song files and <code>.rbm</code> mod files contributed by enthusiasts worldwide. It also hosts historical documentation spanning versions <code>1.0</code> through <code>2.0.1</code> and lays the groundwork for in-browser <code>.rbs</code> preview via WebAssembly.</p>
+            </article>
+            <article class="rb-file-card rb-card-rack">
+              <div class="rb-panel__header rb-panel--clean-header">
+                <span class="rb-panel__title">HOW TO CONTRIBUTE?</span>
+                <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
+              </div>
+              <p>Open a pull request on the <a href="https://github.com/ford442/rebirth_website" rel="noopener noreferrer" target="_blank">GitHub repository</a>. Place song files in <code>public/archive/rbs-songs/</code> and mod files in <code>public/archive/rbm-mods/</code>. See the <a href={`${base}/docs`}>documentation</a> for naming conventions and metadata requirements.</p>
+            </article>
           </div>
-          <p>Released by Propellerhead Software in <strong>1997</strong>, <strong>ReBirth RB-338</strong> was one of the first software synthesizers to faithfully emulate the <strong>Roland TB-303</strong> Bass Line and the Roland TR-808 / TR-909 drum machines. It became a cornerstone of electronic music production and is now freely available as abandonware.</p>
-        </article>
-        <article class="rb-file-card rb-card-rack">
-          <div class="rb-panel__header rb-panel--clean-header">
-            <span class="rb-panel__title">WHAT IS THIS SITE?</span>
-            <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
-          </div>
-          <p>This community archive preserves <code>.rbs</code> song files and <code>.rbm</code> mod files contributed by enthusiasts worldwide. It also hosts historical documentation spanning versions <code>1.0</code> through <code>2.0.1</code> and lays the groundwork for in-browser <code>.rbs</code> preview via WebAssembly.</p>
-        </article>
-        <article class="rb-file-card rb-card-rack">
-          <div class="rb-panel__header rb-panel--clean-header">
-            <span class="rb-panel__title">HOW TO CONTRIBUTE?</span>
-            <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
-          </div>
-          <p>Open a pull request on the <a href="https://github.com/ford442/rebirth_website" rel="noopener noreferrer" target="_blank">GitHub repository</a>. Place song files in <code>public/archive/rbs-songs/</code> and mod files in <code>public/archive/rbm-mods/</code>. See the <a href={`${base}/docs`}>documentation</a> for naming conventions and metadata requirements.</p>
-        </article>
-      </div>
+        </div>
+      </HardwarePanel>
     </div>
-  </HardwarePanel>
+  </details>
 
   <hr class="etched" />
 
@@ -450,6 +461,34 @@ $ _<span class="cursor-blink">█</span></code></pre>
   <!-- ║  WASM PLAYER — In-browser .rbs preview engine                       ║ -->
   <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
   <RbsPlayer title="BROWSER PLAYBACK ENGINE" demos={demoSongs} />
+
+  <!-- Mobile sticky archive action bar -->
+  <nav class="mobile-action-bar" aria-label="Mobile archive shortcuts">
+    <a class="mobile-action-bar__btn mobile-action-bar__btn--songs" href={`${base}/archive/songs/index.html`}>
+      Browse Songs
+    </a>
+    <a class="mobile-action-bar__btn mobile-action-bar__btn--mods" href={`${base}/archive/mods/index.html`}>
+      Browse Mods
+    </a>
+  </nav>
+  <div class="mobile-action-bar-spacer" aria-hidden="true"></div>
+
+  <script>
+    (function () {
+      function updateMobileAccordions() {
+        const narrow = window.matchMedia('(max-width: 767px)').matches;
+        document.querySelectorAll('.mobile-accordion').forEach((details) => {
+          if (narrow) {
+            details.removeAttribute('open');
+          } else {
+            details.setAttribute('open', '');
+          }
+        });
+      }
+      updateMobileAccordions();
+      window.addEventListener('resize', updateMobileAccordions);
+    })();
+  </script>
 
 </BaseLayout>
 
@@ -649,6 +688,151 @@ $ _<span class="cursor-blink">█</span></code></pre>
     .featured-deck,
     .card-grid--compact {
       grid-template-columns: 1fr;
+    }
+  }
+
+  /* Mobile accordion for decorative panels */
+  .mobile-accordion > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .mobile-accordion > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile-accordion__summary {
+    display: none;
+  }
+
+  .mobile-action-bar {
+    display: none;
+  }
+
+  .mobile-action-bar-spacer {
+    display: none;
+  }
+
+  @media (max-width: 767px) {
+    .mobile-accordion__summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--rb-border);
+      border-radius: 6px;
+      background: linear-gradient(180deg, #2a2a2a 0%, #222 100%);
+      font-family: var(--rb-font-display);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--rb-amber);
+    }
+
+    .mobile-accordion__summary::after {
+      content: '+';
+      font-size: 1.1rem;
+      color: var(--rb-silver-dim);
+    }
+
+    .mobile-accordion[open] > .mobile-accordion__summary::after {
+      content: '−';
+    }
+
+    .rb-knob-row,
+    .seq-tracks,
+    .seq-numbers {
+      display: none;
+    }
+
+    .homepage-hero {
+      gap: 1rem;
+    }
+
+    .master-title__main {
+      font-size: clamp(1.6rem, 8vw, 2.2rem);
+    }
+
+    .master-stats {
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .master-stat {
+      padding: 0.5rem 0.75rem;
+    }
+
+    .archive-entry-strip {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.5rem;
+    }
+
+    .archive-entry-strip__link {
+      min-height: 2.75rem;
+      padding: 0.5rem;
+      font-size: 0.72rem;
+    }
+
+    .quick-browse__card {
+      padding: 0.9rem;
+      gap: 0.6rem;
+    }
+
+    .mobile-action-bar {
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 900;
+      gap: 0.75rem;
+      padding: 0.5rem 1rem;
+      background: linear-gradient(0deg, #0f0f0f 0%, #1a1a1a 100%);
+      border-top: 2px solid #111;
+      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.7);
+    }
+
+    .mobile-action-bar__btn {
+      flex: 1 1 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid var(--rb-border);
+      border-bottom: 2px solid #111;
+      font-family: var(--rb-font-display);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      text-align: center;
+      color: #fff;
+      transition: all 120ms ease;
+    }
+
+    .mobile-action-bar__btn--songs {
+      background: linear-gradient(180deg, #339958 0%, #1a5230 100%);
+      border-color: var(--rb-green-dim);
+    }
+
+    .mobile-action-bar__btn--mods {
+      background: linear-gradient(180deg, #d42040 0%, #8a1525 100%);
+      border-color: var(--rb-red-dim);
+    }
+
+    .mobile-action-bar__btn:hover,
+    .mobile-action-bar__btn:focus-visible {
+      filter: brightness(1.15);
+      outline: none;
+    }
+
+    .mobile-action-bar-spacer {
+      display: block;
+      height: 4.25rem;
     }
   }
 </style>

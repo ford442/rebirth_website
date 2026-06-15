@@ -1,5 +1,5 @@
 ---
-import ActionButton from './ui/ActionButton.astro';
+import ExternalLink from './ExternalLink.astro';
 import HardwarePanel from './ui/HardwarePanel.astro';
 import modsData from '../data/mods-metadata.json';
 import fullIndex from '../data/mods-full-index.json';
@@ -180,14 +180,11 @@ const searchIndex: SearchEntry[] = [
                 <strong>{highlight.title}</strong>
                 <p>{highlight.description}</p>
               </div>
-              <ActionButton
-                variant={highlight.kind === 'song' ? 'pattern' : 'mix'}
+              <ExternalLink
                 href={highlight.href}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {highlight.kind === 'song' ? 'Open' : 'Get'}
-              </ActionButton>
+                kind={highlight.kind === 'song' ? 'browse-folder' : 'download-rbm'}
+                class={highlight.kind === 'song' ? 'rb-pattern-btn' : 'rb-mix-btn'}
+              />
             </li>
           ))}
         </ul>
