@@ -35,6 +35,7 @@ interface FilterResult {
 let currentQuery = '';
 let currentFilter: SongCollectionKey | 'all' = 'all';
 let searchDebounce = 0;
+let currentView: 'grid' | 'list' = 'grid';
 
 /* ------------------------------------------------------------------ */
 //  DOM Cache
@@ -232,6 +233,32 @@ function applyFilters() {
   updateResultCount(visibleSections, visibleFolders);
 }
 
+function syncUrl() {
+  const params = new URLSearchParams(window.location.search);
+
+  if (currentQuery.trim()) {
+    params.set('q', currentQuery.trim());
+  } else {
+    params.delete('q');
+  }
+
+  if (currentFilter !== 'all') {
+    params.set('filter', currentFilter);
+  } else {
+    params.delete('filter');
+  }
+
+  if (currentView !== 'grid') {
+    params.set('view', currentView);
+  } else {
+    params.delete('view');
+  }
+
+  const search = params.toString();
+  const nextUrl = `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`;
+  window.history.replaceState({}, '', nextUrl);
+}
+
 /* ------------------------------------------------------------------ */
 //  Clear All
 /* ------------------------------------------------------------------ */
@@ -249,6 +276,7 @@ function clearAllFilters() {
   });
 
   applyFilters();
+  syncUrl();
 }
 
 /* ------------------------------------------------------------------ */
@@ -279,7 +307,36 @@ function switchView(view: 'grid' | 'list') {
     btnGrid?.setAttribute('aria-pressed', 'false');
   }
 
+  currentView = view;
   applyFilters();
+  syncUrl();
+}
+
+function applyInitialStateFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const query = params.get('q');
+  const filter = params.get('filter');
+  const view = params.get('view');
+
+  if (query) {
+    currentQuery = query;
+    if (dom.searchInput) {
+      dom.searchInput.value = query;
+    }
+  }
+
+  if (filter && ['featured', 'bySource', 'artists', 'monthly', 'other'].includes(filter)) {
+    currentFilter = filter as SongCollectionKey;
+    dom.filterBtns().forEach((btn) => {
+      const isActive = btn.getAttribute('data-filter') === filter;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', String(isActive));
+    });
+  }
+
+  if (view === 'list') {
+    currentView = 'list';
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -292,7 +349,10 @@ function bindEvents() {
     dom.searchInput.addEventListener('input', (e) => {
       currentQuery = (e.target as HTMLInputElement).value;
       window.clearTimeout(searchDebounce);
-      searchDebounce = window.setTimeout(() => applyFilters(), 80);
+      searchDebounce = window.setTimeout(() => {
+        applyFilters();
+        syncUrl();
+      }, 80);
     });
   }
 
@@ -310,6 +370,7 @@ function bindEvents() {
       btn.setAttribute('aria-pressed', 'true');
 
       applyFilters();
+      syncUrl();
     });
   });
 
@@ -389,8 +450,13 @@ window.switchView = switchView;
 /* ------------------------------------------------------------------ */
 
 export function initArchiveBrowser(): void {
+  applyInitialStateFromUrl();
   bindEvents();
-  applyFilters();
+  if (currentView === 'list') {
+    switchView('list');
+  } else {
+    applyFilters();
+  }
 }
 
 // Auto-init when imported directly (songs.astro usage)

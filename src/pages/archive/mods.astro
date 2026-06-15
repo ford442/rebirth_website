@@ -79,6 +79,7 @@ const baseModsUrl = 'https://storage.1ink.us/rebirth_mods';
         placeholder="Search documented mods by title, author, or tag..."
         class="rb-search-input"
         aria-label="Search documented mods"
+        aria-describedby="modsResultCount"
       />
       <div class="filter-tags">
         <button class="rb-tag-filter active" data-tag="" aria-label="Show all mods">All</button>
@@ -87,6 +88,9 @@ const baseModsUrl = 'https://storage.1ink.us/rebirth_mods';
         <button class="rb-tag-filter" data-tag="dark" aria-label="Filter dark mods">Dark</button>
         <button class="rb-tag-filter" data-tag="synth" aria-label="Filter synth mods">Synth</button>
         <button class="rb-tag-filter" data-tag="official" aria-label="Filter official mods">Official</button>
+      </div>
+      <div id="modsResultCount" class="mods-result-count" aria-live="polite" aria-atomic="true">
+        Showing all documented mods
       </div>
     </div>
 
@@ -284,6 +288,14 @@ const baseModsUrl = 'https://storage.1ink.us/rebirth_mods';
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+  }
+
+  .mods-result-count {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--rb-silver-dim);
   }
 
   .mods-grid {
@@ -565,6 +577,29 @@ const baseModsUrl = 'https://storage.1ink.us/rebirth_mods';
   const tagFilters = document.querySelectorAll('.rb-tag-filter');
   const emptyState = document.getElementById('emptyState');
   const modCards = document.querySelectorAll('.mod-card');
+  const modsResultCount = document.getElementById('modsResultCount');
+
+  function syncModUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const searchTerm = (modSearch as HTMLInputElement | null)?.value.trim() ?? '';
+    const activeTag = document.querySelector('.rb-tag-filter.active')?.getAttribute('data-tag') ?? '';
+
+    if (searchTerm) {
+      params.set('q', searchTerm);
+    } else {
+      params.delete('q');
+    }
+
+    if (activeTag) {
+      params.set('tag', activeTag);
+    } else {
+      params.delete('tag');
+    }
+
+    const search = params.toString();
+    const nextUrl = `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`;
+    window.history.replaceState({}, '', nextUrl);
+  }
 
   function filterMods() {
     const searchTerm = (modSearch as HTMLInputElement | null)?.value.toLowerCase() ?? '';
@@ -587,10 +622,19 @@ const baseModsUrl = 'https://storage.1ink.us/rebirth_mods';
     if (emptyState) {
       emptyState.classList.toggle('is-hidden', visibleCount !== 0);
     }
+
+    if (modsResultCount) {
+      modsResultCount.textContent = searchTerm || activeTag
+        ? `Showing ${visibleCount} documented mod${visibleCount === 1 ? '' : 's'}`
+        : `Showing all ${visibleCount} documented mods`;
+    }
   }
 
   if (modSearch) {
-    modSearch.addEventListener('input', filterMods);
+    modSearch.addEventListener('input', () => {
+      filterMods();
+      syncModUrl();
+    });
   }
 
   tagFilters.forEach((btn) => {
@@ -598,8 +642,26 @@ const baseModsUrl = 'https://storage.1ink.us/rebirth_mods';
       tagFilters.forEach((b: any) => b.classList.remove('active'));
       btn.classList.add('active');
       filterMods();
+      syncModUrl();
     });
   });
+
+  function applyInitialModState() {
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get('q');
+    const tag = params.get('tag');
+
+    if (query && modSearch instanceof HTMLInputElement) {
+      modSearch.value = query;
+    }
+
+    if (tag) {
+      tagFilters.forEach((btn) => {
+        const isActive = btn.getAttribute('data-tag') === tag;
+        btn.classList.toggle('active', isActive);
+      });
+    }
+  }
 
   /* ── Raw index filter ────────────────────────────────────────── */
   const rawSearch = document.getElementById('rawSearch');
@@ -640,4 +702,7 @@ const baseModsUrl = 'https://storage.1ink.us/rebirth_mods';
   if (rawSearch) {
     rawSearch.addEventListener('input', filterRaw);
   }
+
+  applyInitialModState();
+  filterMods();
 </script>

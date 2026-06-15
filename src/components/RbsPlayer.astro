@@ -551,6 +551,33 @@ const hasSrc = !!src;
       await loadFile(buf, label);
     }
 
+    window.addEventListener('rb:load-demo', async (event) => {
+      const customEvent = event as CustomEvent<{ src?: string; label?: string; bpm?: number }>;
+      const src = customEvent.detail?.src;
+      const label = customEvent.detail?.label || 'archive preview';
+      const bpm = customEvent.detail?.bpm;
+      if (!src) return;
+
+      if (demoSelect) {
+        const existing = Array.from(demoSelect.options).find((option) => option.value === src);
+        if (!existing) {
+          const opt = document.createElement('option');
+          opt.value = src;
+          opt.textContent = label;
+          if (typeof bpm === 'number') opt.dataset.bpm = String(bpm);
+          demoSelect.appendChild(opt);
+        }
+        demoSelect.value = src;
+      }
+
+      try {
+        await loadDemoSong(src, label);
+      } catch (err) {
+        console.error('Failed to load preview demo:', err);
+        setMessage('Preview fetch failed. Use local file load as fallback.');
+      }
+    });
+
     if (demoSelect) {
       demos.forEach((demo) => {
         const opt = document.createElement('option');

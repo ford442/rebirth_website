@@ -1,0 +1,208 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import HardwarePanel from '../../components/ui/HardwarePanel.astro';
+import { normalizeBase } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const docs = await getCollection('docs');
+  return docs.map((entry) => ({
+    params: { slug: entry.id.replace(/\.md$/i, '') },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const base = normalizeBase(import.meta.env.BASE_URL);
+const docPath = (docEntry: { id: string }) => docEntry.id.replace(/\.md$/i, '');
+
+function compareVersions(a: string, b: string) {
+  const aParts = a.split('.').map((part) => Number.parseInt(part, 10) || 0);
+  const bParts = b.split('.').map((part) => Number.parseInt(part, 10) || 0);
+  const length = Math.max(aParts.length, bParts.length);
+
+  for (let index = 0; index < length; index += 1) {
+    const delta = (aParts[index] ?? 0) - (bParts[index] ?? 0);
+    if (delta !== 0) return delta;
+  }
+
+  return 0;
+}
+
+const allDocs = await getCollection('docs');
+const orderedDocs = [...allDocs].sort((left, right) => {
+  const versionDelta = compareVersions(left.data.version, right.data.version);
+  if (versionDelta !== 0) return versionDelta;
+
+  const leftDate = left.data.releaseDate ?? '';
+  const rightDate = right.data.releaseDate ?? '';
+  return leftDate.localeCompare(rightDate) || docPath(left).localeCompare(docPath(right));
+});
+
+const currentIndex = orderedDocs.findIndex((doc) => doc.id === entry.id);
+const previousDoc = currentIndex > 0 ? orderedDocs[currentIndex - 1] : null;
+const nextDoc = currentIndex >= 0 && currentIndex < orderedDocs.length - 1 ? orderedDocs[currentIndex + 1] : null;
+---
+
+<BaseLayout title={entry.data.title} description={entry.data.description ?? `Documentation for ReBirth RB-338 version ${entry.data.version}.`}>
+  <div class="docs-page">
+    <div class="container">
+      <nav class="docs-breadcrumbs" aria-label="Breadcrumb">
+        <a href={`${base}/`}>Home</a>
+        <span aria-hidden="true">/</span>
+        <a href={`${base}/docs`}>Docs</a>
+        <span aria-hidden="true">/</span>
+        <span>{entry.data.title}</span>
+      </nav>
+
+      <HardwarePanel
+        variant="rackmount-chassis"
+        animate
+        title={entry.data.title}
+        ledStatus="online"
+        ledLabel={`v${entry.data.version}`}
+        class="rb-panel--center-header rb-panel--padded-body"
+      >
+        <div class="doc-header">
+          <p class="doc-header__meta">
+            <span>Version {entry.data.version}</span>
+            {entry.data.releaseDate && <span>{entry.data.releaseDate}</span>}
+          </p>
+          {entry.data.description && <p class="doc-header__description">{entry.data.description}</p>}
+        </div>
+      </HardwarePanel>
+
+      <HardwarePanel
+        variant="rackmount"
+        animate
+        title="DOCUMENT CONTENT"
+        ledStatus="online"
+        ledLabel="MARKDOWN"
+      >
+        <article class="history-prose docs-prose">
+          <Content />
+        </article>
+      </HardwarePanel>
+
+      <div class="docs-nav">
+        {previousDoc ? (
+          <a class="docs-nav__link" href={`${base}/docs/${docPath(previousDoc)}`}>
+            <span class="docs-nav__label">Previous</span>
+            <span class="docs-nav__title">{previousDoc.data.title}</span>
+          </a>
+        ) : (
+          <span></span>
+        )}
+
+        {nextDoc ? (
+          <a class="docs-nav__link docs-nav__link--next" href={`${base}/docs/${docPath(nextDoc)}`}>
+            <span class="docs-nav__label">Next</span>
+            <span class="docs-nav__title">{nextDoc.data.title}</span>
+          </a>
+        ) : (
+          <span></span>
+        )}
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .docs-page {
+    padding-block: 2rem 4rem;
+    min-height: 70vh;
+    background: #0f0f0f;
+  }
+
+  .docs-breadcrumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-family: var(--rb-font-display);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--rb-silver-dim);
+  }
+
+  .docs-breadcrumbs a {
+    text-decoration: none;
+  }
+
+  .doc-header {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .doc-header__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 0;
+    font-family: var(--rb-font-display);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--rb-green-bright);
+  }
+
+  .doc-header__description {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+  }
+
+  .docs-prose {
+    max-width: none;
+  }
+
+  .docs-prose h1:first-child {
+    display: none;
+  }
+
+  .docs-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .docs-nav__link {
+    display: grid;
+    gap: 0.35rem;
+    min-height: 44px;
+    padding: 1rem;
+    border: 1px solid var(--rb-border);
+    border-radius: 6px;
+    background: linear-gradient(180deg, #222222 0%, #1a1a1a 100%);
+    text-decoration: none;
+  }
+
+  .docs-nav__link--next {
+    text-align: right;
+  }
+
+  .docs-nav__label {
+    font-family: var(--rb-font-display);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--rb-silver-dim);
+  }
+
+  .docs-nav__title {
+    color: var(--rb-amber);
+  }
+
+  @media (max-width: 767px) {
+    .docs-nav {
+      grid-template-columns: 1fr;
+    }
+
+    .docs-nav__link--next {
+      text-align: left;
+    }
+  }
+</style>

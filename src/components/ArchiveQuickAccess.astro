@@ -1,0 +1,500 @@
+---
+import ActionButton from './ui/ActionButton.astro';
+import HardwarePanel from './ui/HardwarePanel.astro';
+import modsData from '../data/mods-metadata.json';
+import fullIndex from '../data/mods-full-index.json';
+import { archiveBaseUrl, songCollections, type SongCollectionKey } from '../data/song-collections';
+import { normalizeBase } from '../lib/url';
+
+interface Highlight {
+  title: string;
+  description: string;
+  href: string;
+  kind: 'song' | 'mod';
+}
+
+interface SearchEntry {
+  id: string;
+  title: string;
+  kind: 'song' | 'mod';
+  subtitle: string;
+  keywords: string[];
+  href: string;
+}
+
+const base = normalizeBase(import.meta.env.BASE_URL);
+const songSections = Object.entries(songCollections) as [SongCollectionKey, (typeof songCollections)[SongCollectionKey]][];
+const songFolderCount = songSections.reduce((count, [, section]) => count + section.folders.length, 0);
+const documentedModCount = modsData.mods.length;
+const totalModIndexCount = fullIndex.mods.length;
+
+const categoryChips = [
+  { label: 'Artists', href: `${base}/archive/songs?filter=artists`, tone: 'songs' },
+  { label: 'Contests', href: `${base}/archive/songs?q=contest&filter=featured`, tone: 'songs' },
+  { label: 'Monthly', href: `${base}/archive/songs?filter=monthly`, tone: 'songs' },
+  { label: 'Official Mods', href: `${base}/archive/mods?tag=official`, tone: 'mods' },
+  { label: 'Industrial', href: `${base}/archive/mods?tag=industrial`, tone: 'mods' },
+];
+
+const highlights: Highlight[] = [
+  {
+    title: 'Cavey Artist Folder',
+    description: 'Browse one of the strongest preserved artist collections.',
+    href: `${archiveBaseUrl}/Artists/Cavey`,
+    kind: 'song',
+  },
+  {
+    title: 'DJ Knightmare Folder',
+    description: 'Industrial-leaning songs with direct archive access.',
+    href: `${archiveBaseUrl}/Artists/DJ%20Knightmare`,
+    kind: 'song',
+  },
+  {
+    title: 'Metallicon',
+    description: 'Official default mod from the original 2.0.1 CD-ROM.',
+    href: 'https://storage.1ink.us/rebirth_mods/Metallicon.rbm',
+    kind: 'mod',
+  },
+  {
+    title: 'Infernalizer',
+    description: 'Documented dark mod with a one-click download.',
+    href: 'https://storage.1ink.us/rebirth_mods/INFERNALIZER.rbm',
+    kind: 'mod',
+  },
+];
+
+const searchIndex: SearchEntry[] = [
+  ...songSections.flatMap(([sectionKey, section]) =>
+    section.folders.map((folder) => ({
+      id: `song-${sectionKey}-${folder.path}`,
+      title: folder.name,
+      kind: 'song' as const,
+      subtitle: section.name,
+      keywords: [
+        section.name,
+        section.description ?? '',
+        ...(section.tags ?? []),
+        folder.path,
+      ],
+      href: `${base}/archive/songs?filter=${sectionKey}&q=${encodeURIComponent(folder.name)}`,
+    }))
+  ),
+  ...modsData.mods.map((mod) => ({
+    id: `mod-${mod.filename}`,
+    title: mod.title,
+    kind: 'mod' as const,
+    subtitle: mod.author ?? mod.filename,
+    keywords: [
+      mod.filename,
+      mod.author ?? '',
+      mod.description ?? '',
+      ...(mod.tags ?? []),
+    ],
+    href: `${base}/archive/mods?q=${encodeURIComponent(mod.title)}`,
+  })),
+];
+---
+
+<HardwarePanel
+  ariaLabelledBy="quick-access-heading"
+  variant="rackmount-module"
+  animate
+  title="QUICK ACCESS DASHBOARD"
+  ledStatus="online"
+  ledLabel="LIVE DATA"
+  class="quick-access-panel"
+>
+  <div class="quick-access">
+    <div class="quick-access__primary">
+      <div class="quick-access__heading">
+        <h2 id="quick-access-heading">Search the archive before you leave the homepage.</h2>
+        <p>Unified lookup across song folders and documented mods, plus direct filters into the archive browsers.</p>
+      </div>
+
+      <div class="quick-access__search">
+        <label class="sr-only" for="quickAccessSearch">Search songs and mods</label>
+        <input
+          id="quickAccessSearch"
+          class="rb-search-input quick-access__input"
+          type="search"
+          placeholder="Search artists, collections, or documented mods"
+          aria-describedby="quickAccessResultCount"
+        />
+        <span id="quickAccessResultCount" class="quick-access__count" aria-live="polite" aria-atomic="true">
+          Showing 4 suggested results
+        </span>
+      </div>
+
+      <div class="quick-access__chips" role="list" aria-label="Quick archive categories">
+        {categoryChips.map((chip) => (
+          <a
+            class={`quick-access__chip quick-access__chip--${chip.tone}`}
+            href={chip.href}
+            role="listitem"
+          >
+            {chip.label}
+          </a>
+        ))}
+      </div>
+
+      <ul id="quickAccessResults" class="quick-access__results" aria-label="Search results">
+        {searchIndex.slice(0, 4).map((entry) => (
+          <li class="quick-access__result">
+            <a class="quick-access__result-link" href={entry.href} data-kind={entry.kind}>
+              <span class="quick-access__result-kind">{entry.kind === 'song' ? '.rbs' : '.rbm'}</span>
+              <span class="quick-access__result-body">
+                <span class="quick-access__result-title">{entry.title}</span>
+                <span class="quick-access__result-subtitle">{entry.subtitle}</span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <aside class="quick-access__secondary" aria-label="Archive highlights and stats">
+      <div class="quick-access__stats">
+        <div class="quick-access__stat">
+          <span class="quick-access__stat-value">{songFolderCount}</span>
+          <span class="quick-access__stat-label">Song collections</span>
+        </div>
+        <div class="quick-access__stat">
+          <span class="quick-access__stat-value">{documentedModCount}</span>
+          <span class="quick-access__stat-label">Documented mods</span>
+        </div>
+        <div class="quick-access__stat">
+          <span class="quick-access__stat-value">{totalModIndexCount}</span>
+          <span class="quick-access__stat-label">Indexed mods</span>
+        </div>
+      </div>
+
+      <div class="quick-access__highlights">
+        <h3>Top picks</h3>
+        <ul>
+          {highlights.map((highlight) => (
+            <li class="quick-access__highlight">
+              <div>
+                <span class={`quick-access__highlight-kind quick-access__highlight-kind--${highlight.kind}`}>
+                  {highlight.kind === 'song' ? 'Browse' : 'Download'}
+                </span>
+                <strong>{highlight.title}</strong>
+                <p>{highlight.description}</p>
+              </div>
+              <ActionButton
+                variant={highlight.kind === 'song' ? 'pattern' : 'mix'}
+                href={highlight.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {highlight.kind === 'song' ? 'Open' : 'Get'}
+              </ActionButton>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </aside>
+  </div>
+</HardwarePanel>
+
+<script define:vars={{ searchIndex }}>
+  const searchInput = document.getElementById('quickAccessSearch');
+  const resultsList = document.getElementById('quickAccessResults');
+  const resultCount = document.getElementById('quickAccessResultCount');
+
+  function renderResults(query) {
+    if (!resultsList || !resultCount) return;
+
+    const normalized = query.trim().toLowerCase();
+    const results = searchIndex
+      .filter((entry) => {
+        if (!normalized) return true;
+        const haystack = [entry.title, entry.subtitle, ...entry.keywords].join(' ').toLowerCase();
+        return haystack.includes(normalized);
+      })
+      .slice(0, 4);
+
+    resultsList.innerHTML = '';
+
+    if (results.length === 0) {
+      const empty = document.createElement('li');
+      empty.className = 'quick-access__result quick-access__result--empty';
+      empty.textContent = 'No homepage matches. Try a broader term.';
+      resultsList.appendChild(empty);
+      resultCount.textContent = 'Showing 0 results';
+      return;
+    }
+
+    results.forEach((entry) => {
+      const item = document.createElement('li');
+      item.className = 'quick-access__result';
+      item.innerHTML = `
+        <a class="quick-access__result-link" href="${entry.href}" data-kind="${entry.kind}">
+          <span class="quick-access__result-kind">${entry.kind === 'song' ? '.rbs' : '.rbm'}</span>
+          <span class="quick-access__result-body">
+            <span class="quick-access__result-title">${entry.title}</span>
+            <span class="quick-access__result-subtitle">${entry.subtitle}</span>
+          </span>
+        </a>
+      `;
+      resultsList.appendChild(item);
+    });
+
+    resultCount.textContent = `Showing ${results.length} result${results.length === 1 ? '' : 's'}`;
+  }
+
+  if (searchInput instanceof HTMLInputElement) {
+    searchInput.addEventListener('input', () => renderResults(searchInput.value));
+    searchInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        const firstLink = resultsList?.querySelector('a');
+        if (firstLink instanceof HTMLAnchorElement) {
+          window.location.href = firstLink.href;
+        }
+      }
+    });
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (
+      event.key === '/' &&
+      document.activeElement instanceof HTMLElement &&
+      document.activeElement.tagName !== 'INPUT' &&
+      document.activeElement.tagName !== 'TEXTAREA'
+    ) {
+      event.preventDefault();
+      searchInput?.focus();
+    }
+  });
+
+  renderResults('');
+</script>
+
+<style>
+  .quick-access-panel {
+    margin-bottom: 0;
+  }
+
+  .quick-access {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 1fr);
+    gap: 1rem;
+  }
+
+  .quick-access__primary,
+  .quick-access__secondary {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .quick-access__heading h2,
+  .quick-access__heading p,
+  .quick-access__highlights h3,
+  .quick-access__highlights p {
+    margin: 0;
+  }
+
+  .quick-access__heading h2 {
+    font-size: 1.2rem;
+  }
+
+  .quick-access__heading p {
+    color: var(--color-text-muted);
+    margin-top: 0.35rem;
+  }
+
+  .quick-access__search {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .quick-access__input {
+    width: 100%;
+  }
+
+  .quick-access__count {
+    font-family: var(--rb-font-display);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--rb-silver-dim);
+  }
+
+  .quick-access__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .quick-access__chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.1rem;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid var(--rb-border);
+    border-radius: 999px;
+    background: linear-gradient(180deg, #2a2a2a 0%, #202020 100%);
+    font-family: var(--rb-font-display);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    text-transform: uppercase;
+    color: var(--rb-silver);
+  }
+
+  .quick-access__chip--songs:hover,
+  .quick-access__chip--songs:focus-visible {
+    color: var(--rb-green);
+  }
+
+  .quick-access__chip--mods:hover,
+  .quick-access__chip--mods:focus-visible {
+    color: var(--rb-amber);
+  }
+
+  .quick-access__results {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .quick-access__result-link {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.8rem;
+    align-items: center;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid #313131;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.18);
+    text-decoration: none;
+  }
+
+  .quick-access__result-kind {
+    font-family: var(--rb-font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--rb-amber);
+  }
+
+  .quick-access__result-body {
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .quick-access__result-title {
+    font-family: var(--rb-font-display);
+    color: var(--rb-silver);
+  }
+
+  .quick-access__result-subtitle {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+  }
+
+  .quick-access__result--empty {
+    padding: 0.8rem 0.9rem;
+    border: 1px dashed #3a3a3a;
+    border-radius: 6px;
+    color: var(--color-text-muted);
+  }
+
+  .quick-access__stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+
+  .quick-access__stat {
+    padding: 0.9rem 0.7rem;
+    border: 1px solid #313131;
+    border-radius: 6px;
+    background: linear-gradient(180deg, #232323 0%, #1a1a1a 100%);
+    text-align: center;
+  }
+
+  .quick-access__stat-value {
+    display: block;
+    font-family: var(--rb-font-display);
+    font-size: 1.2rem;
+    color: var(--rb-amber);
+  }
+
+  .quick-access__stat-label {
+    display: block;
+    margin-top: 0.25rem;
+    font-family: var(--rb-font-display);
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--rb-silver-dim);
+  }
+
+  .quick-access__highlights h3 {
+    font-size: 0.95rem;
+  }
+
+  .quick-access__highlights ul {
+    list-style: none;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  .quick-access__highlight {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.8rem;
+    align-items: start;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid #313131;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.18);
+  }
+
+  .quick-access__highlight strong {
+    display: block;
+    margin-top: 0.2rem;
+    font-family: var(--rb-font-display);
+    color: var(--rb-silver);
+  }
+
+  .quick-access__highlight p {
+    margin-top: 0.35rem;
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+  }
+
+  .quick-access__highlight-kind {
+    font-family: var(--rb-font-display);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .quick-access__highlight-kind--song {
+    color: var(--rb-green-bright);
+  }
+
+  .quick-access__highlight-kind--mod {
+    color: var(--rb-amber);
+  }
+
+  @media (max-width: 1023px) {
+    .quick-access {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .quick-access__stats {
+      grid-template-columns: 1fr;
+    }
+
+    .quick-access__highlight {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

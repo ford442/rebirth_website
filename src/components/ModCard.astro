@@ -19,6 +19,22 @@ export interface Props {
   tags?: string[];
   /** Apply rackmount hardware styling */
   rackmount?: boolean;
+  /** Optional on-site browse URL for song collections */
+  browseHref?: string;
+  /** Optional collection path display for songs */
+  collectionPath?: string;
+  /** Optional song/file count display */
+  songCount?: number;
+  /** Optional BPM display */
+  bpm?: number;
+  /** Optional compatibility/version note */
+  compatibility?: string;
+  /** Optional demo preview source for songs */
+  demoSrc?: string;
+  /** Optional external host label, e.g. test.1ink.us */
+  externalHostLabel?: string;
+  /** Optional tag target resolver */
+  tagHrefBase?: string;
 }
 
 const {
@@ -31,18 +47,60 @@ const {
   rel,
   tags = [],
   rackmount = false,
+  browseHref,
+  collectionPath,
+  songCount,
+  bpm,
+  compatibility,
+  demoSrc,
+  externalHostLabel,
+  tagHrefBase,
 } = Astro.props;
 
 const isSong = fileType === '.rbs';
 const isMod  = fileType === '.rbm';
 const typeClass = isSong ? 'type--song' : isMod ? 'type--mod' : 'type--other';
+const primaryCta = isSong ? 'Open Folder' : 'Download Mod';
+const hostBadge = externalHostLabel ? `↗ ${externalHostLabel}` : '';
 ---
 
 <article class={`mod-card rb-file-card ${typeClass} ${rackmount ? 'rb-rack-variant' : ''}`} aria-label={`${fileType} — ${title}`}>
   <header class="mod-card__header">
     <span class={`mod-card__badge rb-badge ${isSong ? 'rb-badge--song' : isMod ? 'rb-badge--mod' : ''}`} aria-hidden="true">{fileType}</span>
-    <h3 class="mod-card__title">{title}</h3>
+    <div class="mod-card__title-block">
+      <h3 class="mod-card__title">{title}</h3>
+      {hostBadge && <span class="mod-card__host-badge">{hostBadge}</span>}
+    </div>
   </header>
+
+  {(collectionPath || songCount || bpm || compatibility) && (
+    <dl class="mod-card__meta" aria-label="Archive metadata">
+      {collectionPath && (
+        <div class="mod-card__meta-row">
+          <dt>Path</dt>
+          <dd>{collectionPath}</dd>
+        </div>
+      )}
+      {typeof songCount === 'number' && (
+        <div class="mod-card__meta-row">
+          <dt>Files</dt>
+          <dd>{songCount}</dd>
+        </div>
+      )}
+      {typeof bpm === 'number' && (
+        <div class="mod-card__meta-row">
+          <dt>BPM</dt>
+          <dd>{bpm}</dd>
+        </div>
+      )}
+      {compatibility && (
+        <div class="mod-card__meta-row">
+          <dt>Version</dt>
+          <dd>{compatibility}</dd>
+        </div>
+      )}
+    </dl>
+  )}
 
   {description && (
     <p class="mod-card__desc">{description}</p>
@@ -58,18 +116,60 @@ const typeClass = isSong ? 'type--song' : isMod ? 'type--mod' : 'type--other';
     {tags.length > 0 && (
       <ul class="mod-card__tags" aria-label="Tags" role="list">
         {tags.map((tag) => (
-          <li class="mod-card__tag">{tag}</li>
+          <li>
+            <a
+              class="mod-card__tag mod-card__tag-link"
+              href={tagHrefBase ? `${tagHrefBase}${encodeURIComponent(tag)}` : '#'}
+            >
+              {tag}
+            </a>
+          </li>
         ))}
       </ul>
     )}
 
-    {href && (
-      <a class="mod-card__link" href={href} target={target} rel={rel}>
-        View / Download <span aria-hidden="true">&rarr;</span>
-      </a>
-    )}
+    <div class="mod-card__actions">
+      {browseHref && (
+        <a class="mod-card__action mod-card__action--secondary" href={browseHref}>
+          Browse Collection
+        </a>
+      )}
+
+      {demoSrc && (
+        <button
+          class="mod-card__action mod-card__action--preview"
+          type="button"
+          data-preview-src={demoSrc}
+          data-preview-label={title}
+          data-preview-bpm={bpm ? String(bpm) : ''}
+        >
+          Preview
+        </button>
+      )}
+
+      {href && (
+        <a class="mod-card__action mod-card__action--primary" href={href} target={target} rel={rel}>
+          {primaryCta} <span aria-hidden="true">&rarr;</span>
+        </a>
+      )}
+    </div>
   </footer>
 </article>
+
+<script>
+  document.querySelectorAll('.mod-card__action--preview').forEach((button) => {
+    if (!(button instanceof HTMLButtonElement)) return;
+    button.addEventListener('click', () => {
+      const detail = {
+        src: button.dataset.previewSrc ?? '',
+        label: button.dataset.previewLabel ?? 'archive preview',
+        bpm: button.dataset.previewBpm ? Number(button.dataset.previewBpm) : undefined,
+      };
+      window.dispatchEvent(new CustomEvent('rb:load-demo', { detail }));
+      document.getElementById('wasm-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+</script>
 
 <style>
   .mod-card {
@@ -95,8 +195,14 @@ const typeClass = isSong ? 'type--song' : isMod ? 'type--mod' : 'type--other';
   /* ── Header ── */
   .mod-card__header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--space-sm);
+  }
+
+  .mod-card__title-block {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
   }
 
   .mod-card__badge {
@@ -133,9 +239,52 @@ const typeClass = isSong ? 'type--song' : isMod ? 'type--mod' : 'type--other';
     color: var(--color-text);
     margin: 0;
     letter-spacing: 0.03em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+  }
+
+  .mod-card__host-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    min-height: 1.5rem;
+    padding: 0.15rem 0.45rem;
+    border: 1px solid rgba(255, 176, 0, 0.2);
+    border-radius: 999px;
+    background: rgba(255, 176, 0, 0.08);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--color-amber);
+  }
+
+  .mod-card__meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem 0.75rem;
+    margin: 0;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.16);
+  }
+
+  .mod-card__meta-row {
+    min-width: 0;
+  }
+
+  .mod-card__meta dt {
+    font-family: var(--font-mono);
+    font-size: 0.63rem;
+    color: var(--color-text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .mod-card__meta dd {
+    margin: 0.15rem 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--color-text);
+    overflow-wrap: anywhere;
   }
 
   /* ── Body ── */
@@ -172,6 +321,7 @@ const typeClass = isSong ? 'type--song' : isMod ? 'type--mod' : 'type--other';
   }
 
   .mod-card__tag {
+    display: inline-flex;
     font-family: var(--font-mono);
     font-size: 0.7rem;
     background: var(--color-surface-alt);
@@ -181,19 +331,76 @@ const typeClass = isSong ? 'type--song' : isMod ? 'type--mod' : 'type--other';
     color: var(--color-text-muted);
   }
 
-  .mod-card__link {
+  .mod-card__tag-link {
+    text-decoration: none;
+    min-height: 1.8rem;
+    align-items: center;
+  }
+
+  .mod-card__tag-link:hover,
+  .mod-card__tag-link:focus-visible {
+    color: var(--color-amber);
+    border-color: var(--color-amber-dim);
+  }
+
+  .mod-card__actions {
+    margin-left: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  .mod-card__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.55rem 0.8rem;
+    border-radius: 4px;
     font-family: var(--font-mono);
     font-size: 0.8rem;
     letter-spacing: 0.05em;
     text-decoration: none;
-    color: var(--color-amber);
-    margin-left: auto;
     white-space: nowrap;
-    transition: color var(--transition-fast);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-alt);
+    color: var(--color-text);
+    transition: color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
   }
 
-  .mod-card__link:hover,
-  .mod-card__link:focus-visible {
+  .mod-card__action--preview {
+    cursor: pointer;
+  }
+
+  .mod-card__action--primary {
+    color: var(--color-amber);
+  }
+
+  .mod-card__action--secondary {
     color: var(--color-green);
+  }
+
+  .mod-card__action:hover,
+  .mod-card__action:focus-visible {
+    color: var(--color-green);
+    border-color: var(--color-amber-dim);
+    background: rgba(255, 176, 0, 0.06);
+  }
+
+  @media (max-width: 767px) {
+    .mod-card__meta {
+      grid-template-columns: 1fr;
+    }
+
+    .mod-card__actions {
+      width: 100%;
+      margin-left: 0;
+      justify-content: stretch;
+    }
+
+    .mod-card__action {
+      flex: 1 1 100%;
+    }
   }
 </style>
