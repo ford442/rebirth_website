@@ -2,6 +2,7 @@
 // CollectionCard.astro — reusable card for displaying collection sections
 import ScrewCorners from './ui/ScrewCorners.astro';
 import Led from './ui/Led.astro';
+import { normalizeBase } from '../lib/url';
 
 export interface CollectionFolder {
   name: string;
@@ -28,13 +29,14 @@ export interface Props {
   section: CollectionSection;
   /** Optional metadata for richer display */
   meta?: CollectionMeta;
-  /** Base URL for the archive */
-  archiveUrl: string;
+  /** Base URL for the archive (deprecated: folder links now stay on-site) */
+  archiveUrl?: string;
   /** Apply rackmount hardware styling */
   rackmount?: boolean;
 }
 
-const { section, meta, archiveUrl, rackmount = false } = Astro.props;
+const { section, meta, rackmount = false } = Astro.props;
+const baseUrl = normalizeBase(import.meta.env.BASE_URL);
 const isActive = section.isActive ?? true;
 const folderCount = section.folders.length;
 const itemTotal = meta?.totalItems ?? section.folders.reduce((sum, f) => sum + (f.count ?? 0), 0);
@@ -73,21 +75,22 @@ const itemTotal = meta?.totalItems ?? section.folders.reduce((sum, f) => sum + (
   )}
 
   <div class="folder-list">
-    {section.folders.map(folder => (
-      <a
-        href={`${archiveUrl}/${folder.path}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="folder-item"
-      >
-        <span class="folder-icon" aria-hidden="true">📁</span>
-        <span class="folder-name">{folder.name}</span>
-        {typeof folder.count === 'number' && folder.count > 0 && (
-          <span class="folder-count-badge">{folder.count} files</span>
-        )}
-        <span class="external-link" aria-hidden="true">↗</span>
-      </a>
-    ))}
+    {section.folders.map(folder => {
+      const folderSlug = folder.path.split('/').map(encodeURIComponent).join('/');
+      return (
+        <a
+          href={`${baseUrl}/archive/songs/${folderSlug}/`}
+          class="folder-item"
+        >
+          <span class="folder-icon" aria-hidden="true">📁</span>
+          <span class="folder-name">{folder.name}</span>
+          {typeof folder.count === 'number' && folder.count > 0 && (
+            <span class="folder-count-badge">{folder.count} files</span>
+          )}
+          <span class="folder-arrow" aria-hidden="true">→</span>
+        </a>
+      );
+    })}
   </div>
 </div>
 
@@ -301,16 +304,16 @@ const itemTotal = meta?.totalItems ?? section.folders.reduce((sum, f) => sum + (
     border-color: var(--rb-green, #39ff14);
   }
 
-  .external-link {
+  .folder-arrow {
     color: #555;
     font-size: 0.85em;
     transition: color 120ms ease, transform 120ms ease;
     flex-shrink: 0;
   }
 
-  .folder-item:hover .external-link {
+  .folder-item:hover .folder-arrow {
     color: #ffb000;
-    transform: translate(1px, -1px);
+    transform: translate(2px, 0);
   }
 
   @media (max-width: 480px) {

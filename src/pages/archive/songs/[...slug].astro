@@ -1,0 +1,616 @@
+---
+// Dynamic on-site folder page — /archive/songs/<section>/<folder>/...
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import HardwarePanel from '../../../components/ui/HardwarePanel.astro';
+import Lcd from '../../../components/ui/Lcd.astro';
+import { normalizeBase } from '../../../lib/url';
+import fullIndexRaw from '../../../data/songs-full-index.json';
+import collectionsMeta from '../../../data/collections-metadata.json';
+import { songCollections, type SongCollectionKey } from '../../../data/song-collections';
+
+interface SongEntry {
+  filename: string;
+  path: string;
+  url: string;
+  title: string;
+  collection: string;
+  subcollection: string | null;
+  artist: string | null;
+  bpm: number | null;
+  fileSize: string;
+  source: string;
+}
+
+interface FullIndex {
+  songs: SongEntry[];
+  meta: { source: string };
+}
+
+const TOP_LEVEL_MAP: Record<string, { key: SongCollectionKey; sectionName: string }> = {
+  Featured_Collections: { key: 'featured', sectionName: 'Featured Collections' },
+  By_Source: { key: 'bySource', sectionName: 'By Source' },
+  Monthly_Archive: { key: 'monthly', sectionName: 'Monthly Archive' },
+  Artists: { key: 'artists', sectionName: 'Artists' },
+  Other_Collections: { key: 'other', sectionName: 'Other Collections' },
+};
+
+function parseSize(size: string): number {
+  if (!size || size === '-') return 0;
+  size = size.trim().toUpperCase();
+  const num = parseFloat(size);
+  if (Number.isNaN(num)) return 0;
+  if (size.endsWith('K')) return Math.round(num * 1024);
+  if (size.endsWith('M')) return Math.round(num * 1024 * 1024);
+  if (size.endsWith('G')) return Math.round(num * 1024 * 1024 * 1024);
+  return Math.round(num);
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return '-';
+  const units = ['B', 'K', 'M', 'G'];
+  let i = 0;
+  let size = bytes;
+  while (size >= 1024 && i < units.length - 1) {
+    size /= 1024;
+    i++;
+  }
+  return `${size.toFixed(i === 0 ? 0 : 1)}${units[i]}`;
+}
+
+export function getStaticPaths() {
+  const fullIndex = fullIndexRaw as unknown as FullIndex;
+  const folderPaths = new Set<string>();
+  fullIndex.songs.forEach((song) => {
+    const dir = song.path.split('/').slice(0, -1).join('/');
+    if (dir) folderPaths.add(dir);
+  });
+
+  return Array.from(folderPaths).map((folderPath) => ({
+    params: { slug: folderPath },
+    props: { folderPath },
+  }));
+}
+
+const fullIndex = fullIndexRaw as unknown as FullIndex;
+const { folderPath } = Astro.props;
+const baseUrl = normalizeBase(import.meta.env.BASE_URL);
+const topSegment = folderPath.split('/')[0];
+const mapping = TOP_LEVEL_MAP[topSegment];
+const sectionKey = mapping?.key ?? null;
+const sectionName = mapping?.sectionName ?? topSegment.replace(/_/g, ' ');
+const sectionMeta = sectionKey ? collectionsMeta[sectionKey] : undefined;
+const sectionData = sectionKey ? songCollections[sectionKey] : undefined;
+
+const folderSegments = folderPath.split('/');
+const folderName = folderSegments[folderSegments.length - 1].replace(/_/g, ' ');
+
+const songs = fullIndex.songs
+  .filter((song) => {
+    const dir = song.path.split('/').slice(0, -1).join('/');
+    return dir === folderPath;
+  })
+  .map((song) => ({
+    ...song,
+    sizeBytes: parseSize(song.fileSize),
+  }))
+  .sort((a, b) => a.filename.localeCompare(b.filename));
+
+const fileCount = songs.length;
+const totalBytes = songs.reduce((sum, s) => sum + s.sizeBytes, 0);
+
+const externalUrl = `${fullIndex.meta.source}/${folderSegments.map(encodeURIComponent).join('/')}`;
+
+const pageTitle = `${folderName} — ${sectionName}`;
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={`Browse ${fileCount} ReBirth RB-338 .rbs files in ${sectionName} / ${folderName}.`}
+>
+  <div class="folder-page">
+    <div class="container">
+
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <ol class="breadcrumbs__list">
+          <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href={`${baseUrl}/`}>Home</a>
+          </li>
+          <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href={`${baseUrl}/archive/songs/`}>Songs</a>
+          </li>
+          <li class="breadcrumbs__item" aria-current="false">
+            <a class="breadcrumbs__link" href={`${baseUrl}/archive/songs/`}>{sectionName}</a>
+          </li>
+          <li class="breadcrumbs__item breadcrumbs__item--current" aria-current="page">
+            {folderName}
+          </li>
+        </ol>
+      </nav>
+
+      <div class="rb-heading rb-heading-blue">{sectionName}</div>
+
+      <HardwarePanel
+        animate
+        variant="rackmount-chassis"
+        class="folder-header"
+        title={folderName.toUpperCase()}
+        ledStatus={fileCount > 0 ? 'online' : 'offline'}
+        ledLabel={`${fileCount.toLocaleString()} FILE${fileCount === 1 ? '' : 'S'}`}
+      >
+        {sectionMeta?.description && (
+          <p class="folder-description">{sectionMeta.description}</p>
+        )}
+        <div class="folder-meta">
+          {sectionMeta?.curator && (
+            <span class="folder-meta__stat">Curator: {sectionMeta.curator}</span>
+          )}
+          {sectionMeta?.lastUpdated && (
+            <span class="folder-meta__stat">Updated: {sectionMeta.lastUpdated}</span>
+          )}
+          {sectionData?.tags && sectionData.tags.length > 0 && (
+            <span class="folder-meta__tags">
+              {sectionData.tags.map((tag) => (
+                <span class="folder-meta__tag">{tag}</span>
+              ))}
+            </span>
+          )}
+        </div>
+      </HardwarePanel>
+
+      <div class="folder-stats">
+        <Lcd label="FILES" value={fileCount.toLocaleString()} ariaLabel="Files in folder" />
+        <Lcd label="TOTAL SIZE" value={formatBytes(totalBytes)} ariaLabel="Total size" />
+        <Lcd label="SECTION" value={sectionName} ariaLabel="Section" />
+      </div>
+
+      {fileCount > 0 ? (
+        <HardwarePanel variant="rackmount" title={`FILES IN ${folderName.toUpperCase()}`}>
+          <div class="table-controls">
+            <input
+              type="text"
+              id="folderSearch"
+              placeholder={`Search ${fileCount.toLocaleString()} files...`}
+              class="rb-search-input"
+              aria-label="Search files in this folder"
+            />
+            <span id="folderCount" class="folder-count">{fileCount.toLocaleString()} files</span>
+          </div>
+
+          <div class="table-scroll">
+            <table class="folder-table" id="folderTable">
+              <thead>
+                <tr>
+                  <th scope="col">
+                    <button class="sort-btn" data-sort="name" type="button" aria-label="Sort by name">
+                      Name <span class="sort-indicator" aria-hidden="true">↕</span>
+                    </button>
+                  </th>
+                  <th scope="col" class="col-size">
+                    <button class="sort-btn" data-sort="size" type="button" aria-label="Sort by size">
+                      Size <span class="sort-indicator" aria-hidden="true">↕</span>
+                    </button>
+                  </th>
+                  <th scope="col" class="col-download">Download</th>
+                </tr>
+              </thead>
+              <tbody id="folderTableBody">
+                {songs.map((song) => (
+                  <tr class="file-row" data-filename={song.filename.toLowerCase()} data-size={song.sizeBytes} data-name={song.filename.toLowerCase()}>
+                    <td class="cell-name">
+                      <span class="file-title" title={song.filename}>
+                        {song.title}
+                      </span>
+                      <span class="file-extension">.rbs</span>
+                      {song.bpm && (
+                        <span class="file-bpm">{song.bpm} BPM</span>
+                      )}
+                    </td>
+                    <td class="cell-size">{song.fileSize}</td>
+                    <td class="cell-download">
+                      <a
+                        href={song.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="download-btn"
+                        aria-label={`Download ${song.filename}`}
+                        title={`Download ${song.filename}`}
+                      >
+                        <span class="download-icon" aria-hidden="true">↓</span>
+                        <span class="sr-only">Download</span>
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div id="folderEmpty" class="rb-empty-state is-hidden">
+            <p>No files match your search.</p>
+          </div>
+        </HardwarePanel>
+      ) : (
+        <HardwarePanel variant="rackmount" title="NO INDEX DATA" ledStatus="offline">
+          <p class="folder-empty-message">
+            No indexed files were found for this folder.
+          </p>
+          <p>
+            <a
+              href={externalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="open-link"
+            >
+              Browse directory listing on test.1ink.us ↗
+            </a>
+          </p>
+        </HardwarePanel>
+      )}
+
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .folder-page {
+    padding-block: 2rem 4rem;
+    background: #0f0f0f;
+    min-height: 60vh;
+  }
+
+  /* Breadcrumbs */
+  .breadcrumbs {
+    margin-bottom: 1.25rem;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.75rem;
+    color: #666;
+  }
+
+  .breadcrumbs__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .breadcrumbs__item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .breadcrumbs__item:not(:last-child)::after {
+    content: '/';
+    color: #444;
+  }
+
+  .breadcrumbs__link {
+    color: #888;
+    text-decoration: none;
+    transition: color 120ms ease;
+  }
+
+  .breadcrumbs__link:hover {
+    color: var(--rb-amber);
+    text-decoration: underline;
+  }
+
+  .breadcrumbs__item--current {
+    color: var(--rb-amber-dim);
+  }
+
+  /* Header */
+  .folder-header { margin-bottom: 1.5rem; }
+
+  .folder-header :global(.rb-panel__body) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .folder-description {
+    font-size: 0.9rem;
+    color: #aaa;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .folder-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.7rem;
+    color: #666;
+  }
+
+  .folder-meta__stat {
+    white-space: nowrap;
+  }
+
+  .folder-meta__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .folder-meta__tag {
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 5px;
+    border-radius: 2px;
+    background: rgba(255, 176, 0, 0.08);
+    color: var(--rb-amber-dim, #b37800);
+    border: 1px solid rgba(255, 176, 0, 0.15);
+  }
+
+  /* Stats */
+  .folder-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Table controls */
+  .table-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .table-controls .rb-search-input {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .folder-count {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.75rem;
+    color: var(--rb-silver-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* Table */
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .folder-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.85rem;
+  }
+
+  .folder-table th {
+    text-align: left;
+    padding: 0.6em 1em;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #888;
+    border-bottom: 1px solid #2a2a2a;
+    background: #1e1e1e;
+    white-space: nowrap;
+  }
+
+  .folder-table td {
+    padding: 0.55em 1em;
+    border-bottom: 1px solid #1e1e1e;
+    color: #888;
+    vertical-align: middle;
+  }
+
+  .folder-table tr:hover td {
+    background: rgba(255, 176, 0, 0.04);
+    color: #c0c0c0;
+  }
+
+  .sort-btn {
+    background: transparent;
+    border: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .sort-btn:hover {
+    color: var(--rb-amber);
+  }
+
+  .sort-btn[data-dir='asc'] .sort-indicator,
+  .sort-btn[data-dir='desc'] .sort-indicator {
+    color: var(--rb-amber);
+  }
+
+  .col-size,
+  .cell-size,
+  .col-download,
+  .cell-download {
+    text-align: right;
+  }
+
+  .cell-name {
+    color: #c0c0c0;
+  }
+
+  .file-title {
+    color: #c0c0c0;
+  }
+
+  .file-extension {
+    color: #555;
+    font-size: 0.75rem;
+    margin-left: 0.15rem;
+  }
+
+  .file-bpm {
+    display: inline-block;
+    margin-left: 0.5rem;
+    font-size: 0.6rem;
+    padding: 1px 4px;
+    border-radius: 2px;
+    background: rgba(57, 255, 20, 0.08);
+    color: var(--rb-green-bright);
+    border: 1px solid var(--rb-green-dim);
+    vertical-align: middle;
+  }
+
+  .cell-size {
+    white-space: nowrap;
+    color: #666;
+  }
+
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    color: var(--rb-silver-dim);
+    background: linear-gradient(180deg, #363636 0%, #282828 100%);
+    border: 1px solid var(--rb-border);
+    border-bottom: 2px solid #111;
+    border-radius: 3px;
+    text-decoration: none;
+    transition: all 120ms ease;
+  }
+
+  .download-btn:hover {
+    color: var(--rb-amber);
+    border-color: var(--rb-amber-dim);
+    box-shadow: 0 0 8px rgba(255, 176, 0, 0.15);
+  }
+
+  .download-icon {
+    font-size: 0.9rem;
+  }
+
+  .folder-empty-message {
+    font-size: 0.9rem;
+    color: #888;
+    margin: 0 0 1rem;
+  }
+
+  .open-link {
+    color: #ffb000;
+    text-decoration: none;
+    transition: color 120ms ease;
+  }
+
+  .open-link:hover {
+    color: #3dba66;
+    text-decoration: underline;
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .folder-table {
+      font-size: 0.8rem;
+    }
+
+    .folder-table th,
+    .folder-table td {
+      padding: 0.5em 0.75em;
+    }
+  }
+</style>
+
+<script>
+  /* ── Folder file table: search & sort ─────────────────────────── */
+  const searchInput = document.getElementById('folderSearch') as HTMLInputElement | null;
+  const countLabel = document.getElementById('folderCount');
+  const tableBody = document.getElementById('folderTableBody');
+  const emptyState = document.getElementById('folderEmpty');
+  const sortBtns = document.querySelectorAll<HTMLButtonElement>('.sort-btn');
+
+  let currentSort: { col: string; dir: 'asc' | 'desc' } | null = null;
+
+  function getRows(): HTMLElement[] {
+    return Array.from(tableBody?.querySelectorAll<HTMLElement>('.file-row') ?? []);
+  }
+
+  function filterRows() {
+    const term = searchInput?.value.toLowerCase() ?? '';
+    const rows = getRows();
+    let visible = 0;
+
+    rows.forEach((row) => {
+      const filename = row.getAttribute('data-filename') ?? '';
+      const isVisible = !term || filename.includes(term);
+      row.style.display = isVisible ? '' : 'none';
+      if (isVisible) visible++;
+    });
+
+    if (countLabel) {
+      countLabel.textContent = term
+        ? `${visible} of ${rows.length} files`
+        : `${rows.length} files`;
+    }
+    if (emptyState) {
+      emptyState.classList.toggle('is-hidden', visible > 0);
+    }
+
+    return rows.filter((r) => r.style.display !== 'none');
+  }
+
+  function sortRows(col: string) {
+    const rows = getRows();
+    const isSameCol = currentSort?.col === col;
+    const dir: 'asc' | 'desc' = isSameCol && currentSort?.dir === 'asc' ? 'desc' : 'asc';
+    currentSort = { col, dir };
+
+    sortBtns.forEach((btn) => {
+      const btnCol = btn.getAttribute('data-sort');
+      const indicator = btn.querySelector('.sort-indicator');
+      if (btnCol === col) {
+        btn.setAttribute('data-dir', dir);
+        if (indicator) indicator.textContent = dir === 'asc' ? '↑' : '↓';
+      } else {
+        btn.removeAttribute('data-dir');
+        if (indicator) indicator.textContent = '↕';
+      }
+    });
+
+    const sorted = [...rows].sort((a, b) => {
+      let cmp = 0;
+      if (col === 'size') {
+        const sizeA = parseInt(a.getAttribute('data-size') ?? '0', 10);
+        const sizeB = parseInt(b.getAttribute('data-size') ?? '0', 10);
+        cmp = sizeA - sizeB;
+      } else {
+        const nameA = a.getAttribute('data-name') ?? '';
+        const nameB = b.getAttribute('data-name') ?? '';
+        cmp = nameA.localeCompare(nameB);
+      }
+      return dir === 'asc' ? cmp : -cmp;
+    });
+
+    sorted.forEach((row) => tableBody?.appendChild(row));
+  }
+
+  searchInput?.addEventListener('input', filterRows);
+
+  sortBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const col = btn.getAttribute('data-sort');
+      if (col) sortRows(col);
+    });
+  });
+</script>

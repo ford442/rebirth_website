@@ -1,8 +1,10 @@
 # Adding More Mods to the Archive
 
+> For the full contributor workflow, schema, and tag conventions, see [`CONTRIBUTING-MODS.md`](CONTRIBUTING-MODS.md).
+
 ## Quick Start
 
-The 600+ RBM mods are already hosted at `https://storage.1ink.us/rebirth_mods/` and automatically downloadable. The 26 mods in `src/data/mods-metadata.json` are displayed in the featured section (17 with full descriptions, 9 with minimal metadata).
+The 367 RBM mods are already hosted at `https://storage.1ink.us/rebirth_mods/` and automatically downloadable. The mods in `src/data/mods-metadata.json` are displayed in the featured section; the rest appear in the raw index with a **“Help document this mod”** link.
 
 To add more mods:
 

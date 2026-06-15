@@ -60,6 +60,9 @@ npm run astro check
 │   │   ├── index.astro         ← Landing page (hero, featured songs/mods, about)
 │   │   ├── rbs-archive.astro   ← Song archive browser (/rbs-archive)
 │   │   └── archive/
+│   │       ├── songs.astro     ← Song collection browser (/archive/songs)
+│   │       ├── songs/
+│   │       │   └── [...slug].astro ← On-site folder file listing (/archive/songs/<section>/<folder>)
 │   │       └── mods.astro      ← Mod browser (/archive/mods)
 │   ├── layouts/
 │   │   └── BaseLayout.astro    ← Shared HTML shell (head, header, nav, footer)
@@ -70,7 +73,10 @@ npm run astro check
 │   ├── content/
 │   │   └── docs/               ← Historical markdown docs (v1.0, v1.5, v2.0, v2.0.1, etc.)
 │   ├── data/
-│   │   └── mods-metadata.json  ← Documented mod metadata (17 of 600+)
+│   │   ├── mods-metadata.json  ← Documented mod metadata (17 of 600+)
+│   │   ├── mods-full-index.json← All 367 .rbm files with sizes
+│   │   ├── songs-full-index.json← All catalogued .rbs files with metadata
+│   │   └── song-collections.ts ← Shared collection section definitions
 │   ├── styles/
 │   │   └── global.css          ← Global reset, design tokens, base styles
 │   ├── wasm/
@@ -94,8 +100,12 @@ Astro uses file-based routing under `src/pages/`:
 
 | File | Route |
 |------|-------|
+| File | Route |
+|------|-------|
 | `src/pages/index.astro` | `/` |
 | `src/pages/rbs-archive.astro` | `/rbs-archive` |
+| `src/pages/archive/songs.astro` | `/archive/songs` |
+| `src/pages/archive/songs/[...slug].astro` | `/archive/songs/<section>/<folder>/...` |
 | `src/pages/archive/mods.astro` | `/archive/mods` |
 
 **Important**: There is **no `src/pages/docs/` route** currently implemented. The navigation bar in `BaseLayout.astro` links to `${import.meta.env.BASE_URL}docs`, but this page does not exist — it will 404. The content collection for docs is configured in `src/content.config.ts`, but no page renders it.
@@ -162,12 +172,15 @@ The site uses a **retro-industrial hardware aesthetic** modeled after the Roland
 
 ### Internal Links
 
-Because the site is deployed under a **base path** (`/rebirth_website`), **always** use `import.meta.env.BASE_URL` for internal links:
+Because the site is deployed under a **base path** (`/rb338`), **always** use `import.meta.env.BASE_URL` (or `normalizeBase(import.meta.env.BASE_URL)`) for internal links:
 
 ```astro
-<a href={`${import.meta.env.BASE_URL}`}>Home</a>
-<a href={`${import.meta.env.BASE_URL}archive/songs`}>Songs</a>
-<a href={`${import.meta.env.BASE_URL}archive/mods`}>Mods</a>
+import { normalizeBase } from '../lib/url';
+const base = normalizeBase(import.meta.env.BASE_URL);
+
+<a href={`${base}/`}>Home</a>
+<a href={`${base}/archive/songs/`}>Songs</a>
+<a href={`${base}/archive/mods/`}>Mods</a>
 ```
 
 The base path is configured in `astro.config.mjs`:
@@ -175,7 +188,7 @@ The base path is configured in `astro.config.mjs`:
 ```js
 export default defineConfig({
   site: 'https://ford442.github.io',
-  base: '/rebirth_website',
+  base: '/rb338',
   compressHTML: true,
   build: { assets: '_assets' },
 });
@@ -293,6 +306,47 @@ python scripts/rebirth_mod_upload.py \
   --remote-base /path/to/rebirth_mods
 ```
 
+### `scripts/index-rbs-archive.py`
+
+Recursively crawls the remote RBS song archive at `test.1ink.us` and generates
+`src/data/songs-full-index.json` with direct download URLs, file sizes, and inferred
+collection/artist metadata. Run this whenever files are added to the remote archive.
+
+```bash
+python3 scripts/index-rbs-archive.py
+```
+
+Options:
+
+```bash
+python3 scripts/index-rbs-archive.py \
+  --base-url http://test.1ink.us/rb338/archive/rbs-songs \
+  --output src/data/songs-full-index.json \
+  --manifest public/rbs-manifest.json
+```
+
+### `scripts/check-mod-metadata.py`
+
+Diffs `src/data/mods-full-index.json` against `src/data/mods-metadata.json` and
+reports undocumented `.rbm` files. Use `--priority` to surface likely high-value
+mods first, and `--output` to save a batch contribution list. Exits with code 1
+when gaps exist, so it can be used as a CI warning.
+
+```bash
+python3 scripts/check-mod-metadata.py
+python3 scripts/check-mod-metadata.py --priority --output priority-mods.txt
+```
+
+### `scripts/sync-mod-metadata.py`
+
+Aligns `src/data/mods-full-index.json` with `src/data/mods-metadata.json`,
+setting `hasMeta`, `title`, `author`, and `tags` for documented mods. Run this
+after updating metadata so the mod browser badges and coverage bar stay in sync.
+
+```bash
+python3 scripts/sync-mod-metadata.py
+```
+
 ### `deploy.py`
 
 Manual deployment script that uploads the `dist/` directory via SFTP to `test.1ink.us/rb338`.
@@ -327,8 +381,8 @@ For manual verification:
 ### GitHub Pages (primary)
 
 - Auto-deploys from the `main` branch
-- Site: `https://ford442.github.io/rebirth_website`
-- Base path `/rebirth_website` is baked into `astro.config.mjs`
+- Site: `https://ford442.github.io/rb338`
+- Base path `/rb338` is baked into `astro.config.mjs`
 
 ### Manual SFTP (secondary)
 
@@ -345,7 +399,7 @@ For manual verification:
 ## Known Gaps & TODOs
 
 1. **Missing `/docs` page**: The content collection exists but has no rendering page. The nav link 404s.
-2. **Incomplete mod metadata**: Only 17 of 600+ mods are documented in `mods-metadata.json`.
+2. **Incomplete mod metadata**: 25 of 367 mods are documented in `mods-metadata.json`. A GitHub issue template (`.github/ISSUE_TEMPLATE/mod-metadata.yml`) and helper scripts (`check-mod-metadata.py`, `sync-mod-metadata.py`) now exist to close this gap.
 3. **Empty archive directories**: `public/archive/rbs-songs/` and `public/archive/rbm-mods/` contain only `.gitkeep` files; actual assets are hosted externally.
 4. **WASM module**: Not yet implemented — purely architectural stubs.
 5. **No tests**: No unit, integration, or E2E tests exist.

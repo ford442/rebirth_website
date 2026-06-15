@@ -1,0 +1,56 @@
+name: Mod Metadata Submission
+Description: Submit metadata for an undocumented ReBirth RB-338 .rbm mod file.
+title: "Add metadata for: <mod-filename>"
+labels: ["mods", "metadata", "community"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping document the mod archive! Only a small fraction of the 367 `.rbm` files have metadata. Your contribution makes the archive more browsable.
+
+        Before submitting, please check the [mod contribution guide](../docs/CONTRIBUTING-MODS.md) for the JSON schema and tag conventions.
+  - type: input
+    id: filename
+    attributes:
+      label: Mod filename
+      description: Exact filename from the archive (e.g., `Aluwerk.rbm`).
+      placeholder: Aluwerk.rbm
+    validations:
+      required: true
+  - type: input
+    id: title
+    attributes:
+      label: Title
+      description: Human-readable mod name.
+      placeholder: Aluwerk
+    validations:
+      required: true
+  - type: input
+    id: author
+    attributes:
+      label: Author
+      description: Creator or source of the mod. Use "Unknown" if not known.
+      placeholder: Dr Bruno & Syrusate
+  - type: input
+    id: year
+    attributes:
+      label: Year
+      description: Release year, if known.
+      placeholder: "1998"
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: One or two sentences describing the look, sound, or notable features of the mod.
+      placeholder: A metallic industrial mod with brushed aluminium graphics and aggressive percussion.
+  - type: input
+    id: tags
+    attributes:
+      label: Tags
+      description: Comma-separated lowercase kebab-case tags (e.g., `industrial, metallic, concept`).
+      placeholder: industrial, metallic, concept
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional notes / source
+      description: Link to a forum thread, Wayback Machine snapshot, or other evidence for the metadata.

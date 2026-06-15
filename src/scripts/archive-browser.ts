@@ -7,10 +7,21 @@
 
 import {
   songCollections,
-  archiveBaseUrl,
   type SongSection,
   type SongCollectionKey,
 } from '../data/song-collections';
+import collectionsMeta from '../data/collections-metadata.json';
+import { normalizeBase } from '../lib/url';
+
+interface CollectionMeta {
+  description?: string;
+  tags?: string[];
+  curator?: string;
+  lastUpdated?: string;
+  totalItems?: number;
+}
+
+const sectionMeta = collectionsMeta as Record<SongCollectionKey, CollectionMeta>;
 
 /* ------------------------------------------------------------------ */
 //  Types
@@ -36,6 +47,7 @@ let currentQuery = '';
 let currentFilter: SongCollectionKey | 'all' = 'all';
 let searchDebounce = 0;
 let currentView: 'grid' | 'list' = 'grid';
+let currentSort: { col: 'name' | 'count'; dir: 'asc' | 'desc' } | null = null;
 
 /* ------------------------------------------------------------------ */
 //  DOM Cache
@@ -48,12 +60,15 @@ const dom = {
   gridView: document.getElementById('gridView'),
   listView: document.getElementById('listView'),
   gridEmptyState: document.getElementById('gridEmptyState'),
+  listEmptyState: document.getElementById('listEmptyState'),
   btnGrid: document.getElementById('btnGrid'),
   btnList: document.getElementById('btnList'),
   wrappers: () =>
     document.querySelectorAll<HTMLElement>('.collection-wrapper'),
   filterBtns: () =>
     document.querySelectorAll<HTMLElement>('.rb-filter-btn'),
+  sortBtns: () =>
+    document.querySelectorAll<HTMLButtonElement>('.sort-btn'),
 };
 
 /* ------------------------------------------------------------------ */
@@ -95,6 +110,38 @@ function getFilteredData(): FilterResult[] {
   );
 
   return results;
+}
+
+/* ------------------------------------------------------------------ */
+//  Sorting
+/* ------------------------------------------------------------------ */
+
+function getSortedData(results: FilterResult[]): FilterResult[] {
+  if (!currentSort) return results;
+
+  return [...results].sort((a, b) => {
+    let cmp = 0;
+    if (currentSort!.col === 'name') {
+      cmp = a.folder.name.localeCompare(b.folder.name);
+    } else if (currentSort!.col === 'count') {
+      cmp = (a.folder.count ?? 0) - (b.folder.count ?? 0);
+    }
+    return currentSort!.dir === 'asc' ? cmp : -cmp;
+  });
+}
+
+function updateSortIndicators() {
+  dom.sortBtns().forEach((btn) => {
+    const col = btn.getAttribute('data-sort') as 'name' | 'count';
+    const indicator = btn.querySelector('.sort-indicator');
+    if (currentSort && currentSort.col === col) {
+      btn.setAttribute('data-dir', currentSort.dir);
+      if (indicator) indicator.textContent = currentSort.dir === 'asc' ? '↑' : '↓';
+    } else {
+      btn.removeAttribute('data-dir');
+      if (indicator) indicator.textContent = '↕';
+    }
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -146,20 +193,20 @@ function renderListView(results: FilterResult[]) {
   if (!tbody) return;
 
   tbody.innerHTML = '';
-
-  if (results.length === 0) {
-    const row = document.createElement('tr');
-    row.innerHTML = `<td colspan="3" class="rb-table-empty">No collections match your filters.</td>`;
-    tbody.appendChild(row);
-    return;
-  }
+  if (results.length === 0) return;
 
   const frag = document.createDocumentFragment();
 
-  results.forEach(({ sectionName, sectionDesc, sectionTags, folder }) => {
+  results.forEach(({ sectionKey, sectionName, sectionDesc, folder }) => {
+    const meta = sectionMeta[sectionKey];
+    const tags = meta?.tags ?? [];
+    const curator = meta?.curator ?? '—';
+    const updated = meta?.lastUpdated ?? '—';
+    const count = folder.count ?? 0;
+
     const row = document.createElement('tr');
 
-    // Name cell
+    // Collection cell
     const nameDiv = document.createElement('div');
     nameDiv.className = 'cell-name';
     nameDiv.textContent = folder.name;
@@ -167,15 +214,9 @@ function renderListView(results: FilterResult[]) {
     const nameCell = document.createElement('td');
     nameCell.appendChild(nameDiv);
 
-    if (sectionTags.length > 0) {
-      const tagsSpan = document.createElement('span');
-      tagsSpan.className = 'cell-tags';
-      tagsSpan.textContent = sectionTags.join(' • ');
-      nameCell.appendChild(tagsSpan);
-    }
-
     // Section cell
     const sectionDiv = document.createElement('div');
+    sectionDiv.className = 'cell-section-name';
     sectionDiv.textContent = sectionName;
 
     const descDiv = document.createElement('div');
@@ -187,19 +228,52 @@ function renderListView(results: FilterResult[]) {
     sectionCell.appendChild(sectionDiv);
     sectionCell.appendChild(descDiv);
 
+    // Files cell
+    const countCell = document.createElement('td');
+    countCell.className = 'cell-count';
+    countCell.textContent = count > 0 ? count.toString() : '—';
+
+    // Tags cell
+    const tagsCell = document.createElement('td');
+    tagsCell.className = 'cell-tags';
+    if (tags.length > 0) {
+      tags.slice(0, 3).forEach((tag) => {
+        const span = document.createElement('span');
+        span.className = 'list-tag';
+        span.textContent = tag;
+        tagsCell.appendChild(span);
+      });
+    } else {
+      tagsCell.textContent = '—';
+    }
+
+    // Curator cell
+    const curatorCell = document.createElement('td');
+    curatorCell.className = 'cell-curator';
+    curatorCell.textContent = curator;
+
+    // Updated cell
+    const updatedCell = document.createElement('td');
+    updatedCell.className = 'cell-updated';
+    updatedCell.textContent = updated;
+
     // Action cell
+    const folderSlug = folder.path.split('/').map(encodeURIComponent).join('/');
     const link = document.createElement('a');
-    link.href = `${archiveBaseUrl}/${folder.path}`;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
+    link.href = `${normalizeBase(import.meta.env.BASE_URL)}/archive/songs/${folderSlug}/`;
     link.className = 'open-link';
-    link.textContent = 'Open ↗';
+    link.textContent = 'Browse →';
 
     const actionCell = document.createElement('td');
+    actionCell.className = 'cell-action';
     actionCell.appendChild(link);
 
     row.appendChild(nameCell);
     row.appendChild(sectionCell);
+    row.appendChild(countCell);
+    row.appendChild(tagsCell);
+    row.appendChild(curatorCell);
+    row.appendChild(updatedCell);
     row.appendChild(actionCell);
     frag.appendChild(row);
   });
@@ -211,14 +285,14 @@ function renderListView(results: FilterResult[]) {
 //  Result Count
 /* ------------------------------------------------------------------ */
 
-function updateResultCount(sections: number, folders: number) {
+function updateResultCount(sections: number, folders: number, rows: number) {
   const el = dom.resultCount;
   if (!el) return;
 
-  if (currentQuery === '' && currentFilter === 'all') {
-    el.textContent = `Showing all ${sections} collections (${folders} folders)`;
+  if (currentQuery === '' && currentFilter === 'all' && currentSort === null) {
+    el.textContent = `Showing all ${sections} collections (${folders} folders, ${rows} rows)`;
   } else {
-    el.textContent = `Showing ${sections} collections • ${folders} folders`;
+    el.textContent = `Showing ${sections} collections • ${folders} folders • ${rows} rows`;
   }
 }
 
@@ -227,10 +301,13 @@ function updateResultCount(sections: number, folders: number) {
 /* ------------------------------------------------------------------ */
 
 function applyFilters() {
-  const results = getFilteredData();
+  const results = getSortedData(getFilteredData());
   const { visibleSections, visibleFolders } = updateGridView(results);
   renderListView(results);
-  updateResultCount(visibleSections, visibleFolders);
+  updateResultCount(visibleSections, visibleFolders, results.length);
+  if (dom.listEmptyState) {
+    dom.listEmptyState.classList.toggle('is-hidden', results.length > 0);
+  }
 }
 
 function syncUrl() {
@@ -308,6 +385,11 @@ function switchView(view: 'grid' | 'list') {
   }
 
   currentView = view;
+
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('archiveView', view);
+  }
+
   applyFilters();
   syncUrl();
 }
@@ -334,8 +416,13 @@ function applyInitialStateFromUrl() {
     });
   }
 
-  if (view === 'list') {
-    currentView = 'list';
+  if (view === 'list' || view === 'grid') {
+    currentView = view;
+  } else if (typeof localStorage !== 'undefined') {
+    const saved = localStorage.getItem('archiveView');
+    if (saved === 'list' || saved === 'grid') {
+      currentView = saved;
+    }
   }
 }
 
@@ -371,6 +458,23 @@ function bindEvents() {
 
       applyFilters();
       syncUrl();
+    });
+  });
+
+  // List-view column sorting
+  dom.sortBtns().forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const col = btn.getAttribute('data-sort') as 'name' | 'count';
+      if (!col) return;
+
+      if (currentSort?.col === col) {
+        currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSort = { col, dir: 'asc' };
+      }
+
+      updateSortIndicators();
+      applyFilters();
     });
   });
 

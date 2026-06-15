@@ -3,7 +3,13 @@
     {
       "filename": "030microdot.rbm",
       "size": "8.1M",
-      "hasMeta": false
+      "hasMeta": true,
+      "title": "030 Microdot",
+      "author": "Unknown",
+      "tags": [
+        "experimental",
+        "minimal"
+      ]
     },
     {
       "filename": "030microdot100.rbm",
@@ -85,7 +91,13 @@
     {
       "filename": "AmberVision.rbm",
       "size": "5.5M",
-      "hasMeta": false
+      "hasMeta": true,
+      "title": "Amber Vision",
+      "author": "Unknown",
+      "tags": [
+        "ambient",
+        "vision"
+      ]
     },
     {
       "filename": "animalinhob2.rbm",
@@ -324,15 +336,7 @@
     {
       "filename": "circuit.rbm",
       "size": "3.3M",
-      "hasMeta": true,
-      "title": "Circuit",
-      "author": "Epilogue",
-      "tags": [
-        "industrial",
-        "electronic",
-        "techno",
-        "bass"
-      ]
+      "hasMeta": false
     },
     {
       "filename": "Circuitbreak_Theorem_(beta3).rbm",
@@ -397,7 +401,13 @@
     {
       "filename": "Controllerism.rbm",
       "size": "8.4M",
-      "hasMeta": false
+      "hasMeta": true,
+      "title": "Controllerism",
+      "author": "Unknown",
+      "tags": [
+        "control",
+        "experimental"
+      ]
     },
     {
       "filename": "DarkStar.rbm",
@@ -540,7 +550,13 @@
     {
       "filename": "ElekD2.02.rbm",
       "size": "7.2M",
-      "hasMeta": false
+      "hasMeta": true,
+      "title": "ElekD 2.02",
+      "author": "Unknown",
+      "tags": [
+        "electronic",
+        "synth"
+      ]
     },
     {
       "filename": "ElekD2.02b.rbm",
@@ -1097,15 +1113,7 @@
     {
       "filename": "modulus.rbm",
       "size": "3.2M",
-      "hasMeta": true,
-      "title": "Modulus",
-      "author": "Tristan",
-      "tags": [
-        "house",
-        "drums",
-        "brass",
-        "clean"
-      ]
+      "hasMeta": false
     },
     {
       "filename": "Modyssey.rbm",
@@ -1148,7 +1156,14 @@
     {
       "filename": "nordbeat.rbm",
       "size": "2.8M",
-      "hasMeta": false
+      "hasMeta": true,
+      "title": "Nordbeat",
+      "author": "Unknown",
+      "tags": [
+        "nord",
+        "beat",
+        "techno"
+      ]
     },
     {
       "filename": "nordbeat_[m].rbm",
@@ -1163,7 +1178,13 @@
     {
       "filename": "OMEGA.rbm",
       "size": "6.7M",
-      "hasMeta": false
+      "hasMeta": true,
+      "title": "OMEGA",
+      "author": "Unknown",
+      "tags": [
+        "experimental",
+        "powerful"
+      ]
     },
     {
       "filename": "omega_x2.rbm",
@@ -1173,7 +1194,14 @@
     {
       "filename": "Orbit2.rbm",
       "size": "4.8M",
-      "hasMeta": false
+      "hasMeta": true,
+      "title": "Orbit 2",
+      "author": "Unknown",
+      "tags": [
+        "space",
+        "ambient",
+        "futuristic"
+      ]
     },
     {
       "filename": "Orion.rbm",
@@ -1333,15 +1361,7 @@
     {
       "filename": "PolyVibe.rbm",
       "size": "3.2M",
-      "hasMeta": true,
-      "title": "Polyvibe",
-      "author": "Jonas H.",
-      "tags": [
-        "jazz",
-        "acid-jazz",
-        "piano",
-        "brass"
-      ]
+      "hasMeta": false
     },
     {
       "filename": "polyvibe.rbm",
@@ -1364,7 +1384,13 @@
     {
       "filename": "Prop10_Dev.rbm",
       "size": "8.9M",
-      "hasMeta": false
+      "hasMeta": true,
+      "title": "Prop10 Dev",
+      "author": "Propellerhead",
+      "tags": [
+        "development",
+        "experimental"
+      ]
     },
     {
       "filename": "PWE[a].rbm",
