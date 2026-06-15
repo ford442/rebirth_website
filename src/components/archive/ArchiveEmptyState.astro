@@ -1,0 +1,17 @@
+---
+export interface Props {
+  id?: string;
+  message?: string;
+  class?: string;
+}
+
+const {
+  id,
+  message = 'No items match your search. Try different keywords or clear the filter.',
+  class: className = '',
+} = Astro.props;
+---
+
+<div class={`rb-empty-state is-hidden ${className}`.trim()} id={id} aria-live="polite" aria-atomic="true">
+  <p>{message}</p>
+</div>

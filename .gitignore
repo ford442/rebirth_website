@@ -20,3 +20,10 @@ Thumbs.db
 .vscode/
 .idea/
 tmp_rebirth_mods
+
+# Playwright / MCP generated artefacts
+.playwright-mcp/
+test-results/
+playwright-report/
+tests/screenshots/
+*.png

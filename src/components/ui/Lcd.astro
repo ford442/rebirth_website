@@ -3,10 +3,10 @@ import type { LcdProps } from './types';
 
 interface Props extends LcdProps {}
 
-const { label, value, unit, size = 'default', ariaLabel, class: className = '' } = Astro.props;
+const { label, value, unit, size = 'default', ariaLabel, title, class: className = '' } = Astro.props;
 ---
 
-<div class={`rb-lcd ${className}`.trim()} aria-label={ariaLabel ?? `${label}: ${value}${unit ?? ''}`}>
+<div class={`rb-lcd ${className}`.trim()} aria-label={ariaLabel ?? `${label}: ${value}${unit ?? ''}`} title={title}>
   <div class="lcd-label">{label}</div>
   <div class={`lcd-value${size === 'sm' ? ' lcd-value--sm' : ''}`}>
     {value}{unit && <span class="lcd-unit">{unit}</span>}

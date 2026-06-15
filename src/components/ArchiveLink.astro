@@ -1,0 +1,18 @@
+---
+import { normalizeBase } from '../lib/url';
+
+export interface Props {
+  href: string;
+  class?: string;
+  title?: string;
+}
+
+const { href, class: className = '', title } = Astro.props;
+const base = normalizeBase(import.meta.env.BASE_URL);
+const isExternal = href.startsWith('http');
+const url = isExternal ? href : `${base}${href.startsWith('/') ? href : `/${href}`}`;
+---
+
+<a class={`archive-link ${className}`} href={url} title={title}>
+  <slot />
+</a>

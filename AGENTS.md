@@ -67,6 +67,15 @@ npm run astro check
 │   ├── layouts/
 │   │   └── BaseLayout.astro    ← Shared HTML shell (head, header, nav, footer)
 │   ├── components/
+│   │   ├── archive/
+│   │   │   ├── ArchivePageShell.astro   ← Shared layout shell for /archive/songs and /archive/mods
+│   │   │   ├── ArchiveEmptyState.astro  ← Reusable empty-state block for filtered results
+│   │   │   └── ArchiveLink.astro        ← BASE_URL-aware internal archive link wrapper
+│   │   ├── ui/
+│   │   │   ├── HardwarePanel.astro      ← Rackmount/panel container with LED header
+│   │   │   ├── Lcd.astro                ← LCD-style readout with label and value
+│   │   │   ├── Led.astro                ← Status LED indicator
+│   │   │   └── ActionButton.astro       ← Pattern (red) / Mix (green) hardware buttons
 │   │   ├── Breadcrumbs.astro   ← Hardware-styled breadcrumb navigation
 │   │   ├── ModCard.astro       ← Reusable card for songs/mods
 │   │   ├── CollectionCard.astro← Card for archive folder sections
@@ -152,6 +161,7 @@ The site uses a **retro-industrial hardware aesthetic** modeled after the Roland
 - Use CSS Grid / Flexbox for layouts.
 - Use `is:global` on `<style>` blocks only when injecting global stylesheets.
 - All pages must use `BaseLayout.astro` for consistent shell, meta tags, and navigation.
+- Archive browser pages (`/archive/songs`, `/archive/mods`) should use `ArchivePageShell.astro` so breadcrumbs, header panel, stats bar, section dividers, and empty states stay consistent.
 
 ## Code Style & Conventions
 

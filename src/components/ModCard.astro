@@ -393,8 +393,15 @@ const typeClass = isSong ? 'type--song' : isMod ? 'type--mod' : 'type--other';
   }
 
   @media (max-width: 767px) {
+    .mod-card {
+      padding: 0.75rem;
+      gap: 0.5rem;
+    }
+
     .mod-card__meta {
       grid-template-columns: 1fr;
+      padding: 0.5rem;
+      gap: 0.3rem;
     }
 
     .mod-card__actions {
@@ -405,6 +412,15 @@ const typeClass = isSong ? 'type--song' : isMod ? 'type--mod' : 'type--other';
 
     .mod-card__action {
       flex: 1 1 100%;
+      min-height: 44px;
+    }
+
+    .mod-card__action .external-link__host {
+      display: none;
+    }
+
+    .mod-card__desc {
+      font-size: 0.82rem;
     }
   }
 </style>

@@ -1,0 +1,217 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import HardwarePanel from '../../components/ui/HardwarePanel.astro';
+import Lcd from '../../components/ui/Lcd.astro';
+
+export interface StatItem {
+  label: string;
+  value: string | number;
+  ariaLabel: string;
+  title?: string;
+}
+
+export interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
+export interface Props {
+  title: string;
+  description?: string;
+  breadcrumbs: BreadcrumbItem[];
+  pageHeading: string;
+  headingClass: string;
+  headerTitle: string;
+  headerLedLabel: string;
+  headerSubtitle: string;
+  stats: StatItem[];
+  showViewToggle?: boolean;
+}
+
+const {
+  title,
+  description,
+  breadcrumbs,
+  pageHeading,
+  headingClass,
+  headerTitle,
+  headerLedLabel,
+  headerSubtitle,
+  stats,
+  showViewToggle = false,
+} = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="archive-page">
+    <div class="container">
+
+      <Breadcrumbs items={breadcrumbs} />
+
+      <div class={`rb-heading ${headingClass}`}>{pageHeading}</div>
+
+      <!-- Header panel -->
+      <HardwarePanel
+        animate
+        variant="rackmount-chassis"
+        class="archive-header"
+        title={headerTitle}
+        ledStatus="online"
+        ledLabel={headerLedLabel}
+      >
+        <p class="archive-subtitle">{headerSubtitle}</p>
+        <slot name="header-extra" />
+        <slot name="search" />
+      </HardwarePanel>
+
+      <!-- Stats bar -->
+      <div class="archive-stats">
+        {stats.map((stat) => (
+          <Lcd
+            label={stat.label}
+            value={stat.value}
+            ariaLabel={stat.ariaLabel}
+            title={stat.title}
+          />
+        ))}
+      </div>
+
+      <!-- Optional grid/list view toggle -->
+      {showViewToggle && (
+        <div class="view-toggle" role="group" aria-label="View mode">
+          <button
+            class="rb-pattern-btn view-btn active"
+            id="btnGrid"
+            onclick="switchView('grid')"
+            type="button"
+            aria-pressed="true"
+            aria-controls="gridView listView"
+          >
+            Grid View
+          </button>
+          <button
+            class="rb-mix-btn view-btn"
+            id="btnList"
+            onclick="switchView('list')"
+            type="button"
+            aria-pressed="false"
+            aria-controls="gridView listView"
+          >
+            List View
+          </button>
+        </div>
+      )}
+
+      <!-- Curated / primary content tier -->
+      <slot name="curated" />
+
+      <!-- Complete index tier -->
+      <div class="section-divider">
+        <span class="section-divider__label"><slot name="raw-label">Complete Index</slot></span>
+      </div>
+
+      <slot name="raw-index" />
+
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .archive-page {
+    padding-block: 2rem 4rem;
+    background: #0f0f0f;
+    min-height: 80vh;
+  }
+
+  .archive-header {
+    margin-bottom: 1rem;
+  }
+
+  .archive-header :global(.rb-panel__body) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .archive-subtitle {
+    font-size: 0.95rem;
+    color: #aaa;
+    margin: 0;
+  }
+
+  .archive-info {
+    font-size: 0.8rem;
+    color: #666;
+    margin: 0;
+  }
+
+  .archive-info a {
+    color: #ffb000;
+    text-decoration: none;
+    transition: color 120ms ease;
+  }
+
+  .archive-info a:hover {
+    color: #3dba66;
+    text-decoration: underline;
+  }
+
+  .archive-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .view-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .view-btn {
+    opacity: 0.6;
+    transition: opacity 120ms ease;
+  }
+
+  .view-btn.active {
+    opacity: 1;
+  }
+
+  .view-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 176, 0, 0.25);
+  }
+
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 2.5rem 0 1.5rem;
+  }
+
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #333, transparent);
+  }
+
+  .section-divider__label {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--rb-silver-dim);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 767px) {
+    .archive-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>

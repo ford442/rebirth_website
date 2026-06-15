@@ -1,11 +1,10 @@
 ---
 // Song Archive Browser — /archive/songs
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ArchivePageShell from '../../components/archive/ArchivePageShell.astro';
 import CollectionCard from '../../components/CollectionCard.astro';
+import ArchiveEmptyState from '../../components/archive/ArchiveEmptyState.astro';
 import HardwarePanel from '../../components/ui/HardwarePanel.astro';
 import Led from '../../components/ui/Led.astro';
-import Lcd from '../../components/ui/Lcd.astro';
 import ActionButton from '../../components/ui/ActionButton.astro';
 import collectionsMeta from '../../data/collections-metadata.json';
 import { songCollections, archiveBaseUrl } from '../../data/song-collections';
@@ -50,260 +49,214 @@ const grouped = alphaLetters.map((letter) => ({
   letter,
   songs: allSongs.filter((s) => s.filename?.charAt(0)?.toUpperCase() === letter),
 }));
+
+const archiveStats = [
+  { label: 'COLLECTIONS', value: mainCollectionCount, ariaLabel: 'Main collections' },
+  { label: 'ARTISTS', value: artistCount, ariaLabel: 'Featured artists' },
+  { label: 'SONGS', value: formatStatRange(totalSongsIndexed), ariaLabel: 'Total indexed songs', title: `${totalSongsIndexed.toLocaleString()} files indexed from the remote archive` },
+  { label: 'ARCHIVES', value: monthlyArchiveCount, ariaLabel: 'Monthly archives' },
+];
 ---
 
-<BaseLayout title="RBS Song Archive" description="Browse and explore ReBirth RB-338 song collections, artists, and individual .rbs files.">
-
-  <div class="archive-page">
-    <div class="container">
-
-      <Breadcrumbs items={[
-        { label: 'Home', href: '/' },
-        { label: 'Songs', href: '/archive/songs/' },
-      ]} />
-
-      <div class="rb-heading rb-heading-blue">RBS Song Archive</div>
-
-      <!-- Page header module -->
-      <HardwarePanel
-        animate
-        variant="rackmount-chassis"
-        class="archive-header"
-        title="RBS SONG ARCHIVE BROWSER"
-        ledStatus="online"
-        ledLabel={`${formatStatRange(totalSongsIndexed)} INDEXED`}
-      >
-        <p class="archive-subtitle">Browse collections and search every catalogued .rbs file in the archive</p>
-        <div class="sticky-search">
-          <div class="search-bar">
-            <input
-              type="text"
-              id="searchInput"
-              placeholder="Search collections and artists... (Press / to focus)"
-              class="rb-search-input"
-              aria-label="Search collections"
-            />
-            <ActionButton variant="mix" onclick="clearAllFilters()">Clear All</ActionButton>
-          </div>
-          <div class="filter-bar" role="group" aria-label="Quick filters">
-            <button class="rb-filter-btn active" data-filter="all" type="button" aria-pressed="true">All</button>
-            <button class="rb-filter-btn" data-filter="featured" type="button" aria-pressed="false">Featured</button>
-            <button class="rb-filter-btn" data-filter="bySource" type="button" aria-pressed="false">By Source</button>
-            <button class="rb-filter-btn" data-filter="artists" type="button" aria-pressed="false">Artists</button>
-            <button class="rb-filter-btn" data-filter="monthly" type="button" aria-pressed="false">Monthly</button>
-            <button class="rb-filter-btn" data-filter="other" type="button" aria-pressed="false">Other</button>
-          </div>
-          <div class="results-bar" aria-live="polite" aria-atomic="true">
-            <Led status="online" label="" ariaHidden={true} />
-            <span id="resultCount" class="result-count">Showing all collections</span>
-          </div>
-        </div>
-      </HardwarePanel>
-
-      <!-- LCD stats bar -->
-      <div class="archive-stats" title={`${totalSongsIndexed.toLocaleString()} files indexed from the remote archive`}>
-        <Lcd label="COLLECTIONS" value={mainCollectionCount} ariaLabel="Main collections" />
-        <Lcd label="ARTISTS" value={artistCount} ariaLabel="Featured artists" />
-        <Lcd label="SONGS" value={formatStatRange(totalSongsIndexed)} ariaLabel="Total indexed songs" />
-        <Lcd label="ARCHIVES" value={monthlyArchiveCount} ariaLabel="Monthly archives" />
+<ArchivePageShell
+  title="RBS Song Archive"
+  description="Browse and explore ReBirth RB-338 song collections, artists, and individual .rbs files."
+  breadcrumbs={[
+    { label: 'Home', href: '/' },
+    { label: 'Songs', href: '/archive/songs/' },
+  ]}
+  pageHeading="RBS Song Archive"
+  headingClass="rb-heading-green"
+  headerTitle="RBS SONG ARCHIVE BROWSER"
+  headerLedLabel={`${formatStatRange(totalSongsIndexed)} INDEXED`}
+  headerSubtitle="Browse collections and search every catalogued .rbs file in the archive"
+  stats={archiveStats}
+  showViewToggle={true}
+>
+  <Fragment slot="search">
+    <div class="sticky-search">
+      <div class="search-bar">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search collections and artists... (Press / to focus)"
+          class="rb-search-input"
+          aria-label="Search collections"
+        />
+        <ActionButton variant="mix" onclick="clearAllFilters()">Clear All</ActionButton>
       </div>
-
-      <!-- View toggle -->
-      <div class="view-toggle" role="group" aria-label="View mode">
-        <button class="rb-pattern-btn view-btn active" id="btnGrid" onclick="switchView('grid')" type="button" aria-pressed="true" aria-controls="gridView listView">Grid View</button>
-        <button class="rb-mix-btn view-btn" id="btnList" onclick="switchView('list')" type="button" aria-pressed="false" aria-controls="gridView listView">List View</button>
+      <div class="filter-bar" role="group" aria-label="Quick filters">
+        <button class="rb-filter-btn active" data-filter="all" type="button" aria-pressed="true">All</button>
+        <button class="rb-filter-btn" data-filter="featured" type="button" aria-pressed="false">Featured</button>
+        <button class="rb-filter-btn" data-filter="bySource" type="button" aria-pressed="false">By Source</button>
+        <button class="rb-filter-btn" data-filter="artists" type="button" aria-pressed="false">Artists</button>
+        <button class="rb-filter-btn" data-filter="monthly" type="button" aria-pressed="false">Monthly</button>
+        <button class="rb-filter-btn" data-filter="other" type="button" aria-pressed="false">Other</button>
       </div>
-
-      <!-- Grid view -->
-      <div id="gridView" class="collections-grid" role="main">
-        <div data-section-key="featured" class="collection-wrapper">
-          {songCollections.featured && (
-            <CollectionCard section={songCollections.featured} meta={collectionsMeta.featured} archiveUrl={archiveBaseUrl} rackmount={true} />
-          )}
-        </div>
-        <div data-section-key="bySource" class="collection-wrapper">
-          {songCollections.bySource && (
-            <CollectionCard section={songCollections.bySource} meta={collectionsMeta.bySource} archiveUrl={archiveBaseUrl} rackmount={true} />
-          )}
-        </div>
-        <div data-section-key="artists" class="collection-wrapper">
-          {songCollections.artists && (
-            <CollectionCard section={songCollections.artists} meta={collectionsMeta.artists} archiveUrl={archiveBaseUrl} rackmount={true} />
-          )}
-        </div>
-        <div data-section-key="monthly" class="collection-wrapper">
-          {songCollections.monthly && (
-            <CollectionCard section={songCollections.monthly} meta={collectionsMeta.monthly} archiveUrl={archiveBaseUrl} rackmount={true} />
-          )}
-        </div>
-        <div data-section-key="other" class="collection-wrapper">
-          {songCollections.other && (
-            <CollectionCard section={songCollections.other} meta={collectionsMeta.other} archiveUrl={archiveBaseUrl} rackmount={true} />
-          )}
-        </div>
-        <div id="gridEmptyState" class="rb-empty-state is-hidden" aria-live="polite">
-          <p>No collections match your search. Try different keywords or clear the filter.</p>
-        </div>
+      <div class="results-bar" aria-live="polite" aria-atomic="true">
+        <span id="resultCount" class="result-count">Showing all collections</span>
       </div>
-
-      <!-- List view -->
-      <div id="listView" class="is-hidden" role="main">
-        <HardwarePanel variant="rackmount" class="list-table-wrapper" title="ALL COLLECTIONS">
-          <div class="table-scroll">
-            <table class="archive-table" id="listTable">
-              <thead>
-                <tr>
-                  <th scope="col">
-                    <button class="sort-btn" data-sort="name" type="button" aria-label="Sort by collection name">
-                      Collection <span class="sort-indicator" aria-hidden="true">↕</span>
-                    </button>
-                  </th>
-                  <th scope="col">Section</th>
-                  <th scope="col" class="col-numeric">
-                    <button class="sort-btn" data-sort="count" type="button" aria-label="Sort by file count">
-                      Files <span class="sort-indicator" aria-hidden="true">↕</span>
-                    </button>
-                  </th>
-                  <th scope="col">Tags</th>
-                  <th scope="col">Curator</th>
-                  <th scope="col">Updated</th>
-                  <th scope="col" class="col-action">Action</th>
-                </tr>
-              </thead>
-              <tbody id="listTableBody"></tbody>
-            </table>
-          </div>
-          <div id="listEmptyState" class="rb-empty-state is-hidden">
-            <p>No collections match your search. Try different keywords or clear the filter.</p>
-          </div>
-        </HardwarePanel>
-      </div>
-
-      <!-- ═══════════════════════════════════════════════════════════════ -->
-      <!--  COMPLETE SONG INDEX (all catalogued .rbs files)                -->
-      <!-- ═══════════════════════════════════════════════════════════════ -->
-      <div class="section-divider">
-        <span class="section-divider__label">Complete Song Index</span>
-      </div>
-
-      <HardwarePanel
-        variant="rackmount"
-        animate
-        title="ALL AVAILABLE .RBS FILES"
-        ledStatus="online"
-        ledLabel={`${totalRaw.toLocaleString()} FILES`}
-      >
-        <p class="raw-subtitle">
-          {coveragePercent !== null ? (
-            <>
-              <strong>{totalRaw.toLocaleString()}</strong> catalogued .rbs files indexed
-              ({coveragePercent}% of the manifest estimate). Each entry links to a direct download.
-            </>
-          ) : (
-            <>
-              <strong>{totalRaw.toLocaleString()}</strong> catalogued .rbs files indexed.
-              Each entry links to a direct download.
-            </>
-          )}
-        </p>
-
-        <!-- Filename search -->
-        <div class="raw-search-row">
-          <input
-            type="text"
-            id="songSearch"
-            placeholder={`Filter all ${totalRaw.toLocaleString()} filenames...`}
-            class="rb-search-input"
-            aria-label="Filter complete song index"
-          />
-          <span id="songCount" class="raw-count">{totalRaw.toLocaleString()} files</span>
-        </div>
-
-        <!-- A-Z jump nav -->
-        <nav class="az-nav" aria-label="Jump to letter">
-          {alphaLetters.map((letter) => (
-            <a href={`#letter-${letter}`} class="az-nav__link">{letter}</a>
-          ))}
-        </nav>
-
-        <!-- Grouped list -->
-        <div id="songIndex" class="raw-index">
-          {grouped.map(({ letter, songs }) => (
-            <section class="raw-group" id={`letter-${letter}`} data-letter={letter}>
-              <h2 class="raw-group__heading">
-                <span class="raw-group__letter">{letter}</span>
-                <Led status="online" label={`${songs.length} FILE${songs.length !== 1 ? 'S' : ''}`} ariaHidden={true} />
-              </h2>
-              <div class="raw-list">
-                {songs.map((song) => (
-                  <div class="raw-item" data-filename={song.filename.toLowerCase()} data-collection={song.collection.toLowerCase()} data-artist={(song.artist ?? '').toLowerCase()}>
-                    <div class="raw-item__main">
-                      <span class="raw-item__name" title={song.filename}>
-                        {song.filename.replace(/\.rbs$/i, '')}
-                      </span>
-                      <span class="raw-item__size">{song.fileSize}</span>
-                    </div>
-                    <div class="raw-item__meta">
-                      <span class="raw-item__collection">{song.collection}</span>
-                      {song.subcollection && song.subcollection !== song.collection && (
-                        <span class="raw-item__subcollection">{song.subcollection}</span>
-                      )}
-                      {song.artist && (
-                        <span class="raw-item__author">by {song.artist}</span>
-                      )}
-                      {song.bpm && (
-                        <span class="raw-item__bpm">{song.bpm} BPM</span>
-                      )}
-                    </div>
-                    <a
-                      href={song.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="raw-item__link"
-                      aria-label={`Download ${song.filename} from test.1ink.us, opens in new tab`}
-                      title={`Download ${song.filename} from test.1ink.us (opens in new tab)`}
-                    >
-                      <span aria-hidden="true">↓</span>
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-
-        <div id="songEmpty" class="rb-empty-state is-hidden">
-          <p>No songs match your filter.</p>
-        </div>
-      </HardwarePanel>
-
     </div>
-  </div>
+  </Fragment>
 
-</BaseLayout>
+  <Fragment slot="curated">
+    <!-- Grid view -->
+    <div id="gridView" class="collections-grid" role="main">
+      <div data-section-key="featured" class="collection-wrapper">
+        {songCollections.featured && (
+          <CollectionCard section={songCollections.featured} meta={collectionsMeta.featured} archiveUrl={archiveBaseUrl} rackmount={true} />
+        )}
+      </div>
+      <div data-section-key="bySource" class="collection-wrapper">
+        {songCollections.bySource && (
+          <CollectionCard section={songCollections.bySource} meta={collectionsMeta.bySource} archiveUrl={archiveBaseUrl} rackmount={true} />
+        )}
+      </div>
+      <div data-section-key="artists" class="collection-wrapper">
+        {songCollections.artists && (
+          <CollectionCard section={songCollections.artists} meta={collectionsMeta.artists} archiveUrl={archiveBaseUrl} rackmount={true} />
+        )}
+      </div>
+      <div data-section-key="monthly" class="collection-wrapper">
+        {songCollections.monthly && (
+          <CollectionCard section={songCollections.monthly} meta={collectionsMeta.monthly} archiveUrl={archiveBaseUrl} rackmount={true} />
+        )}
+      </div>
+      <div data-section-key="other" class="collection-wrapper">
+        {songCollections.other && (
+          <CollectionCard section={songCollections.other} meta={collectionsMeta.other} archiveUrl={archiveBaseUrl} rackmount={true} />
+        )}
+      </div>
+      <ArchiveEmptyState id="gridEmptyState" message="No collections match your search. Try different keywords or clear the filter." />
+    </div>
+
+    <!-- List view -->
+    <div id="listView" class="is-hidden" role="main">
+      <HardwarePanel variant="rackmount" class="list-table-wrapper" title="ALL COLLECTIONS">
+        <div class="table-scroll">
+          <table class="archive-table" id="listTable">
+            <thead>
+              <tr>
+                <th scope="col">
+                  <button class="sort-btn" data-sort="name" type="button" aria-label="Sort by collection name">
+                    Collection <span class="sort-indicator" aria-hidden="true">↕</span>
+                  </button>
+                </th>
+                <th scope="col">Section</th>
+                <th scope="col" class="col-numeric">
+                  <button class="sort-btn" data-sort="count" type="button" aria-label="Sort by file count">
+                    Files <span class="sort-indicator" aria-hidden="true">↕</span>
+                  </button>
+                </th>
+                <th scope="col">Tags</th>
+                <th scope="col">Curator</th>
+                <th scope="col">Updated</th>
+                <th scope="col" class="col-action">Action</th>
+              </tr>
+            </thead>
+            <tbody id="listTableBody"></tbody>
+          </table>
+        </div>
+        <ArchiveEmptyState id="listEmptyState" message="No collections match your search. Try different keywords or clear the filter." />
+      </HardwarePanel>
+    </div>
+  </Fragment>
+
+  <Fragment slot="raw-label">Complete Song Index</Fragment>
+
+  <Fragment slot="raw-index">
+    <HardwarePanel
+      variant="rackmount"
+      animate
+      title="ALL AVAILABLE .RBS FILES"
+      ledStatus="online"
+      ledLabel={`${totalRaw.toLocaleString()} FILES`}
+    >
+      <p class="raw-subtitle">
+        {coveragePercent !== null ? (
+          <>
+            <strong>{totalRaw.toLocaleString()}</strong> catalogued .rbs files indexed
+            ({coveragePercent}% of the manifest estimate). Each entry links to a direct download.
+          </>
+        ) : (
+          <>
+            <strong>{totalRaw.toLocaleString()}</strong> catalogued .rbs files indexed.
+            Each entry links to a direct download.
+          </>
+        )}
+      </p>
+
+      <!-- Filename search -->
+      <div class="raw-search-row">
+        <input
+          type="text"
+          id="songSearch"
+          placeholder={`Filter all ${totalRaw.toLocaleString()} filenames...`}
+          class="rb-search-input"
+          aria-label="Filter complete song index"
+        />
+        <span id="songCount" class="raw-count">{totalRaw.toLocaleString()} files</span>
+      </div>
+
+      <!-- A-Z jump nav -->
+      <nav class="az-nav" aria-label="Jump to letter">
+        {alphaLetters.map((letter) => (
+          <a href={`#letter-${letter}`} class="az-nav__link">{letter}</a>
+        ))}
+      </nav>
+
+      <!-- Grouped list -->
+      <div id="songIndex" class="raw-index">
+        {grouped.map(({ letter, songs }) => (
+          <section class="raw-group" id={`letter-${letter}`} data-letter={letter}>
+            <h2 class="raw-group__heading">
+              <span class="raw-group__letter">{letter}</span>
+              <Led status="online" label={`${songs.length} FILE${songs.length !== 1 ? 'S' : ''}`} ariaHidden={true} />
+            </h2>
+            <div class="raw-list">
+              {songs.map((song) => (
+                <div class="raw-item" data-filename={song.filename.toLowerCase()} data-collection={song.collection.toLowerCase()} data-artist={(song.artist ?? '').toLowerCase()}>
+                  <div class="raw-item__main">
+                    <span class="raw-item__name" title={song.filename}>
+                      {song.filename.replace(/\.rbs$/i, '')}
+                    </span>
+                    <span class="raw-item__size">{song.fileSize}</span>
+                  </div>
+                  <div class="raw-item__meta">
+                    <span class="raw-item__collection">{song.collection}</span>
+                    {song.subcollection && song.subcollection !== song.collection && (
+                      <span class="raw-item__subcollection">{song.subcollection}</span>
+                    )}
+                    {song.artist && (
+                      <span class="raw-item__author">by {song.artist}</span>
+                    )}
+                    {song.bpm && (
+                      <span class="raw-item__bpm">{song.bpm} BPM</span>
+                    )}
+                  </div>
+                  <a
+                    href={song.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="raw-item__link"
+                    aria-label={`Download ${song.filename} from test.1ink.us, opens in new tab`}
+                    title={`Download ${song.filename} from test.1ink.us (opens in new tab)`}
+                  >
+                    <span aria-hidden="true">↓</span>
+                  </a>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      <ArchiveEmptyState id="songEmpty" message="No songs match your filter." />
+    </HardwarePanel>
+  </Fragment>
+</ArchivePageShell>
 
 <style>
-  .archive-page {
-    padding-block: 2rem 4rem;
-    background: #0f0f0f;
-    min-height: 60vh;
-  }
-
-  /* Header module */
-  .archive-header { margin-bottom: 1rem; }
-
-  .archive-header :global(.rb-panel__body) {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .archive-subtitle {
-    font-size: 0.875rem;
-    color: #888;
-    margin: 0;
-  }
-
   /* Search bar */
   .search-bar {
     display: flex;
@@ -337,34 +290,6 @@ const grouped = alphaLetters.map((letter) => ({
 
   .result-count {
     text-transform: uppercase;
-  }
-
-  /* Stats row */
-  .archive-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 0.6rem;
-    margin-bottom: 1rem;
-  }
-
-  /* View toggle */
-  .view-toggle {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-  }
-
-  .view-btn {
-    opacity: 0.6;
-    transition: opacity 120ms ease;
-  }
-
-  .view-btn.active { opacity: 1; }
-
-  .view-btn:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(255,176,0,0.25);
   }
 
   /* Collections grid */
@@ -525,30 +450,6 @@ const grouped = alphaLetters.map((letter) => ({
   }
 
   /* ── Complete Song Index (mirrors mods raw-index pattern) ── */
-  .section-divider {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin: 2.5rem 0 1.5rem;
-  }
-
-  .section-divider::before,
-  .section-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, #333, transparent);
-  }
-
-  .section-divider__label {
-    font-family: var(--rb-font-display, 'Courier New', monospace);
-    font-size: 0.7rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--rb-silver-dim);
-    white-space: nowrap;
-  }
-
   .raw-subtitle {
     font-size: 0.9rem;
     color: #aaa;
@@ -800,8 +701,8 @@ const grouped = alphaLetters.map((letter) => ({
   @media (max-width: 767px) {
     .sticky-search {
       top: 3.5rem;
-      margin: 0 -1rem;
-      padding: 0.5rem 1rem;
+      margin: 0;
+      padding: 0.5rem 0;
     }
 
     .filter-bar {

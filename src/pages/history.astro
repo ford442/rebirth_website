@@ -3,7 +3,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import HardwarePanel from '../components/ui/HardwarePanel.astro';
-import Led from '../components/ui/Led.astro';
+import ArchiveLink from '../components/ArchiveLink.astro';
 import { formatStatRange, totalSongsIndexed, totalMods } from '../data/archive-stats';
 ---
 
@@ -196,16 +196,16 @@ import { formatStatRange, totalSongsIndexed, totalMods } from '../data/archive-s
           <p>Recognizing the brilliance of the community, Propellerhead legitimized this modding subculture by officially including several highly regarded, community-made Mods directly in the ReBirth 2.0 installation package:</p>
 
           <ul class="history-list">
-            <li><strong>Pitch Black Edition (PBE):</strong> A sleek, high-contrast, darkened visual redesign accompanied by heavily processed, highly compressed industrial drum samples designed for abrasive techno.</li>
-            <li><strong>Orbit:</strong> Focused on ethereal, ambient percussive elements, tailored for downtempo, IDM, and atmospheric chillout compositions.</li>
-            <li><strong>Massen Silver Machine (MSM):</strong> A metallic, futuristic aesthetic with heavily compressed drum kits, favored for futuristic electro.</li>
-            <li><strong>Metallicon+:</strong> A legendary Mod created by the prolific user <strong>T.G.ViRUS</strong>, which transformed ReBirth into an industrial hard-trance powerhouse.</li>
+            <li><strong><ArchiveLink href="/archive/mods?raw=PBE2">Pitch Black Edition (PBE)</ArchiveLink>:</strong> A sleek, high-contrast, darkened visual redesign accompanied by heavily processed, highly compressed industrial drum samples designed for abrasive techno.</li>
+            <li><strong><ArchiveLink href="/archive/mods?q=Orbit">Orbit</ArchiveLink>:</strong> Focused on ethereal, ambient percussive elements, tailored for downtempo, IDM, and atmospheric chillout compositions.</li>
+            <li><strong><ArchiveLink href="/archive/mods?raw=MSM2">Massen Silver Machine (MSM)</ArchiveLink>:</strong> A metallic, futuristic aesthetic with heavily compressed drum kits, favored for futuristic electro.</li>
+            <li><strong><ArchiveLink href="/archive/mods?q=Metallicon">Metallicon+</ArchiveLink>:</strong> A legendary Mod created by the prolific user <ArchiveLink href="/archive/songs?q=T.G.ViRUS">T.G.ViRUS</ArchiveLink>, which transformed ReBirth into an industrial hard-trance powerhouse.</li>
           </ul>
 
           <h3>Third-Party and Commercial Mod Developments</h3>
-          <p>The community did not stop at the official inclusions; they produced thousands of unauthorized and entirely unique toolsets. A notable underground example is the <strong>MiDiMoD</strong> engineered by Neil Parker, purpose-built for industrial music production with a heavily rusted GUI and samples ripped from esoteric 1980s industrial records.</p>
+          <p>The community did not stop at the official inclusions; they produced thousands of unauthorized and entirely unique toolsets. A notable underground example is the <ArchiveLink href="/archive/mods?raw=MiDiMoD">MiDiMoD</ArchiveLink> engineered by Neil Parker, purpose-built for industrial music production with a heavily rusted GUI and samples ripped from esoteric 1980s industrial records.</p>
 
-          <p>Fascinatingly, the modification ecosystem even attracted commercial advertising campaigns. In 1999, the beverage distributor <strong>5emedia, LTD</strong> commissioned Thomas and Wolfgang Merkle of Bitplant to develop the <strong>Red Stripe Mod</strong> as an interactive branding initiative for the beer company in the UK. The <code>.rbs</code> compositions developed to showcase this Mod were famously programmed to run at an extreme <strong>338 BPM</strong> — a deliberate numerical homage to the RB-338 software nomenclature.</p>
+          <p>Fascinatingly, the modification ecosystem even attracted commercial advertising campaigns. In 1999, the beverage distributor <strong>5emedia, LTD</strong> commissioned Thomas and Wolfgang Merkle of Bitplant to develop the <ArchiveLink href="/archive/mods?q=Red%20Stripe">Red Stripe Mod</ArchiveLink> as an interactive branding initiative for the beer company in the UK. The <code>.rbs</code> compositions developed to showcase this Mod were famously programmed to run at an extreme <strong>338 BPM</strong> — a deliberate numerical homage to the RB-338 software nomenclature.</p>
         </div>
       </HardwarePanel>
 
@@ -233,26 +233,26 @@ import { formatStatRange, totalSongsIndexed, totalMods } from '../data/archive-s
             </thead>
             <tbody>
               <tr>
-                <td>Method in The Madness — Detroit</td>
-                <td>Method in The Madness</td>
+                <td><ArchiveLink href="/archive/songs/By_Source/Rebirth_2.0/Complete/">Method in The Madness — Detroit</ArchiveLink></td>
+                <td><ArchiveLink href="/archive/songs?q=Method%20in%20The%20Madness">Method in The Madness</ArchiveLink></td>
                 <td>Acid Techno</td>
                 <td>Polyphonic 303 interplay, aggressive distortion automation, 909 programming</td>
               </tr>
               <tr>
-                <td>A Taste of Haste</td>
-                <td>Action Jackson</td>
+                <td><ArchiveLink href="/archive/songs/By_Source/Rebirth_2.0/Complete/">A Taste of Haste</ArchiveLink></td>
+                <td><ArchiveLink href="/archive/songs?q=Action%20Jackson">Action Jackson</ArchiveLink></td>
                 <td>Breakbeat / Hardcore</td>
                 <td>High BPM sequencing, TR-808 syncopation, rapid pattern switching</td>
               </tr>
               <tr>
-                <td>Orbiting your Heart</td>
-                <td>ElekD</td>
+                <td><ArchiveLink href="/archive/songs/Monthly_Archive/FEBRUARY/">Orbiting your Heart</ArchiveLink></td>
+                <td><ArchiveLink href="/archive/songs?q=ElekD">ElekD</ArchiveLink></td>
                 <td>Trance / Ambient Acid</td>
                 <td>Delay synchronization, low-filter melodic arpeggios, atmospheric space</td>
               </tr>
               <tr>
-                <td>TroubleMakers</td>
-                <td>Micromat</td>
+                <td><ArchiveLink href="/archive/songs/Monthly_Archive/SEPTEMBER/">TroubleMakers</ArchiveLink></td>
+                <td><ArchiveLink href="/archive/songs?q=Micromat">Micromat</ArchiveLink></td>
                 <td>Industrial / Hard Acid</td>
                 <td>Advanced PCF routing, extreme dynamic compression</td>
               </tr>
@@ -284,24 +284,24 @@ import { formatStatRange, totalSongsIndexed, totalMods } from '../data/archive-s
         ledLabel="SECTION 06"
       >
         <div class="history-prose">
-          <p>Within the global ReBirth community, certain power users transcended the status of hobbyists and became widely recognized digital auteurs. Chief among them was a highly prolific German producer operating under the moniker <strong>T.G.ViRUS</strong>. His <code>.rbs</code> compositions and custom Mods were highly circulated, deeply analyzed, and eventually officially incorporated by Propellerhead into the retail releases.</p>
+          <p>Within the global ReBirth community, certain power users transcended the status of hobbyists and became widely recognized digital auteurs. Chief among them was a highly prolific German producer operating under the moniker <ArchiveLink href="/archive/songs?q=T.G.ViRUS">T.G.ViRUS</ArchiveLink>. His <code>.rbs</code> compositions and custom Mods were highly circulated, deeply analyzed, and eventually officially incorporated by Propellerhead into the retail releases.</p>
 
           <h3>TGV's KiloMix '98</h3>
-          <p>The absolute zenith of the <code>.rbs</code> community's output is widely considered to be <strong>"TGV's KiloMix '98"</strong>. Clocking in at an impressive <strong>15 minutes and 18 seconds</strong>, this file was included exclusively to showcase the advanced capabilities of the newly released ReBirth 2.0 engine. Rather than a single track, KiloMix '98 is an electronic symphony consisting of four distinct, continuous movements, all driven by a single unbroken sequence of automated parameters.</p>
+          <p>The absolute zenith of the <code>.rbs</code> community's output is widely considered to be <ArchiveLink href="/archive/songs/By_Source/Rebirth_2.0/Complete/">"TGV's KiloMix '98"</ArchiveLink>. Clocking in at an impressive <strong>15 minutes and 18 seconds</strong>, this file was included exclusively to showcase the advanced capabilities of the newly released ReBirth 2.0 engine. Rather than a single track, KiloMix '98 is an electronic symphony consisting of four distinct, continuous movements, all driven by a single unbroken sequence of automated parameters.</p>
 
           <p>The suite weaves together four of T.G.ViRUS's most acclaimed compositions into a seamless mega-mix:</p>
 
           <ul class="history-list">
-            <li><strong>Base of Love:</strong> A driving, euphoric anthem that has maintained a massive legacy of its own. The track relies heavily on emotional chord progressions implied through the monophonic 303 arpeggiations.</li>
-            <li><strong>Adrenaline:</strong> Dramatically increases the intensity, utilizing the TR-909's aggressive kick and snare to push the track out of melodic house and into driving hard-trance territory.</li>
-            <li><strong>Moonflight:</strong> A masterclass in pacing, utilizing spatial delays, significantly lowered filter cutoffs, and floating ambient textures.</li>
-            <li><strong>Secret Love!:</strong> The concluding movement, conceptually synthesizing the melodic motifs of the opening with the aggressive percussive programming of the mid-section.</li>
+            <li><strong><ArchiveLink href="/archive/songs/By_Source/Rebirth_1.5/Rebirth_1.5_Base/">Base of Love</ArchiveLink>:</strong> A driving, euphoric anthem that has maintained a massive legacy of its own. The track relies heavily on emotional chord progressions implied through the monophonic 303 arpeggiations.</li>
+            <li><strong><ArchiveLink href="/archive/songs?q=Adrenaline">Adrenaline</ArchiveLink>:</strong> Dramatically increases the intensity, utilizing the TR-909's aggressive kick and snare to push the track out of melodic house and into driving hard-trance territory.</li>
+            <li><strong><ArchiveLink href="/archive/songs?q=Moonflight">Moonflight</ArchiveLink>:</strong> A masterclass in pacing, utilizing spatial delays, significantly lowered filter cutoffs, and floating ambient textures.</li>
+            <li><strong><ArchiveLink href="/archive/songs?q=Secret%20Love!">Secret Love!</ArchiveLink>:</strong> The concluding movement, conceptually synthesizing the melodic motifs of the opening with the aggressive percussive programming of the mid-section.</li>
           </ul>
 
           <p>KiloMix '98 proved definitively that an <code>.rbs</code> file could transcend the concept of a simple "loop" and stand as a cohesive, long-form musical narrative capable of rivaling fully produced studio albums.</p>
 
           <h3>Metallicon and the Rammstein Sample</h3>
-          <p>Another highly requested and heavily archived file is <strong>"Metallicon"</strong> by T.G.ViRUS. Designed specifically to utilize the custom Metallicon+ Mod drum kit that he programmed himself, the track is described by the artist as "a happy hardtrance song inspired from the last party..."</p>
+          <p>Another highly requested and heavily archived file is <ArchiveLink href="/archive/songs/By_Source/Rebirth_2.0/Complete/">"Metallicon"</ArchiveLink> by <ArchiveLink href="/archive/songs?q=T.G.ViRUS">T.G.ViRUS</ArchiveLink>. Designed specifically to utilize the custom <ArchiveLink href="/archive/mods?q=Metallicon">Metallicon+ Mod</ArchiveLink> drum kit that he programmed himself, the track is described by the artist as "a happy hardtrance song inspired from the last party..."</p>
           <p>The technical brilliance of "Metallicon" lies in its sample curation. The primary bass drum (BD1) utilized in the Mod was not synthesized from an 808 or 909; rather, it was meticulously sampled and filtered from the industrial metal band <strong>Rammstein's</strong> hit song "Sehnsucht". By pumping this heavy, organic, acoustic-industrial kick drum against the digital squelch of the TB-303 emulations, T.G.ViRUS created a genre-blending track that highlighted the limitless potential of the Mod ReFill system.</p>
 
           <h3>The TGV Songpack Archives</h3>
@@ -318,27 +318,27 @@ import { formatStatRange, totalSongsIndexed, totalMods } from '../data/archive-s
             </thead>
             <tbody>
               <tr>
-                <td>T.G.ViRUS Songpack 1</td>
+                <td><ArchiveLink href="/archive/songs?q=T.G.ViRUS%20Songpack%201">T.G.ViRUS Songpack 1</ArchiveLink></td>
                 <td>Adrenaline, Moonflight, Malaria, Dr. Polyphobia, Save Our Senses, Secret Love!</td>
                 <td>ReBirth 1.0 Default, ReInforcer 1.5, ReVirus 1.5</td>
                 <td>Early hard trance and conceptual programming</td>
               </tr>
               <tr>
-                <td>T.G.ViRUS Songpack 2</td>
-                <td>Area 51, Deeper Than The Deepest Deep, Metallicon, Mutilated Species</td>
-                <td>Metallicon 1.5, PBE 1.5, ReLoOp 1.5, MSM 2.0</td>
+                <td><ArchiveLink href="/archive/songs?q=T.G.ViRUS%20Songpack%202">T.G.ViRUS Songpack 2</ArchiveLink></td>
+                <td>Area 51, Deeper Than The Deepest Deep, <ArchiveLink href="/archive/mods?q=Metallicon">Metallicon</ArchiveLink>, Mutilated Species</td>
+                <td><ArchiveLink href="/archive/mods?q=Metallicon">Metallicon 1.5</ArchiveLink>, <ArchiveLink href="/archive/mods?raw=PBE2">PBE 1.5</ArchiveLink>, ReLoOp 1.5, <ArchiveLink href="/archive/mods?raw=MSM2">MSM 2.0</ArchiveLink></td>
                 <td>Heavy industrial, deep ambiance, metallic percussion</td>
               </tr>
               <tr>
-                <td>T.G.ViRUS Songpack 3</td>
+                <td><ArchiveLink href="/archive/songs?q=T.G.ViRUS%20Songpack%203">T.G.ViRUS Songpack 3</ArchiveLink></td>
                 <td>Axel F, Benny Hill Theme, Dreamglider, Sanxion, Voodoo Ray</td>
-                <td>PBE 2.0, Metallicon+, NordBeat, MSM 2.0</td>
+                <td><ArchiveLink href="/archive/mods?raw=PBE2">PBE 2.0</ArchiveLink>, <ArchiveLink href="/archive/mods?q=Metallicon">Metallicon+</ArchiveLink>, <ArchiveLink href="/archive/mods?q=Nordbeat">NordBeat</ArchiveLink>, <ArchiveLink href="/archive/mods?raw=MSM2">MSM 2.0</ArchiveLink></td>
                 <td>Pop culture covers, acid house remixes, cinematic adaptations</td>
               </tr>
               <tr>
-                <td>T.G.ViRUS Songpack 4</td>
-                <td>Mutilated Species II, TGV's KiloMix '98, BEATS 'R' US</td>
-                <td>PBE 2.0, ReBirth 2.0 Default, NordBeat</td>
+                <td><ArchiveLink href="/archive/songs?q=T.G.ViRUS%20Songpack%204">T.G.ViRUS Songpack 4</ArchiveLink></td>
+                <td>Mutilated Species II, <ArchiveLink href="/archive/songs/By_Source/Rebirth_2.0/Complete/">TGV's KiloMix '98</ArchiveLink>, BEATS 'R' US</td>
+                <td><ArchiveLink href="/archive/mods?raw=PBE2">PBE 2.0</ArchiveLink>, ReBirth 2.0 Default, <ArchiveLink href="/archive/mods?q=Nordbeat">NordBeat</ArchiveLink></td>
                 <td>Culmination; long-form arranging and v2.0 DSP mastery</td>
               </tr>
             </tbody>
@@ -360,7 +360,7 @@ import { formatStatRange, totalSongsIndexed, totalMods } from '../data/archive-s
           <p>Beyond the official releases and the dominance of T.G.ViRUS, the <code>.rbs</code> ecosystem thrived on the sheer volume of output from thousands of anonymous creators. Archives containing upwards of <strong>3,604 songs in a single 15 MB compressed folder</strong> were actively traded on vintage synth forums. Within these massive troves, certain tracks achieved cult status.</p>
 
           <h3>The Philosophical Weight of "Immortal" by LAW</h3>
-          <p>One such cult classic is the track <strong>"Immortal,"</strong> programmed by an artist known simply as LAW. This track frequently appears in deep archival YouTube mixes, lauded for its dark, brooding, and heavily distorted acid lines. "Immortal" showcases the community's penchant for atmospheric, intelligent techno. The composition utilizes slow, grinding TR-808 patterns layered beneath heavily compressed, highly resonant 303 lines that simulate the auditory equivalent of endless, unyielding digital decay.</p>
+          <p>One such cult classic is the track <ArchiveLink href="/archive/songs/Other_Collections/Freestyle%20Pack/">"Immortal,"</ArchiveLink> programmed by an artist known simply as <ArchiveLink href="/archive/songs?q=LAW">LAW</ArchiveLink>. This track frequently appears in deep archival YouTube mixes, lauded for its dark, brooding, and heavily distorted acid lines. "Immortal" showcases the community's penchant for atmospheric, intelligent techno. The composition utilizes slow, grinding TR-808 patterns layered beneath heavily compressed, highly resonant 303 lines that simulate the auditory equivalent of endless, unyielding digital decay.</p>
 
           <p>Fascinatingly, within the archival community, track descriptions often evolved into philosophical and esoteric allegories to articulate the abstract nature of the digital loops. In analyzing tracks like "Immortal," community members and critics often drew upon grand metaphysical concepts to describe the sonic experience. Reviewers have analogized the track's unending, cyclic 16-step sequencer to the philosophical concepts of the <strong>immortal soul</strong> and the eternal cycle of rebirth found in classical Greek, Jewish, and Eastern thought.</p>
 
@@ -428,7 +428,7 @@ import { formatStatRange, totalSongsIndexed, totalMods } from '../data/archive-s
 
           <p>Released in 2023 under a <strong>"$3.03 suggested donation"</strong> model (a humorous nod to the TB-303), the RP-8 successfully recreated the workflow of ReBirth RB-338 under these severe, self-inflicted constraints. The RP-8 features two vaguely 303-inspired, 2-oscillator paraphonic synths, a vaguely 808-inspired drum machine, and a 16-step pattern sequencer complete with slide, accent, and distortion parameters. It even includes tempo-synced delays (with 16th, triplet, and dotted-16th lengths), a routable lowpass/bandpass filter, and a master compressor to squeeze maximum volume out of the restrictive 8-bit dynamic range.</p>
 
-          <p>Astonishingly, to demonstrate the viability of this demake, the developer meticulously programmed an 8-bit cover version of the <strong>"Base of Love"</strong> section from T.G.ViRUS's legendary "KiloMix '98". This act of software engineering represents a profound meta-narrative in electronic music history:</p>
+          <p>Astonishingly, to demonstrate the viability of this demake, the developer meticulously programmed an 8-bit cover version of the <ArchiveLink href="/archive/songs/By_Source/Rebirth_1.5/Rebirth_1.5_Base/">"Base of Love"</ArchiveLink> section from <ArchiveLink href="/archive/songs?q=T.G.ViRUS">T.G.ViRUS</ArchiveLink>'s legendary <ArchiveLink href="/archive/songs/By_Source/Rebirth_2.0/Complete/">"KiloMix '98"</ArchiveLink>. This act of software engineering represents a profound meta-narrative in electronic music history:</p>
 
           <p style="text-align:center; color: var(--rb-amber); font-style: italic; padding: 1rem; border: 1px solid var(--rb-border); border-radius: 6px; background: rgba(0,0,0,0.3);">
             A piece of 1982 analog hardware (Roland TB-303) → emulated by cutting-edge 1997 software (Propellerhead ReBirth) → which fostered the creation of a specific composition ("Base of Love" via an .rbs file) → which was subsequently painstakingly recreated in 2023 on a simulated 8-bit console that intentionally degrades the audio fidelity back to a pre-1982 state.
@@ -457,6 +457,43 @@ import { formatStatRange, totalSongsIndexed, totalMods } from '../data/archive-s
 
           <p style="text-align: center; font-size: 1.1rem; color: var(--rb-amber); text-shadow: 0 0 12px var(--rb-amber-glow); margin-top: 2rem;">
             <em>The digital acid never truly dies.</em>
+          </p>
+        </div>
+      </HardwarePanel>
+
+      <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
+      <!-- ║  EXPLORE THE ARCHIVE                                                ║ -->
+      <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
+      <HardwarePanel
+        variant="rackmount-module"
+        animate
+        title="EXPLORE THE ARCHIVE"
+        ledStatus="online"
+        ledLabel="NEXT STEPS"
+        class="rb-panel--center-header rb-panel--padded-body"
+      >
+        <div class="history-prose explore-cta">
+          <p>Ready to hear the files behind the history? Jump directly into the archive collections referenced in this essay.</p>
+          <div class="explore-cta__grid">
+            <a class="explore-cta__card" href={`${import.meta.env.BASE_URL}archive/songs/By_Source/Rebirth_2.0/Complete/`}>
+              <span class="explore-cta__label">Official Demo Source</span>
+              <span class="explore-cta__title">ReBirth 2.0 Complete</span>
+            </a>
+            <a class="explore-cta__card" href={`${import.meta.env.BASE_URL}archive/songs/By_Source/Rebirth_1.5/Rebirth_1.5_Base/`}>
+              <span class="explore-cta__label">T.G.ViRUS Classics</span>
+              <span class="explore-cta__title">ReBirth 1.5 Base</span>
+            </a>
+            <a class="explore-cta__card" href={`${import.meta.env.BASE_URL}archive/songs?q=T.G.ViRUS`}>
+              <span class="explore-cta__label">Search Artist</span>
+              <span class="explore-cta__title">T.G.ViRUS</span>
+            </a>
+            <a class="explore-cta__card" href={`${import.meta.env.BASE_URL}archive/mods?q=Metallicon`}>
+              <span class="explore-cta__label">Featured Mod</span>
+              <span class="explore-cta__title">Metallicon+</span>
+            </a>
+          </div>
+          <p class="explore-cta__footer">
+            <ArchiveLink href="/archive/songs/">Browse all songs</ArchiveLink> · <ArchiveLink href="/archive/mods/">Browse all mods</ArchiveLink> · <ArchiveLink href="/archive/songs/Artists/Cavey/">Featured artist: Cavey</ArchiveLink>
           </p>
         </div>
       </HardwarePanel>
@@ -504,6 +541,25 @@ import { formatStatRange, totalSongsIndexed, totalMods } from '../data/archive-s
 
   .history-prose strong {
     color: var(--rb-silver);
+  }
+
+  .history-prose a {
+    color: var(--rb-amber);
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 176, 0, 0.35);
+    text-underline-offset: 0.15em;
+    transition: color 120ms ease, text-decoration-color 120ms ease;
+  }
+
+  .history-prose a:hover {
+    color: var(--rb-green-bright, #39ff14);
+    text-decoration-color: var(--rb-green-bright, #39ff14);
+  }
+
+  .history-prose a:focus-visible {
+    outline: none;
+    border-radius: 2px;
+    box-shadow: 0 0 0 2px rgba(255, 176, 0, 0.25);
   }
 
   .history-prose code {
@@ -591,6 +647,51 @@ import { formatStatRange, totalSongsIndexed, totalMods } from '../data/archive-s
     .hardware-grid {
       grid-template-columns: 1fr;
     }
+  }
+
+  .explore-cta {
+    text-align: center;
+  }
+
+  .explore-cta__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+
+  .explore-cta__card {
+    display: grid;
+    gap: 0.35rem;
+    padding: 1rem;
+    border: 1px solid var(--rb-border, #2a2a2a);
+    border-radius: 6px;
+    background: linear-gradient(180deg, #222222 0%, #1a1a1a 100%);
+    text-decoration: none;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+  }
+
+  .explore-cta__card:hover {
+    border-color: var(--rb-amber);
+    box-shadow: 0 0 12px rgba(255, 176, 0, 0.1);
+  }
+
+  .explore-cta__label {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--rb-silver-dim);
+  }
+
+  .explore-cta__title {
+    font-weight: 600;
+    color: var(--rb-amber);
+  }
+
+  .explore-cta__footer {
+    margin-bottom: 0;
+    font-size: 0.85rem;
   }
 
   @media (max-width: 480px) {

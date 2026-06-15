@@ -37,6 +37,8 @@ export interface LcdProps {
   size?: 'default' | 'sm';
   /** Accessible label override */
   ariaLabel?: string;
+  /** Tooltip title for the LCD value */
+  title?: string;
   /** Additional CSS class for the root element */
   class?: string;
 }

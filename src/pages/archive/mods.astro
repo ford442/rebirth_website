@@ -1,10 +1,9 @@
 ---
 // src/pages/archive/mods.astro — Interactive RBM mods browser
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ArchivePageShell from '../../components/archive/ArchivePageShell.astro';
 import ModBrowserCard from '../../components/ModBrowserCard.astro';
+import ArchiveEmptyState from '../../components/archive/ArchiveEmptyState.astro';
 import HardwarePanel from '../../components/ui/HardwarePanel.astro';
-import Lcd from '../../components/ui/Lcd.astro';
 import Led from '../../components/ui/Led.astro';
 import modsData from '../../data/mods-metadata.json';
 import fullIndex from '../../data/mods-full-index.json';
@@ -30,49 +29,30 @@ const grouped = alphaLetters.map(letter => ({
 const baseModsUrl = 'https://storage.1ink.us/rebirth_mods';
 const issueBaseUrl = 'https://github.com/ford442/rebirth_website/issues/new';
 const coveragePercent = modCoveragePercent;
+
+const archiveStats = [
+  { label: 'DOCUMENTED', value: totalDocumented, ariaLabel: 'Documented mods' },
+  { label: 'TOTAL', value: totalRaw, ariaLabel: 'Total available mods' },
+  { label: 'SOURCE', value: 'storage.1ink.us', ariaLabel: 'Mod file host' },
+  { label: 'COVERAGE', value: `${coveragePercent}%`, ariaLabel: 'Metadata coverage percentage', title: `${totalDocumented} of ${totalRaw} mods documented` },
+];
 ---
 
-<BaseLayout 
-  title="RBM Mods Archive" 
+<ArchivePageShell
+  title="RBM Mods Archive"
   description="Browse and download ReBirth RB-338 RBM mod files from the community archive."
+  breadcrumbs={[
+    { label: 'Home', href: '/' },
+    { label: 'Mods', href: '/archive/mods/' },
+  ]}
+  pageHeading="RBM Mods Archive"
+  headingClass="rb-heading-yellow"
+  headerTitle="RBM MODS ARCHIVE"
+  headerLedLabel={`${totalRaw} FILES`}
+  headerSubtitle="Download custom ReBirth module modifications and skins"
+  stats={archiveStats}
 >
-
-<div class="mods-page">
-  <div class="container">
-
-    <Breadcrumbs items={[
-      { label: 'Home', href: '/' },
-      { label: 'Mods', href: '/archive/mods/' },
-    ]} />
-
-    <div class="rb-heading rb-heading-yellow">RBM Mods Archive</div>
-
-    <!-- Header module -->
-    <HardwarePanel
-      animate
-      variant="rackmount-chassis"
-      class="mods-header"
-      title="RBM MODS ARCHIVE"
-      ledStatus="online"
-      ledLabel={`${totalRaw} FILES`}
-    >
-      <p class="mods-subtitle">Download custom ReBirth module modifications and skins</p>
-      <p class="mods-info">
-        <strong>{totalDocumented}</strong> mods fully documented with metadata. 
-        <strong>{totalRaw - totalDocumented}</strong> additional files available as raw downloads.
-        Missing info? <a href="https://github.com/ford442/rebirth_website" rel="noopener noreferrer" target="_blank">Contribute on GitHub →</a>
-      </p>
-    </HardwarePanel>
-
-    <!-- Stats bar -->
-    <div class="mods-stats">
-      <Lcd label="DOCUMENTED" value={totalDocumented} ariaLabel="Documented mods" />
-      <Lcd label="TOTAL" value={totalRaw} ariaLabel="Total available" />
-      <Lcd label="SOURCE" value="storage.1ink.us" ariaLabel="Source" />
-      <Lcd label="STATUS" value="ACTIVE" ariaLabel="Status" />
-    </div>
-
-    <!-- Coverage progress -->
+  <Fragment slot="header-extra">
     <div class="coverage-panel" role="region" aria-label="Metadata coverage">
       <div class="coverage-header">
         <span class="coverage-label">Metadata coverage</span>
@@ -92,15 +72,9 @@ const coveragePercent = modCoveragePercent;
         </a>
       </p>
     </div>
+  </Fragment>
 
-    <!-- ═══════════════════════════════════════════════════════════════ -->
-    <!--  DOCUMENTED MODS (rich cards)                                  -->
-    <!-- ═══════════════════════════════════════════════════════════════ -->
-    <div class="section-divider">
-      <span class="section-divider__label">Featured &amp; Documented Mods</span>
-    </div>
-
-    <!-- Search & Filter (documented only) -->
+  <Fragment slot="search">
     <div class="sticky-search">
       <div class="search-filter-bar">
         <input
@@ -124,6 +98,12 @@ const coveragePercent = modCoveragePercent;
         </div>
       </div>
     </div>
+  </Fragment>
+
+  <Fragment slot="curated">
+    <div class="section-divider">
+      <span class="section-divider__label">Featured &amp; Documented Mods</span>
+    </div>
 
     <div id="modsGrid" class="mods-grid" role="main">
       {documentedMods.map((mod: any) => (
@@ -139,17 +119,15 @@ const coveragePercent = modCoveragePercent;
       ))}
     </div>
 
-    <div id="emptyState" class="rb-empty-state is-hidden">
-      <p>No documented mods match your search. Try different keywords or browse the complete index below.</p>
-    </div>
+    <ArchiveEmptyState
+      id="emptyState"
+      message="No documented mods match your search. Try different keywords or browse the complete index below."
+    />
+  </Fragment>
 
-    <!-- ═══════════════════════════════════════════════════════════════ -->
-    <!--  COMPLETE MOD INDEX (all 367 files)                            -->
-    <!-- ═══════════════════════════════════════════════════════════════ -->
-    <div class="section-divider">
-      <span class="section-divider__label">Complete Mod Index</span>
-    </div>
+  <Fragment slot="raw-label">Complete Mod Index</Fragment>
 
+  <Fragment slot="raw-index">
     <HardwarePanel
       variant="rackmount"
       animate
@@ -162,7 +140,7 @@ const coveragePercent = modCoveragePercent;
         <input
           type="text"
           id="rawSearch"
-          placeholder="Filter all {totalRaw} filenames..."
+          placeholder={`Filter all ${totalRaw} filenames...`}
           class="rb-search-input"
           aria-label="Filter complete mod index"
         />
@@ -239,66 +217,17 @@ const coveragePercent = modCoveragePercent;
         ))}
       </div>
 
-      <div id="rawEmpty" class="rb-empty-state is-hidden">
-        <p>No files match your filter.</p>
-      </div>
+      <ArchiveEmptyState id="rawEmpty" message="No files match your filter." />
     </HardwarePanel>
 
     <!-- Stats footer -->
     <div class="mods-footer">
       <p>Want to add documentation for a mod? <a href="https://github.com/ford442/rebirth_website/issues" rel="noopener noreferrer" target="_blank">Open an issue on GitHub</a> with the mod filename and details.</p>
     </div>
-
-  </div>
-</div>
-
-</BaseLayout>
+  </Fragment>
+</ArchivePageShell>
 
 <style>
-  .mods-page {
-    padding-block: 2rem 4rem;
-    background: #0f0f0f;
-    min-height: 80vh;
-  }
-
-  .mods-header { margin-bottom: 1.5rem; }
-
-  .mods-header :global(.rb-panel__body) {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .mods-subtitle {
-    font-size: 0.95rem;
-    color: #aaa;
-    margin: 0;
-  }
-
-  .mods-info {
-    font-size: 0.8rem;
-    color: #666;
-    margin: 0;
-  }
-
-  .mods-info a {
-    color: #ffb000;
-    text-decoration: none;
-    transition: color 120ms ease;
-  }
-
-  .mods-info a:hover {
-    color: #3dba66;
-    text-decoration: underline;
-  }
-
-  .mods-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 0.6rem;
-    margin-bottom: 1rem;
-  }
-
   .coverage-panel {
     background: linear-gradient(180deg, #1e1e1e 0%, #151515 100%);
     border: 1px solid #2a2a2a;
@@ -720,8 +649,8 @@ const coveragePercent = modCoveragePercent;
   @media (max-width: 767px) {
     .sticky-search {
       top: 3.5rem;
-      margin: 0 -1rem;
-      padding: 0.5rem 1rem;
+      margin: 0;
+      padding: 0.5rem 0;
     }
 
     .filter-tags {
@@ -897,6 +826,24 @@ const coveragePercent = modCoveragePercent;
     rawSearch.addEventListener('input', filterRaw);
   }
 
+  function applyInitialRawState() {
+    const params = new URLSearchParams(window.location.search);
+    const rawQuery = params.get('raw');
+    if (!rawQuery || !(rawSearch instanceof HTMLInputElement)) return;
+
+    rawSearch.value = rawQuery;
+    filterRaw();
+
+    // Scroll the raw index into view when explicitly linked
+    const rawIndex = document.getElementById('rawIndex');
+    if (rawIndex) {
+      requestAnimationFrame(() => {
+        rawIndex.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }
+
   applyInitialModState();
   filterMods();
+  applyInitialRawState();
 </script>
