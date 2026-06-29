@@ -5,6 +5,8 @@ import Breadcrumbs from '../../../components/Breadcrumbs.astro';
 import HardwarePanel from '../../../components/ui/HardwarePanel.astro';
 import Lcd from '../../../components/ui/Lcd.astro';
 import { normalizeBase } from '../../../lib/url';
+import { normalizeArchiveUrl, RBS_ARCHIVE_BASE_URL } from '../../../lib/archive-urls';
+import { collectFolderPaths, childFolderPaths } from '../../../lib/song-archive';
 import fullIndexRaw from '../../../data/songs-full-index.json';
 import collectionsMeta from '../../../data/collections-metadata.json';
 import { songCollections, type SongCollectionKey } from '../../../data/song-collections';
@@ -60,11 +62,7 @@ function formatBytes(bytes: number): string {
 
 export function getStaticPaths() {
   const fullIndex = fullIndexRaw as unknown as FullIndex;
-  const folderPaths = new Set<string>();
-  fullIndex.songs.forEach((song) => {
-    const dir = song.path.split('/').slice(0, -1).join('/');
-    if (dir) folderPaths.add(dir);
-  });
+  const folderPaths = collectFolderPaths(fullIndex.songs);
 
   return Array.from(folderPaths).map((folderPath) => ({
     params: { slug: folderPath },
@@ -75,6 +73,7 @@ export function getStaticPaths() {
 const fullIndex = fullIndexRaw as unknown as FullIndex;
 const { folderPath } = Astro.props;
 const baseUrl = normalizeBase(import.meta.env.BASE_URL);
+const allFolderPaths = collectFolderPaths(fullIndex.songs);
 const topSegment = folderPath.split('/')[0];
 const mapping = TOP_LEVEL_MAP[topSegment];
 const sectionKey = mapping?.key ?? null;
@@ -92,14 +91,26 @@ const songs = fullIndex.songs
   })
   .map((song) => ({
     ...song,
+    url: normalizeArchiveUrl(song.url),
     sizeBytes: parseSize(song.fileSize),
   }))
   .sort((a, b) => a.filename.localeCompare(b.filename));
 
+const subfolders = childFolderPaths(folderPath, allFolderPaths).map((path) => {
+  const name = path.split('/').pop()?.replace(/_/g, ' ') ?? path;
+  const fileCount = fullIndex.songs.filter((song) => {
+    const dir = song.path.split('/').slice(0, -1).join('/');
+    return dir === path || dir.startsWith(`${path}/`);
+  }).length;
+  const slug = path.split('/').map(encodeURIComponent).join('/');
+  return { path, name, fileCount, href: `${baseUrl}/archive/songs/${slug}/` };
+});
+
 const fileCount = songs.length;
 const totalBytes = songs.reduce((sum, s) => sum + s.sizeBytes, 0);
+const hasContent = fileCount > 0 || subfolders.length > 0;
 
-const externalUrl = `${fullIndex.meta.source}/${folderSegments.map(encodeURIComponent).join('/')}`;
+const externalUrl = `${RBS_ARCHIVE_BASE_URL}/${folderPath.split('/').map(encodeURIComponent).join('/')}`;
 
 const pageTitle = `${folderName} — ${sectionName}`;
 ---
@@ -153,6 +164,23 @@ const pageTitle = `${folderName} — ${sectionName}`;
         <Lcd label="TOTAL SIZE" value={formatBytes(totalBytes)} ariaLabel="Total size" />
         <Lcd label="SECTION" value={sectionName} ariaLabel="Section" />
       </div>
+
+      {subfolders.length > 0 && (
+        <HardwarePanel variant="rackmount" title={`SUBFOLDERS IN ${folderName.toUpperCase()}`}>
+          <ul class="subfolder-list" role="list">
+            {subfolders.map((subfolder) => (
+              <li>
+                <a class="subfolder-link" href={subfolder.href}>
+                  <span class="subfolder-link__icon" aria-hidden="true">📁</span>
+                  <span class="subfolder-link__name">{subfolder.name}</span>
+                  <span class="subfolder-link__count">{subfolder.fileCount} files</span>
+                  <span class="subfolder-link__arrow" aria-hidden="true">→</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </HardwarePanel>
+      )}
 
       {fileCount > 0 ? (
         <HardwarePanel variant="rackmount" title={`FILES IN ${folderName.toUpperCase()}`}>
@@ -220,7 +248,7 @@ const pageTitle = `${folderName} — ${sectionName}`;
             <p>No files match your search.</p>
           </div>
         </HardwarePanel>
-      ) : (
+      ) : hasContent ? null : (
         <HardwarePanel variant="rackmount" title="NO INDEX DATA" ledStatus="offline">
           <p class="folder-empty-message">
             No indexed files were found for this folder.
@@ -467,6 +495,58 @@ const pageTitle = `${folderName} — ${sectionName}`;
   .open-link:hover {
     color: #3dba66;
     text-decoration: underline;
+  }
+
+  .subfolder-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .subfolder-link {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid #333;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.18);
+    color: #aaa;
+    text-decoration: none;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+  }
+
+  .subfolder-link:hover,
+  .subfolder-link:focus-visible {
+    color: #ffb000;
+    border-color: rgba(255, 176, 0, 0.35);
+    background: rgba(255, 176, 0, 0.05);
+    outline: none;
+  }
+
+  .subfolder-link__name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .subfolder-link__count {
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--rb-green-bright, #3dba66);
+    white-space: nowrap;
+  }
+
+  .subfolder-link__arrow {
+    color: #666;
   }
 
   /* Responsive */

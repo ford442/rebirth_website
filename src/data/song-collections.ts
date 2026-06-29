@@ -80,4 +80,6 @@ export const songCollections: Record<SongCollectionKey, SongSection> = {
   },
 };
 
-export const archiveBaseUrl = 'http://test.1ink.us/rb338/archive/rbs-songs';
+import { RBS_ARCHIVE_BASE_URL } from '../lib/archive-urls';
+
+export const archiveBaseUrl = RBS_ARCHIVE_BASE_URL;

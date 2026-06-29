@@ -8,6 +8,7 @@ import Led from '../../components/ui/Led.astro';
 import ActionButton from '../../components/ui/ActionButton.astro';
 import collectionsMeta from '../../data/collections-metadata.json';
 import { songCollections, archiveBaseUrl } from '../../data/song-collections';
+import { normalizeArchiveUrl } from '../../lib/archive-urls';
 import fullIndexRaw from '../../data/songs-full-index.json';
 import { formatStatRange, totalSongsIndexed, mainCollectionCount, artistCount, monthlyArchiveCount } from '../../data/archive-stats';
 
@@ -33,7 +34,10 @@ interface FullIndex {
 }
 
 const fullIndex = fullIndexRaw as unknown as FullIndex;
-const allSongs = fullIndex.songs || [];
+const allSongs = (fullIndex.songs || []).map((song) => ({
+  ...song,
+  url: normalizeArchiveUrl(song.url),
+}));
 const totalRaw = allSongs.length;
 const coveragePercent = fullIndex.meta?.coveragePercent ?? null;
 

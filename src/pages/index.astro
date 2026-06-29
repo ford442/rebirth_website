@@ -11,6 +11,7 @@ import RbsPlayer from '../components/RbsPlayer.astro';
 import ModCard from '../components/ModCard.astro';
 import { songCollections } from '../data/song-collections';
 import { normalizeBase } from '../lib/url';
+import { rbsDownloadUrl } from '../lib/archive-urls';
 import { formatStatRange, totalSongsIndexed, totalMods, latestVersion } from '../data/archive-stats';
 
 /* ── Types ─────────────────────────────────────────────────────── */
@@ -45,17 +46,13 @@ const featuredSongs: FeaturedItem[] = [
     description: 'Razor-sharp 303 lines locked into a hypnotic groove. From the legendary Cavey artist collection.',
     author: 'Cavey',
     tags: ['acid', '303', 'lockgroove'],
-    href: 'http://test.1ink.us/rb338/archive/rbs-songs/Artists/Cavey',
-    browseHref: `${base}/archive/songs?filter=artists&q=Cavey`,
+    browseHref: `${base}/archive/songs/Artists/Cavey/`,
     collectionPath: 'Artists/Cavey',
     songCount: songCollections.artists.folders.find((folder) => folder.name === 'Cavey')?.count,
     bpm: 128,
     compatibility: 'ReBirth 2.0',
-    demoSrc: 'http://test.1ink.us/rb338/archive/rbs-songs/demo/Cavey_Acid_Lockdown.rbs',
-    externalHostLabel: 'test.1ink.us',
+    demoSrc: rbsDownloadUrl('Artists/Cavey/3_acid.rbs'),
     tagHrefBase: `${base}/archive/songs?q=`,
-    target: '_blank',
-    rel: 'noopener noreferrer',
   },
   {
     title: 'DJ Knightmare — Factory Sequence',
@@ -63,17 +60,13 @@ const featuredSongs: FeaturedItem[] = [
     description: 'Dark industrial percussion and distorted synth stabs built for warehouse playback.',
     author: 'DJ Knightmare',
     tags: ['industrial', 'techno', 'dark'],
-    href: 'http://test.1ink.us/rb338/archive/rbs-songs/Artists/DJ%20Knightmare',
-    browseHref: `${base}/archive/songs?filter=artists&q=DJ%20Knightmare`,
+    browseHref: `${base}/archive/songs/Artists/DJ%20Knightmare/`,
     collectionPath: 'Artists/DJ Knightmare',
     songCount: songCollections.artists.folders.find((folder) => folder.name === 'DJ Knightmare')?.count,
     bpm: 134,
     compatibility: 'ReBirth 2.0',
-    demoSrc: 'http://test.1ink.us/rb338/archive/rbs-songs/demo/DJ_Knightmare_Factory_Sequence.rbs',
-    externalHostLabel: 'test.1ink.us',
+    demoSrc: rbsDownloadUrl('Artists/DJ Knightmare/amnesya.rbs'),
     tagHrefBase: `${base}/archive/songs?q=`,
-    target: '_blank',
-    rel: 'noopener noreferrer',
   },
   {
     title: 'Noah Cohn — Euro Acid Line',
@@ -81,17 +74,13 @@ const featuredSongs: FeaturedItem[] = [
     description: 'Extended acid journey through European rave aesthetics. One of the most complete artist archives on the site.',
     author: 'Noah Cohn',
     tags: ['acid', 'euro', 'classic'],
-    href: 'http://test.1ink.us/rb338/archive/rbs-songs/Artists/Noah_Cohn_Complete',
-    browseHref: `${base}/archive/songs?filter=artists&q=Noah%20Cohn%20Complete`,
+    browseHref: `${base}/archive/songs/Artists/Noah_Cohn_Complete/`,
     collectionPath: 'Artists/Noah_Cohn_Complete',
     songCount: songCollections.artists.folders.find((folder) => folder.name === 'Noah Cohn Complete')?.count,
     bpm: 132,
     compatibility: 'ReBirth 2.0',
-    demoSrc: 'http://test.1ink.us/rb338/archive/rbs-songs/demo/Noah_Cohn_Euro_Acid_Line.rbs',
-    externalHostLabel: 'test.1ink.us',
+    demoSrc: rbsDownloadUrl('Artists/Noah_Cohn_Complete/20.rbs'),
     tagHrefBase: `${base}/archive/songs?q=`,
-    target: '_blank',
-    rel: 'noopener noreferrer',
   },
   {
     title: 'Fanatic — Saturday Morning Sessions',
@@ -99,32 +88,28 @@ const featuredSongs: FeaturedItem[] = [
     description: 'Eclectic breaks and melodic hooks that channel retro cartoon energy into ReBirth patterns.',
     author: 'Fanatic',
     tags: ['breaks', 'eclectic', 'melodic'],
-    href: 'http://test.1ink.us/rb338/archive/rbs-songs/Artists/Fanatic',
-    browseHref: `${base}/archive/songs?filter=artists&q=Fanatic`,
+    browseHref: `${base}/archive/songs/Artists/Fanatic/`,
     collectionPath: 'Artists/Fanatic',
     songCount: songCollections.artists.folders.find((folder) => folder.name === 'Fanatic')?.count,
     compatibility: 'ReBirth 2.0',
-    externalHostLabel: 'test.1ink.us',
     tagHrefBase: `${base}/archive/songs?q=`,
-    target: '_blank',
-    rel: 'noopener noreferrer',
   },
 ];
 
 const demoSongs = [
   {
-    label: 'Cavey — Acid Lockdown (Archive Demo)',
-    src: 'http://test.1ink.us/rb338/archive/rbs-songs/demo/Cavey_Acid_Lockdown.rbs',
+    label: 'Cavey — 3 acid (Archive Demo)',
+    src: rbsDownloadUrl('Artists/Cavey/3_acid.rbs'),
     bpm: 128,
   },
   {
-    label: 'DJ Knightmare — Factory Sequence (Archive Demo)',
-    src: 'http://test.1ink.us/rb338/archive/rbs-songs/demo/DJ_Knightmare_Factory_Sequence.rbs',
+    label: 'DJ Knightmare — amnesya (Archive Demo)',
+    src: rbsDownloadUrl('Artists/DJ Knightmare/amnesya.rbs'),
     bpm: 134,
   },
   {
-    label: 'Noah Cohn — Euro Acid Line (Archive Demo)',
-    src: 'http://test.1ink.us/rb338/archive/rbs-songs/demo/Noah_Cohn_Euro_Acid_Line.rbs',
+    label: 'Noah Cohn — 20 (Archive Demo)',
+    src: rbsDownloadUrl('Artists/Noah_Cohn_Complete/20.rbs'),
     bpm: 132,
   },
 ];

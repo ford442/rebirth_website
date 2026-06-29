@@ -1,7 +1,7 @@
 {
   "archive": {
     "name": "RBS Song Archive",
-    "baseUrl": "http://test.1ink.us/rb338/archive/rbs-songs",
+    "baseUrl": "https://test.1ink.us/rb338/archive/rbs-songs",
     "description": "Complete Rebirth Song archive with thousands of tracks from various sources, artists, and collections",
     "lastUpdated": "2026-03-15",
     "totalSongs": 2000,
@@ -216,6 +216,6 @@
   "navigation": {
     "browse": "/archive/songs",
     "manifest": "/rbs-manifest.json",
-    "baseArchive": "http://test.1ink.us/rb338/archive/rbs-songs"
+    "baseArchive": "https://test.1ink.us/rb338/archive/rbs-songs"
   }
 }
