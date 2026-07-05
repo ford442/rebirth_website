@@ -11,7 +11,7 @@ const normalizeBase = (value: string) => {
   return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
 };
 const base = normalizeBase(import.meta.env.BASE_URL);
-const target = `${base}/archive/songs/index.html`;
+const target = `${base}/archive/songs`;
 ---
 
 <BaseLayout title="Redirecting…">

@@ -11,6 +11,7 @@ import RbsPlayer from '../components/RbsPlayer.astro';
 import ModCard from '../components/ModCard.astro';
 import { songCollections } from '../data/song-collections';
 import { normalizeBase } from '../lib/url';
+import { rbsDownloadUrl } from '../lib/archive-urls';
 import { formatStatRange, totalSongsIndexed, totalMods, latestVersion } from '../data/archive-stats';
 
 /* ── Types ─────────────────────────────────────────────────────── */
@@ -52,17 +53,13 @@ const featuredSongs: FeaturedItem[] = [
     description: 'Razor-sharp 303 lines locked into a hypnotic groove. From the legendary Cavey artist collection.',
     author: 'Cavey',
     tags: ['acid', '303', 'lockgroove'],
-    href: 'http://test.1ink.us/rb338/archive/rbs-songs/Artists/Cavey',
-    browseHref: `${base}/archive/songs?filter=artists&q=Cavey`,
+    browseHref: `${base}/archive/songs/Artists/Cavey/`,
     collectionPath: 'Artists/Cavey',
     songCount: songCollections.artists.folders.find((folder) => folder.name === 'Cavey')?.count,
     bpm: 128,
     compatibility: 'ReBirth 2.0',
-    demoSrc: 'http://test.1ink.us/rb338/archive/rbs-songs/demo/Cavey_Acid_Lockdown.rbs',
-    externalHostLabel: 'test.1ink.us',
+    demoSrc: rbsDownloadUrl('Artists/Cavey/3_acid.rbs'),
     tagHrefBase: `${base}/archive/songs?q=`,
-    target: '_blank',
-    rel: 'noopener noreferrer',
   },
   {
     title: 'DJ Knightmare — Factory Sequence',
@@ -70,17 +67,13 @@ const featuredSongs: FeaturedItem[] = [
     description: 'Dark industrial percussion and distorted synth stabs built for warehouse playback.',
     author: 'DJ Knightmare',
     tags: ['industrial', 'techno', 'dark'],
-    href: 'http://test.1ink.us/rb338/archive/rbs-songs/Artists/DJ%20Knightmare',
-    browseHref: `${base}/archive/songs?filter=artists&q=DJ%20Knightmare`,
+    browseHref: `${base}/archive/songs/Artists/DJ%20Knightmare/`,
     collectionPath: 'Artists/DJ Knightmare',
     songCount: songCollections.artists.folders.find((folder) => folder.name === 'DJ Knightmare')?.count,
     bpm: 134,
     compatibility: 'ReBirth 2.0',
-    demoSrc: 'http://test.1ink.us/rb338/archive/rbs-songs/demo/DJ_Knightmare_Factory_Sequence.rbs',
-    externalHostLabel: 'test.1ink.us',
+    demoSrc: rbsDownloadUrl('Artists/DJ Knightmare/amnesya.rbs'),
     tagHrefBase: `${base}/archive/songs?q=`,
-    target: '_blank',
-    rel: 'noopener noreferrer',
   },
   {
     title: 'Noah Cohn — Euro Acid Line',
@@ -88,17 +81,13 @@ const featuredSongs: FeaturedItem[] = [
     description: 'Extended acid journey through European rave aesthetics. One of the most complete artist archives on the site.',
     author: 'Noah Cohn',
     tags: ['acid', 'euro', 'classic'],
-    href: 'http://test.1ink.us/rb338/archive/rbs-songs/Artists/Noah_Cohn_Complete',
-    browseHref: `${base}/archive/songs?filter=artists&q=Noah%20Cohn%20Complete`,
+    browseHref: `${base}/archive/songs/Artists/Noah_Cohn_Complete/`,
     collectionPath: 'Artists/Noah_Cohn_Complete',
     songCount: songCollections.artists.folders.find((folder) => folder.name === 'Noah Cohn Complete')?.count,
     bpm: 132,
     compatibility: 'ReBirth 2.0',
-    demoSrc: 'http://test.1ink.us/rb338/archive/rbs-songs/demo/Noah_Cohn_Euro_Acid_Line.rbs',
-    externalHostLabel: 'test.1ink.us',
+    demoSrc: rbsDownloadUrl('Artists/Noah_Cohn_Complete/20.rbs'),
     tagHrefBase: `${base}/archive/songs?q=`,
-    target: '_blank',
-    rel: 'noopener noreferrer',
   },
   {
     title: 'Fanatic — Saturday Morning Sessions',
@@ -106,32 +95,28 @@ const featuredSongs: FeaturedItem[] = [
     description: 'Eclectic breaks and melodic hooks that channel retro cartoon energy into ReBirth patterns.',
     author: 'Fanatic',
     tags: ['breaks', 'eclectic', 'melodic'],
-    href: 'http://test.1ink.us/rb338/archive/rbs-songs/Artists/Fanatic',
-    browseHref: `${base}/archive/songs?filter=artists&q=Fanatic`,
+    browseHref: `${base}/archive/songs/Artists/Fanatic/`,
     collectionPath: 'Artists/Fanatic',
     songCount: songCollections.artists.folders.find((folder) => folder.name === 'Fanatic')?.count,
     compatibility: 'ReBirth 2.0',
-    externalHostLabel: 'test.1ink.us',
     tagHrefBase: `${base}/archive/songs?q=`,
-    target: '_blank',
-    rel: 'noopener noreferrer',
   },
 ];
 
 const demoSongs = [
   {
-    label: 'Cavey — Acid Lockdown (Archive Demo)',
-    src: 'http://test.1ink.us/rb338/archive/rbs-songs/demo/Cavey_Acid_Lockdown.rbs',
+    label: 'Cavey — 3 acid (Archive Demo)',
+    src: rbsDownloadUrl('Artists/Cavey/3_acid.rbs'),
     bpm: 128,
   },
   {
-    label: 'DJ Knightmare — Factory Sequence (Archive Demo)',
-    src: 'http://test.1ink.us/rb338/archive/rbs-songs/demo/DJ_Knightmare_Factory_Sequence.rbs',
+    label: 'DJ Knightmare — amnesya (Archive Demo)',
+    src: rbsDownloadUrl('Artists/DJ Knightmare/amnesya.rbs'),
     bpm: 134,
   },
   {
-    label: 'Noah Cohn — Euro Acid Line (Archive Demo)',
-    src: 'http://test.1ink.us/rb338/archive/rbs-songs/demo/Noah_Cohn_Euro_Acid_Line.rbs',
+    label: 'Noah Cohn — 20 (Archive Demo)',
+    src: rbsDownloadUrl('Artists/Noah_Cohn_Complete/20.rbs'),
     bpm: 132,
   },
 ];
@@ -277,38 +262,15 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
   </HardwarePanel>
 
   <div class="archive-entry-strip" role="navigation" aria-label="Quick archive links">
-    <a class="archive-entry-strip__link archive-entry-strip__link--songs" href={`${base}/archive/songs/index.html`}>Browse Songs</a>
-    <a class="archive-entry-strip__link archive-entry-strip__link--mods" href={`${base}/archive/mods/index.html`}>Browse Mods</a>
+    <a class="archive-entry-strip__link archive-entry-strip__link--songs" href={`${base}/archive/songs`}>Browse Songs</a>
+    <a class="archive-entry-strip__link archive-entry-strip__link--mods" href={`${base}/archive/mods`}>Browse Mods</a>
     <a class="archive-entry-strip__link" href={`${base}/history`}>History</a>
     <a class="archive-entry-strip__link" href="https://github.com/ford442/rebirth_website" target="_blank" rel="noopener noreferrer">Contribute</a>
   </div>
 
   <ArchiveQuickAccess />
 
-  <section class="quick-browse" aria-labelledby="quick-browse-heading">
-    <h2 class="sr-only" id="quick-browse-heading">Quick browse</h2>
-    <article class="quick-browse__card">
-      <p class="quick-browse__eyebrow">Quick Browse</p>
-      <h3>Song archive folders</h3>
-      <p>Jump straight into artist folders and preserved song collections.</p>
-      <ActionButton variant="pattern" href={`${base}/archive/songs/index.html`}>Open Song Archive</ActionButton>
-    </article>
-    <article class="quick-browse__card">
-      <p class="quick-browse__eyebrow">Quick Browse</p>
-      <h3>Mod archive downloads</h3>
-      <p>Open the curated mod browser and pull `.rbm` files directly.</p>
-      <ActionButton variant="mix" href={`${base}/archive/mods/index.html`}>Open Mod Archive</ActionButton>
-    </article>
-    <article class="quick-browse__card">
-      <p class="quick-browse__eyebrow">Archive Context</p>
-      <h3>History and contribution</h3>
-      <p>Read the ReBirth timeline or add preserved files and documentation.</p>
-      <div class="quick-browse__actions">
-        <a class="quick-browse__text-link" href={`${base}/history`}>History</a>
-        <a class="quick-browse__text-link" href="https://github.com/ford442/rebirth_website" target="_blank" rel="noopener noreferrer">Contribute</a>
-      </div>
-    </article>
-  </section>
+  <h2 class="section-zone-label" id="featured-zone">Featured Archive</h2>
 
   <section class="featured-deck" aria-label="Featured archive picks">
     <HardwarePanel
@@ -322,7 +284,7 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
     >
       <div class="featured-header">
         <p class="featured-summary">Representative artist folders for a fast start into the song archive.</p>
-        <ActionButton variant="pattern" href={`${base}/archive/songs/index.html`}>All Songs →</ActionButton>
+        <ActionButton variant="pattern" href={`${base}/archive/songs`}>All Songs →</ActionButton>
       </div>
       <div class="card-grid card-grid--compact">
         {featuredSongs.map((song) => (
@@ -342,7 +304,7 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
     >
       <div class="featured-header">
         <p class="featured-summary">High-signal mod picks from the preserved `.rbm` catalog.</p>
-        <ActionButton variant="mix" href={`${base}/archive/mods/index.html`}>All Mods →</ActionButton>
+        <ActionButton variant="mix" href={`${base}/archive/mods`}>All Mods →</ActionButton>
       </div>
       <div class="card-grid card-grid--compact">
         {featuredMods.map((mod) => (
@@ -398,6 +360,7 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
   </section>
 
   <hr class="etched" />
+  <h2 class="section-zone-label" id="about-zone">About the RB-338</h2>
 
   <details class="mobile-accordion" open>
     <summary class="mobile-accordion__summary">About the hardware</summary>
@@ -509,14 +472,13 @@ $ _<span class="cursor-blink">█</span></code></pre>
     <summary class="mobile-accordion__summary">Information modules</summary>
     <div class="mobile-accordion__content">
       <HardwarePanel
-        ariaLabelledBy="about-heading"
+        ariaLabel="About the Archive"
         animate
         variant="rackmount"
         title="INFORMATION MODULES"
         ledStatus="online"
         ledLabel="OK"
       >
-        <h2 class="sr-only" id="about-heading">About the Archive</h2>
         <div class="about-row">
           <div class="about-modules">
             <article class="rb-file-card rb-card-rack">
@@ -546,7 +508,7 @@ $ _<span class="cursor-blink">█</span></code></pre>
     </div>
   </details>
 
-  <hr class="etched" />
+  <h2 class="section-zone-label" id="player-zone">Browser Preview</h2>
 
   <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
   <!-- ║  WASM PLAYER — In-browser .rbs preview engine                       ║ -->
@@ -555,10 +517,10 @@ $ _<span class="cursor-blink">█</span></code></pre>
 
   <!-- Mobile sticky archive action bar -->
   <nav class="mobile-action-bar" aria-label="Mobile archive shortcuts">
-    <a class="mobile-action-bar__btn mobile-action-bar__btn--songs" href={`${base}/archive/songs/index.html`}>
+    <a class="mobile-action-bar__btn mobile-action-bar__btn--songs" href={`${base}/archive/songs`}>
       Browse Songs
     </a>
-    <a class="mobile-action-bar__btn mobile-action-bar__btn--mods" href={`${base}/archive/mods/index.html`}>
+    <a class="mobile-action-bar__btn mobile-action-bar__btn--mods" href={`${base}/archive/mods`}>
       Browse Mods
     </a>
   </nav>
@@ -584,24 +546,24 @@ $ _<span class="cursor-blink">█</span></code></pre>
 </BaseLayout>
 
 <style>
-  /* Container constraint for main content panels */
-  main > .rb-panel,
-  main > .rb-rack,
-  main > .archive-entry-strip,
-  main > .quick-browse,
-  main > .featured-deck,
-  main > .skin-gallery,
-  main > hr.etched {
+/* Container constraint for main content panels */
+main > .rb-panel,
+main > .rb-rack,
+main > .archive-entry-strip,
+main > .featured-deck,
+main > .skin-gallery,
+main > hr.etched,
+main > .section-zone-label {   /* Added from main branch */
     max-width: 1100px;
     margin-inline: auto;
-  }
+}
 
-  main > .archive-entry-strip,
-  main > .quick-browse,
-  main > .featured-deck,
-  main > .skin-gallery {
+main > .archive-entry-strip,
+main > .quick-browse,
+main > .featured-deck,
+main > .skin-gallery {
     margin-bottom: 1.5rem;
-  }
+}
 
   .homepage-hero {
     display: grid;
@@ -640,10 +602,10 @@ $ _<span class="cursor-blink">█</span></code></pre>
     min-height: 3.25rem;
     padding: 0.75rem 1rem;
     border: 1px solid var(--rb-border);
-    border-radius: 6px;
+    border-radius: var(--rb-radius);
     background: linear-gradient(180deg, #262626, #1e1e1e);
     font-family: var(--rb-font-display);
-    font-size: 0.82rem;
+    font-size: var(--text-md);
     letter-spacing: 0.08em;
     text-decoration: none;
     text-transform: uppercase;
@@ -660,55 +622,28 @@ $ _<span class="cursor-blink">█</span></code></pre>
     color: var(--rb-amber);
   }
 
-  .quick-browse {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-  }
-
-  .quick-browse__card {
-    display: grid;
-    gap: 0.8rem;
-    padding: 1.1rem;
-    border: 1px solid var(--rb-border);
-    border-radius: 6px;
-    background: linear-gradient(180deg, #222222, #191919);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-  }
-
-  .quick-browse__card h3,
-  .quick-browse__card p {
-    margin: 0;
-  }
-
-  .quick-browse__card h3 {
-    font-size: 1rem;
-    color: var(--rb-amber);
-  }
-
-  .quick-browse__card p {
-    color: var(--color-text-muted);
-    font-size: 0.92rem;
-  }
-
-  .quick-browse__eyebrow {
-    font-family: var(--rb-font-display);
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--rb-green-bright);
-  }
-
-  .quick-browse__actions {
+  /* Zone-level section headings — visible eyebrows between major page zones */
+  .section-zone-label {
     display: flex;
+    align-items: center;
     gap: 1rem;
-    flex-wrap: wrap;
+    margin: var(--space-xl) 0 var(--space-md);
+    padding-inline: 1rem;
+    font-family: var(--font-title);
+    font-size: var(--text-sm);
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--rb-silver-dim);
   }
 
-  .quick-browse__text-link {
-    font-family: var(--rb-font-display);
-    font-size: 0.84rem;
-    text-decoration: none;
+  .section-zone-label::before,
+  .section-zone-label::after {
+    content: '';
+    flex: 1;
+    height: 0;
+    border-top: 1px solid #1a1a1a;
+    border-bottom: 1px solid #3a3a3a;
   }
 
   .featured-deck {
@@ -725,7 +660,7 @@ $ _<span class="cursor-blink">█</span></code></pre>
   .featured-summary {
     margin: 0;
     color: var(--color-text-muted);
-    font-size: 0.88rem;
+    font-size: var(--text-md);
     max-width: 34ch;
   }
 
@@ -879,7 +814,6 @@ $ _<span class="cursor-blink">█</span></code></pre>
 
   @media (max-width: 1023px) {
     .archive-entry-strip,
-    .quick-browse,
     .featured-deck,
     .gallery-grid,
     .card-grid--compact {
@@ -894,9 +828,45 @@ $ _<span class="cursor-blink">█</span></code></pre>
       gap: 0.75rem;
     }
 
-    .featured-deck :global(.mod-card__desc),
-    .featured-deck :global(.mod-card__meta) {
+    .featured-deck :global(.mod-card__desc) {
       display: none;
+    }
+
+    /* Compact chip display: show last 2 meta rows (BPM + Version) as inline badges */
+    .featured-deck :global(.mod-card__meta) {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      padding: 0.2rem 0;
+      border: none;
+      background: transparent;
+    }
+
+    .featured-deck :global(.mod-card__meta-row) {
+      display: none;
+    }
+
+    .featured-deck :global(.mod-card__meta-row:nth-last-child(-n+2)) {
+      display: flex;
+      align-items: center;
+      gap: 0.25em;
+      padding: 0.15rem 0.45rem;
+      background: rgba(255, 176, 0, 0.07);
+      border: 1px solid rgba(255, 176, 0, 0.22);
+      border-radius: var(--rb-radius-sm);
+    }
+
+    .featured-deck :global(.mod-card__meta-row dt) {
+      font-size: 0.55rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    .featured-deck :global(.mod-card__meta-row dd) {
+      font-size: 0.7rem;
+      color: var(--rb-amber);
+      margin: 0;
     }
   }
 
@@ -931,10 +901,10 @@ $ _<span class="cursor-blink">█</span></code></pre>
       margin-bottom: 1rem;
       padding: 0.75rem 1rem;
       border: 1px solid var(--rb-border);
-      border-radius: 6px;
+      border-radius: var(--rb-radius);
       background: linear-gradient(180deg, #2a2a2a 0%, #222 100%);
       font-family: var(--rb-font-display);
-      font-size: 0.75rem;
+      font-size: var(--text-sm);
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--rb-amber);
@@ -985,25 +955,7 @@ $ _<span class="cursor-blink">█</span></code></pre>
     .archive-entry-strip__link {
       min-height: 2.75rem;
       padding: 0.5rem;
-      font-size: 0.72rem;
-    }
-
-    .quick-browse__card {
-      padding: 0.6rem;
-      gap: 0.4rem;
-    }
-
-    .quick-browse__card p,
-    .quick-browse__eyebrow {
-      display: none;
-    }
-
-    .quick-browse__card h3 {
-      font-size: 0.9rem;
-    }
-
-    .quick-browse__actions {
-      gap: 0.75rem;
+      font-size: var(--text-sm);
     }
 
     .mobile-action-bar {
@@ -1027,11 +979,11 @@ $ _<span class="cursor-blink">█</span></code></pre>
       justify-content: center;
       min-height: 44px;
       padding: 0.5rem 0.75rem;
-      border-radius: 6px;
+      border-radius: var(--rb-radius);
       border: 1px solid var(--rb-border);
       border-bottom: 2px solid #111;
       font-family: var(--rb-font-display);
-      font-size: 0.72rem;
+      font-size: var(--text-sm);
       letter-spacing: 0.08em;
       text-transform: uppercase;
       text-decoration: none;

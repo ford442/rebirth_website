@@ -37,7 +37,7 @@ const base = normalizeBase(import.meta.env.BASE_URL);
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
 
     <!-- Global styles are imported via the component's style tag below -->
     <link rel="stylesheet" href={`${base}/styles/rebirth-theme.css`} />
@@ -49,7 +49,7 @@ const base = normalizeBase(import.meta.env.BASE_URL);
 
     <!-- Site header -->
     <header class="site-header rb-header">
-      <div class="container" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding-block:.75rem;">
+      <div class="container">
         <a href={`${base}/`} class="site-logo rb-logo" aria-label="ReBirth RB-338 Archive home">
           <span class="logo-rb">RB</span>
           <span class="logo-338">-338</span>
@@ -85,19 +85,19 @@ const base = normalizeBase(import.meta.env.BASE_URL);
             </li>
             <li>
               <a
-                href={`${base}/archive/songs/index.html`}
+                href={`${base}/archive/songs`}
                 class={`rb-nav-btn${currentPath.includes('/archive/songs') ? ' is-active' : ''}`}
               >Songs</a>
             </li>
             <li>
               <a
-                href={`${base}/archive/mods/index.html`}
+                href={`${base}/archive/mods`}
                 class={`rb-nav-btn${currentPath.includes('/archive/mods') ? ' is-active' : ''}`}
               >Mods</a>
             </li>
             <li>
               <a
-                href={`${base}/history/index.html`}
+                href={`${base}/history`}
                 class={`rb-nav-btn${currentPath.includes('/history') ? ' is-active' : ''}`}
               >History</a>
             </li>
@@ -124,8 +124,8 @@ const base = normalizeBase(import.meta.env.BASE_URL);
           <section class="footer-col" aria-labelledby="footer-archive-heading">
             <h2 id="footer-archive-heading" class="footer-heading">Archive</h2>
             <ul class="footer-links" role="list">
-              <li><a href={`${base}/archive/songs/index.html`}>Browse Songs</a></li>
-              <li><a href={`${base}/archive/mods/index.html`}>Browse Mods</a></li>
+              <li><a href={`${base}/archive/songs`}>Browse Songs</a></li>
+              <li><a href={`${base}/archive/mods`}>Browse Mods</a></li>
               <li><a href={`${base}/archive/songs?filter=artists`}>Featured Artists</a></li>
               <li><a href={`${base}/archive/mods#rawIndex`}>Complete Mod Index</a></li>
             </ul>
@@ -213,7 +213,7 @@ const base = normalizeBase(import.meta.env.BASE_URL);
     margin-top: var(--space-xl);
     background: linear-gradient(0deg, #111 0%, #1a1a1a 100%);
     font-family: var(--font-mono);
-    font-size: 0.78rem;
+    font-size: var(--text-sm);
     color: var(--color-text-muted);
   }
 
@@ -232,8 +232,8 @@ const base = normalizeBase(import.meta.env.BASE_URL);
 
   .footer-heading {
     margin: 0;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-family: var(--font-title);
+    font-size: var(--text-sm);
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--rb-amber, #ffb000);
@@ -276,7 +276,7 @@ const base = normalizeBase(import.meta.env.BASE_URL);
   }
 
   .footer-disclaimer {
-    font-size: 0.72rem;
+    font-size: var(--text-xs);
     color: var(--color-text-muted);
     opacity: 0.8;
   }
@@ -287,7 +287,7 @@ const base = normalizeBase(import.meta.env.BASE_URL);
   }
 
   .footer-build-row a {
-    color: #666;
+    color: #999;
     text-decoration: none;
   }
 
@@ -295,7 +295,7 @@ const base = normalizeBase(import.meta.env.BASE_URL);
     color: var(--rb-amber, #ffb000);
   }
 
-  .footer-build { opacity: 0.5; }
+  .footer-build { color: var(--color-text-muted); }
 
   @media (max-width: 767px) {
     .footer-grid {

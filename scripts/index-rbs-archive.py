@@ -28,7 +28,7 @@ from typing import Any
 
 import requests
 
-DEFAULT_BASE_URL = "http://test.1ink.us/rb338/archive/rbs-songs"
+DEFAULT_BASE_URL = "https://test.1ink.us/rb338/archive/rbs-songs"
 DEFAULT_OUTPUT = "src/data/songs-full-index.json"
 MANIFEST_PATH = "public/rbs-manifest.json"
 
