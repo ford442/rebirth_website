@@ -165,19 +165,23 @@ const archiveStats = [
             <div class="raw-list">
               {mods.map(m => (
                 <div class={`raw-item ${m.hasMeta ? 'raw-item--documented' : ''}`} data-filename={m.filename.toLowerCase()}>
-                  <div class="raw-item__main">
-                    <span class="raw-item__name">
-                      {m.filename.replace(/\.rbm$/i, '')}
-                    </span>
+                  <span class="raw-item__name">
+                    {m.filename.replace(/\.rbm$/i, '')}
+                  </span>
+                  <div class="raw-item__row raw-item__row--meta">
                     <span class="raw-item__size">{m.size}</span>
                     {m.hasMeta && (
                       <span class="raw-item__badge">DOC</span>
                     )}
                   </div>
                   {m.hasMeta && m.title && (
-                    <div class="raw-item__meta">
-                      <span class="raw-item__title">{m.title}</span>
-                      {m.author && <span class="raw-item__author">by {m.author}</span>}
+                    <span class="raw-item__title">{m.title}</span>
+                  )}
+                  {m.hasMeta && (m.author || (m.tags && m.tags.length > 0)) && (
+                    <div class="raw-item__row raw-item__row--details">
+                      {m.author && (
+                        <span class="raw-item__author">by {m.author}</span>
+                      )}
                       {m.tags && m.tags.length > 0 && (
                         <span class="raw-item__tags">
                           {m.tags.slice(0, 3).map((tag: string) => (
@@ -451,17 +455,18 @@ const archiveStats = [
     }
   }
 
+  /* 4-row grid list layout for crisp aligned items inside each card */
   .raw-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.6rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto auto auto; /* 4 rows: name / size / title / details */
+    gap: 0.05rem 0.45rem;
+    padding: 0.4rem 0.5rem;
     background: rgba(0,0,0,0.15);
     border: 1px solid transparent;
-    border-radius: 4px;
+    border-radius: 3px;
     transition: background 120ms ease, border-color 120ms ease;
     position: relative;
-    flex-wrap: wrap;
   }
 
   .raw-item:hover {
@@ -479,21 +484,13 @@ const archiveStats = [
     border-color: rgba(57,255,20,0.2);
   }
 
-  .raw-item__main {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex: 1;
-    min-width: 0;
-  }
-
   .raw-item__name {
+    grid-column: 1;
+    grid-row: 1;
     font-family: var(--rb-font-display, 'Courier New', monospace);
-    font-size: 0.8rem;
-    color: #aaa;
+    font-size: 0.78rem;
+    color: #c0c0c0;
     letter-spacing: 0.02em;
-    flex: 1;
-    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -501,15 +498,18 @@ const archiveStats = [
 
   .raw-item__size {
     font-family: var(--rb-font-display, 'Courier New', monospace);
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     color: #555;
     white-space: nowrap;
-    flex-shrink: 0;
+  }
+
+  .raw-item__row--meta {
+    grid-row: 2;
   }
 
   .raw-item__badge {
     font-family: var(--rb-font-display, 'Courier New', monospace);
-    font-size: 0.55rem;
+    font-size: 0.52rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     padding: 1px 4px;
@@ -518,57 +518,65 @@ const archiveStats = [
     color: var(--rb-green-bright);
     border: 1px solid var(--rb-green-dim);
     white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .raw-item__meta {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.35rem;
-    padding-top: 0.25rem;
-    margin-top: 0.25rem;
-    border-top: 1px solid rgba(255,255,255,0.03);
+    margin-left: 0.3rem;
   }
 
   .raw-item__title {
+    grid-column: 1;
+    grid-row: 3;
     font-family: var(--rb-font-display, 'Courier New', monospace);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--rb-amber);
+  }
+
+  .raw-item__row {
+    grid-column: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  .raw-item__row--details {
+    grid-row: 4;
   }
 
   .raw-item__author {
     font-family: var(--rb-font-display, 'Courier New', monospace);
-    font-size: 0.7rem;
+    font-size: 0.62rem;
     color: #666;
   }
 
   .raw-item__tags {
     display: flex;
-    gap: 0.25rem;
+    gap: 0.2rem;
     flex-wrap: wrap;
+    margin-left: 0.3rem;
   }
 
   .raw-tag {
     font-family: var(--rb-font-display, 'Courier New', monospace);
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     padding: 1px 4px;
     border-radius: 2px;
     background: rgba(255,176,0,0.08);
     color: var(--rb-amber-dim);
     border: 1px solid rgba(255,176,0,0.15);
+    white-space: nowrap;
   }
 
   .raw-item__link {
+    grid-column: 2;
+    grid-row: 1 / 3; /* top-right, spans first two rows */
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
-    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    align-self: start;
+    margin-top: 1px;
     font-family: var(--rb-font-display, 'Courier New', monospace);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--rb-silver-dim);
     background: linear-gradient(180deg, #363636 0%, #282828 100%);
     border: 1px solid var(--rb-border);
