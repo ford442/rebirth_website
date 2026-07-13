@@ -3,5 +3,9 @@
   "compilerOptions": {
     "strictNullChecks": true,
     "allowJs": true
-  }
+  },
+  "exclude": [
+    "public/wasm/*.js",
+    "dist/wasm/*.js"
+  ]
 }

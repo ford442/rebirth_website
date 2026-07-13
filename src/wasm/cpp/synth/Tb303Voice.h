@@ -49,6 +49,11 @@ private:
   float m_currentPitch = 0.0f;
   float m_targetPitch = 0.0f;
 
+  // Test-tone state (will be replaced by full DSP in a later pass)
+  uint8_t m_currentNote = 0;
+  uint32_t m_gateSamples = 0;
+  static constexpr uint32_t GATE_LENGTH_SAMPLES = 11025; // ~0.25s at 44.1kHz
+
   // TODO: full DSP implementation
 };
 

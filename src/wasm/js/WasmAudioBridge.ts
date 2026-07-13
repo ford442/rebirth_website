@@ -21,6 +21,14 @@ import type {
   EngineConfig,
   PlayerStatus,
   EngineError,
+  PlaybackPosition,
+  WasmParsedSong,
+  WasmDeviceState,
+  WasmPattern,
+  WasmArrangementBar,
+  WasmDeviceId,
+  EngineModule,
+  RbsAudioEngineInstance,
 } from '../types/wasm-audio';
 
 import { wasmAudioConfig } from '../audio-module.config.js';
@@ -31,12 +39,20 @@ export type PositionCallback = (bar: number, step: number) => void;
 /** Callback invoked when player status changes. */
 export type StatusCallback = (status: PlayerStatus) => void;
 
+const DEVICE_LABELS: Record<WasmDeviceId, string> = {
+  0: 'tb303-a',
+  1: 'tb303-b',
+  2: 'tr808',
+  3: 'tr909',
+};
+
 export class WasmAudioBridge {
-  private module: any = null;
+  private module: EngineModule | null = null;
   private audioContext: AudioContext | null = null;
   private workletNode: AudioWorkletNode | null = null;
   private gainNode: GainNode | null = null;
-  private enginePtr: any = null;
+  /** Exposed publicly so integration tests can inspect engine state. */
+  public enginePtr: RbsAudioEngineInstance | null = null;
   private status: PlayerStatus = 'idle';
   private onPosition: PositionCallback | null = null;
   private onStatus: StatusCallback | null = null;
@@ -55,6 +71,16 @@ export class WasmAudioBridge {
   /** Current output volume (0.0–1.0). */
   get outputVolume(): number {
     return this.volume;
+  }
+
+  /** The underlying AudioContext (exposed for integration tests). */
+  get ctx(): AudioContext | null {
+    return this.audioContext;
+  }
+
+  /** The master gain node (exposed for integration tests). */
+  get masterGain(): GainNode | null {
+    return this.gainNode;
   }
 
   /** Register a callback for playback position updates. */
@@ -86,10 +112,18 @@ export class WasmAudioBridge {
 
       // 2. Load Emscripten glue (dynamic import of the generated JS)
       const glueModule = await import(/* @vite-ignore */ wasmAudioConfig.glueScriptPath);
-      this.module = await glueModule.default({
+      const moduleFactory = glueModule.default as (opts: {
+        locateFile: (path: string) => string;
+      }) => Promise<EngineModule>;
+
+      this.module = await moduleFactory({
         locateFile: (path: string) => {
           if (path.endsWith('.wasm')) return wasmAudioConfig.wasmPath;
-          if (path.endsWith('.js') && path.includes('ww')) return wasmAudioConfig.workletPath;
+          // Emscripten loads the AudioWorklet bootstrap as <base>.aw.js.
+          // Map it to the stable worklet path produced by the build script.
+          if (path.endsWith('.js') && path.includes('.aw.')) {
+            return wasmAudioConfig.workletPath;
+          }
           return path;
         },
       });
@@ -99,40 +133,52 @@ export class WasmAudioBridge {
         sampleRate: wasmAudioConfig.sampleRate,
       });
 
-      // 4. Load AudioWorklet processor
-      await this.audioContext.audioWorklet.addModule(wasmAudioConfig.workletPath);
-
-      // 5. Create WASM engine instance via Embind
+      // 4. Create WASM engine instance via Embind
       const config: EngineConfig = {
         sampleRate: this.audioContext.sampleRate,
         bufferSize: wasmAudioConfig.bufferSize,
-        features: wasmAudioConfig.features as EngineConfig['features'],
+        enableTb303A: wasmAudioConfig.features.tb303_a,
+        enableTb303B: wasmAudioConfig.features.tb303_b,
+        enableTr808: wasmAudioConfig.features.tr808,
+        enableTr909: wasmAudioConfig.features.tr909,
+        enableDistortion: wasmAudioConfig.features.distortion,
+        enableCompressor: wasmAudioConfig.features.compressor,
+        enableDelay: wasmAudioConfig.features.delay,
       };
 
       // Engine is exposed via embind as rb338.RbsAudioEngine
       this.enginePtr = new this.module.rb338.RbsAudioEngine();
       this.enginePtr.init(config);
 
-      // 6. Connect worklet node to audio graph
-      this.workletNode = new AudioWorkletNode(
-        this.audioContext,
-        'rbs-player',
-        {
-          numberOfInputs: 0,
-          numberOfOutputs: 1,
-          outputChannelCount: [2],
-          processorOptions: {
-            wasmModule: this.module,
-            enginePtr: this.enginePtr,
-            sampleRate: this.audioContext.sampleRate,
-          },
-        }
-      );
+      // 5. Register the JS AudioContext with Emscripten and create the worklet
+      const contextHandle = this.module.emscriptenRegisterAudioObject(this.audioContext);
 
+      await new Promise<void>((resolve, reject) => {
+        this.module?.rb338.initAudioWorklet(
+          contextHandle,
+          this.enginePtr?.ptr ?? 0,
+          (nodeHandle) => {
+            if (nodeHandle == null || nodeHandle === 0) {
+              reject(new Error('AudioWorklet initialisation failed'));
+              return;
+            }
+            this.workletNode = this.module?.emscriptenGetAudioObject<AudioWorkletNode>(nodeHandle) ?? null;
+            resolve();
+          }
+        );
+      });
+
+      // 6. Connect worklet node to audio graph
+      if (!this.workletNode) {
+        throw new Error('AudioWorklet node was not created');
+      }
       this.gainNode = this.audioContext.createGain();
-      this.gainNode.gain.value = this.volume;
+      this.gainNode.gain.value = 1.0;
       this.workletNode.connect(this.gainNode);
       this.gainNode.connect(this.audioContext.destination);
+
+      // Sync engine master volume with the UI default.
+      this.enginePtr.setVolume(this.volume);
 
       // 7. Start position polling loop
       this._startPositionPolling();
@@ -171,7 +217,7 @@ export class WasmAudioBridge {
       // Free file buffer
       this.module._free(ptr);
 
-      if (!parsed) {
+      if (parsed === undefined) {
         const err: EngineError = {
           code: 'PARSE_ERROR',
           message: parser.lastError(),
@@ -182,15 +228,8 @@ export class WasmAudioBridge {
       // Load into engine
       this.enginePtr.loadSong(parsed);
 
-      // Extract JS-friendly metadata
-      const song: ParsedSong = {
-        title: parsed.title,
-        author: parsed.author,
-        bpm: parsed.bpm,
-        devices: [],
-        patterns: [],
-        arrangement: [],
-      };
+      // Convert WASM-facing song to UI-facing metadata
+      const song = this._toUiParsedSong(parsed);
 
       this._setStatus('ready');
       return song;
@@ -205,7 +244,7 @@ export class WasmAudioBridge {
   play(): void {
     if (!this.audioContext || !this.enginePtr) return;
     if (this.audioContext.state === 'suspended') {
-      this.audioContext.resume();
+      void this.audioContext.resume();
     }
     this.enginePtr.play();
     this._setStatus('playing');
@@ -235,32 +274,34 @@ export class WasmAudioBridge {
   setVolume(level: number): void {
     const clamped = Math.max(0, Math.min(1, Number.isFinite(level) ? level : this.volume));
     this.volume = clamped;
-    if (this.gainNode && this.audioContext) {
-      this.gainNode.gain.setValueAtTime(clamped, this.audioContext.currentTime);
-    }
+    this.enginePtr?.setVolume(clamped);
   }
 
   /** Return true if the WASM engine exposes tempo control hooks. */
   canSetTempo(): boolean {
-    return !!(this.enginePtr?.setTempo || this.enginePtr?.setTempoMultiplier);
+    return !!this.enginePtr?.setTempo;
   }
 
   /**
-   * Attempt to set tempo in BPM.
-   * Returns false when tempo control is not implemented in the current WASM build.
+   * Set tempo in BPM.
+   * Returns false when the engine is not available.
    */
   setTempoBpm(bpm: number): boolean {
     if (!this.enginePtr) return false;
     const safeBpm = Math.max(40, Math.min(250, Math.round(bpm)));
-    if (typeof this.enginePtr.setTempo === 'function') {
-      this.enginePtr.setTempo(safeBpm);
-      return true;
-    }
-    if (typeof this.enginePtr.setTempoMultiplier === 'function') {
-      this.enginePtr.setTempoMultiplier(safeBpm / 120);
-      return true;
-    }
-    return false;
+    this.enginePtr.setTempo(safeBpm);
+    return true;
+  }
+
+  /**
+   * Set a tempo multiplier (e.g. 0.5 = half speed, 2.0 = double speed).
+   * Returns false when the engine is not available.
+   */
+  setTempoMultiplier(multiplier: number): boolean {
+    if (!this.enginePtr) return false;
+    const safeMultiplier = Math.max(0.25, Math.min(4, Number.isFinite(multiplier) ? multiplier : 1));
+    this.enginePtr.setTempoMultiplier(safeMultiplier);
+    return true;
   }
 
   /** Clean up resources. */
@@ -268,8 +309,8 @@ export class WasmAudioBridge {
     this.stop();
     this.workletNode?.disconnect();
     this.gainNode?.disconnect();
-    this.audioContext?.close();
-    this.enginePtr?.delete?.();
+    void this.audioContext?.close();
+    this.enginePtr?.delete();
     this.module = null;
     this._setStatus('idle');
   }
@@ -293,11 +334,64 @@ export class WasmAudioBridge {
         requestAnimationFrame(poll);
         return;
       }
-      // getPlaybackPosition writes to out-params via embind
-      const pos = this.enginePtr.getPlaybackPosition();
+      const pos: PlaybackPosition = this.enginePtr.getPlaybackPosition();
       this.onPosition?.(pos.bar, pos.step);
       requestAnimationFrame(poll);
     };
     requestAnimationFrame(poll);
+  }
+
+  private _toUiParsedSong(wasmSong: WasmParsedSong): ParsedSong {
+    return {
+      title: wasmSong.title,
+      author: wasmSong.author,
+      bpm: wasmSong.bpm,
+      devices: wasmSong.devices.map((d) => this._toUiDeviceState(d)),
+      patterns: wasmSong.patterns.map((p) => this._toUiPattern(p)),
+      arrangement: wasmSong.arrangement.map((b) => this._toUiArrangementStep(b)),
+    };
+  }
+
+  private _toUiDeviceState(wasmDevice: WasmDeviceState): import('../types/wasm-audio').DeviceState {
+    return {
+      deviceId: DEVICE_LABELS[wasmDevice.id] as 'tb303-a' | 'tb303-b' | 'tr808' | 'tr909',
+      knobs: {
+        tune: wasmDevice.tune,
+        cutoff: wasmDevice.cutoff,
+        resonance: wasmDevice.resonance,
+        envMod: wasmDevice.envMod,
+        decay: wasmDevice.decay,
+        accent: wasmDevice.accent,
+      },
+      muted: wasmDevice.muted,
+    };
+  }
+
+  private _toUiPattern(wasmPattern: WasmPattern): import('../types/wasm-audio').Pattern {
+    return {
+      deviceId: DEVICE_LABELS[wasmPattern.deviceId],
+      bank: wasmPattern.bank,
+      patternIndex: wasmPattern.patternIndex,
+      steps: wasmPattern.steps.map((s) => ({
+        active: s.active,
+        note: s.note === 0 ? undefined : s.note,
+        accent: s.accent,
+        slide: s.slide,
+      })),
+    };
+  }
+
+  private _toUiArrangementStep(wasmBar: WasmArrangementBar): import('../types/wasm-audio').ArrangementStep {
+    const patternRefs: Record<string, import('../types/wasm-audio').PatternRef> = {};
+    wasmBar.devicePatterns.forEach((ref, index) => {
+      const label = DEVICE_LABELS[index as WasmDeviceId];
+      if (label) {
+        patternRefs[label] = { bank: ref.bank, index: ref.index };
+      }
+    });
+    return {
+      bar: wasmBar.barNumber,
+      patternRefs,
+    };
   }
 }

@@ -10,22 +10,73 @@
  */
 
 #include <emscripten/bind.h>
+#include <emscripten/val.h>
+#include <array>
+#include <utility>
+#include "parser/RbsTypes.h"
 #include "parser/RbsParser.h"
 #include "engine/RbsAudioEngine.h"
+#include "worklet/RbsWorklet.h"
 
 using namespace emscripten;
 using namespace rb338;
+
+// ── Embind-friendly wrappers ─────────────────────────────────────
+
+struct PlaybackPosition {
+  uint16_t bar = 1;
+  uint8_t step = 0;
+};
+
+PlaybackPosition getPlaybackPositionWrapper(const RbsAudioEngine& self) {
+  uint16_t bar = 0;
+  uint8_t step = 0;
+  self.getPlaybackPosition(bar, step);
+  return PlaybackPosition{bar, step};
+}
+
+// Helpers to register fixed-size std::array types with value_array.
+// Embind requires every index to be declared explicitly, so we use
+// index_sequence to generate the .element(index<I>()) chain.
+
+template <typename T, std::size_t N, std::size_t... Is>
+void registerArrayElements(value_array<std::array<T, N>>& builder, std::index_sequence<Is...>) {
+  (builder.element(index<Is>()), ...);
+}
+
+template <typename T, std::size_t N>
+void registerFixedArray(const char* name) {
+  auto builder = value_array<std::array<T, N>>(name);
+  registerArrayElements<T, N>(builder, std::make_index_sequence<N>{});
+}
 
 // ── Embind exports ───────────────────────────────────────────────
 // These make C++ classes callable from JavaScript/TypeScript.
 
 EMSCRIPTEN_BINDINGS(rb338_audio) {
-  // enums
-  enum_<DeviceId>("DeviceId")
+  // Container registrations must appear before any value_object that uses them.
+  register_vector<Pattern>("PatternVector");
+  register_vector<ArrangementBar>("ArrangementBarVector");
+  registerFixedArray<StepData, MAX_STEPS>("StepDataArray");
+  registerFixedArray<DeviceState, NUM_DEVICES>("DeviceStateArray");
+  registerFixedArray<PatternRef, NUM_DEVICES>("PatternRefArray");
+
+  // enums — expose as plain numbers so JS/TS can use them directly.
+  enum_<DeviceId>("DeviceId", enum_value_type::number)
     .value("TB303_A", DeviceId::TB303_A)
     .value("TB303_B", DeviceId::TB303_B)
     .value("TR808",   DeviceId::TR808)
     .value("TR909",   DeviceId::TR909);
+
+  enum_<RbsVersion>("RbsVersion", enum_value_type::number)
+    .value("V1_5",   RbsVersion::V1_5)
+    .value("V2_0",   RbsVersion::V2_0)
+    .value("V2_0_1", RbsVersion::V2_0_1);
+
+  // PlaybackPosition
+  value_object<PlaybackPosition>("PlaybackPosition")
+    .field("bar",  &PlaybackPosition::bar)
+    .field("step", &PlaybackPosition::step);
 
   // StepData
   value_object<StepData>("StepData")
@@ -53,9 +104,24 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .field("envMod",   &DeviceState::envMod)
     .field("decay",    &DeviceState::decay)
     .field("accent",   &DeviceState::accent)
+    .field("waveform", &DeviceState::waveform)
+    .field("initialPatternBank",  &DeviceState::initialPatternBank)
+    .field("initialPatternIndex", &DeviceState::initialPatternIndex)
     .field("muted",    &DeviceState::muted)
     .field("level",    &DeviceState::level)
-    .field("pan",      &DeviceState::pan);
+    .field("pan",      &DeviceState::pan)
+    .field("dist",     &DeviceState::dist)
+    .field("pcf",      &DeviceState::pcf)
+    .field("compressor", &DeviceState::compressor)
+    .field("delaySend", &DeviceState::delaySend);
+
+  // Pattern
+  value_object<Pattern>("Pattern")
+    .field("deviceId",     &Pattern::deviceId)
+    .field("bank",         &Pattern::bank)
+    .field("patternIndex", &Pattern::patternIndex)
+    .field("length",       &Pattern::length)
+    .field("steps",        &Pattern::steps);
 
   // ParsedSong
   value_object<ParsedSong>("ParsedSong")
@@ -64,14 +130,20 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .field("infoText",     &ParsedSong::infoText)
     .field("creatorUrl",   &ParsedSong::creatorUrl)
     .field("bpm",          &ParsedSong::bpm)
+    .field("version",      &ParsedSong::version)
+    .field("headVersion",  &ParsedSong::headVersion)
+    .field("globSubFormat",&ParsedSong::globSubFormat)
+    .field("showInfoOnOpen", &ParsedSong::showInfoOnOpen)
     .field("devices",      &ParsedSong::devices)
     .field("patterns",     &ParsedSong::patterns)
     .field("arrangement",  &ParsedSong::arrangement);
 
+  register_optional<ParsedSong>();
+
   // RbsParser
   class_<RbsParser>("RbsParser")
     .constructor()
-    .function("parse",     &RbsParser::parse)
+    .function("parse",     &RbsParser::parse, allow_raw_pointer<arg<1>>())
     .function("lastError", &RbsParser::lastError);
 
   // EngineConfig
@@ -95,6 +167,12 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .function("pause",     &RbsAudioEngine::pause)
     .function("stop",      &RbsAudioEngine::stop)
     .function("seek",      &RbsAudioEngine::seek)
+    .function("setVolume", &RbsAudioEngine::setVolume)
+    .function("setTempo",  &RbsAudioEngine::setTempo)
+    .function("setTempoMultiplier", &RbsAudioEngine::setTempoMultiplier)
     .function("isPlaying", &RbsAudioEngine::isPlaying)
-    .function("getPlaybackPosition", &RbsAudioEngine::getPlaybackPosition);
+    .function("getPlaybackPosition", &getPlaybackPositionWrapper);
+
+  // AudioWorklet wiring
+  function("initAudioWorklet", &initAudioWorklet, allow_raw_pointers());
 }

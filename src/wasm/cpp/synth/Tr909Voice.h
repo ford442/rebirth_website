@@ -29,6 +29,11 @@ public:
 private:
   float m_sampleRate = 44100.0f;
 
+  // Test-tone state: simple noise burst with decay (909 variant).
+  uint32_t m_gateSamples = 0;
+  float m_noiseState = 0.0f;
+  static constexpr uint32_t GATE_LENGTH_SAMPLES = 4410; // ~0.1s at 44.1kHz
+
   // TODO: drum channel states, sample buffers, accent handling
 };
 

@@ -13,6 +13,13 @@ namespace rb338 {
 
 constexpr char RBS_MAGIC[] = "ReBirth Song File";
 constexpr size_t RBS_MAGIC_LEN = 17;
+
+// Real archive files use a Propellerhead chunk container, not the plain header above.
+constexpr char RBS_CONTAINER_MAGIC[] = "CAT ";
+constexpr char RBS_FORMAT_MARKER[]   = "RB40";
+constexpr char RBS_HEAD_MAGIC[]      = "HEAD";
+constexpr char RBS_HEAD_SIGNATURE[]  = "[T[T";
+
 constexpr int MAX_PATTERNS_PER_BANK = 8;
 constexpr int MAX_BANKS = 4;              // A, B, C, D
 constexpr int MAX_STEPS = 16;
@@ -41,7 +48,7 @@ enum class RbsVersion : uint8_t {
 
 struct StepData {
   bool active = false;
-  uint8_t note = 0;      // MIDI note for 303; ignored for drums
+  uint8_t note = 0;      // MIDI note for 303; drum-hit bitfield for 808/909
   bool accent = false;
   bool slide = false;    // 303 only
 };
@@ -71,6 +78,9 @@ struct DeviceState {
   float envMod = 0.5f;
   float decay = 0.5f;
   float accent = 0.5f;
+  uint8_t waveform = 0;              // TB-303 only: 0 = saw, 1 = square
+  uint8_t initialPatternBank = 0;    // 0–3
+  uint8_t initialPatternIndex = 0;   // 0–7
   // Mixer
   bool muted = false;
   float level = 0.8f;
@@ -108,6 +118,11 @@ struct ParsedSong {
   std::string creatorUrl;
   float bpm = 125.0f;
   RbsVersion version = RbsVersion::V2_0_1;
+
+  // Observed container sub-format markers (for diagnostics)
+  uint8_t headVersion = 0;   // HEAD chunk byte at offset 0x0a (0x01 / 0x02)
+  uint8_t globSubFormat = 0; // GLOB chunk byte at offset 0x03 (0x01 / 0x02)
+  bool showInfoOnOpen = false;
 
   std::array<DeviceState, NUM_DEVICES> devices;
   std::vector<Pattern> patterns;

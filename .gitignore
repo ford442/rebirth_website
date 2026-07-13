@@ -27,3 +27,9 @@ test-results/
 playwright-report/
 tests/screenshots/
 *.png
+
+# Local Emscripten SDK (used only for verification)
+.emsdk/
+
+# Generated WASM artifacts (rebuilt via npm run wasm:build)
+public/wasm/

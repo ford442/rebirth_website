@@ -410,6 +410,12 @@ const hasSrc = !!src;
   import { WasmAudioBridge } from '../wasm/js/WasmAudioBridge';
   import type { PlayerStatus } from '../wasm/types/wasm-audio';
 
+  // Expose the bridge class on window in dev mode so integration tests can
+  // drive it directly without reaching into module internals.
+  if (import.meta.env.DEV) {
+    (window as any).WasmAudioBridge = WasmAudioBridge;
+  }
+
   (async function initRbsPlayer() {
     const playerEl = document.querySelector('.rbs-player') as HTMLElement | null;
     if (!playerEl) return;

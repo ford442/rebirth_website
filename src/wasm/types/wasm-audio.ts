@@ -1,14 +1,22 @@
 /**
  * Shared TypeScript interfaces for the ReBirth RB-338 WASM audio engine.
  *
- * These types describe the data that flows from the WASM parser back to
- * JavaScript, and the control messages that JS sends to the WASM player.
+ * This file contains two layers:
+ *
+ *   1. UI-facing types — the shape the Astro UI expects (ParsedSong, Pattern,
+ *      DeviceState, etc.).
+ *   2. WASM-facing types — the exact shape that crosses the Embind boundary
+ *      from C++ (WasmParsedSong, WasmPattern, WasmDeviceState, etc.).
+ *
+ * The single source of truth for the C++ ↔ TypeScript contract is
+ * `src/wasm/CONTRACT.md`. If you change a WASM-facing type here, update that
+ * document and the matching C++ struct/Embid registration.
  */
 
 /** Top-level status of the in-browser player UI */
 export type PlayerStatus = 'idle' | 'loading' | 'ready' | 'playing' | 'error';
 
-/** Result of parsing an .rbs file in WASM */
+/** Result of parsing an .rbs file in WASM, formatted for the UI */
 export interface ParsedSong {
   /** Song title (from .rbs metadata) */
   title: string;
@@ -24,7 +32,7 @@ export interface ParsedSong {
   arrangement: ArrangementStep[];
 }
 
-/** State snapshot for one of the four ReBirth devices */
+/** State snapshot for one of the four ReBirth devices (UI-facing) */
 export interface DeviceState {
   deviceId: 'tb303-a' | 'tb303-b' | 'tr808' | 'tr909';
   /** Current knob values (key = knob name, value = 0.0–1.0 normalized) */
@@ -33,7 +41,7 @@ export interface DeviceState {
   muted: boolean;
 }
 
-/** A single pattern (up to 16 steps) for one device */
+/** A single pattern (up to 16 steps) for one device (UI-facing) */
 export interface Pattern {
   /** Which device this pattern belongs to */
   deviceId: string;
@@ -45,7 +53,7 @@ export interface Pattern {
   steps: StepData[];
 }
 
-/** Data for one step in a pattern */
+/** Data for one step in a pattern (UI-facing) */
 export interface StepData {
   /** Is this step active (note on / drum hit)? */
   active: boolean;
@@ -57,7 +65,7 @@ export interface StepData {
   slide: boolean;
 }
 
-/** One bar in the song arrangement */
+/** One bar in the song arrangement (UI-facing) */
 export interface ArrangementStep {
   /** Bar number (1-based, as shown in ReBirth) */
   bar: number;
@@ -71,7 +79,11 @@ export interface PatternRef {
   index: number;
 }
 
-/** Feature flags that can disable sub-devices at runtime */
+/** Feature flags that can disable sub-devices at runtime.
+ *
+ *  This is a convenience shape used by `audio-module.config.js`. The bridge
+ *  flattens it into the flat `EngineConfig` fields before calling WASM.
+ */
 export interface EngineFeatures {
   tb303_a: boolean;
   tb303_b: boolean;
@@ -82,18 +94,182 @@ export interface EngineFeatures {
   delay: boolean;
 }
 
-/** Runtime engine configuration passed from JS to WASM on init */
+/** Runtime engine configuration passed from JS to WASM on init.
+ *
+ *  Matches `EngineConfig` in `src/wasm/cpp/engine/RbsAudioEngine.h` exactly.
+ */
 export interface EngineConfig {
   /** Host AudioContext sample rate (Hz) */
   sampleRate: number;
   /** Render quantum size in frames (typically 128) */
   bufferSize: number;
-  /** Per-module feature flags */
-  features: EngineFeatures;
+  /** Enable TB-303 voice A */
+  enableTb303A: boolean;
+  /** Enable TB-303 voice B */
+  enableTb303B: boolean;
+  /** Enable TR-808 drum machine */
+  enableTr808: boolean;
+  /** Enable TR-909 drum machine */
+  enableTr909: boolean;
+  /** Enable distortion FX */
+  enableDistortion: boolean;
+  /** Enable compressor FX */
+  enableCompressor: boolean;
+  /** Enable delay FX */
+  enableDelay: boolean;
+}
+
+/** Current playback position returned by the engine */
+export interface PlaybackPosition {
+  /** Current bar (1-based) */
+  bar: number;
+  /** Current step within the bar (0-based or 1-based depending on engine convention) */
+  step: number;
 }
 
 /** Error info returned when parsing or playback fails */
 export interface EngineError {
   code: string;
   message: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// WASM-facing types — must match C++ structs field-for-field
+// ═══════════════════════════════════════════════════════════════════
+
+/** Numeric device IDs as encoded in C++ `DeviceId` */
+export type WasmDeviceId = 0 | 1 | 2 | 3;
+
+/** Step data as returned by the WASM parser */
+export interface WasmStepData {
+  active: boolean;
+  note: number;
+  accent: boolean;
+  slide: boolean;
+}
+
+/** Pattern reference as encoded in C++ `PatternRef` */
+export interface WasmPatternRef {
+  bank: number;
+  index: number;
+}
+
+/** One arrangement bar as encoded in C++ `ArrangementBar` */
+export interface WasmArrangementBar {
+  barNumber: number;
+  devicePatterns: WasmPatternRef[];
+}
+
+/** Device state as encoded in C++ `DeviceState` */
+export interface WasmDeviceState {
+  id: WasmDeviceId;
+  tune: number;
+  cutoff: number;
+  resonance: number;
+  envMod: number;
+  decay: number;
+  accent: number;
+  waveform: number;
+  initialPatternBank: number;
+  initialPatternIndex: number;
+  muted: boolean;
+  level: number;
+  pan: number;
+  dist: boolean;
+  pcf: boolean;
+  compressor: boolean;
+  delaySend: number;
+}
+
+/** Pattern as encoded in C++ `Pattern` */
+export interface WasmPattern {
+  deviceId: WasmDeviceId;
+  bank: number;
+  patternIndex: number;
+  length: number;
+  steps: WasmStepData[];
+}
+
+/** Parsed song as encoded in C++ `ParsedSong` */
+export interface WasmParsedSong {
+  title: string;
+  author: string;
+  infoText: string;
+  creatorUrl: string;
+  bpm: number;
+  version: number;
+  headVersion: number;
+  globSubFormat: number;
+  showInfoOnOpen: boolean;
+  devices: WasmDeviceState[];
+  patterns: WasmPattern[];
+  arrangement: WasmArrangementBar[];
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Emscripten module interfaces
+// ═══════════════════════════════════════════════════════════════════
+
+/** Handle returned by `emscriptenRegisterAudioObject` */
+export type AudioObjectHandle = number;
+
+/** Instance handle returned by `initAudioWorklet` */
+export type WorkletNodeHandle = number;
+
+/** Class constructor shape exposed by Embind for `RbsAudioEngine` */
+export interface RbsAudioEngineInstance {
+  /** Raw pointer used when passing this instance to AudioWorklet wiring. */
+  ptr: number;
+  init(config: EngineConfig): boolean;
+  loadSong(song: WasmParsedSong): boolean;
+  play(): void;
+  pause(): void;
+  stop(): void;
+  seek(bar: number): void;
+  setVolume(volume: number): void;
+  setTempo(bpm: number): void;
+  setTempoMultiplier(multiplier: number): void;
+  isPlaying(): boolean;
+  getPlaybackPosition(): PlaybackPosition;
+  delete(): void;
+}
+
+/** Class constructor shape exposed by Embind for `RbsParser` */
+export interface RbsParserInstance {
+  /** Returns the parsed song, or `undefined` when parsing fails. */
+  parse(ptr: number, size: number): WasmParsedSong | undefined;
+  lastError(): string;
+  delete(): void;
+}
+
+/** Constructor signature returned by Embind */
+export type EmbindClassConstructor<T> = new () => T;
+
+/** The `rb338` namespace exported from C++ */
+export interface Rb338Namespace {
+  DeviceId: Record<string, WasmDeviceId>;
+  RbsAudioEngine: EmbindClassConstructor<RbsAudioEngineInstance>;
+  RbsParser: EmbindClassConstructor<RbsParserInstance>;
+  initAudioWorklet(
+    contextHandle: AudioObjectHandle,
+    enginePtr: number,
+    callback: (nodeHandle: WorkletNodeHandle | null) => void
+  ): void;
+}
+
+/** The instantiated Emscripten module returned by the JS glue */
+export interface EngineModule {
+  /** Exposed C++ namespace */
+  rb338: Rb338Namespace;
+
+  /** Heap views */
+  HEAPU8: Uint8Array;
+
+  /** Manual memory management (exported via `-sEXPORTED_FUNCTIONS`) */
+  _malloc(size: number): number;
+  _free(ptr: number): void;
+
+  /** Audio object registry (exported via `-sEXPORTED_RUNTIME_METHODS`) */
+  emscriptenRegisterAudioObject(obj: AudioContext): AudioObjectHandle;
+  emscriptenGetAudioObject<T = unknown>(handle: AudioObjectHandle): T;
 }

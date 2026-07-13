@@ -92,8 +92,22 @@ npm run astro check
 │   ├── styles/
 │   │   └── global.css          ← Global reset, design tokens, base styles
 │   ├── wasm/
-│   │   ├── README.md           ← Planned WASM audio engine architecture
-│   │   └── audio-module.config.js ← WASM runtime config stub
+│   │   ├── cpp/
+│   │   │   ├── main.cpp                 # Emscripten entry point + embind exports
+│   │   │   ├── build.sh                 # Emscripten compile script
+│   │   │   ├── parser/                  # .rbs binary parser
+│   │   │   ├── engine/                  # Audio engine (sequencer, mixer, voices)
+│   │   │   ├── synth/                   # TB-303 / TR-808 / TR-909 voice stubs
+│   │   │   └── worklet/                 # AudioWorklet processor callback
+│   │   ├── js/
+│   │   │   └── WasmAudioBridge.ts       # Typed JS wrapper around Emscripten Module
+│   │   ├── types/
+│   │   │   └── wasm-audio.ts            # Shared TypeScript interfaces
+│   │   ├── tests/
+│   │   │   └── wasm-audio-types.test.ts # Compile-time bridge contract test
+│   │   ├── CONTRACT.md                  # C++ ↔ TypeScript field-for-field contract
+│   │   ├── README.md                    # Planned WASM audio engine architecture
+│   │   └── audio-module.config.js       # WASM runtime config stub
 │   ├── content.config.ts       ← Astro content collection schema (docs)
 │   └── env.d.ts                ← Astro client types reference
 ├── scripts/                    ← Python helper scripts

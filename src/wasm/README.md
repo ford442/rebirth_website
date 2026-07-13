@@ -10,12 +10,48 @@ In-browser playback engine for ReBirth RB-338 `.rbs` song files.
 
 ## Integration Roadmap (Phase Plan)
 
-1. **Parser completion** — finish `RbsParser` so metadata, patterns, and arrangement decode from real `.rbs` payloads.
-2. **Audio engine parity** — implement TB-303 / TR-808 / TR-909 playback voices and mixer routing in `RbsAudioEngine`.
-3. **Realtime control API** — expose embind tempo/volume/transport hooks used by `WasmAudioBridge`.
+1. **Parser completion** — metadata and patterns decode from real `.rbs` payloads ✅. Arrangement (`TRAK` chunks) is pending.
+2. **Audio engine parity** — test-tone voices and mixer routing are in place. Final TB-303 / TR-808 / TR-909 synthesis is future work.
+3. **Realtime control API** — transport + tempo + volume commands flow through a lock-free queue ✅.
 4. **Archive demo pipeline** — add curated demo `.rbs` files under `public/archive/rbs-songs/demo/` for direct browser previews.
 5. **Fallback mode** — if WASM init fails, provide a Web Audio sample-preview path so the UI remains usable.
 6. **End-to-end validation** — add browser tests that cover upload, demo loading, transport controls, and fallback behaviour.
+
+## Audio thread architecture
+
+We use **Architecture A — Emscripten Wasm Audio Worklet**.
+
+- **Main thread** (`WasmAudioBridge`):
+  - Loads the Emscripten glue and WASM module.
+  - Creates the `AudioContext` and wires the `AudioWorkletNode`.
+  - Parses `.rbs` files via `RbsParser` and calls `RbsAudioEngine::loadSong()`.
+  - Sends transport/control commands (`play`, `pause`, `stop`, `seek`, `setVolume`, `setTempo`) by pushing them into a lock-free command queue that lives in shared WASM memory.
+  - Polls `getPlaybackPosition()` for UI updates.
+
+- **Audio thread** (`RbsWorklet` / `RbsAudioEngine::processBlock()`):
+  - Owns the `Sequencer`, `Mixer`, and all `Voice` instances.
+  - Drains the command queue at the start of every 128-frame render quantum.
+  - Generates sample-accurate step events from the current BPM and sample rate.
+  - Renders each voice into a scratch mono buffer and mixes to interleaved stereo.
+  - Publishes `bar`/`step` via atomic variables so the main thread can read them without locking.
+
+This keeps latency low (128-frame Web Audio quanta), avoids main-thread synthesis work, and matches the existing `-sAUDIO_WORKLET=1` / `-sWASM_WORKERS=1` build configuration.
+
+### Why not Option B or C?
+
+- **Option B** (main-thread WASM + ScriptProcessor/ring buffer) would push synthesis or PCM streaming onto the main thread, creating latency and jank risks for a UI-heavy archive site.
+- **Option C** (hybrid: parse on main, synthesise on audio thread) is essentially the same runtime shape as Option A; we capture it explicitly above by stating that `.rbs` parsing stays on the main thread while the audio thread owns synthesis and sequencing.
+
+### Real-time constraints
+
+The audio callback (`processBlock()`) must never:
+
+- allocate heap memory (`malloc` / `new` / `std::vector` resize),
+- take a mutex or spin lock,
+- call into JS,
+- or perform file I/O.
+
+All control data is pre-allocated or passed through the lock-free `EngineCommandQueue`. Position is shared via `std::atomic`. Scratch render buffers are fixed-size stack arrays.
 
 ## Quick Start
 
@@ -23,17 +59,65 @@ In-browser playback engine for ReBirth RB-338 `.rbs` song files.
 # 1. Install Emscripten (one-time)
 git clone https://github.com/emscripten-core/emsdk.git
 cd emsdk
-./emsdk install latest
-./emsdk activate latest
+./emsdk install 3.1.74
+./emsdk activate 3.1.74
 source ./emsdk_env.sh
 
-# 2. Build
-cd src/wasm/cpp
-./build.sh
+# 2. Build (release)
+npm run wasm:build
 
-# 3. Verify outputs exist
-ls ../../../public/wasm/
-# → rbsParser.js  rbsParser.wasm  rbsWorklet.js
+# 3. Build (debug)
+npm run wasm:build:debug
+
+# 4. Verify outputs exist
+ls public/wasm/
+# → rbsParser.js  rbsParser.wasm  rbsWorklet.js  wasm-build.json
+```
+
+The pinned Emscripten version lives in [`cpp/.emscripten-version`](cpp/.emscripten-version). Update it deliberately when you need a newer toolchain; the build script warns when the installed version does not match.
+
+## Build Profiles
+
+The build script (`src/wasm/cpp/build.sh`) supports two modes:
+
+| Mode | Command | Optimisation | Memory growth | Best for |
+|------|---------|--------------|---------------|----------|
+| Release | `npm run wasm:build` | `-O3 -flto` | Disabled, fixed 64 MB heap | Shipping |
+| Debug | `npm run wasm:build:debug` | `-O0 -g3` | Enabled, 32–128 MB cap | Development |
+
+Release uses a fixed heap so the audio callback never triggers a memory resize. Debug enables `ASSERTIONS`, `SAFE_HEAP`, `STACK_OVERFLOW_CHECK`, and `WEBAUDIO_DEBUG` to catch memory and worklet issues early.
+
+### Emitted files
+
+Emscripten produces `rbsParser.js`, `rbsParser.wasm`, and `rbsParser.aw.js`. The build script renames `rbsParser.aw.js` to `rbsWorklet.js` so the rest of the project refers to a stable filename. A `wasm-build.json` manifest is also generated for cache-busting and diagnostics.
+
+### Deployment paths
+
+Assets live in `public/wasm/` and are served from the site's base path. With `base: '/rb338'` (the GitHub Pages/SFTP deployment), the runtime URLs become:
+
+| File | Public | Served at |
+|------|--------|-----------|
+| Glue | `public/wasm/rbsParser.js` | `/rb338/wasm/rbsParser.js` |
+| WASM | `public/wasm/rbsParser.wasm` | `/rb338/wasm/rbsParser.wasm` |
+| Worklet | `public/wasm/rbsWorklet.js` | `/rb338/wasm/rbsWorklet.js` |
+
+`src/wasm/audio-module.config.js` reads `import.meta.env.BASE_URL` so these paths stay correct in both dev (`/`) and production (`/rb338`).
+
+### AudioWorklet processor name
+
+The processor name (`"rbs-player"`) is **not** a linker flag. It is set at runtime in C++ via `WebAudioWorkletProcessorCreateOptions.name` when calling `emscripten_create_wasm_audio_worklet_processor_async()`. See [`cpp/worklet/RbsWorklet.cpp`](cpp/worklet/RbsWorklet.cpp) for the registration code.
+
+### CI note
+
+`npm run wasm:build` requires `emcc` on `PATH`. In GitHub Actions, install emsdk before the build step:
+
+```yaml
+- name: Install Emscripten
+  uses: mymindstorm/setup-emsdk@v14
+  with:
+    version: 3.1.74
+- name: Build WASM
+  run: npm run wasm:build
 ```
 
 ## Architecture

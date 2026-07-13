@@ -20,24 +20,30 @@
  *
  * BUILD
  * ─────
- *   cd src/wasm/cpp && ./build.sh
+ *   npm run wasm:build
+ *   npm run wasm:build:debug
  *
- *   Requires: Emscripten (latest), bash
- *   Outputs : ../../../public/wasm/rbsParser.js
- *             ../../../public/wasm/rbsParser.wasm
- *             ../../../public/wasm/rbsWorklet.js
+ *   Requires: Emscripten 3.1.74, bash
+ *   Outputs : public/wasm/rbsParser.js
+ *             public/wasm/rbsParser.wasm
+ *             public/wasm/rbsWorklet.js  (renamed from rbsParser.aw.js)
+ *             public/wasm/wasm-build.json
  */
+
+// Respect Astro/Vite's base path when the site is deployed under a subpath.
+const BASE = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
+const BASE_SLASH = BASE.endsWith('/') ? BASE : `${BASE}/`;
 
 /** @type {WasmAudioModuleConfig} */
 export const wasmAudioConfig = {
   /** Path (from site root) of the compiled .wasm binary */
-  wasmPath: '/wasm/rbsParser.wasm',
+  wasmPath: `${BASE_SLASH}wasm/rbsParser.wasm`,
 
   /** Path of the Emscripten JS glue / bindings */
-  glueScriptPath: '/wasm/rbsParser.js',
+  glueScriptPath: `${BASE_SLASH}wasm/rbsParser.js`,
 
   /** Path of the AudioWorklet processor script */
-  workletPath: '/wasm/rbsWorklet.js',
+  workletPath: `${BASE_SLASH}wasm/rbsWorklet.js`,
 
   /** Preferred AudioContext sample rate (Hz) */
   sampleRate: 44100,
@@ -61,12 +67,23 @@ export const wasmAudioConfig = {
 };
 
 /**
+ * @typedef {Object} EngineFeatures
+ * @property {boolean} tb303_a    - Enable TB-303 voice A
+ * @property {boolean} tb303_b    - Enable TB-303 voice B
+ * @property {boolean} tr808      - Enable TR-808 drum machine
+ * @property {boolean} tr909      - Enable TR-909 drum machine
+ * @property {boolean} distortion - Enable distortion FX
+ * @property {boolean} compressor - Enable compressor FX
+ * @property {boolean} delay      - Enable delay FX
+ */
+
+/**
  * @typedef {Object} WasmAudioModuleConfig
- * @property {string}  wasmPath        - Path to compiled .wasm binary
- * @property {string}  glueScriptPath  - Path to JS bindings
- * @property {string}  workletPath     - Path to AudioWorklet processor
- * @property {number}  sampleRate      - Target AudioContext sample rate
- * @property {number}  bufferSize      - Render quantum size in frames
- * @property {number}  maxVoices       - TB-303 polyphony limit
- * @property {Object}  features        - Per-module feature flags
+ * @property {string}         wasmPath        - Path to compiled .wasm binary
+ * @property {string}         glueScriptPath  - Path to JS bindings
+ * @property {string}         workletPath     - Path to AudioWorklet processor
+ * @property {number}         sampleRate      - Target AudioContext sample rate
+ * @property {number}         bufferSize      - Render quantum size in frames
+ * @property {number}         maxVoices       - TB-303 polyphony limit
+ * @property {EngineFeatures} features        - Per-module feature flags
  */
