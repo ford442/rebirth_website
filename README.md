@@ -17,6 +17,7 @@ Built with [Astro](https://astro.build).
 - [Contributing Documentation](#contributing-documentation)
 - [Archive Indexers](#archive-indexers)
 - [WebAssembly Audio Module](#webassembly-audio-module)
+- [Deployment](#deployment)
 - [Code Style & Standards](#code-style--standards)
 - [License](#license)
 
@@ -187,6 +188,46 @@ architecture.
 
 If you have C/C++/Rust audio DSP experience or knowledge of the `.rbs` binary format,
 contributions to this module are especially welcome.
+
+---
+
+## Deployment
+
+The production site is served from **GitHub Pages** at
+`https://ford442.github.io/rb338` and rebuilds automatically from `main`.
+
+For manual publishing there is `deploy.py`, which zips the `dist/` build and
+uploads it as a single bundle to the storage manager.
+
+> **Secrets never live in the repository.** All credentials are read from the
+> environment. Copy `.env.example` to `.env` (which is git-ignored) and fill in
+> your own values — do **not** paste secrets into any tracked file.
+
+```bash
+# 1. Configure credentials once (see .env.example for the full list)
+cp .env.example .env
+$EDITOR .env
+set -a; source .env; set +a   # export the variables into your shell
+
+# 2. Build, then deploy
+npm run build
+python3 deploy.py
+```
+
+| Variable            | Used by            | Purpose                                                  |
+|---------------------|--------------------|----------------------------------------------------------|
+| `DEPLOY_TOKEN`      | `deploy.py`        | Auth token for the storage endpoint (if required)        |
+| `CONTABO_BASE_URL`  | `deploy.py`        | Override the storage endpoint URL                        |
+| `DEPLOY_FOLDER`     | `deploy.py`        | Override the remote target folder                        |
+| `SFTP_HOST` / `SFTP_USER` | SFTP tooling | Host + user for SFTP uploads (e.g. `scripts/rebirth_mod_upload.py`) |
+| `SFTP_PASSWORD` *or* `SFTP_KEY_FILE` | SFTP tooling | Password **or** (preferred) private-key path |
+
+`scripts/rebirth_mod_upload.py` accepts `--password` / `--key-file` on the
+command line; prefer key-based auth and pass secrets from your environment
+(e.g. `--password "$SFTP_PASSWORD"`) rather than typing them inline.
+
+If any credential was ever committed to git history, **rotate it** — removing it
+from the working tree does not remove it from history.
 
 ---
 

@@ -116,7 +116,7 @@ npm run astro check
 │   └── peff_rbm_filenames.txt  ← Filename list for wayback downloader
 ├── astro.config.mjs            ← Astro configuration
 ├── tsconfig.json               ← TypeScript strict config
-├── deploy.py                   ← Manual SFTP deployment script
+├── deploy.py                   ← Manual bundle-upload deploy script (env-based creds)
 └── package.json
 ```
 
@@ -377,9 +377,9 @@ python3 scripts/sync-mod-metadata.py
 
 ### `deploy.py`
 
-Manual deployment script that uploads the `dist/` directory via SFTP to `test.1ink.us/rb338`.
+Manual deployment script that zips the `dist/` build and uploads it as a single bundle to the storage manager (`CONTABO_BASE_URL`, default `https://storage.noahcohn.com`).
 
-**Security warning**: This script contains a hardcoded password. It is intended for the repository owner's use only.
+**Credentials come from the environment — never hardcode secrets.** Set `DEPLOY_TOKEN` (and optionally `CONTABO_BASE_URL` / `DEPLOY_FOLDER`) via your shell or a git-ignored `.env` file. See `.env.example` and the [Deployment](README.md#deployment) section of the README. The legacy `deploy_old.py` (direct SFTP with an inline password) has been removed.
 
 ## WebAssembly Audio Module (Future)
 
@@ -412,14 +412,14 @@ For manual verification:
 - Site: `https://ford442.github.io/rb338`
 - Base path `/rb338` is baked into `astro.config.mjs`
 
-### Manual SFTP (secondary)
+### Manual bundle upload (secondary)
 
-- `deploy.py` uploads `dist/` → `test.1ink.us/rb338`
-- Requires `paramiko` and valid server credentials
+- `deploy.py` zips `dist/` and uploads it to the storage manager (`CONTABO_BASE_URL`).
+- Requires `requests`. Credentials (`DEPLOY_TOKEN`, etc.) are read from the environment / `.env` — never hardcoded.
 
 ## Security Considerations
 
-- `deploy.py` contains a **hardcoded cleartext password** — do not expose this file publicly if forking.
+- **No secrets in tracked files.** Deploy/upload credentials are supplied via environment variables or a git-ignored `.env` (see `.env.example`). The legacy `deploy_old.py` (inline SFTP password) has been removed. Any credential ever committed to history should be rotated.
 - No user authentication, sessions, or backend API — this is a fully static site.
 - External download links open in new tabs with `rel="noopener noreferrer"`.
 - No `target="_blank"` on internal links.

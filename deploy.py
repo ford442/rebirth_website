@@ -34,12 +34,13 @@ import requests
 # ============================================================
 PROJECT_NAME: str = 'rb338'
 BUILD_DIR: str = 'dist'
-CONTABO_BASE_URL: str = "https://storage.noahcohn.com"
-DEPLOY_FOLDER: str = ""  # override remote target folder; empty = use PROJECT_NAME
+# Override the storage endpoint via the CONTABO_BASE_URL environment variable.
+CONTABO_BASE_URL: str = os.environ.get("CONTABO_BASE_URL", "https://storage.noahcohn.com")
+DEPLOY_FOLDER: str = os.environ.get("DEPLOY_FOLDER", "")  # empty = use PROJECT_NAME
 
-# Optional deploy token (recommended for security).
-# Set via environment: export DEPLOY_TOKEN="your_long_token_from_vps_env"
-DEPLOY_TOKEN: Optional[str] = "6de44dca5425348f2e2ef9456fc820bfe56a5ace68bddeb6da4a1c2a9d9cadc0"
+# Deploy token — NEVER hardcode secrets here. Provide it via the environment
+# (see .env.example), e.g. `export DEPLOY_TOKEN="…"` or a local `.env` file.
+DEPLOY_TOKEN: Optional[str] = os.environ.get("DEPLOY_TOKEN")
 # ============================================================
 
 
@@ -106,6 +107,10 @@ def main():
         print(f"ERROR: Build directory '{BUILD_DIR}/' does not exist.")
         print("Please run your build command first (e.g. `npm run build`).")
         sys.exit(1)
+
+    if not DEPLOY_TOKEN:
+        print("Warning: DEPLOY_TOKEN is not set. Export it or add it to a local .env")
+        print("         file (see .env.example) if the storage endpoint requires auth.")
 
     try:
         health = requests.get(f"{CONTABO_BASE_URL}/api/deploy/health", timeout=10)
