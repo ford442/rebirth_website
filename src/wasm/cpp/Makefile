@@ -8,8 +8,10 @@ BUILD_DIR = build
 
 PARSER_SRC = parser/RbsParser.cpp
 ENGINE_SRCS = engine/RbsAudioEngine.cpp engine/Sequencer.cpp engine/Mixer.cpp \
-              synth/Voice.cpp synth/Tb303Voice.cpp synth/Tr808Voice.cpp synth/Tr909Voice.cpp
-TEST_SRCS  = tests/test_main.cpp tests/test_parser.cpp tests/test_sequencer.cpp tests/test_engine.cpp
+              synth/Voice.cpp synth/DrumSynth.cpp synth/Tb303Voice.cpp \
+              synth/Tr808Voice.cpp synth/Tr909Voice.cpp
+TEST_SRCS  = tests/test_main.cpp tests/test_parser.cpp tests/test_sequencer.cpp \
+             tests/test_engine.cpp tests/test_drums.cpp
 TEST_BIN   = $(BUILD_DIR)/test_rbs_parser
 
 .PHONY: all test wasm clean inspect

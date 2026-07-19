@@ -272,7 +272,15 @@ bitfield stored in `StepData.note`:
 | 6 | OH |
 | 7 | CL |
 
-A step is active when any of the mapped bytes is non-zero.
+Secondary hits are packed into `StepData.drumExtra`:
+
+| Bit | Drum |
+|-----|------|
+| 0 | CP (clap / crash) |
+| 1 | MA (maracas / ride) |
+| 2 | RS (rimshot) |
+
+A step is active when any mapped byte is non-zero.
 
 ---
 

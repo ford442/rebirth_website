@@ -49,6 +49,7 @@ enum class RbsVersion : uint8_t {
 struct StepData {
   bool active = false;
   uint8_t note = 0;      // MIDI note for 303; drum-hit bitfield for 808/909
+  uint8_t drumExtra = 0; // Secondary drum hits: CP, MA, RS (see DrumBitfield.h)
   bool accent = false;
   bool slide = false;    // 303 only
 };

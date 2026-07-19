@@ -4,14 +4,15 @@ In-browser playback engine for ReBirth RB-338 `.rbs` song files.
 
 ## Status
 
-> **⚠️ PENDING IMPLEMENTATION**  
-> C++ source files are scaffolded with TODO stubs. No compiled WASM binaries exist yet.  
+> **⚠️ PARTIAL IMPLEMENTATION**  
+> Parser, sequencer, transport, and **Phase 1 synthetic TR-808 / TR-909 drums** are implemented in C++.  
+> No compiled WASM binaries ship from CI yet — run `npm run wasm:build` locally with Emscripten.  
 > The UI component (`RbsPlayer.astro`) is functional and will show a graceful fallback on unsupported browsers.
 
 ## Integration Roadmap (Phase Plan)
 
 1. **Parser completion** — metadata and patterns decode from real `.rbs` payloads ✅. Arrangement (`TRAK` chunks) is pending.
-2. **Audio engine parity** — test-tone voices and mixer routing are in place. Final TB-303 / TR-808 / TR-909 synthesis is future work.
+2. **Audio engine parity** — Phase 1 procedural TR-808 / TR-909 drums (BD, SD, CH, OH, RS, CP / clap) ✅. TB-303 filter/slide DSP and `.rbm` sample playback remain future work.
 3. **Realtime control API** — transport + tempo + volume commands flow through a lock-free queue ✅.
 4. **Archive demo pipeline** — add curated demo `.rbs` files under `public/archive/rbs-songs/demo/` for direct browser previews.
 5. **Fallback mode** — if WASM init fails, provide a Web Audio sample-preview path so the UI remains usable.
