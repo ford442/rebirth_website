@@ -11,10 +11,12 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "wasm:build": "bash src/wasm/cpp/build.sh release",
+    "check": "astro check",
+    "wasm:build": "bash src/wasm/cpp/build.sh",
     "wasm:build:debug": "bash src/wasm/cpp/build.sh debug",
     "wasm:test": "cd src/wasm/cpp && make test",
     "test": "playwright test",
+    "ci": "npm run check && npm run build && npm test",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
     "test:responsive": "playwright test tests/responsive.spec.ts"
@@ -29,6 +31,6 @@
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": "latest"
+    "node": ">=18.17.1 <23"
   }
 }

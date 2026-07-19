@@ -38,7 +38,7 @@ test.describe('Responsive Layout Tests', () => {
       expect(bodyWidth).toBeLessThanOrEqual(windowWidth + 1); // +1 for rounding
 
       // Check that main elements are visible
-      const panels = await page.locator('.rb-panel').count();
+      const panels = await page.locator('.rb-rack, .rb-panel').count();
       expect(panels).toBeGreaterThan(0);
 
       // Verify no horizontal scrollbar (except when intentional)
@@ -86,26 +86,24 @@ test.describe('Responsive Layout Tests', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    // Test tapping a step button
-    const stepButtons = await page.locator('.rb-step-btn');
-    if (await stepButtons.count() > 0) {
-      const firstButton = stepButtons.first();
-      
-      // Simulate touch tap
-      await firstButton.tap();
+    const player = page.locator('.rbs-player');
+    await player.scrollIntoViewIfNeeded();
 
-      // Check if button has :active or focus styles applied
-      // (Visual verification would be better, but this at least ensures no errors)
-      expect(firstButton).toBeDefined();
+    // Interact with the demo selector (avoid #rbsBtnLoad — it opens a native file picker)
+    const demoSelect = page.locator('#rbsDemoSelect');
+    await expect(demoSelect).toBeVisible();
+    if (test.info().project.use.hasTouch) {
+      await demoSelect.tap();
+    } else {
+      await demoSelect.click();
     }
 
-    // Test knob interaction
-    const knobs = await page.locator('.rb-knob');
+    const knobs = page.locator('.rb-knob');
     if (await knobs.count() > 0) {
       const firstKnob = knobs.first();
-      
-      // Hover over knob to check for hover states
-      await firstKnob.hover();
+      if (await firstKnob.isVisible()) {
+        await firstKnob.hover();
+      }
       
       // Check if element is interactive
       expect(firstKnob).toBeDefined();
@@ -118,7 +116,7 @@ test.describe('Responsive Layout Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Check that panels don't have excessive margins
-    const panels = await page.locator('.rb-panel');
+    const panels = await page.locator('.rb-rack, .rb-panel');
     expect(await panels.count()).toBeGreaterThan(0);
 
     // Verify action buttons are centered and accessible on mobile
