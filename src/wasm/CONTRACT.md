@@ -83,6 +83,7 @@ C++:
 struct StepData {
   bool active = false;
   uint8_t note = 0;
+  uint8_t drumExtra = 0;
   bool accent = false;
   bool slide = false;
 };
@@ -94,6 +95,7 @@ TypeScript (`WasmStepData`):
 export interface WasmStepData {
   active: boolean;
   note: number;
+  drumExtra: number;
   accent: boolean;
   slide: boolean;
 }

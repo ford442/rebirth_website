@@ -144,6 +144,7 @@ export type WasmDeviceId = 0 | 1 | 2 | 3;
 export interface WasmStepData {
   active: boolean;
   note: number;
+  drumExtra: number;
   accent: boolean;
   slide: boolean;
 }

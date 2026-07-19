@@ -1,18 +1,15 @@
 #pragma once
 
+#include "DrumSynth.h"
 #include "Voice.h"
+#include <array>
 
 namespace rb338 {
 
 /**
- * Tr909Voice — TR-909 drum machine emulation.
+ * Tr909Voice — TR-909 drum machine (Phase 1 synthetic MVP).
  *
- * Architecture:
- *   - 11 drum channels (909 has fewer sounds than 808 but with tune/attack controls)
- *   - Sample-based playback from .rbm mod files
- *   - BD has tune + attack + decay parameters
- *   - SD has tune + tone + snappy parameters
- *   - Accent channel controls overall level per step
+ * Procedural models for BD, SD, CH, OH, and clap (CL / CP).
  */
 class Tr909Voice : public Voice {
 public:
@@ -27,14 +24,13 @@ public:
   void reset() override;
 
 private:
+  static constexpr size_t NUM_CHANNELS = 6;
+
   float m_sampleRate = 44100.0f;
+  DrumParams m_params{};
+  std::array<DrumVoiceChannel, NUM_CHANNELS> m_channels{};
 
-  // Test-tone state: simple noise burst with decay (909 variant).
-  uint32_t m_gateSamples = 0;
-  float m_noiseState = 0.0f;
-  static constexpr uint32_t GATE_LENGTH_SAMPLES = 4410; // ~0.1s at 44.1kHz
-
-  // TODO: drum channel states, sample buffers, accent handling
+  void fire(DrumVoiceId id, bool accent);
 };
 
 } // namespace rb338

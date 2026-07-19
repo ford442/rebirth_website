@@ -82,6 +82,7 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
   value_object<StepData>("StepData")
     .field("active", &StepData::active)
     .field("note",   &StepData::note)
+    .field("drumExtra", &StepData::drumExtra)
     .field("accent", &StepData::accent)
     .field("slide",  &StepData::slide);
 

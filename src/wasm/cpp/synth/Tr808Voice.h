@@ -1,17 +1,16 @@
 #pragma once
 
+#include "DrumSynth.h"
 #include "Voice.h"
+#include <array>
 
 namespace rb338 {
 
 /**
- * Tr808Voice — TR-808 drum machine emulation.
+ * Tr808Voice — TR-808 drum machine (Phase 1 synthetic MVP).
  *
- * Architecture:
- *   - 12 independent drum channels
- *   - Each channel is either a sampled AIFF (from .rbm mod) or a simple
- *     synthesis model (sine burst for kick, filtered noise for snare, etc.)
- *   - Monophonic per instrument (except BD which can overlap slightly)
+ * Procedural analogue-style models for BD, SD, CH, OH, RS, CP.
+ * Each instrument is monophonic; multiple instruments layer per step.
  */
 class Tr808Voice : public Voice {
 public:
@@ -26,14 +25,21 @@ public:
   void reset() override;
 
 private:
+  enum class Channel : size_t {
+    Kick = 0,
+    Snare,
+    ClosedHat,
+    OpenHat,
+    Rimshot,
+    Clap,
+    Count
+  };
+
   float m_sampleRate = 44100.0f;
+  DrumParams m_params{};
+  std::array<DrumVoiceChannel, static_cast<size_t>(Channel::Count)> m_channels{};
 
-  // Test-tone state: simple noise burst with decay.
-  uint32_t m_gateSamples = 0;
-  float m_noiseState = 0.0f;
-  static constexpr uint32_t GATE_LENGTH_SAMPLES = 5512; // ~0.125s at 44.1kHz
-
-  // TODO: drum channel states, sample playback buffers, synthesis models
+  void fire(Channel ch, DrumVoiceId id, bool accent);
 };
 
 } // namespace rb338

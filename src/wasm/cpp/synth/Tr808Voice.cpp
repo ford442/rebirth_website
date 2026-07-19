@@ -1,56 +1,69 @@
 #include "Tr808Voice.h"
-#include <cmath>
+#include "DrumBitfield.h"
 #include <cstring>
 
 namespace rb338 {
 
 void Tr808Voice::init(float sampleRate) {
   m_sampleRate = sampleRate;
+  for (auto& ch : m_channels) {
+    ch.init(sampleRate);
+  }
   reset();
 }
 
 void Tr808Voice::load(const DeviceState& state, const std::vector<Pattern>& patterns) {
-  // TODO: load drum parameters and pattern data.
-  (void)state;
   (void)patterns;
+  m_params.tune = state.tune;
+  m_params.decay = state.decay;
+  m_params.accent = state.accent;
+}
+
+void Tr808Voice::fire(Channel ch, DrumVoiceId id, bool accent) {
+  m_channels[static_cast<size_t>(ch)].trigger(id, 1.0f, accent, m_params, false);
 }
 
 void Tr808Voice::render(float* output, uint32_t numFrames) {
   if (!output || numFrames == 0) return;
 
   for (uint32_t i = 0; i < numFrames; ++i) {
-    if (m_gateSamples == 0) {
-      output[i] = 0.0f;
-      continue;
+    float sample = 0.0f;
+    for (auto& ch : m_channels) {
+      sample += ch.render();
     }
-
-    // Simple filtered pseudo-noise (linear congruential-ish).
-    m_noiseState = std::fmod(m_noiseState * 1.97f + 0.13f, 2.0f) - 1.0f;
-
-    // Exponential decay envelope.
-    float env = static_cast<float>(m_gateSamples) / GATE_LENGTH_SAMPLES;
-    env = env * env; // sharper decay
-
-    output[i] = m_noiseState * env * 0.2f;
-    if (m_gateSamples > 0) --m_gateSamples;
+    output[i] = sample;
   }
 }
 
 void Tr808Voice::triggerStep(uint8_t stepIndex, const StepData& step) {
   (void)stepIndex;
   if (!step.active) return;
-  m_gateSamples = GATE_LENGTH_SAMPLES;
+
+  const uint8_t hits = step.note;
+  const uint8_t extra = step.drumExtra;
+  const bool accent = step.accent;
+
+  if (hits & DrumHit::BD) fire(Channel::Kick, DrumVoiceId::Kick, accent);
+  if (hits & DrumHit::SD) fire(Channel::Snare, DrumVoiceId::Snare, accent);
+  if (hits & DrumHit::CH) fire(Channel::ClosedHat, DrumVoiceId::ClosedHat, accent);
+  if (hits & DrumHit::OH) fire(Channel::OpenHat, DrumVoiceId::OpenHat, accent);
+  if (extra & DrumExtra::RS) fire(Channel::Rimshot, DrumVoiceId::Rimshot, accent);
+  if ((hits & DrumHit::CL) || (extra & DrumExtra::CP)) {
+    fire(Channel::Clap, DrumVoiceId::Clap, accent);
+  }
 }
 
 void Tr808Voice::setParameter(const char* name, float value) {
-  (void)name;
-  (void)value;
-  // TODO: map drum parameter names.
+  if (!name) return;
+  if (std::strcmp(name, "tune") == 0) m_params.tune = value;
+  else if (std::strcmp(name, "decay") == 0) m_params.decay = value;
+  else if (std::strcmp(name, "accent") == 0) m_params.accent = value;
 }
 
 void Tr808Voice::reset() {
-  m_gateSamples = 0;
-  m_noiseState = 0.0f;
+  for (auto& ch : m_channels) {
+    ch.reset();
+  }
 }
 
 } // namespace rb338

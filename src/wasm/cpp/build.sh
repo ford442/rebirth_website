@@ -104,6 +104,7 @@ SOURCES=(
   "$SRC_DIR/engine/Sequencer.cpp"
   "$SRC_DIR/engine/Mixer.cpp"
   "$SRC_DIR/synth/Voice.cpp"
+  "$SRC_DIR/synth/DrumSynth.cpp"
   "$SRC_DIR/synth/Tb303Voice.cpp"
   "$SRC_DIR/synth/Tr808Voice.cpp"
   "$SRC_DIR/synth/Tr909Voice.cpp"

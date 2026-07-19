@@ -150,9 +150,14 @@ std::array<StepData, MAX_STEPS> decodeDrumPattern(const uint8_t* data,
     if (row[6] != 0) hits |= 0x20; // CH
     if (row[7] != 0) hits |= 0x40; // OH
     if (row[8] != 0) hits |= 0x80; // CL
+    uint8_t extra = 0;
+    if (row[9] != 0) extra |= 0x01;  // CP
+    if (row[10] != 0) extra |= 0x02; // MA
+    if (row[11] != 0) extra |= 0x04; // RS
     StepData& step = steps[s];
     step.note = hits;
-    step.active = (hits != 0);
+    step.drumExtra = extra;
+    step.active = (hits != 0 || extra != 0);
     // Treat the BD tweak byte as a generic accent flag for this step.
     step.accent = (row[1] != 0);
   }

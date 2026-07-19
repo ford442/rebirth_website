@@ -1,5 +1,4 @@
 #include "Mixer.h"
-#include "../parser/RbsTypes.h"
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -8,28 +7,32 @@ namespace rb338 {
 
 void Mixer::init(float sampleRate) {
   m_sampleRate = sampleRate;
-  // TODO: allocate delay line and init FX state when distortion/compressor/delay
-  // are implemented. For now the mixer is a simple sum + pan.
+  for (auto& dev : m_devices) {
+    dev.level = 0.8f;
+    dev.pan = 0.5f;
+    dev.muted = false;
+  }
+}
+
+void Mixer::setDeviceStates(const std::array<DeviceState, NUM_DEVICES>& devices) {
+  m_devices = devices;
 }
 
 void Mixer::process(const float* const* deviceBuffers, float* stereoOut, uint32_t numFrames) {
   if (!stereoOut || numFrames == 0) return;
-
-  // Default per-device levels/pans until voice state carries them through.
-  // Order: 303-A, 303-B, 808, 909.
-  const float levels[NUM_DEVICES] = { 0.7f, 0.7f, 0.8f, 0.8f };
-  const float pans[NUM_DEVICES]   = { 0.4f, 0.6f, 0.5f, 0.5f }; // 0=left, 0.5=center, 1=right
 
   std::memset(stereoOut, 0, numFrames * 2 * sizeof(float));
 
   for (int d = 0; d < NUM_DEVICES; ++d) {
     const float* src = deviceBuffers[d];
     if (!src) continue;
+    if (m_devices[d].muted) continue;
 
-    const float level = levels[d];
+    const float level = std::clamp(m_devices[d].level, 0.0f, 1.0f);
+    const float pan = std::clamp(m_devices[d].pan, 0.0f, 1.0f);
     // Linear pan law: left gain = (1 - pan) * level, right gain = pan * level.
-    const float leftGain = (1.0f - pans[d]) * 2.0f * level;
-    const float rightGain = pans[d] * 2.0f * level;
+    const float leftGain = (1.0f - pan) * 2.0f * level;
+    const float rightGain = pan * 2.0f * level;
 
     for (uint32_t i = 0; i < numFrames; ++i) {
       const float s = src[i];
@@ -41,10 +44,7 @@ void Mixer::process(const float* const* deviceBuffers, float* stereoOut, uint32_
   // Soft clip / cheap limiter to avoid hard digital clipping when many voices
   // hit simultaneously.
   for (uint32_t i = 0; i < numFrames * 2; ++i) {
-    float s = stereoOut[i];
-    // tanh saturation
-    s = std::tanh(s);
-    stereoOut[i] = s;
+    stereoOut[i] = std::tanh(stereoOut[i]);
   }
 }
 

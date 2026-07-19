@@ -79,6 +79,8 @@ bool RbsAudioEngine::loadSong(const ParsedSong& song) {
     }
   }
 
+  m_mixer->setDeviceStates(song.devices);
+
   // Publish an immutable snapshot for the audio thread. The sequencer detects
   // the pointer change on its next block and re-resolves patterns safely.
   auto snapshot = std::make_shared<const ParsedSong>(song);
@@ -222,6 +224,19 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
 
   // Render each voice into its mono scratch buffer.
   for (int i = 0; i < NUM_DEVICES; ++i) {
+    const bool enabled = [&]() {
+      switch (static_cast<DeviceId>(i)) {
+        case DeviceId::TB303_A: return m_config.enableTb303A;
+        case DeviceId::TB303_B: return m_config.enableTb303B;
+        case DeviceId::TR808: return m_config.enableTr808;
+        case DeviceId::TR909: return m_config.enableTr909;
+        default: return true;
+      }
+    }();
+    if (!enabled) {
+      std::memset(m_voiceBuffers[i], 0, numFrames * sizeof(float));
+      continue;
+    }
     m_voices[i]->render(m_voiceBuffers[i], numFrames);
   }
 
