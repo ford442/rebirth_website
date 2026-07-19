@@ -18,6 +18,7 @@ Built with [Astro](https://astro.build).
 - [Archive Indexers](#archive-indexers)
 - [WebAssembly Audio Module](#webassembly-audio-module)
 - [Deployment](#deployment)
+- [Continuous Integration](#continuous-integration)
 - [Code Style & Standards](#code-style--standards)
 - [License](#license)
 
@@ -228,6 +229,31 @@ command line; prefer key-based auth and pass secrets from your environment
 
 If any credential was ever committed to git history, **rotate it** — removing it
 from the working tree does not remove it from history.
+
+---
+
+## Continuous Integration
+
+GitHub Actions runs on every pull request and push to `main`. **No repository
+secrets are required** for public CI — deploy credentials are only needed locally
+for `deploy.py` and SFTP upload scripts.
+
+| Workflow | Triggers | What it checks |
+|----------|----------|----------------|
+| [`ci.yml`](.github/workflows/ci.yml) | PR / `main` | `npm ci`, `astro check`, production build, secrets scan, Playwright against the preview server |
+| [`wasm.yml`](.github/workflows/wasm.yml) | PRs touching `src/wasm/**`, nightly cron | Pinned Emscripten build, WASM Playwright tests, artifact upload |
+
+Locally you can mirror the main CI pipeline:
+
+```bash
+npm ci
+npm run ci          # check + build + playwright (dev server locally)
+bash scripts/check-no-secrets.sh
+python3 scripts/check-mod-metadata.py --priority   # optional warning
+```
+
+WASM builds require Emscripten on your machine (`npm run wasm:build`). See
+[`src/wasm/README.md`](src/wasm/README.md) for setup.
 
 ---
 
