@@ -32,6 +32,10 @@ import type {
 } from '../types/wasm-audio';
 
 import { wasmAudioConfig } from '../audio-module.config.js';
+import {
+  WasmInitError,
+  INIT_FAILURE_MESSAGES,
+} from './rbs-init-errors';
 
 /** Callback invoked when playback position changes (bar, step). */
 export type PositionCallback = (bar: number, step: number) => void;
@@ -106,12 +110,39 @@ export class WasmAudioBridge {
 
     try {
       // 1. Check browser support
-      if (!this._checkSupport()) {
-        throw new Error('Browser does not support required audio APIs');
+      if (typeof WebAssembly !== 'object') {
+        throw new WasmInitError({
+          reason: 'unsupported-browser',
+          message: INIT_FAILURE_MESSAGES['unsupported-browser'],
+        });
+      }
+      if (typeof AudioWorkletNode === 'undefined') {
+        throw new WasmInitError({
+          reason: 'worklet-unavailable',
+          message: INIT_FAILURE_MESSAGES['worklet-unavailable'],
+        });
       }
 
-      // 2. Load Emscripten glue (dynamic import of the generated JS)
-      const glueModule = await import(/* @vite-ignore */ wasmAudioConfig.glueScriptPath);
+      // 2. Probe WASM asset availability before importing glue
+      const wasmProbe = await fetch(wasmAudioConfig.wasmPath, { method: 'HEAD' });
+      if (!wasmProbe.ok) {
+        throw new WasmInitError({
+          reason: 'wasm-unavailable',
+          message: INIT_FAILURE_MESSAGES['wasm-unavailable'],
+        });
+      }
+
+      // 3. Load Emscripten glue (dynamic import of the generated JS)
+      let glueModule: { default: unknown };
+      try {
+        glueModule = await import(/* @vite-ignore */ wasmAudioConfig.glueScriptPath);
+      } catch (importErr) {
+        throw new WasmInitError({
+          reason: 'wasm-load-failed',
+          message: INIT_FAILURE_MESSAGES['wasm-load-failed'],
+          cause: importErr,
+        });
+      }
       const moduleFactory = glueModule.default as (opts: {
         locateFile: (path: string) => string;
       }) => Promise<EngineModule>;
@@ -159,7 +190,12 @@ export class WasmAudioBridge {
           this.enginePtr?.ptr ?? 0,
           (nodeHandle) => {
             if (nodeHandle == null || nodeHandle === 0) {
-              reject(new Error('AudioWorklet initialisation failed'));
+              reject(
+                new WasmInitError({
+                  reason: 'worklet-init-failed',
+                  message: INIT_FAILURE_MESSAGES['worklet-init-failed'],
+                })
+              );
               return;
             }
             this.workletNode = this.module?.emscriptenGetAudioObject<AudioWorkletNode>(nodeHandle) ?? null;
@@ -187,7 +223,12 @@ export class WasmAudioBridge {
     } catch (err) {
       console.error('[WasmAudioBridge] init failed:', err);
       this._setStatus('error');
-      throw err;
+      if (err instanceof WasmInitError) throw err;
+      throw new WasmInitError({
+        reason: 'engine-init-failed',
+        message: INIT_FAILURE_MESSAGES['engine-init-failed'],
+        cause: err,
+      });
     }
   }
 
@@ -325,12 +366,6 @@ export class WasmAudioBridge {
   }
 
   // ── Private helpers ─────────────────────────────────────────────
-
-  private _checkSupport(): boolean {
-    const hasWorklet = typeof AudioWorkletNode !== 'undefined';
-    const hasWasm = typeof WebAssembly === 'object';
-    return hasWorklet && hasWasm;
-  }
 
   private _setStatus(s: PlayerStatus) {
     this.status = s;
