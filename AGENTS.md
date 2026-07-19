@@ -454,3 +454,13 @@ For manual verification:
 1. Create Markdown file in `src/content/docs/`
 2. Include required frontmatter (see Content Collections section)
 3. **Also create or update the docs rendering page** so the new doc is visible
+
+## Cursor Cloud specific instructions
+
+Single service: an Astro static site. Standard commands live in `package.json` (`dev`, `build`, `preview`, `astro`) and `playwright.config.ts` (`test`). The startup update script already runs `npm install` and `npx playwright install`.
+
+- Dev server: `npm run dev` serves under the base path — open `http://localhost:4321/rb338/`, NOT `http://localhost:4321/`. The bare root returns 404 because `base: '/rb338'` is set in `astro.config.mjs`.
+- Playwright `webServer` auto-starts `npm run dev` and reuses an already-running dev server locally, so tests do not need a separate server.
+- Test suite state (as of setup): most tests in `tests/` are pre-existing failures unrelated to environment. They assert on an outdated `.rb-panel` class (the markup now uses `rb-rack` / `rb-panel__*` / `rb-panel--*`), and `tests/rbs-player.spec.ts` targets the wrong port (`localhost:3000` instead of `4321`). Do not treat these as environment breakage.
+- WASM tests (`tests/wasm-*.spec.ts`) require built artifacts under `public/wasm/` (e.g. `rbsParser.js/.wasm`, `rbsWorklet.js`). These are NOT built — the WASM audio module is a `PENDING` stub and building it needs the Emscripten toolchain (`emcc`, not installed). Expect these to fail until the module is built.
+- Type safety is the primary check: `npm run astro check` passes with 0 errors (only lint-style hints). There is no ESLint/Prettier.
