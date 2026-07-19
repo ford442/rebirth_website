@@ -4,95 +4,146 @@
 
 namespace rb338 {
 
-void Sequencer::load(const ParsedSong& song) {
-  // Pick the first active pattern for each device. Until arrangement parsing is
-  // implemented, this gives the audio thread a concrete loop to play.
-  for (int i = 0; i < NUM_DEVICES; ++i) {
-    m_currentPatterns[i] = nullptr;
-    m_patternLengths[i] = 16;
-    DeviceId devId = static_cast<DeviceId>(i);
-
-    for (const auto& p : song.patterns) {
-      if (p.deviceId != devId) continue;
-      bool active = false;
-      for (const auto& s : p.steps) {
-        if (s.active) { active = true; break; }
-      }
-      if (active) {
-        m_currentPatterns[i] = &p;
-        m_patternLengths[i] = p.length;
-        break;
-      }
-    }
-  }
-
-  m_sampleCounter = 0;
+void Sequencer::reset() {
+  m_song = nullptr;
+  m_resolvedBar = 0;
+  m_patterns.fill(nullptr);
+  m_lengths.fill(STEPS_PER_BAR);
   m_currentBar = 1;
   m_currentStep = 0;
-  m_samplesPerStep = 0.0f;
+  m_stepPhase = 0.0;
+  m_stepPending = true;
 }
 
-StepData Sequencer::getStepData(DeviceId device, uint8_t stepIndex) const {
-  int idx = static_cast<int>(device);
-  const Pattern* p = m_currentPatterns[idx];
-  if (!p || stepIndex >= m_patternLengths[idx]) {
-    return StepData{};
+const Pattern* Sequencer::findPattern(const ParsedSong& song, DeviceId device,
+                                      uint8_t bank, uint8_t index) const {
+  for (const auto& p : song.patterns) {
+    if (p.deviceId == device && p.bank == bank && p.patternIndex == index) {
+      return &p;
+    }
   }
-  return p->steps[stepIndex];
+  return nullptr;
 }
 
-uint32_t Sequencer::generateEvents(float bpm, float sampleRate, uint32_t numFrames,
-                                    Event* out, uint32_t maxEvents) {
+void Sequencer::resolvePatternsForBar(const ParsedSong& song, uint16_t bar) {
+  const bool hasArrangement = !song.arrangement.empty();
+
+  for (int i = 0; i < NUM_DEVICES; ++i) {
+    const DeviceId dev = static_cast<DeviceId>(i);
+    const Pattern* chosen = nullptr;
+
+    // 1. Arrangement-driven selection. When the requested bar runs past the
+    //    end of the arrangement, loop the arrangement so previews keep playing.
+    if (hasArrangement) {
+      const size_t barIdx = static_cast<size_t>(bar - 1) % song.arrangement.size();
+      const PatternRef& ref = song.arrangement[barIdx].devicePatterns[i];
+      chosen = findPattern(song, dev, ref.bank, ref.index);
+    }
+
+    // 2. Fall back to the device's initial pattern.
+    if (!chosen) {
+      const DeviceState& state = song.devices[i];
+      chosen = findPattern(song, dev, state.initialPatternBank, state.initialPatternIndex);
+    }
+
+    // 3. Fall back to the first pattern that has any active step.
+    if (!chosen) {
+      for (const auto& p : song.patterns) {
+        if (p.deviceId != dev) continue;
+        for (const auto& s : p.steps) {
+          if (s.active) { chosen = &p; break; }
+        }
+        if (chosen) break;
+      }
+    }
+
+    m_patterns[i] = chosen;
+    uint8_t len = chosen ? chosen->length : STEPS_PER_BAR;
+    m_lengths[i] = static_cast<uint8_t>(std::clamp<int>(len, 1, STEPS_PER_BAR));
+  }
+
+  m_resolvedBar = bar;
+}
+
+StepData Sequencer::deviceStepData(int deviceIdx, uint8_t masterStep) const {
+  const Pattern* p = m_patterns[deviceIdx];
+  if (!p) return StepData{};
+  const uint8_t len = m_lengths[deviceIdx];
+  if (len == 0) return StepData{};
+  const uint8_t local = static_cast<uint8_t>(masterStep % len);
+  return p->steps[local];
+}
+
+void Sequencer::advanceStep() {
+  m_currentStep++;
+  if (m_currentStep >= STEPS_PER_BAR) {
+    m_currentStep = 0;
+    m_currentBar++;
+  }
+  m_stepPending = true;
+}
+
+uint32_t Sequencer::generateEvents(const ParsedSong* song, float bpm, float sampleRate,
+                                   uint32_t numFrames, Event* out, uint32_t maxEvents) {
   uint32_t eventCount = 0;
 
-  if (bpm <= 0.0f || sampleRate <= 0.0f || numFrames == 0 || !out || maxEvents == 0) {
+  if (!song || bpm <= 0.0f || sampleRate <= 0.0f || numFrames == 0 || !out || maxEvents == 0) {
     return eventCount;
   }
 
-  // One step = one 16th note = 1/4 of a 4/4 bar.
-  m_samplesPerStep = (60.0f / bpm) * 0.25f * sampleRate;
-  if (m_samplesPerStep <= 0.0f) {
+  // Re-resolve the per-device patterns when the snapshot changed (song swapped
+  // mid-play) or when the transport moved to a different bar.
+  if (song != m_song || m_resolvedBar != m_currentBar) {
+    m_song = song;
+    resolvePatternsForBar(*song, m_currentBar);
+  }
+
+  // One master step = one 16th note = 1/4 of a 4/4 beat.
+  const double samplesPerStep = (60.0 / static_cast<double>(bpm)) * 0.25 * static_cast<double>(sampleRate);
+  if (samplesPerStep <= 0.0) {
     return eventCount;
   }
 
-  const float stepDuration = m_samplesPerStep;
   uint32_t framesRemaining = numFrames;
   uint32_t frameOffset = 0;
 
-  while (framesRemaining > 0 && eventCount < maxEvents) {
-    // Distance from current sample counter to next step boundary.
-    float nextStepSample = (m_currentStep + 1) * stepDuration;
-    uint32_t samplesToNext = 0;
-    if (m_sampleCounter < nextStepSample) {
-      samplesToNext = static_cast<uint32_t>(std::ceil(nextStepSample - static_cast<float>(m_sampleCounter)));
-    }
-
-    if (samplesToNext == 0) {
-      // We are exactly on a step boundary (or have overshot). Emit events for
-      // all devices at this offset, then advance.
+  while (framesRemaining > 0) {
+    // Emit the current step's notes once, at the sample where we entered it.
+    if (m_stepPending) {
       for (int i = 0; i < NUM_DEVICES && eventCount < maxEvents; ++i) {
-        DeviceId dev = static_cast<DeviceId>(i);
-        StepData step = getStepData(dev, m_currentStep);
+        const StepData step = deviceStepData(i, m_currentStep);
         if (step.active) {
-          Event ev;
+          Event& ev = out[eventCount++];
           ev.sampleOffset = frameOffset;
-          ev.device = dev;
-          ev.stepIndex = m_currentStep;
+          ev.device = static_cast<DeviceId>(i);
+          ev.stepIndex = static_cast<uint8_t>(m_currentStep % std::max<uint8_t>(1, m_lengths[i]));
           ev.step = step;
-          out[eventCount++] = ev;
         }
       }
+      m_stepPending = false;
+    }
 
-      m_currentStep++;
-      if (m_currentStep >= 16) {
-        m_currentStep = 0;
-        m_currentBar++;
+    // Samples left before the current step ends.
+    const double samplesToNext = samplesPerStep - m_stepPhase;
+
+    if (samplesToNext <= 0.0) {
+      // Boundary reached: carry the fractional remainder so long runs stay
+      // sample-accurate (no per-block drift), then step forward.
+      m_stepPhase -= samplesPerStep;
+      if (m_stepPhase < 0.0) m_stepPhase = 0.0;
+      advanceStep();
+
+      // Bar changed → re-resolve arrangement patterns for the new bar.
+      if (m_currentStep == 0 && m_resolvedBar != m_currentBar) {
+        resolvePatternsForBar(*song, m_currentBar);
       }
       continue;
     }
 
-    uint32_t advance = std::min<uint32_t>(samplesToNext, framesRemaining);
-    m_sampleCounter += advance;
+    // Consume frames up to (but not past) the next boundary.
+    const uint32_t framesToBoundary = static_cast<uint32_t>(std::ceil(samplesToNext));
+    const uint32_t advance = std::min<uint32_t>(framesToBoundary, framesRemaining);
+    m_stepPhase += static_cast<double>(advance);
     frameOffset += advance;
     framesRemaining -= advance;
   }
@@ -107,8 +158,11 @@ void Sequencer::getPosition(uint16_t& bar, uint8_t& step) const {
 
 void Sequencer::setPosition(uint16_t bar, uint8_t step) {
   m_currentBar = std::max<uint16_t>(1, bar);
-  m_currentStep = step % 16;
-  m_sampleCounter = static_cast<uint64_t>(m_currentStep * m_samplesPerStep);
+  m_currentStep = static_cast<uint8_t>(step % STEPS_PER_BAR);
+  m_stepPhase = 0.0;
+  m_stepPending = true;
+  // Force pattern re-resolution on the next generateEvents call.
+  m_resolvedBar = 0;
 }
 
 } // namespace rb338

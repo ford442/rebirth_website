@@ -169,6 +169,7 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .function("seek",      &RbsAudioEngine::seek)
     .function("setVolume", &RbsAudioEngine::setVolume)
     .function("setTempo",  &RbsAudioEngine::setTempo)
+    .function("getTempo",  &RbsAudioEngine::getTempo)
     .function("setTempoMultiplier", &RbsAudioEngine::setTempoMultiplier)
     .function("isPlaying", &RbsAudioEngine::isPlaying)
     .function("getPlaybackPosition", &getPlaybackPositionWrapper);

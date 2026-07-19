@@ -67,10 +67,13 @@ public:
   /** Set master volume (0.0–1.0). */
   void setVolume(float volume);
 
-  /** Set tempo in BPM. */
+  /** Set absolute tempo in BPM (clamped to 40–250). */
   void setTempo(float bpm);
 
-  /** Set tempo multiplier (0.25–4.0, 1.0 = normal). */
+  /** Current absolute tempo in BPM. Safe to call from any thread. */
+  float getTempo() const { return m_bpm.load(std::memory_order_acquire); }
+
+  /** Set tempo multiplier (0.25–4.0, 1.0 = normal). Used for UI scrubbing. */
   void setTempoMultiplier(float multiplier);
 
   /** Query whether the engine is currently playing. */
@@ -107,13 +110,16 @@ private:
   std::atomic<uint16_t> m_currentBar{1};
   std::atomic<uint8_t>  m_currentStep{0};
   std::atomic<float>    m_volume{0.8f};
+  std::atomic<float>    m_bpm{125.0f};
   std::atomic<float>    m_tempoMultiplier{1.0f};
 
   // Command queue (lives in shared WASM memory).
   EngineCommandQueue m_commandQueue;
 
-  // Cached song data used by the audio thread.
-  ParsedSong m_song;
+  // Immutable song snapshot shared with the audio thread. Loading a new song
+  // publishes a fresh snapshot via std::atomic_store; the audio thread reads it
+  // with std::atomic_load, so a song can be swapped in mid-play without tearing.
+  std::shared_ptr<const ParsedSong> m_activeSong;
 
   // Sub-systems
   std::unique_ptr<Sequencer> m_sequencer;

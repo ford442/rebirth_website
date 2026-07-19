@@ -7,7 +7,9 @@ ROOT      = ../../..
 BUILD_DIR = build
 
 PARSER_SRC = parser/RbsParser.cpp
-TEST_SRCS  = tests/test_main.cpp tests/test_parser.cpp
+ENGINE_SRCS = engine/RbsAudioEngine.cpp engine/Sequencer.cpp engine/Mixer.cpp \
+              synth/Voice.cpp synth/Tb303Voice.cpp synth/Tr808Voice.cpp synth/Tr909Voice.cpp
+TEST_SRCS  = tests/test_main.cpp tests/test_parser.cpp tests/test_sequencer.cpp tests/test_engine.cpp
 TEST_BIN   = $(BUILD_DIR)/test_rbs_parser
 
 .PHONY: all test wasm clean inspect
@@ -17,8 +19,8 @@ all: test
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-$(TEST_BIN): $(PARSER_SRC) $(TEST_SRCS) | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) $(PARSER_SRC) $(TEST_SRCS) -o $@
+$(TEST_BIN): $(PARSER_SRC) $(ENGINE_SRCS) $(TEST_SRCS) | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) $(PARSER_SRC) $(ENGINE_SRCS) $(TEST_SRCS) -o $@
 
 test: $(TEST_BIN)
 	cd $(ROOT) && ./src/wasm/cpp/$(TEST_BIN)

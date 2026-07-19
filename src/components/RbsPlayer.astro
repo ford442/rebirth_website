@@ -670,11 +670,22 @@ const hasSrc = !!src;
       bridge.setVolume(Number(volumeSlider?.value ?? bridge.outputVolume));
 
       const tempoSupported = bridge.canSetTempo();
-      if (tempoSlider && !tempoSupported) {
-        tempoSlider.disabled = true;
-        tempoSlider.title = 'Tempo control will unlock when WASM tempo API is implemented';
+      if (tempoSlider) {
+        tempoSlider.disabled = !tempoSupported;
+        tempoSlider.title = tempoSupported
+          ? 'Set playback tempo (BPM)'
+          : 'Tempo control will unlock when WASM tempo API is implemented';
       }
-      if (tempoValue && !tempoSupported) tempoValue.textContent = 'WASM TBD';
+      if (tempoSupported) {
+        // Reflect the engine's current absolute tempo in the UI.
+        const engineBpm = bridge.getTempoBpm();
+        if (typeof engineBpm === 'number' && engineBpm > 0) {
+          if (tempoSlider) tempoSlider.value = String(Math.round(engineBpm));
+          if (tempoValue) tempoValue.textContent = `${Math.round(engineBpm)} BPM`;
+        }
+      } else if (tempoValue) {
+        tempoValue.textContent = 'WASM TBD';
+      }
 
       if (!demos.length && btnDemoLoad) {
         btnDemoLoad.disabled = true;

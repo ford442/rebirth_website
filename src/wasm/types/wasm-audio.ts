@@ -228,6 +228,7 @@ export interface RbsAudioEngineInstance {
   seek(bar: number): void;
   setVolume(volume: number): void;
   setTempo(bpm: number): void;
+  getTempo(): number;
   setTempoMultiplier(multiplier: number): void;
   isPlaying(): boolean;
   getPlaybackPosition(): PlaybackPosition;

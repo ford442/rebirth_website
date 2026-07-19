@@ -273,6 +273,7 @@ These are C++ classes exposed by Embind and instantiated from JavaScript with `n
 | `void seek(uint16_t)` | `seek` | `(bar: number) => void` |
 | `void setVolume(float)` | `setVolume` | `(volume: number) => void` |
 | `void setTempo(float)` | `setTempo` | `(bpm: number) => void` |
+| `float getTempo() const` | `getTempo` | `() => number` |
 | `void setTempoMultiplier(float)` | `setTempoMultiplier` | `(multiplier: number) => void` |
 | `bool isPlaying() const` | `isPlaying` | `() => boolean` |
 | `void getPlaybackPosition(...)` (wrapped) | `getPlaybackPosition` | `() => PlaybackPosition` |
