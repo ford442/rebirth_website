@@ -7,7 +7,35 @@ In-browser playback engine for ReBirth RB-338 `.rbs` song files.
 > **⚠️ PARTIAL IMPLEMENTATION**  
 > Parser, sequencer, transport, and **Phase 1 synthetic TR-808 / TR-909 drums** are implemented in C++.  
 > No compiled WASM binaries ship from CI yet — run `npm run wasm:build` locally with Emscripten.  
-> The UI component (`RbsPlayer.astro`) is functional and will show a graceful fallback on unsupported browsers.
+> The UI component (`RbsPlayer.astro`) degrades gracefully when WASM is missing: metadata sniffing and sketch preview remain available.
+
+## Player capability matrix
+
+| Capability | WASM engine | Degraded (sketch) | Degraded (metadata only) |
+|------------|-------------|-------------------|--------------------------|
+| Load `.rbs` via drag/drop or file picker | ✅ | ✅ | ✅ |
+| Show title / author from file header | ✅ | ✅ | ✅ |
+| Full ReBirth synthesis (303/808/909) | ✅ | ❌ | ❌ |
+| Transport play / pause / stop | ✅ | ✅ (metronome sketch) | ❌ (play disabled) |
+| Step bar + level meter animation | ✅ | ✅ | ❌ |
+| Tempo slider | ✅ | ✅ | ✅ (display only) |
+| Volume slider | ✅ | ✅ | ❌ |
+
+### Init failure reasons
+
+When `WasmAudioBridge.init()` fails, `RbsPlayer` classifies the error and switches to `DegradedRbsPlayer`:
+
+| Reason | Typical cause | User message |
+|--------|---------------|--------------|
+| `unsupported-browser` | No WebAssembly | Browser lacks required APIs |
+| `wasm-unavailable` | `public/wasm/` empty (not built) | WASM binaries not built yet |
+| `wasm-load-failed` | 404 / blocked glue script | WASM assets failed to load |
+| `worklet-unavailable` | No `AudioWorkletNode` | AudioWorklet not supported |
+| `worklet-init-failed` | Worklet registration error | Worklet init failed |
+| `engine-init-failed` | Other engine errors | Generic degraded fallback |
+
+Pure-TS metadata parsing lives in `src/wasm/js/RbsMetadataSniffer.ts` (HEAD / GLOB / USRI chunks). Sketch preview uses Web Audio oscillators in `src/wasm/js/DegradedRbsPlayer.ts` — audible metronome clicks, not silent success.
+
 
 ## Integration Roadmap (Phase Plan)
 
@@ -15,8 +43,8 @@ In-browser playback engine for ReBirth RB-338 `.rbs` song files.
 2. **Audio engine parity** — Phase 1 procedural TR-808 / TR-909 drums (BD, SD, CH, OH, RS, CP / clap) ✅. TB-303 filter/slide DSP and `.rbm` sample playback remain future work.
 3. **Realtime control API** — transport + tempo + volume commands flow through a lock-free queue ✅.
 4. **Archive demo pipeline** — add curated demo `.rbs` files under `public/archive/rbs-songs/demo/` for direct browser previews.
-5. **Fallback mode** — if WASM init fails, provide a Web Audio sample-preview path so the UI remains usable.
-6. **End-to-end validation** — add browser tests that cover upload, demo loading, transport controls, and fallback behaviour.
+5. **Fallback mode** — if WASM init fails, provide metadata sniffing + Web Audio sketch preview so the UI remains usable ✅.
+6. **End-to-end validation** — add browser tests that cover upload, demo loading, transport controls, and fallback behaviour ✅ (degraded path in `tests/rbs-player.spec.ts`).
 
 ## Audio thread architecture
 
