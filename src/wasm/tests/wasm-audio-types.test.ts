@@ -81,6 +81,9 @@ class MockRbsAudioEngine implements RbsAudioEngineInstance {
   seek(_bar: number): void {}
   setVolume(_volume: number): void {}
   setTempo(_bpm: number): void {}
+  getTempo(): number {
+    return 120;
+  }
   setTempoMultiplier(_multiplier: number): void {}
 
   isPlaying(): boolean {

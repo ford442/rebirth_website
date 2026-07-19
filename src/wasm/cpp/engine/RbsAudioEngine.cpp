@@ -50,10 +50,12 @@ bool RbsAudioEngine::init(const EngineConfig& config) {
 
   m_mixer->init(config.sampleRate);
 
+  m_sequencer->reset();
   m_currentBar.store(1, std::memory_order_relaxed);
   m_currentStep.store(0, std::memory_order_relaxed);
   m_playing.store(false, std::memory_order_relaxed);
   m_volume.store(0.8f, std::memory_order_relaxed);
+  m_bpm.store(125.0f, std::memory_order_relaxed);
   m_initialised = true;
   return true;
 }
@@ -61,24 +63,28 @@ bool RbsAudioEngine::init(const EngineConfig& config) {
 bool RbsAudioEngine::loadSong(const ParsedSong& song) {
   if (!m_initialised) return false;
 
-  // Loading is a main-thread operation. Pause first to avoid races with the
-  // audio thread reading m_song data during pattern lookup.
+  // Loading is a main-thread operation. Stop first so the audio thread resets
+  // its transport (via the command queue) and stops rendering old voices.
   stop();
 
-  m_song = song;
-  m_sequencer->load(m_song);
-
+  // Load per-device voice state on the main thread.
   for (size_t i = 0; i < m_voices.size(); ++i) {
     if (m_voices[i]) {
       DeviceId dev = static_cast<DeviceId>(i);
       std::vector<Pattern> voicePatterns;
-      for (const auto& p : m_song.patterns) {
+      for (const auto& p : song.patterns) {
         if (p.deviceId == dev) voicePatterns.push_back(p);
       }
-      m_voices[i]->load(m_song.devices[i], voicePatterns);
+      m_voices[i]->load(song.devices[i], voicePatterns);
     }
   }
 
+  // Publish an immutable snapshot for the audio thread. The sequencer detects
+  // the pointer change on its next block and re-resolves patterns safely.
+  auto snapshot = std::make_shared<const ParsedSong>(song);
+  std::atomic_store(&m_activeSong, std::shared_ptr<const ParsedSong>(snapshot));
+
+  m_bpm.store(std::clamp(song.bpm, 40.0f, 250.0f), std::memory_order_release);
   m_currentBar.store(1, std::memory_order_relaxed);
   m_currentStep.store(0, std::memory_order_relaxed);
   return true;
@@ -148,7 +154,7 @@ void RbsAudioEngine::handleCommand(const EngineCommand& cmd) {
       m_volume.store(bitsToFloat(cmd.param1), std::memory_order_relaxed);
       break;
     case EngineCommandType::SetTempo:
-      m_song.bpm = bitsToFloat(cmd.param1);
+      m_bpm.store(bitsToFloat(cmd.param1), std::memory_order_release);
       break;
     case EngineCommandType::SetTempoMultiplier:
       m_tempoMultiplier.store(bitsToFloat(cmd.param1), std::memory_order_relaxed);
@@ -192,12 +198,18 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
     std::memset(scratchBuffers[i], 0, numFrames * sizeof(float));
   }
 
+  // Read the current immutable song snapshot. Holding a local shared_ptr for
+  // the duration of the callback keeps it alive even if the main thread swaps
+  // in a new song mid-block.
+  std::shared_ptr<const ParsedSong> song = std::atomic_load(&m_activeSong);
+
   // Generate sequencer events for this block. Fixed-size stack buffer — no
   // heap allocation inside the audio callback.
   alignas(16) Sequencer::Event events[128];
-  const float effectiveBpm = m_song.bpm * m_tempoMultiplier.load(std::memory_order_relaxed);
+  const float effectiveBpm =
+      m_bpm.load(std::memory_order_relaxed) * m_tempoMultiplier.load(std::memory_order_relaxed);
   uint32_t eventCount = m_sequencer->generateEvents(
-      effectiveBpm, m_config.sampleRate, numFrames, events, 128);
+      song.get(), effectiveBpm, m_config.sampleRate, numFrames, events, 128);
 
   // Deliver events to voices at their sample offsets.
   // Sample-offset scheduling is intentionally simple for this pass: voices are

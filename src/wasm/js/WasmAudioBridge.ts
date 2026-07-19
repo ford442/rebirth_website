@@ -279,7 +279,16 @@ export class WasmAudioBridge {
 
   /** Return true if the WASM engine exposes tempo control hooks. */
   canSetTempo(): boolean {
-    return !!this.enginePtr?.setTempo;
+    return !!(this.enginePtr?.setTempo && this.enginePtr?.getTempo);
+  }
+
+  /**
+   * Read the engine's current absolute tempo in BPM.
+   * Returns null when the engine or the tempo API is unavailable.
+   */
+  getTempoBpm(): number | null {
+    if (!this.enginePtr?.getTempo) return null;
+    return this.enginePtr.getTempo();
   }
 
   /**
