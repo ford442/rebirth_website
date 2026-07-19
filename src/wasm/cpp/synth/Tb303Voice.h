@@ -9,9 +9,9 @@ namespace rb338 {
  *
  * Features:
  *   - Saw / square waveform selection
- *   - 24dB/octave resonant low-pass filter (4-pole ladder)
+ *   - 24dB/octave resonant low-pass filter
  *   - Accent (increases envelope depth + filter cutoff)
- *   - Slide (portamento between consecutive active notes)
+ *   - Slide (portamento between notes)
  *   - Decay envelope (attack is instantaneous)
  */
 class Tb303Voice : public Voice {
@@ -29,51 +29,32 @@ public:
 private:
   float m_sampleRate = 44100.0f;
 
-  // Device knobs (target values, 0–1 unless noted).
-  float m_tune = 0.5f;
-  float m_cutoffKnob = 0.5f;
-  float m_resonanceKnob = 0.5f;
-  float m_envModKnob = 0.5f;
-  float m_decayKnob = 0.5f;
-  float m_accentKnob = 0.5f;
-  bool m_waveformSaw = true;
-
-  // Smoothed runtime parameters (zipper-noise reduction).
-  float m_smoothedCutoff = 0.5f;
-  float m_smoothedResonance = 0.5f;
-
-  // Oscillator — phase kept continuous across note changes.
+  // Oscillator
   float m_phase = 0.0f;
+  bool m_waveformSaw = true; // false = square
 
-  // 4-pole ladder filter state.
-  float m_filterStage[4] = {0};
+  // Filter (Moog-style ladder approximation)
+  float m_cutoff = 0.5f;
+  float m_resonance = 0.5f;
+  float m_envMod = 0.5f;
+  float m_filterState[4] = {0};
 
-  // Amplitude envelope (instant attack, exponential decay).
+  // Envelope
   float m_envelope = 0.0f;
-  float m_decayCoeff = 0.9995f;
-  float m_releaseCoeff = 0.995f;
-  bool m_gateOpen = false;
+  float m_decayCoeff = 0.99f;
 
-  // Pitch (Hz) with portamento.
-  float m_currentPitch = 440.0f;
-  float m_targetPitch = 440.0f;
-  float m_pitchGlideCoeff = 0.002f;
+  // Accent / slide
+  float m_accentAmount = 0.0f;
+  float m_slideRate = 0.0f;
+  float m_currentPitch = 0.0f;
+  float m_targetPitch = 0.0f;
 
-  // Per-step accent boost (0 = normal, >0 = accented).
-  float m_stepAccent = 0.0f;
+  // Test-tone state (will be replaced by full DSP in a later pass)
+  uint8_t m_currentNote = 0;
+  uint32_t m_gateSamples = 0;
+  static constexpr uint32_t GATE_LENGTH_SAMPLES = 11025; // ~0.25s at 44.1kHz
 
-  // Slide chain: previous step had slide flag set while active.
-  bool m_prevStepActive = false;
-  bool m_prevStepSlide = false;
-
-  // Filter precomputed coefficient (updated when cutoff moves).
-  float m_filterG = 0.1f;
-
-  void applyDeviceState(const DeviceState& state);
-  void updateDecayCoeffs();
-  float midiToHz(uint8_t midiNote) const;
-  float renderSample();
-  void processFilterCoeffs(float cutoffNorm, float resonanceNorm);
+  // TODO: full DSP implementation
 };
 
 } // namespace rb338
