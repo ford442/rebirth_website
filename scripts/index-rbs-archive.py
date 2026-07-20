@@ -42,9 +42,31 @@ LISTING_RE = re.compile(
 # Optional BPM token such as "140bpm", "140 bpm", "140BPM"
 BPM_RE = re.compile(r"(\d{2,3})\s?bpm", re.IGNORECASE)
 
+# Monthly folder typos on the remote archive (path segment → display label).
+MONTHLY_FOLDER_DISPLAY: dict[str, str] = {
+    "JANRUARY": "January",
+    "FEBRUARY": "February",
+    "MARCH": "March",
+    "APRIL": "April",
+    "MAY": "May",
+    "JUNE": "June",
+    "JULY": "July",
+    "AUGUST": "August",
+    "SEPTEMBER": "September",
+    "OCTOBER": "October",
+    "OCTOBER 2": "October (vol. 2)",
+    "NOVEMBER": "November",
+    "DECEMBER": "December",
+}
+
 
 def display_name(segment: str) -> str:
-    """Turn a path segment like 'By_Source' into 'By Source'."""
+    """Turn a path segment like 'By_Source' or 'JANRUARY' into a display label."""
+    if segment in MONTHLY_FOLDER_DISPLAY:
+        return MONTHLY_FOLDER_DISPLAY[segment]
+    upper = segment.upper()
+    if upper in MONTHLY_FOLDER_DISPLAY:
+        return MONTHLY_FOLDER_DISPLAY[upper]
     return segment.replace("_", " ").strip()
 
 

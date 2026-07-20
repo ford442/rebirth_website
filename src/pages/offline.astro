@@ -1,0 +1,94 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HardwarePanel from '../components/ui/HardwarePanel.astro';
+import { normalizeBase } from '../lib/url';
+
+const base = normalizeBase(import.meta.env.BASE_URL);
+---
+
+<BaseLayout
+  title="Offline"
+  description="ReBirth RB-338 Archive offline mode — cached pages remain available without a network connection."
+>
+  <div class="container offline-page">
+    <HardwarePanel title="SIGNAL STATUS" variant="rackmount-module" ledStatus="offline" ledLabel="NETWORK">
+      <div class="offline-panel">
+        <div class="offline-panel__status">
+          <span class="offline-panel__headline">Archive link offline</span>
+        </div>
+
+        <p class="offline-panel__copy">
+          The remote song and mod hosts are unavailable right now. Cached pages from your last visit
+          should still work — including the homepage player demo when WASM and demo songs were cached.
+        </p>
+
+        <ul class="offline-panel__links" role="list">
+          <li><a class="rb-pattern-btn" href={`${base}/`}>Home</a></li>
+          <li><a class="rb-mix-btn" href={`${base}/history`}>History</a></li>
+          <li><a class="rb-mix-btn" href={`${base}/docs`}>Documentation</a></li>
+          <li><a class="rb-mix-btn" href={`${base}/archive/mods`}>Mods browser</a></li>
+        </ul>
+
+        <p class="offline-panel__hint">
+          Full remote archive downloads require a network connection and are never cached locally.
+        </p>
+      </div>
+    </HardwarePanel>
+  </div>
+</BaseLayout>
+
+<style>
+  .offline-page {
+    padding-block: var(--space-xl);
+    max-width: 42rem;
+  }
+
+  .offline-panel {
+    display: grid;
+    gap: var(--space-md);
+  }
+
+  .offline-panel__status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+  }
+
+  .offline-panel__headline {
+    font-family: var(--font-title);
+    font-size: var(--text-lg);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--rb-amber);
+  }
+
+  .offline-panel__copy,
+  .offline-panel__hint {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--color-text-muted);
+  }
+
+  .offline-panel__links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .offline-panel__links a {
+    text-decoration: none;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding-inline: 1rem;
+  }
+
+  .offline-panel__hint {
+    font-size: var(--text-xs);
+    opacity: 0.85;
+  }
+</style>

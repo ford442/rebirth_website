@@ -8,6 +8,7 @@
 import songsFullIndex from './songs-full-index.json';
 import modsFullIndex from './mods-full-index.json';
 import modsMetadata from './mods-metadata.json';
+import artistsIndex from './artists-index.json';
 import { songCollections } from './song-collections';
 
 interface SongEntry {
@@ -72,7 +73,11 @@ export const documentedMods = documentedModsList.length;
 export const modCoveragePercent =
   totalMods > 0 ? Math.round((documentedMods / totalMods) * 100) : 0;
 
-export const artistCount = songCollections.artists?.folders?.length ?? 0;
+export const artistCount =
+  (artistsIndex as { meta?: { artistCount?: number }; artists?: unknown[] }).meta?.artistCount ??
+  (artistsIndex as { artists?: unknown[] }).artists?.length ??
+  songCollections.artists?.folders?.length ??
+  0;
 export const mainCollectionCount = Object.keys(songCollections).length;
 export const totalSongFolders = Object.values(songCollections).reduce(
   (sum, section) => sum + (section.folders?.length ?? 0),

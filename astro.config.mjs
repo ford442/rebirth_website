@@ -1,4 +1,6 @@
 import { defineConfig } from 'astro/config';
+import { VitePWA } from 'vite-plugin-pwa';
+import { createPwaOptions } from './pwa.config.mjs';
 
 // https://astro.build/config
 export default defineConfig({
@@ -7,5 +9,13 @@ export default defineConfig({
   compressHTML: true,
   build: {
     assets: '_assets',
+  },
+  vite: {
+    plugins: [
+      VitePWA({
+        ...createPwaOptions(),
+        base: '/rb338/',
+      }),
+    ],
   },
 });

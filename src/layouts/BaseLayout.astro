@@ -36,6 +36,15 @@ const base = normalizeBase(import.meta.env.BASE_URL);
 
     <title>{title} — ReBirth RB-338 Archive</title>
 
+    <link rel="manifest" href={`${base}/manifest.webmanifest`} />
+    <meta name="theme-color" content="#111111" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="RB-338 Archive" />
+    <link rel="icon" type="image/svg+xml" href={`${base}/icons/icon.svg`} />
+    <link rel="apple-touch-icon" href={`${base}/icons/apple-touch-icon.png`} />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
@@ -118,6 +127,14 @@ const base = normalizeBase(import.meta.env.BASE_URL);
       <slot />
     </main>
 
+    <div id="pwa-update-banner" class="pwa-update-banner" hidden role="status" aria-live="polite">
+      <p class="pwa-update-banner__text">New archive build available.</p>
+      <div class="pwa-update-banner__actions">
+        <button type="button" class="rb-pattern-btn" id="pwa-update-reload">Reload</button>
+        <button type="button" class="rb-mix-btn" id="pwa-update-dismiss">Later</button>
+      </div>
+    </div>
+
     <!-- Site footer -->
     <footer class="site-footer">
       <div class="container">
@@ -186,6 +203,10 @@ const base = normalizeBase(import.meta.env.BASE_URL);
           });
         });
       })();
+    </script>
+
+    <script>
+      import '../scripts/pwa-register.ts';
     </script>
   </body>
 </html>
@@ -297,6 +318,49 @@ const base = normalizeBase(import.meta.env.BASE_URL);
   }
 
   .footer-build { color: var(--color-text-muted); }
+
+  .pwa-update-banner {
+    position: fixed;
+    left: 50%;
+    bottom: var(--space-md);
+    transform: translateX(-50%);
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: min(36rem, calc(100vw - 2rem));
+    padding: 0.85rem 1rem;
+    border: 1px solid #555;
+    border-top: 2px solid var(--rb-amber);
+    border-radius: 6px;
+    background: linear-gradient(180deg, #2e2e2e 0%, #1a1a1a 100%);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--rb-silver);
+  }
+
+  .pwa-update-banner[hidden] {
+    display: none;
+  }
+
+  .pwa-update-banner__text {
+    margin: 0;
+  }
+
+  .pwa-update-banner__actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .pwa-update-banner__actions button {
+    min-height: 36px;
+    padding-inline: 0.85rem;
+    cursor: pointer;
+  }
 
   @media (max-width: 767px) {
     .footer-grid {

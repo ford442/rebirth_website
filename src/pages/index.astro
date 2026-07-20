@@ -11,7 +11,7 @@ import RbsPlayer from '../components/RbsPlayer.astro';
 import ModCard from '../components/ModCard.astro';
 import { songCollections } from '../data/song-collections';
 import { normalizeBase } from '../lib/url';
-import { rbsDownloadUrl } from '../lib/archive-urls';
+import { DEMO_BY_ID, demoSongUrl, toPlayerDemos } from '../data/demo-songs';
 import { formatStatRange, totalSongsIndexed, totalMods, latestVersion } from '../data/archive-stats';
 
 /* ── Types ─────────────────────────────────────────────────────── */
@@ -58,7 +58,7 @@ const featuredSongs: FeaturedItem[] = [
     songCount: songCollections.artists.folders.find((folder) => folder.name === 'Cavey')?.count,
     bpm: 128,
     compatibility: 'ReBirth 2.0',
-    demoSrc: rbsDownloadUrl('Artists/Cavey/3_acid.rbs'),
+    demoSrc: demoSongUrl(base, DEMO_BY_ID['cavey-3-acid']),
     tagHrefBase: `${base}/archive/songs?q=`,
   },
   {
@@ -72,7 +72,7 @@ const featuredSongs: FeaturedItem[] = [
     songCount: songCollections.artists.folders.find((folder) => folder.name === 'DJ Knightmare')?.count,
     bpm: 134,
     compatibility: 'ReBirth 2.0',
-    demoSrc: rbsDownloadUrl('Artists/DJ Knightmare/amnesya.rbs'),
+    demoSrc: demoSongUrl(base, DEMO_BY_ID['dj-knightmare-amnesya']),
     tagHrefBase: `${base}/archive/songs?q=`,
   },
   {
@@ -86,7 +86,7 @@ const featuredSongs: FeaturedItem[] = [
     songCount: songCollections.artists.folders.find((folder) => folder.name === 'Noah Cohn Complete')?.count,
     bpm: 132,
     compatibility: 'ReBirth 2.0',
-    demoSrc: rbsDownloadUrl('Artists/Noah_Cohn_Complete/20.rbs'),
+    demoSrc: demoSongUrl(base, DEMO_BY_ID['noah-cohn-20']),
     tagHrefBase: `${base}/archive/songs?q=`,
   },
   {
@@ -103,23 +103,7 @@ const featuredSongs: FeaturedItem[] = [
   },
 ];
 
-const demoSongs = [
-  {
-    label: 'Cavey — 3 acid (Archive Demo)',
-    src: rbsDownloadUrl('Artists/Cavey/3_acid.rbs'),
-    bpm: 128,
-  },
-  {
-    label: 'DJ Knightmare — amnesya (Archive Demo)',
-    src: rbsDownloadUrl('Artists/DJ Knightmare/amnesya.rbs'),
-    bpm: 134,
-  },
-  {
-    label: 'Noah Cohn — 20 (Archive Demo)',
-    src: rbsDownloadUrl('Artists/Noah_Cohn_Complete/20.rbs'),
-    bpm: 132,
-  },
-];
+const demoSongs = toPlayerDemos(base);
 
 const featuredMods: FeaturedItem[] = [
   {

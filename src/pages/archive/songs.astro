@@ -4,13 +4,14 @@ import ArchivePageShell from '../../components/archive/ArchivePageShell.astro';
 import CollectionCard from '../../components/CollectionCard.astro';
 import ArchiveEmptyState from '../../components/archive/ArchiveEmptyState.astro';
 import HardwarePanel from '../../components/ui/HardwarePanel.astro';
-import Led from '../../components/ui/Led.astro';
 import ActionButton from '../../components/ui/ActionButton.astro';
 import collectionsMeta from '../../data/collections-metadata.json';
+import { normalizeBase } from '../../lib/url';
 import { songCollections, archiveBaseUrl } from '../../data/song-collections';
 import { normalizeArchiveUrl } from '../../lib/archive-urls';
 import fullIndexRaw from '../../data/songs-full-index.json';
-import { formatStatRange, totalSongsIndexed, mainCollectionCount, artistCount, monthlyArchiveCount } from '../../data/archive-stats';
+import { formatStatRange, totalSongsIndexed, mainCollectionCount, monthlyArchiveCount } from '../../data/archive-stats';
+import artistsIndexRaw from '../../data/artists-index.json';
 
 interface SongEntry {
   filename: string;
@@ -40,19 +41,9 @@ const allSongs = (fullIndex.songs || []).map((song) => ({
 }));
 const totalRaw = allSongs.length;
 const coveragePercent = fullIndex.meta?.coveragePercent ?? null;
-
-// A–Z grouping for the complete song index
-const letters = new Set<string>();
-allSongs.forEach((s) => {
-  const c = s.filename?.charAt(0)?.toUpperCase();
-  if (c) letters.add(c);
-});
-const alphaLetters = Array.from(letters).sort();
-
-const grouped = alphaLetters.map((letter) => ({
-  letter,
-  songs: allSongs.filter((s) => s.filename?.charAt(0)?.toUpperCase() === letter),
-}));
+const artistDirectory = (artistsIndexRaw as { artists: Array<{ slug: string; name: string; songCount: number }> }).artists ?? [];
+const artistCount = artistDirectory.length;
+const baseUrl = normalizeBase(import.meta.env.BASE_URL);
 
 const archiveStats = [
   { label: 'COLLECTIONS', value: mainCollectionCount, ariaLabel: 'Main collections' },
@@ -166,96 +157,96 @@ const archiveStats = [
     </div>
   </Fragment>
 
-  <Fragment slot="raw-label">Complete Song Index</Fragment>
+  <Fragment slot="raw-label">Search &amp; Artist Directory</Fragment>
 
   <Fragment slot="raw-index">
+    {artistDirectory.length > 0 && (
+      <HardwarePanel variant="rackmount" title="ARTIST DIRECTORY" class="artist-directory-panel">
+        <p class="raw-subtitle">
+          Canonical artist pages aggregate folder variants (e.g. Noah Cohn Complete + Extended → one profile).
+        </p>
+        <ul class="artist-directory" role="list">
+          {artistDirectory.map((artist) => (
+            <li>
+              <a href={`${baseUrl}/archive/artists/${artist.slug}/`} class="artist-directory__link">
+                <span class="artist-directory__name">{artist.name}</span>
+                <span class="artist-directory__count">{artist.songCount} songs</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </HardwarePanel>
+    )}
+
     <HardwarePanel
       variant="rackmount"
       animate
-      title="ALL AVAILABLE .RBS FILES"
+      title="SEARCH ALL .RBS FILES"
       ledStatus="online"
-      ledLabel={`${totalRaw.toLocaleString()} FILES`}
+      ledLabel={`${totalRaw.toLocaleString()} INDEXED`}
+      class="song-search-panel"
     >
       <p class="raw-subtitle">
         {coveragePercent !== null ? (
           <>
-            <strong>{totalRaw.toLocaleString()}</strong> catalogued .rbs files indexed
-            ({coveragePercent}% of the manifest estimate). Each entry links to a direct download.
+            Search <strong>{totalRaw.toLocaleString()}</strong> catalogued files ({coveragePercent}% of manifest estimate).
+            Results load instantly via MiniSearch — no 5,000-row DOM dump.
           </>
         ) : (
           <>
-            <strong>{totalRaw.toLocaleString()}</strong> catalogued .rbs files indexed.
-            Each entry links to a direct download.
+            Search <strong>{totalRaw.toLocaleString()}</strong> catalogued .rbs files with collection, source, and MOD facets.
           </>
         )}
       </p>
 
-      <!-- Filename search -->
-      <div class="raw-search-row">
-        <input
-          type="text"
-          id="songSearch"
-          placeholder={`Filter all ${totalRaw.toLocaleString()} filenames...`}
-          class="rb-search-input"
-          aria-label="Filter complete song index"
-        />
-        <span id="songCount" class="raw-count">{totalRaw.toLocaleString()} files</span>
+      <div id="songSearchRoot" class="song-search-root">
+        <div class="raw-search-row">
+          <input
+            type="text"
+            id="songSearch"
+            placeholder={`Search titles, artists, filenames across ${totalRaw.toLocaleString()} files...`}
+            class="rb-search-input"
+            aria-label="Search complete song index"
+            autocomplete="off"
+          />
+          <span id="songCount" class="raw-count">Loading index…</span>
+        </div>
+
+        <div class="facet-bar" role="group" aria-label="Song index facets">
+          <label class="facet-field">
+            <span class="facet-label">Collection</span>
+            <select id="facetCollection" class="facet-select" aria-label="Filter by collection">
+              <option value="">All collections</option>
+            </select>
+          </label>
+          <label class="facet-field">
+            <span class="facet-label">Source</span>
+            <select id="facetSource" class="facet-select" aria-label="Filter by ReBirth source version">
+              <option value="">All sources</option>
+            </select>
+          </label>
+          <label class="facet-field facet-field--bpm">
+            <span class="facet-label">BPM</span>
+            <span class="bpm-range">
+              <input type="number" id="facetBpmMin" class="facet-input" min="60" max="220" placeholder="Min" aria-label="Minimum BPM" />
+              <span aria-hidden="true">–</span>
+              <input type="number" id="facetBpmMax" class="facet-input" min="60" max="220" placeholder="Max" aria-label="Maximum BPM" />
+            </span>
+          </label>
+          <label class="facet-check">
+            <input type="checkbox" id="facetModOnly" />
+            <span id="facetModLabel">MOD-dependent</span>
+          </label>
+          <button type="button" id="clearSongFilters" class="rb-mix-btn facet-clear">Clear</button>
+        </div>
+
+        <p id="songSearchHint" class="search-hint">
+          Type to search, or pick a facet. Showing up to 150 matches at a time for fast mobile filtering.
+        </p>
+
+        <div id="songResults" class="song-results" aria-live="polite"></div>
+        <ArchiveEmptyState id="songEmpty" message="No songs match your search or filters." />
       </div>
-
-      <!-- A-Z jump nav -->
-      <nav class="az-nav" aria-label="Jump to letter">
-        {alphaLetters.map((letter) => (
-          <a href={`#letter-${letter}`} class="az-nav__link">{letter}</a>
-        ))}
-      </nav>
-
-      <!-- Grouped list -->
-      <div id="songIndex" class="raw-index">
-        {grouped.map(({ letter, songs }) => (
-          <section class="raw-group" id={`letter-${letter}`} data-letter={letter}>
-            <h2 class="raw-group__heading">
-              <span class="raw-group__letter">{letter}</span>
-              <Led status="online" label={`${songs.length} FILE${songs.length !== 1 ? 'S' : ''}`} ariaHidden={true} />
-            </h2>
-            <div class="raw-list">
-              {songs.map((song) => (
-                <div class="raw-item" data-filename={song.filename.toLowerCase()} data-collection={song.collection.toLowerCase()} data-artist={(song.artist ?? '').toLowerCase()}>
-                  <span class="raw-item__name" title={song.filename}>
-                    {song.filename.replace(/\.rbs$/i, '')}
-                  </span>
-                  <span class="raw-item__size">{song.fileSize}</span>
-                  <div class="raw-item__row raw-item__row--collection">
-                    <span class="raw-item__collection">{song.collection}</span>
-                    {song.subcollection && song.subcollection !== song.collection && (
-                      <span class="raw-item__subcollection">{song.subcollection}</span>
-                    )}
-                  </div>
-                  <div class="raw-item__row raw-item__row--details">
-                    {song.artist && (
-                      <span class="raw-item__author">by {song.artist}</span>
-                    )}
-                    {song.bpm && (
-                      <span class="raw-item__bpm">{song.bpm} BPM</span>
-                    )}
-                  </div>
-                  <a
-                    href={song.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="raw-item__link"
-                    aria-label={`Download ${song.filename} from test.1ink.us, opens in new tab`}
-                    title={`Download ${song.filename} from test.1ink.us (opens in new tab)`}
-                  >
-                    <span aria-hidden="true">↓</span>
-                  </a>
-                </div>
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
-
-      <ArchiveEmptyState id="songEmpty" message="No songs match your filter." />
     </HardwarePanel>
   </Fragment>
 </ArchivePageShell>
@@ -458,6 +449,206 @@ const archiveStats = [
     font-size: 0.9rem;
     color: #aaa;
     margin: 0 0 1.25rem;
+  }
+
+  .artist-directory-panel {
+    margin-bottom: 1.25rem;
+  }
+
+  .artist-directory {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .artist-directory__link {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid #333;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #aaa;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.82rem;
+    transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+  }
+
+  .artist-directory__link:hover {
+    color: var(--rb-amber);
+    border-color: rgba(255, 176, 0, 0.35);
+    background: rgba(255, 176, 0, 0.05);
+  }
+
+  .artist-directory__count {
+    color: var(--rb-green-bright);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .song-search-root.is-loading {
+    opacity: 0.72;
+  }
+
+  .facet-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem 1rem;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+  }
+
+  .facet-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 140px;
+  }
+
+  .facet-label {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #666;
+  }
+
+  .facet-select,
+  .facet-input {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 3px;
+    color: #c0c0c0;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.78rem;
+    padding: 0.35rem 0.5rem;
+  }
+
+  .bpm-range {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .facet-input {
+    width: 4.5rem;
+  }
+
+  .facet-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.75rem;
+    color: #888;
+    min-height: 2rem;
+  }
+
+  .facet-clear {
+    align-self: flex-end;
+  }
+
+  .search-hint {
+    font-size: 0.78rem;
+    color: #666;
+    margin: 0 0 0.85rem;
+  }
+
+  .song-results {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  :global(.song-result) {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem 0.75rem;
+    padding: 0.55rem 0.65rem;
+    border: 1px solid #2a2a2a;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.15);
+  }
+
+  :global(.song-result__title) {
+    margin: 0;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.82rem;
+    color: #c0c0c0;
+  }
+
+  :global(.song-result__meta) {
+    margin: 0.15rem 0 0;
+    font-size: 0.68rem;
+    color: #666;
+  }
+
+  :global(.result-artist) {
+    color: var(--rb-amber-dim);
+    text-decoration: none;
+  }
+
+  :global(.result-artist:hover) {
+    color: var(--rb-amber);
+    text-decoration: underline;
+  }
+
+  :global(.result-bpm),
+  :global(.result-mod) {
+    display: inline-block;
+    margin-left: 0.35rem;
+    font-size: 0.58rem;
+    padding: 1px 4px;
+    border-radius: 2px;
+  }
+
+  :global(.result-bpm) {
+    background: rgba(57, 255, 20, 0.08);
+    color: var(--rb-green-bright);
+    border: 1px solid var(--rb-green-dim);
+  }
+
+  :global(.result-mod) {
+    background: rgba(255, 176, 0, 0.1);
+    color: var(--rb-amber);
+    border: 1px solid rgba(255, 176, 0, 0.25);
+  }
+
+  :global(.song-result__actions) {
+    display: flex;
+    gap: 0.35rem;
+    align-items: flex-start;
+  }
+
+  :global(.song-result__play),
+  :global(.song-result__download) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 3px;
+    border: 1px solid var(--rb-border);
+    background: linear-gradient(180deg, #363636 0%, #282828 100%);
+    color: var(--rb-silver-dim);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  :global(.song-result__play) {
+    color: var(--rb-green-bright);
+    border-color: var(--rb-green-dim);
+  }
+
+  :global(.song-result__play:hover),
+  :global(.song-result__download:hover) {
+    color: var(--rb-amber);
+    border-color: var(--rb-amber-dim);
   }
 
   .raw-search-row {
@@ -758,47 +949,5 @@ const archiveStats = [
 </script>
 
 <script>
-  /* ── Complete song index filter ───────────────────────────────── */
-  const songSearch = document.getElementById('songSearch');
-  const songItems = document.querySelectorAll('.raw-item');
-  const songGroups = document.querySelectorAll('.raw-group');
-  const songEmpty = document.getElementById('songEmpty');
-  const songCount = document.getElementById('songCount');
-
-  function filterSongs() {
-    const term = (songSearch as HTMLInputElement | null)?.value.toLowerCase() ?? '';
-    let visibleFiles = 0;
-    let visibleGroups = 0;
-
-    songGroups.forEach((group) => {
-      let groupVisible = 0;
-      const items = group.querySelectorAll('.raw-item');
-      items.forEach((item) => {
-        const filename = item.getAttribute('data-filename') ?? '';
-        const collection = item.getAttribute('data-collection') ?? '';
-        const artist = item.getAttribute('data-artist') ?? '';
-        const isVisible = !term || filename.includes(term) || collection.includes(term) || artist.includes(term);
-        (item as HTMLElement).style.display = isVisible ? '' : 'none';
-        if (isVisible) {
-          groupVisible++;
-          visibleFiles++;
-        }
-      });
-      (group as HTMLElement).style.display = groupVisible > 0 ? '' : 'none';
-      if (groupVisible > 0) visibleGroups++;
-    });
-
-    if (songCount) {
-      songCount.textContent = term
-        ? `${visibleFiles} of ${songItems.length} files`
-        : `${songItems.length} files`;
-    }
-    if (songEmpty) {
-      songEmpty.classList.toggle('is-hidden', visibleFiles > 0);
-    }
-  }
-
-  if (songSearch) {
-    songSearch.addEventListener('input', filterSongs);
-  }
+  import '../../scripts/song-archive-search-ui';
 </script>

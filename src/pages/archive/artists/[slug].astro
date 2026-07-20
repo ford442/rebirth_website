@@ -1,0 +1,347 @@
+---
+// Canonical artist page — /archive/artists/<slug>/
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import HardwarePanel from '../../../components/ui/HardwarePanel.astro';
+import Lcd from '../../../components/ui/Lcd.astro';
+import ArchiveEmptyState from '../../../components/archive/ArchiveEmptyState.astro';
+import { normalizeBase } from '../../../lib/url';
+import { normalizeArchiveUrl } from '../../../lib/archive-urls';
+import artistsIndexRaw from '../../../data/artists-index.json';
+import fullIndexRaw from '../../../data/songs-full-index.json';
+import { enrichSongs } from '../../../lib/song-enrichment';
+import type { SongIndexEntry } from '../../../lib/song-archive';
+
+interface ArtistRow {
+  slug: string;
+  name: string;
+  aliases: string[];
+  songCount: number;
+  folders: string[];
+}
+
+interface ArtistsIndexFile {
+  artists: ArtistRow[];
+}
+
+const artistsIndex = artistsIndexRaw as ArtistsIndexFile;
+const allSongs = enrichSongs((fullIndexRaw as { songs: SongIndexEntry[] }).songs || []);
+
+export function getStaticPaths() {
+  const index = artistsIndexRaw as ArtistsIndexFile;
+  return index.artists.map((artist) => ({
+    params: { slug: artist.slug },
+    props: { artist },
+  }));
+}
+
+const { artist } = Astro.props as { artist: ArtistRow };
+const baseUrl = normalizeBase(import.meta.env.BASE_URL);
+
+const songs = allSongs
+  .filter((song) => song.artistSlug === artist.slug)
+  .map((song) => ({
+    ...song,
+    url: normalizeArchiveUrl(song.url),
+  }))
+  .sort((a, b) => a.title.localeCompare(b.title));
+
+const folderLinks = artist.folders.map((folderPath) => {
+  const slug = folderPath.split('/').map(encodeURIComponent).join('/');
+  const label = folderPath.split('/').pop()?.replace(/_/g, ' ') ?? folderPath;
+  return { href: `${baseUrl}/archive/songs/${slug}/`, label };
+});
+---
+
+<BaseLayout
+  title={`${artist.name} — Song Archive`}
+  description={`Browse ${songs.length} ReBirth RB-338 songs by ${artist.name}. Play in browser or download .rbs files.`}
+>
+  <div class="artist-page">
+    <div class="container">
+
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Songs', href: '/archive/songs/' },
+        { label: 'Artists', href: '/archive/songs/' },
+        { label: artist.name },
+      ]} />
+
+      <div class="rb-heading rb-heading-green">Artists</div>
+
+      <HardwarePanel
+        animate
+        variant="rackmount-chassis"
+        title={artist.name.toUpperCase()}
+        ledStatus={songs.length > 0 ? 'online' : 'offline'}
+        ledLabel={`${songs.length} SONG${songs.length === 1 ? '' : 'S'}`}
+      >
+        {artist.aliases.length > 1 && (
+          <p class="artist-aliases">
+            Also archived as: {artist.aliases.filter((a) => a !== artist.name).join(', ')}
+          </p>
+        )}
+        {folderLinks.length > 0 && (
+          <p class="artist-folders">
+            Source folders:
+            {folderLinks.map((link) => (
+              <a href={link.href} class="folder-chip">{link.label}</a>
+            ))}
+          </p>
+        )}
+      </HardwarePanel>
+
+      <div class="artist-stats">
+        <Lcd label="SONGS" value={songs.length.toLocaleString()} ariaLabel="Songs by artist" />
+        <Lcd label="FOLDERS" value={artist.folders.length.toLocaleString()} ariaLabel="Archive folders" />
+        <Lcd label="CANONICAL" value={artist.name} ariaLabel="Canonical artist name" />
+      </div>
+
+      <HardwarePanel variant="rackmount" title={`SONGS BY ${artist.name.toUpperCase()}`}>
+        <div class="table-controls">
+          <input
+            type="text"
+            id="artistSongSearch"
+            placeholder={`Search ${songs.length} songs...`}
+            class="rb-search-input"
+            aria-label={`Search songs by ${artist.name}`}
+          />
+          <span id="artistSongCount" class="folder-count">{songs.length} songs</span>
+        </div>
+
+        <div class="table-scroll">
+          <table class="folder-table" id="artistSongTable">
+            <thead>
+              <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Collection</th>
+                <th scope="col" class="col-size">Size</th>
+                <th scope="col" class="col-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="artistSongBody">
+              {songs.map((song) => (
+                <tr
+                  class="file-row"
+                  data-search={`${song.title} ${song.filename} ${song.collection} ${song.subcollectionDisplay ?? ''}`.toLowerCase()}
+                >
+                  <td class="cell-name">
+                    <span class="file-title" title={song.filename}>{song.title}</span>
+                    {song.bpm && <span class="file-bpm">{song.bpm} BPM</span>}
+                    {song.hasModDependency && <span class="file-mod">MOD</span>}
+                  </td>
+                  <td class="cell-collection">
+                    {song.collection}
+                    {song.subcollectionDisplay && song.subcollectionDisplay !== song.collection && (
+                      <span class="cell-sub"> / {song.subcollectionDisplay}</span>
+                    )}
+                  </td>
+                  <td class="cell-size">{song.fileSize}</td>
+                  <td class="cell-actions">
+                    <button
+                      type="button"
+                      class="preview-btn"
+                      data-preview-src={song.url}
+                      data-preview-label={song.title}
+                      data-preview-bpm={song.bpm ?? ''}
+                      aria-label={`Preview ${song.filename}`}
+                    >
+                      <span aria-hidden="true">▶</span>
+                    </button>
+                    <a
+                      href={song.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="download-btn"
+                      aria-label={`Download ${song.filename}`}
+                    >
+                      <span aria-hidden="true">↓</span>
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <ArchiveEmptyState id="artistSongEmpty" message="No songs match your search." />
+      </HardwarePanel>
+
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .artist-page {
+    padding-block: 2rem 4rem;
+    background: #0f0f0f;
+    min-height: 60vh;
+  }
+
+  .artist-aliases,
+  .artist-folders {
+    font-size: 0.85rem;
+    color: #aaa;
+    margin: 0 0 0.75rem;
+    line-height: 1.5;
+  }
+
+  .folder-chip {
+    display: inline-block;
+    margin: 0.15rem 0.35rem 0.15rem 0;
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 176, 0, 0.2);
+    color: var(--rb-amber);
+    text-decoration: none;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.72rem;
+  }
+
+  .folder-chip:hover {
+    border-color: var(--rb-amber);
+    background: rgba(255, 176, 0, 0.06);
+  }
+
+  .artist-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.6rem;
+    margin: 1.25rem 0 1.5rem;
+  }
+
+  .table-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .table-controls .rb-search-input {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .folder-count {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.75rem;
+    color: var(--rb-silver-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  .folder-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.85rem;
+  }
+
+  .folder-table th,
+  .folder-table td {
+    padding: 0.55em 1em;
+    border-bottom: 1px solid #1e1e1e;
+    text-align: left;
+  }
+
+  .folder-table th {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #888;
+    background: #1e1e1e;
+  }
+
+  .folder-table tr:hover td {
+    background: rgba(255, 176, 0, 0.04);
+  }
+
+  .cell-name { color: #c0c0c0; }
+  .cell-collection { color: #888; font-size: 0.78rem; }
+  .cell-sub { color: #666; }
+  .cell-size { color: #666; white-space: nowrap; }
+
+  .col-actions,
+  .cell-actions {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .cell-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.35rem;
+  }
+
+  .file-mod {
+    margin-left: 0.45rem;
+    font-size: 0.58rem;
+    padding: 1px 4px;
+    border-radius: 2px;
+    background: rgba(255, 176, 0, 0.1);
+    color: var(--rb-amber);
+    border: 1px solid rgba(255, 176, 0, 0.25);
+  }
+
+  .file-bpm {
+    margin-left: 0.45rem;
+    font-size: 0.58rem;
+    padding: 1px 4px;
+    border-radius: 2px;
+    background: rgba(57, 255, 20, 0.08);
+    color: var(--rb-green-bright);
+    border: 1px solid var(--rb-green-dim);
+  }
+
+  .preview-btn,
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 3px;
+    border: 1px solid var(--rb-border);
+    background: linear-gradient(180deg, #363636 0%, #282828 100%);
+    color: var(--rb-silver-dim);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .preview-btn { color: var(--rb-green-bright); border-color: var(--rb-green-dim); }
+  .preview-btn:hover, .download-btn:hover { color: var(--rb-amber); border-color: var(--rb-amber-dim); }
+</style>
+
+<script>
+  const searchInput = document.getElementById('artistSongSearch') as HTMLInputElement | null;
+  const countLabel = document.getElementById('artistSongCount');
+  const rows = Array.from(document.querySelectorAll<HTMLElement>('#artistSongBody .file-row'));
+  const empty = document.getElementById('artistSongEmpty');
+
+  function filterArtistSongs() {
+    const term = searchInput?.value.toLowerCase() ?? '';
+    let visible = 0;
+    rows.forEach((row) => {
+      const haystack = row.getAttribute('data-search') ?? '';
+      const show = !term || haystack.includes(term);
+      row.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    if (countLabel) {
+      countLabel.textContent = term ? `${visible} of ${rows.length} songs` : `${rows.length} songs`;
+    }
+    empty?.classList.toggle('is-hidden', visible > 0);
+  }
+
+  searchInput?.addEventListener('input', filterArtistSongs);
+</script>
+
+<script>
+  import '../../../scripts/archive-preview';
+</script>

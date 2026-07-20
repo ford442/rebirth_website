@@ -43,7 +43,7 @@ jobs:
 
       - name: Mod metadata coverage (warning only)
         continue-on-error: true
-        run: python3 scripts/check-mod-metadata.py --priority
+        run: python3 scripts/check-mod-metadata.py --priority --no-fail-on-gaps
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium

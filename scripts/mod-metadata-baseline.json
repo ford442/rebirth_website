@@ -1,0 +1,4 @@
+{
+  "minDocumented": 101,
+  "note": "CI warns if documented count drops below minDocumented. Update after intentional metadata milestones."
+}

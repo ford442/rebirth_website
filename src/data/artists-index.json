@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "generated": "2026-07-20T08:00:49.827645+00:00",
+    "artistCount": 6
+  },
+  "artists": [
+    {
+      "slug": "noah-cohn",
+      "name": "Noah Cohn",
+      "aliases": [
+        "Noah Cohn",
+        "Noah Cohn Complete",
+        "Noah Cohn Extended",
+        "Noah_Cohn_Complete",
+        "Noah_Cohn_Extended"
+      ],
+      "songCount": 133,
+      "folders": [
+        "Artists/Noah_Cohn_Complete",
+        "Artists/Noah_Cohn_Extended",
+        "Artists/Noah Cohn"
+      ]
+    },
+    {
+      "slug": "rotorkopf",
+      "name": "Rotorkopf",
+      "aliases": [
+        "Rotorkopf",
+        "Rotorkopf 2"
+      ],
+      "songCount": 81,
+      "folders": [
+        "Artists/Rotorkopf"
+      ]
+    },
+    {
+      "slug": "cavey",
+      "name": "Cavey",
+      "aliases": [
+        "Cavey"
+      ],
+      "songCount": 78,
+      "folders": [
+        "Artists/Cavey"
+      ]
+    },
+    {
+      "slug": "dj-knightmare",
+      "name": "DJ Knightmare",
+      "aliases": [
+        "DJ Knightmare"
+      ],
+      "songCount": 68,
+      "folders": [
+        "Artists/DJ Knightmare"
+      ]
+    },
+    {
+      "slug": "dj-caspa",
+      "name": "DJ Caspa",
+      "aliases": [
+        "DJ Caspa"
+      ],
+      "songCount": 5,
+      "folders": [
+        "Artists/DJ Caspa"
+      ]
+    },
+    {
+      "slug": "fanatic",
+      "name": "Fanatic",
+      "aliases": [
+        "Fanatic"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Artists/Fanatic"
+      ]
+    }
+  ]
+}

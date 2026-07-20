@@ -55,7 +55,7 @@
     },
     "Monthly_Archive": {
       "name": "Monthly Archive",
-      "description": "Songs organized by month from January to December",
+      "description": "Over 1,407 songs organized by calendar months",
       "path": "Monthly_Archive",
       "subcategories": [
         {
@@ -107,8 +107,7 @@
           "path": "Monthly_Archive/December"
         }
       ],
-      "estimatedSongs": 1407,
-      "description": "Over 1,407 songs organized by calendar months"
+      "estimatedSongs": 1407
     },
     "Artists": {
       "name": "Artists",
@@ -210,12 +209,87 @@
     "created": "2026-03-15",
     "lastUpdated": "2026-03-15",
     "archiveType": "RBS (Rebirth Song Files)",
-    "supportedFormats": [".rbs"],
+    "supportedFormats": [
+      ".rbs"
+    ],
     "description": "RBS (Rebirth Song) files are Rebirth music sequences created with Propellerhead Software's Rebirth synthesizer software"
   },
   "navigation": {
     "browse": "/archive/songs",
     "manifest": "/rbs-manifest.json",
     "baseArchive": "https://test.1ink.us/rb338/archive/rbs-songs"
+  },
+  "demos": {
+    "localPath": "archive/rbs-songs/demo",
+    "licensingNote": "ReBirth RB-338 is discontinued abandonware (Propellerhead Software / Reason Studios). These demo files are mirrored from the community archive for non-commercial preservation and in-browser playback on this site. Original authors retain their rights; contact us via a GitHub issue for takedown requests.",
+    "files": [
+      {
+        "filename": "a-taste-of-haste.rbs",
+        "label": "Action Jackson \u2014 A Taste of Haste",
+        "archivePath": "By_Source/Rebirth_2.0/Complete/A Taste of Haste.rbs",
+        "category": "official",
+        "sha256": "baaadda4629e70fff662fb8594fa5056423de7d01dc16f3a18349142372894f0",
+        "bytes": 27532
+      },
+      {
+        "filename": "orbiting-your-heart.rbs",
+        "label": "ElekD \u2014 Orbiting your Heart",
+        "archivePath": "Monthly_Archive/FEBRUARY/Orbiting your Heart.rbs",
+        "category": "official",
+        "sha256": "b5f78acfbd44caf7d9cdf13c72cc02b6eb5749b7c36bb510bc6374ac8ffae200",
+        "bytes": 26824
+      },
+      {
+        "filename": "troublemakers.rbs",
+        "label": "Micromat \u2014 Troublemakers",
+        "archivePath": "Monthly_Archive/SEPTEMBER/Troublemakers.rbs",
+        "category": "official",
+        "sha256": "8d1002977b70d63747b150cb3720d64931ca934ea922a43d501c32436f742f17",
+        "bytes": 24566
+      },
+      {
+        "filename": "cavey-3-acid.rbs",
+        "label": "Cavey \u2014 3 acid",
+        "archivePath": "Artists/Cavey/3_acid.rbs",
+        "category": "community",
+        "sha256": "f1ccf745d66b02725c4ebb45609b80178f4a7974a4891ab284cd6d02a7f63e3b",
+        "bytes": 27163,
+        "bpm": 128
+      },
+      {
+        "filename": "noah-cohn-20.rbs",
+        "label": "Noah Cohn \u2014 20",
+        "archivePath": "Artists/Noah_Cohn_Complete/20.rbs",
+        "category": "community",
+        "sha256": "2955ac427df7ec5cbd00888cd34f95967d629790042ffb9257c8eae3390aadb1",
+        "bytes": 16840,
+        "bpm": 132
+      },
+      {
+        "filename": "dj-knightmare-amnesya.rbs",
+        "label": "DJ Knightmare \u2014 amnesya",
+        "archivePath": "Artists/DJ Knightmare/amnesya.rbs",
+        "category": "community",
+        "sha256": "a6ae17971b44aac0987fbd2ae433bb69b95f0a3126456871b6d72057abd96563",
+        "bytes": 36990,
+        "bpm": 134
+      },
+      {
+        "filename": "metallicon-city.rbs",
+        "label": "T.G.ViRUS \u2014 Metallicon City",
+        "archivePath": "By_Source/Rebirth_2.0/Complete/Metallicon City.rbs",
+        "category": "community",
+        "sha256": "9b4a891af8071650ccac325ded6bdc4a197753d04ccf1bdca5cfcbef3093def0",
+        "bytes": 26296
+      },
+      {
+        "filename": "propellerhead-008.rbs",
+        "label": "Propellerhead \u2014 #008",
+        "archivePath": "By_Source/Rebirth_2.0/Complete/#008.rbs",
+        "category": "official",
+        "sha256": "d6f6318af6afe3005aba4451bea1358348abed432485418bc17db36b1b3e577c",
+        "bytes": 24904
+      }
+    ]
   }
 }

@@ -1,0 +1,372 @@
+{
+  "mods": [
+    {
+      "filename": "PBE2.rbm",
+      "title": "Pitch Black Edition 2",
+      "author": "Blank (Fredrik Haegglund)",
+      "year": 1999,
+      "description": "Official ReBirth 2.0 bundled mod — sleek high-contrast darkened visuals with heavily compressed industrial drum samples for abrasive techno.",
+      "tags": ["official", "default", "classic", "industrial", "dark"]
+    },
+    {
+      "filename": "MSM2.rbm",
+      "title": "Massen Silver Machine 2",
+      "author": "Massen",
+      "year": null,
+      "description": "Metallic futuristic aesthetic with heavily compressed drum kits; a community favorite for electro and hard dance.",
+      "tags": ["industrial", "futuristic", "metal", "community-classic"]
+    },
+    {
+      "filename": "MiDiMoD.rbm",
+      "title": "MiDiMoD",
+      "author": "Neil Parker",
+      "year": null,
+      "description": "Industrial production mod with a rusted GUI and samples sourced from esoteric 1980s industrial records.",
+      "tags": ["industrial", "experimental", "community-classic"]
+    },
+    {
+      "filename": "Orbit2.rbm",
+      "title": "Orbit 2",
+      "author": "ElaSTIC & SLiCE",
+      "year": 1999,
+      "description": "Official ReBirth 2.0 space-themed mod lineage — ethereal ambient percussion suited to downtempo and IDM.",
+      "tags": ["official", "default", "space", "ambient", "classic"]
+    },
+    {
+      "filename": "nordbeat.rbm",
+      "title": "Nordbeat",
+      "author": "NordBeat community",
+      "year": null,
+      "description": "Beloved Nordic fan-site mod associated with T.G.ViRUS songpacks and hard-trance ReBirth culture.",
+      "tags": ["techno", "trance", "community-classic"]
+    },
+    {
+      "filename": "Nord_Beat.rbm",
+      "title": "Nord Beat",
+      "author": "NordBeat community",
+      "year": null,
+      "description": "Alternate NordBeat-branded mod from the Nordic ReBirth fan scene.",
+      "tags": ["techno", "trance", "community-classic"]
+    },
+    {
+      "filename": "nordbeat_[m].rbm",
+      "title": "Nordbeat [m]",
+      "author": "NordBeat community",
+      "year": null,
+      "description": "Variant build of the Nordbeat mod lineage from the Nordic archive.",
+      "tags": ["techno", "trance", "community-classic", "version-controlled"]
+    },
+    {
+      "filename": "Red_Stripe_a6.1.rbm",
+      "title": "Red Stripe a6.1",
+      "author": "Thomas & Wolfgang Merkle (Bitplant)",
+      "year": 1999,
+      "description": "Updated UK Red Stripe beer campaign mod — run transport at 338 BPM for the signature drum-roll effects.",
+      "tags": ["official", "campaign", "dnb", "fast"]
+    },
+    {
+      "filename": "red_stripe_b1.rbm",
+      "title": "Red Stripe b1",
+      "author": "Thomas & Wolfgang Merkle (Bitplant)",
+      "year": 1999,
+      "description": "Beta-branch variant of the Red Stripe promotional mod commissioned by 5emedia.",
+      "tags": ["official", "campaign", "dnb", "beta"]
+    },
+    {
+      "filename": "redstripe-dnb.rbm",
+      "title": "Red Stripe Drum & Bass",
+      "author": "Peff, Jesuspark & JackPlug",
+      "year": null,
+      "description": "Drum-and-bass oriented Red Stripe variant archived on peff.com.",
+      "tags": ["campaign", "dnb", "community-classic"]
+    },
+    {
+      "filename": "5emedia_2.0.rbm",
+      "title": "5emedia 2.0",
+      "author": "5emedia / Bitplant",
+      "year": 1999,
+      "description": "Agency-branded promotional mod from the Red Stripe UK advertising campaign.",
+      "tags": ["official", "campaign", "branding"]
+    },
+    {
+      "filename": "PeffMOD.rbm",
+      "title": "Peff MOD",
+      "author": "Peff (Kurt Kurasaki)",
+      "year": null,
+      "description": "Signature mod from peff.com curator Kurt Kurasaki — part of the definitive ReBirth preservation archive.",
+      "tags": ["community-classic", "house"]
+    },
+    {
+      "filename": "PeffEdition.rbm",
+      "title": "Peff Edition",
+      "author": "Peff (Kurt Kurasaki)",
+      "year": null,
+      "description": "Curated peff.com edition mod with distinctive house-oriented sample sets.",
+      "tags": ["community-classic", "house"]
+    },
+    {
+      "filename": "ReBirthday.rbm",
+      "title": "ReBirthday",
+      "author": "Peff & Bitplant",
+      "year": null,
+      "description": "10th-anniversary gift mod celebrating Propellerhead ReBirth — archived on peff.com.",
+      "tags": ["community-classic", "celebration"]
+    },
+    {
+      "filename": "FunkPeffomenon2.0.rbm",
+      "title": "Funk Peffomenon 2.0",
+      "author": "Peff",
+      "year": null,
+      "description": "Funk-oriented peff.com mod with playful branding and breakbeat-friendly drums.",
+      "tags": ["funk", "community-classic"]
+    },
+    {
+      "filename": "minimod2.rbm",
+      "title": "minimod 2",
+      "author": "Peff",
+      "year": null,
+      "description": "Second-generation house producer toolbox from the minimod lineage.",
+      "tags": ["house", "community-classic", "version-controlled"]
+    },
+    {
+      "filename": "minimod3.rbm",
+      "title": "minimod 3",
+      "author": "Peff",
+      "year": null,
+      "description": "Third iteration of Peff's minimod house toolbox series.",
+      "tags": ["house", "community-classic", "version-controlled"]
+    },
+    {
+      "filename": "RB-SEMx.rbm",
+      "title": "RB-SEMx",
+      "author": "Joy!Peff",
+      "year": null,
+      "description": "Oberheim-inspired visual design with analog-style synth drums — peff.com archive staple.",
+      "tags": ["analog", "synth", "community-classic"]
+    },
+    {
+      "filename": "ReVerse808.rbm",
+      "title": "ReVerse 808",
+      "author": "Unknown",
+      "year": null,
+      "description": "808-focused mod from the peff.com archive with reversed and treated drum samples.",
+      "tags": ["808", "experimental", "community-classic"]
+    },
+    {
+      "filename": "Polar.rbm",
+      "title": "Polar",
+      "author": "Unknown",
+      "year": null,
+      "description": "Long-running Polar mod series from the peff.com archive with multiple version branches.",
+      "tags": ["experimental", "community-classic", "version-controlled"]
+    },
+    {
+      "filename": "HouseMOD.rbm",
+      "title": "House MOD",
+      "author": "Unknown",
+      "year": null,
+      "description": "Classic house-oriented mod from the peff.com curated archive.",
+      "tags": ["house", "community-classic"]
+    },
+    {
+      "filename": "R-SP_1200.rbm",
+      "title": "R-SP 1200",
+      "author": "Unknown",
+      "year": null,
+      "description": "SP-1200 tribute mod archived on peff.com with crunchy sampled drum character.",
+      "tags": ["sampler-tribute", "hip-hop", "community-classic"]
+    },
+    {
+      "filename": "Alpha2.rbm",
+      "title": "Alpha 2",
+      "author": "Unknown",
+      "year": null,
+      "description": "Alpha series mod from the peff.com archive — early community sound design showcase.",
+      "tags": ["experimental", "community-classic", "version-controlled"]
+    },
+    {
+      "filename": "Alpha3.rbm",
+      "title": "Alpha 3",
+      "author": "Unknown",
+      "year": null,
+      "description": "Third Alpha-series mod build preserved in the peff.com archive.",
+      "tags": ["experimental", "community-classic", "version-controlled"]
+    },
+    {
+      "filename": "GrooveENGINE.rbm",
+      "title": "Groove ENGINE",
+      "author": "Leiff",
+      "year": null,
+      "description": "Industrial-noise mod with a stunning interface — noted in peff.com ReFill documentation.",
+      "tags": ["industrial", "experimental", "community-classic"]
+    },
+    {
+      "filename": "DarkStar.rbm",
+      "title": "Dark Star",
+      "author": "Dr. Bruno",
+      "year": null,
+      "description": "Treated acoustic dub drums with a dark cosmic aesthetic.",
+      "tags": ["dub", "dark", "community-classic"]
+    },
+    {
+      "filename": "Beatnik.rbm",
+      "title": "Beatnik",
+      "author": "Flip Dog & Supernaut",
+      "year": null,
+      "description": "Rock-and-roll oriented mod from the peff.com archive with live-feel percussion.",
+      "tags": ["rock", "breaks", "community-classic"]
+    },
+    {
+      "filename": "Millennium.rbm",
+      "title": "Millennium",
+      "author": "Massen",
+      "year": null,
+      "description": "High-tech Y2K-era look with clean, modern drum sounds from the Massen creator lineage.",
+      "tags": ["futuristic", "clean", "community-classic"]
+    },
+    {
+      "filename": "OMEGA.rbm",
+      "title": "OMEGA",
+      "author": "Omega777",
+      "year": null,
+      "description": "Futuristic interface mod with drum-and-bass oriented programming — peff.com notable mod.",
+      "tags": ["dnb", "futuristic", "community-classic"]
+    },
+    {
+      "filename": "Plasmafire.rbm",
+      "title": "Plasmafire",
+      "author": "The Silencer & CelticSons",
+      "year": null,
+      "description": "Minimalist techno mod with sharp digital percussion from the peff.com archive.",
+      "tags": ["techno", "minimal", "community-classic"]
+    },
+    {
+      "filename": "TechnoBox_mkII.rbm",
+      "title": "TechnoBox mkII",
+      "author": "Peff",
+      "year": null,
+      "description": "Techno drum toolkit with evil sub basses — second revision of Peff's TechnoBox series.",
+      "tags": ["techno", "bass", "community-classic"]
+    },
+    {
+      "filename": "Trancer.rbm",
+      "title": "Trancer",
+      "author": "Cybernetique",
+      "year": null,
+      "description": "Classic trance-era sounds and 90s rave percussion from the peff.com archive.",
+      "tags": ["trance", "rave", "community-classic"]
+    },
+    {
+      "filename": "Voltage2.rbm",
+      "title": "Voltage 2",
+      "author": "Dr. Bruno",
+      "year": null,
+      "description": "Industrial mod featuring distorted guitar textures and aggressive drum processing.",
+      "tags": ["industrial", "guitar", "community-classic"]
+    },
+    {
+      "filename": "Sonor.rbm",
+      "title": "Sonor",
+      "author": "Fasch",
+      "year": null,
+      "description": "Deep house mod from the peff.com archive with warm pads and rounded kicks.",
+      "tags": ["house", "deep-house", "community-classic"]
+    },
+    {
+      "filename": "AXIOM_peace.rbm",
+      "title": "AXIOM Peace",
+      "author": "Peff",
+      "year": null,
+      "description": "AXIOM series mod with sharp drums and pad sounds — peff.com archive highlight.",
+      "tags": ["pads", "drums", "community-classic"]
+    },
+    {
+      "filename": "BadRat.rbm",
+      "title": "BadRat",
+      "author": "Unknown",
+      "year": null,
+      "description": "Infamous mod using actual rat sounds for drums — a peff.com archive curiosity.",
+      "tags": ["experimental", "percussion", "community-classic"]
+    },
+    {
+      "filename": "regulator.rbm",
+      "title": "Regulator",
+      "author": "Unknown",
+      "year": null,
+      "description": "Regulation Issue mod variant from the Featured Collections archive.",
+      "tags": ["experimental", "community-classic"]
+    },
+    {
+      "filename": "SidstationMod2.0.rbm",
+      "title": "Sidstation Mod 2.0",
+      "author": "Unknown",
+      "year": null,
+      "description": "Commodore SID chip tribute mod emulating the Elektron SidStation aesthetic.",
+      "tags": ["chiptune", "tribute", "hardware-emulation"]
+    },
+    {
+      "filename": "707&727.rbm",
+      "title": "707 & 727",
+      "author": "Unknown",
+      "year": null,
+      "description": "Roland TR-707 and TR-727 drum machine tribute mod.",
+      "tags": ["tribute", "hardware-emulation", "drums"]
+    },
+    {
+      "filename": "K-3-0-3.rbm",
+      "title": "K-303",
+      "author": "Unknown",
+      "year": null,
+      "description": "TB-303 tribute naming mod with acid-oriented sample mapping.",
+      "tags": ["acid", "303", "tribute"]
+    },
+    {
+      "filename": "TB-909e_mkII.rbm",
+      "title": "TB-909e mkII",
+      "author": "Unknown",
+      "year": null,
+      "description": "Extended TR-909 emulation mod with additional synthesis options.",
+      "tags": ["909", "tribute", "hardware-emulation"]
+    },
+    {
+      "filename": "RDX303.rbm",
+      "title": "RDX303",
+      "author": "Unknown",
+      "year": null,
+      "description": "303-focused mod with acid bass and squelch-oriented programming.",
+      "tags": ["acid", "303", "bass"]
+    },
+    {
+      "filename": "DnB5000.rbm",
+      "title": "DnB 5000",
+      "author": "Unknown",
+      "year": null,
+      "description": "Drum-and-bass oriented mod with fast break programming and heavy sub bass.",
+      "tags": ["dnb", "breaks", "bass"]
+    },
+    {
+      "filename": "Star_Wars_-_Dark_Jedi_MoD.rbm",
+      "title": "Star Wars — Dark Jedi Mod",
+      "author": "Unknown",
+      "year": null,
+      "description": "Pop-culture themed mod with sci-fi GUI artwork and cinematic percussion.",
+      "tags": ["themed", "sci-fi", "experimental"]
+    },
+    {
+      "filename": "bLADErUNNER.rbm",
+      "title": "Blade Runner",
+      "author": "Unknown",
+      "year": null,
+      "description": "Film-inspired mod with noir sci-fi visuals and atmospheric drum textures.",
+      "tags": ["themed", "sci-fi", "ambient"]
+    },
+    {
+      "filename": "Quake_II_-_Drop_Pod.rbm",
+      "title": "Quake II — Drop Pod",
+      "author": "Unknown",
+      "year": null,
+      "description": "Quake II game-themed mod with industrial percussion and dark GUI styling.",
+      "tags": ["themed", "industrial", "gaming"]
+    }
+  ]
+}

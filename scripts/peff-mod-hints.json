@@ -1,0 +1,184 @@
+{
+  "source": "src/content/docs/rebirth-resource-roundup.md",
+  "matched": 22,
+  "unmatchedTitles": [
+    "Pitch Black Edition 2",
+    "Prop Drop",
+    "RBS and RBM Filetyper",
+    "ReBirth 2.0 Mod AIFF File Renamer",
+    "PlaySamp.RBS",
+    "UltraPan",
+    "UltraTweak",
+    "\"ReBirth of the Cool\" tutorial songs",
+    "ReSlice",
+    "TAL BassLine 101",
+    "D16 Phoscyon",
+    "D16 Drumazon",
+    "D16 Nepheton",
+    "Behringer TD-3 / MS-101",
+    "Cyclone Analogic Bass Bot TT-303",
+    "Kurt Kurasaki (\"peff\")",
+    "Fredrik Haegglund (\"Blank\")",
+    "Sam Battle (\"Look Mum No Computer\")",
+    "AudioPilz",
+    "Taco Scargo",
+    "MNX2010"
+  ],
+  "mods": [
+    {
+      "title": "AXIOM_peace",
+      "author": "Peff",
+      "description": "sharp drums, pad sounds",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "AXIOMpeace.rbm"
+    },
+    {
+      "title": "BadRat BRM 2.0",
+      "author": "Unknown",
+      "description": "drums made from actual rat sounds (seriously)",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "BadRat.rbm"
+    },
+    {
+      "title": "Bone Vibes",
+      "author": "Syrusate",
+      "description": "industrial/darkwave with bone rattling sounds",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "BoneVibes.rbm"
+    },
+    {
+      "title": "Beatnik",
+      "author": "Flip Dog & Supernaut",
+      "description": "\"Rock n' Roll\" mod",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "Beatnik.rbm"
+    },
+    {
+      "title": "Dark Star",
+      "author": "Dr. Bruno",
+      "description": "treated acoustic dub drums",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "DarkStar.rbm"
+    },
+    {
+      "title": "Digalog",
+      "author": "Einzelgaenger",
+      "description": "synthetic/electro",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "digalog.rbm"
+    },
+    {
+      "title": "Groove ENGINE",
+      "author": "Leiff",
+      "description": "industrial noises, stunning interface",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "GrooveENGINE.rbm"
+    },
+    {
+      "title": "ibex mk II",
+      "author": "Jonas H.",
+      "description": "varied sounds from didgeridoo to synths",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "ibex_mkII.rbm"
+    },
+    {
+      "title": "Metallicon",
+      "author": "T.G.ViRUS",
+      "description": "original bundled mod",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "Metallicon.rbm"
+    },
+    {
+      "title": "Millennium",
+      "author": "Massen",
+      "description": "high-tech look, clean sound",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "Millennium.rbm"
+    },
+    {
+      "title": "minimod",
+      "author": "Peff",
+      "description": "the house producers toolbox",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "minimod.rbm"
+    },
+    {
+      "title": "Omega",
+      "author": "Omega777",
+      "description": "most futuristic interface, DnB style",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "OMEGA.rbm"
+    },
+    {
+      "title": "Orbit 2.0",
+      "author": "ElaSTIC and SLiCE",
+      "description": "original bundled mod",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "Orbit2.rbm"
+    },
+    {
+      "title": "Plasmafire",
+      "author": "The Silencer & CelticSons",
+      "description": "minimalist techno",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "Plasmafire.rbm"
+    },
+    {
+      "title": "Polyvibe",
+      "author": "Jonas H.",
+      "description": "Acid Jazz with pianos, brass, jazzy drums",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "polyvibe.rbm"
+    },
+    {
+      "title": "RB-SEMx",
+      "author": "Joy!Peff",
+      "description": "Oberheim-ish design, analog synth drums",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "RB-SEMx.rbm"
+    },
+    {
+      "title": "ReBirthday",
+      "author": "Peff & bitplant",
+      "description": "10th anniversary gift to Propellerheads",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "ReBirthday.rbm"
+    },
+    {
+      "title": "Sonor",
+      "author": "Fasch",
+      "description": "deep house",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "Sonor.rbm"
+    },
+    {
+      "title": "TechnoBox mkII",
+      "author": "Peff",
+      "description": "techno drums, evil sub basses",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "TechnoBox_mkII.rbm"
+    },
+    {
+      "title": "Trancer",
+      "author": "Cybernetique",
+      "description": "classic trancy 90s sounds",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "Trancer.rbm"
+    },
+    {
+      "title": "Voltage2",
+      "author": "Dr.Bruno",
+      "description": "industrial with distorted guitar",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "Voltage2.rbm"
+    },
+    {
+      "title": "NordBeat",
+      "author": "Unknown",
+      "description": "Created and maintains ReMaker",
+      "source": "rebirth-resource-roundup.md",
+      "filename": "nordbeat.rbm"
+    }
+  ],
+  "waybackSnippets": []
+}

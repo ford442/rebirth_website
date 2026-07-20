@@ -6,7 +6,8 @@ import HardwarePanel from '../../../components/ui/HardwarePanel.astro';
 import Lcd from '../../../components/ui/Lcd.astro';
 import { normalizeBase } from '../../../lib/url';
 import { normalizeArchiveUrl, RBS_ARCHIVE_BASE_URL } from '../../../lib/archive-urls';
-import { collectFolderPaths, childFolderPaths } from '../../../lib/song-archive';
+import { childFolderPaths, collectFolderPaths } from '../../../lib/song-archive';
+import { displaySubcollection } from '../../../lib/song-enrichment';
 import fullIndexRaw from '../../../data/songs-full-index.json';
 import collectionsMeta from '../../../data/collections-metadata.json';
 import { songCollections, type SongCollectionKey } from '../../../data/song-collections';
@@ -82,7 +83,11 @@ const sectionMeta = sectionKey ? collectionsMeta[sectionKey] : undefined;
 const sectionData = sectionKey ? songCollections[sectionKey] : undefined;
 
 const folderSegments = folderPath.split('/');
-const folderName = folderSegments[folderSegments.length - 1].replace(/_/g, ' ');
+const rawFolderName = folderSegments[folderSegments.length - 1].replace(/_/g, ' ');
+const folderName =
+  topSegment === 'Monthly_Archive'
+    ? displaySubcollection(folderSegments[folderSegments.length - 1]) ?? rawFolderName
+    : rawFolderName;
 
 const songs = fullIndex.songs
   .filter((song) => {

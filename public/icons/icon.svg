@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="ReBirth RB-338 Archive">
+  <rect width="512" height="512" fill="#111111"/>
+  <rect x="40" y="56" width="432" height="400" rx="16" fill="#262626" stroke="#555555" stroke-width="6"/>
+  <rect x="72" y="96" width="368" height="88" rx="4" fill="#0a0a0a" stroke="#333333" stroke-width="4"/>
+  <text x="256" y="152" font-family="monospace" font-size="42" font-weight="700" fill="#ffb000" text-anchor="middle">RB-338</text>
+  <text x="256" y="188" font-family="monospace" font-size="18" fill="#888888" text-anchor="middle">ARCHIVE</text>
+  <circle cx="128" cy="280" r="28" fill="#c41e3a" stroke="#888" stroke-width="3"/>
+  <circle cx="208" cy="280" r="28" fill="#2d8a4e" stroke="#888" stroke-width="3"/>
+  <circle cx="288" cy="280" r="28" fill="#ffb000" stroke="#888" stroke-width="3"/>
+  <circle cx="368" cy="280" r="28" fill="#c0c0c0" stroke="#888" stroke-width="3"/>
+  <rect x="96" y="340" width="320" height="72" rx="6" fill="#1a1a1a" stroke="#444" stroke-width="3"/>
+  <rect x="112" y="360" width="24" height="32" rx="2" fill="#ffb000" opacity="0.9"/>
+  <rect x="144" y="368" width="24" height="24" rx="2" fill="#333"/>
+  <rect x="176" y="368" width="24" height="24" rx="2" fill="#333"/>
+  <rect x="208" y="368" width="24" height="24" rx="2" fill="#333"/>
+  <rect x="240" y="368" width="24" height="24" rx="2" fill="#ffb000" opacity="0.7"/>
+  <rect x="272" y="368" width="24" height="24" rx="2" fill="#333"/>
+  <rect x="304" y="368" width="24" height="24" rx="2" fill="#333"/>
+  <rect x="336" y="368" width="24" height="24" rx="2" fill="#333"/>
+  <rect x="368" y="368" width="24" height="24" rx="2" fill="#333"/>
+</svg>
