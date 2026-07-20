@@ -1,0 +1,67 @@
+---
+// Dedicated song preview page — deep-link target for archive Play buttons
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import RbsPlayer from '../components/RbsPlayer.astro';
+import { rbsDownloadUrl } from '../lib/archive-urls';
+
+/** Server-side query parsing for SSR title/description */
+const srcParam = Astro.url.searchParams.get('src');
+const playParam = Astro.url.searchParams.get('play');
+const labelParam = Astro.url.searchParams.get('label');
+
+const resolvedSrc = srcParam ?? (playParam ? rbsDownloadUrl(playParam) : null);
+const pageLabel = labelParam ?? (playParam ? playParam.split('/').pop()?.replace(/_/g, ' ') : null) ?? 'Song Preview';
+---
+
+<BaseLayout
+  title={pageLabel}
+  description="Preview a ReBirth RB-338 .rbs song in your browser without downloading the original software."
+>
+  <div class="play-page">
+    <div class="container">
+      <Breadcrumbs items={[
+        { label: 'Home', href: '/' },
+        { label: 'Songs', href: '/archive/songs/' },
+        { label: 'Preview' },
+      ]} />
+
+      <h1 class="play-page__title" id="player-zone" tabindex="-1">{pageLabel}</h1>
+      <p class="play-page__lead">
+        In-browser preview powered by the WASM playback engine.
+        {resolvedSrc ? ' Song loads automatically — press Play to hear audio.' : ' Select a demo or drop an .rbs file below.'}
+      </p>
+
+      <RbsPlayer
+        title="ARCHIVE PREVIEW"
+        src={resolvedSrc ?? undefined}
+        demos={[]}
+      />
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .play-page {
+    padding-block: 2rem 4rem;
+    background: #0f0f0f;
+    min-height: 60vh;
+  }
+
+  .play-page__title {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 1.25rem;
+    color: var(--rb-amber, #ffb000);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0 0 0.5rem;
+  }
+
+  .play-page__lead {
+    font-size: 0.9rem;
+    color: #888;
+    margin: 0 0 1.5rem;
+    line-height: 1.5;
+    max-width: 60ch;
+  }
+</style>
