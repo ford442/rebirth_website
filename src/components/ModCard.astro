@@ -161,6 +161,8 @@ const typeClass = isSong ? 'type--song' : isMod ? 'type--mod' : 'type--other';
 </article>
 
 <script>
+  import { dispatchLoadDemo, scrollToPlayer } from '../lib/player-events';
+
   document.querySelectorAll('.mod-card__action--preview').forEach((button) => {
     if (!(button instanceof HTMLButtonElement)) return;
     button.addEventListener('click', () => {
@@ -169,8 +171,8 @@ const typeClass = isSong ? 'type--song' : isMod ? 'type--mod' : 'type--other';
         label: button.dataset.previewLabel ?? 'archive preview',
         bpm: button.dataset.previewBpm ? Number(button.dataset.previewBpm) : undefined,
       };
-      window.dispatchEvent(new CustomEvent('rb:load-demo', { detail }));
-      document.getElementById('wasm-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      dispatchLoadDemo(detail);
+      scrollToPlayer();
     });
   });
 </script>

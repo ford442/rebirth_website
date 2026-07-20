@@ -39,6 +39,7 @@ const hasSrc = !!src;
   variant="rackmount-module"
   animate
   title={title}
+  id="wasm-heading"
 >
   <div
     class="rbs-player"
@@ -73,10 +74,16 @@ const hasSrc = !!src;
     </div>
 
     <!-- Song metadata display -->
-    <div class="player-meta is-hidden" id="rbsMeta">
-      <span class="meta-title" id="rbsMetaTitle">—</span>
-      <span class="meta-author" id="rbsMetaAuthor">—</span>
+    <div class="player-meta is-hidden" id="rbsMeta" aria-label="Loaded song metadata">
+      <div class="player-meta__primary">
+        <span class="meta-title" id="rbsMetaTitle">—</span>
+        <span class="meta-author" id="rbsMetaAuthor">—</span>
+        <span class="meta-bpm" id="rbsMetaBpm">— BPM</span>
+      </div>
+      <div class="player-meta__devices" id="rbsMetaDevices" aria-label="ReBirth devices"></div>
     </div>
+
+    <div class="player-toast-stack" id="rbsToastStack" aria-live="polite" aria-relevant="additions"></div>
 
     <div class="player-message" id="rbsMessage" aria-live="polite">Ready to initialise WASM bridge…</div>
 
@@ -218,14 +225,25 @@ const hasSrc = !!src;
   /* Metadata strip */
   .player-meta {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-    padding: 0.5rem 0.75rem;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.6rem 0.75rem;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
     border: 1px solid var(--rb-border, #3a3a3a);
+  }
+
+  .player-meta__primary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 1rem;
+  }
+
+  .player-meta__devices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
   }
 
   .meta-title {
@@ -239,6 +257,98 @@ const hasSrc = !!src;
     font-family: var(--rb-font-display, 'Courier New', monospace);
     font-size: 0.75rem;
     color: var(--rb-silver-dim, #888);
+  }
+
+  .meta-bpm {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.7rem;
+    color: var(--rb-green-bright, #3dba66);
+    letter-spacing: 0.06em;
+    padding: 1px 5px;
+    border: 1px solid var(--rb-green-dim, #1a5230);
+    border-radius: 2px;
+    background: rgba(57, 255, 20, 0.06);
+  }
+
+  :global(.meta-device) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--rb-border, #3a3a3a);
+    background: rgba(0, 0, 0, 0.25);
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.65rem;
+    color: var(--rb-silver, #c0c0c0);
+    letter-spacing: 0.05em;
+  }
+
+  :global(.meta-device--muted) {
+    opacity: 0.45;
+  }
+
+  :global(.meta-device__led) {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--rb-green, #2d8a4e);
+    box-shadow: 0 0 4px rgba(57, 255, 20, 0.5);
+  }
+
+  :global(.meta-device--muted .meta-device__led) {
+    background: #555;
+    box-shadow: none;
+  }
+
+  :global(.meta-device__count) {
+    color: var(--rb-silver-dim, #888);
+    font-size: 0.6rem;
+  }
+
+  /* Toast stack */
+  .player-toast-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    pointer-events: none;
+  }
+
+  :global(.player-toast) {
+    padding: 0.45rem 0.65rem;
+    border-radius: 3px;
+    border: 1px solid var(--rb-border, #3a3a3a);
+    background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    color: var(--rb-silver, #c0c0c0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    animation: toast-in 200ms ease;
+  }
+
+  :global(.player-toast--success) {
+    border-color: var(--rb-green-dim, #1a5230);
+    color: var(--rb-green-bright, #3dba66);
+  }
+
+  :global(.player-toast--error) {
+    border-color: var(--rb-red-dim, #8a1528);
+    color: var(--rb-red, #c41e3a);
+  }
+
+  :global(.player-toast--loading) {
+    border-color: var(--rb-amber-dim, #b37800);
+    color: var(--rb-amber, #ffb000);
+  }
+
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .player--reduced-motion :global(.player-toast) {
+    animation: none;
   }
 
   .player-message {
@@ -294,10 +404,20 @@ const hasSrc = !!src;
     border-color: var(--rb-red-dim, #8a1528);
   }
 
+  .step-dot.is-pattern {
+    background: linear-gradient(180deg, #4a4a20 0%, #3a3a18 100%);
+    border-color: #5a5a28;
+  }
+
   .step-dot.is-active {
     background: linear-gradient(180deg, var(--rb-amber, #ffb000) 0%, #a07800 100%);
     border-color: var(--rb-amber-dim, #b37800);
     box-shadow: 0 0 6px rgba(255, 176, 0, 0.4);
+  }
+
+  .player--reduced-motion .step-dot,
+  .player--reduced-motion .meter-segment {
+    transition: none;
   }
 
   .step-dot.is-current {
@@ -436,408 +556,25 @@ const hasSrc = !!src;
 <script>
   import { WasmAudioBridge } from '../wasm/js/WasmAudioBridge';
   import { DegradedRbsPlayer } from '../wasm/js/DegradedRbsPlayer';
-  import {
-    classifyInitError,
-    INIT_FAILURE_MESSAGES,
-    type InitFailureReason,
-  } from '../wasm/js/rbs-init-errors';
-  import type { PlayerStatus } from '../wasm/types/wasm-audio';
+  import { initPlayerUI } from '../wasm/js/player-ui';
+  import type { DemoSong } from '../wasm/js/player-ui';
 
-  type PlayerBridge = WasmAudioBridge | DegradedRbsPlayer;
-
-  // Expose bridge classes on window in dev mode so integration tests can
-  // drive them directly without reaching into module internals.
   if (import.meta.env.DEV) {
-    (window as any).WasmAudioBridge = WasmAudioBridge;
-    (window as any).DegradedRbsPlayer = DegradedRbsPlayer;
+    (window as Window & { WasmAudioBridge?: typeof WasmAudioBridge; DegradedRbsPlayer?: typeof DegradedRbsPlayer }).WasmAudioBridge = WasmAudioBridge;
+    (window as Window & { WasmAudioBridge?: typeof WasmAudioBridge; DegradedRbsPlayer?: typeof DegradedRbsPlayer }).DegradedRbsPlayer = DegradedRbsPlayer;
   }
 
-  (async function initRbsPlayer() {
-    const playerEl = document.querySelector('.rbs-player') as HTMLElement | null;
-    if (!playerEl) return;
-
-    const dropZone = document.getElementById('rbsDropZone') as HTMLElement | null;
-    const fileInput = document.getElementById('rbsFileInput') as HTMLInputElement | null;
-    const btnPlay = document.getElementById('rbsBtnPlay') as HTMLButtonElement | null;
-    const btnStop = document.getElementById('rbsBtnStop') as HTMLButtonElement | null;
-    const btnLoad = document.getElementById('rbsBtnLoad') as HTMLButtonElement | null;
-    const metaEl = document.getElementById('rbsMeta') as HTMLElement | null;
-    const metaTitle = document.getElementById('rbsMetaTitle') as HTMLElement | null;
-    const metaAuthor = document.getElementById('rbsMetaAuthor') as HTMLElement | null;
-    const messageEl = document.getElementById('rbsMessage') as HTMLElement | null;
-    const demoSelect = document.getElementById('rbsDemoSelect') as HTMLSelectElement | null;
-    const btnDemoLoad = document.getElementById('rbsBtnDemoLoad') as HTMLButtonElement | null;
-    const volumeSlider = document.getElementById('rbsVolume') as HTMLInputElement | null;
-    const volumeValue = document.getElementById('rbsVolumeValue') as HTMLElement | null;
-    const tempoSlider = document.getElementById('rbsTempo') as HTMLInputElement | null;
-    const tempoValue = document.getElementById('rbsTempoValue') as HTMLElement | null;
-    const fallbackEl = document.getElementById('rbsFallback') as HTMLElement | null;
-    const fallbackHeadline = document.getElementById('rbsFallbackHeadline') as HTMLElement | null;
-    const fallbackDetail = document.getElementById('rbsFallbackDetail') as HTMLElement | null;
-    const fallbackMode = document.getElementById('rbsFallbackMode') as HTMLElement | null;
-    const lcdStatus = playerEl.querySelector('.player-lcd-status .lcd-value') as HTMLElement | null;
-    const lcdBpm = playerEl.querySelector('.player-lcd-bpm .lcd-value') as HTMLElement | null;
-    const lcdBar = playerEl.querySelector('.player-lcd-bar .lcd-value') as HTMLElement | null;
-    const ledLabel = playerEl.querySelector('.player-led') as HTMLElement | null;
-    const stepDots = playerEl.querySelectorAll('.step-dot');
-    const meterSegments = playerEl.querySelectorAll('.meter-segment');
-
-    let bridge: PlayerBridge = new WasmAudioBridge();
-    let degradedMode = false;
-    let songLoaded = false;
-    let canSketch = false;
-
-    const demos = (() => {
-      try {
-        return JSON.parse(playerEl.dataset.demos || '[]') as { label: string; src: string; bpm?: number }[];
-      } catch {
-        return [];
-      }
-    })();
-
-    function setMessage(message: string) {
-      if (messageEl) messageEl.textContent = message;
-    }
-
-    function setPlayerMode(mode: 'wasm' | 'degraded-sketch' | 'degraded-metadata') {
-      if (playerEl) playerEl.dataset.playerMode = mode;
-    }
-
-    function showDegradedFallback(reason: InitFailureReason) {
-      degradedMode = true;
-      if (fallbackEl) {
-        fallbackEl.classList.remove('is-hidden');
-        fallbackEl.dataset.failureReason = reason;
-      }
-      if (fallbackDetail) fallbackDetail.textContent = INIT_FAILURE_MESSAGES[reason];
-      if (fallbackHeadline) {
-        fallbackHeadline.textContent = reason === 'wasm-unavailable'
-          ? 'WASM engine not built'
-          : 'Full playback unavailable';
-      }
-      if (fallbackMode) {
-        fallbackMode.textContent = canSketch
-          ? 'Degraded mode: metadata + metronome sketch preview (not full ReBirth synthesis).'
-          : 'Degraded mode: metadata only — load a file to inspect title and author.';
-      }
-      setPlayerMode(canSketch ? 'degraded-sketch' : 'degraded-metadata');
-    }
-
-    function updatePlayAvailability() {
-      if (!btnPlay) return;
-      if (!degradedMode) {
-        btnPlay.disabled = !songLoaded && bridge.playerStatus !== 'ready' && bridge.playerStatus !== 'playing';
-        return;
-      }
-      btnPlay.disabled = !songLoaded || !canSketch;
-      btnPlay.title = canSketch
-        ? (songLoaded ? 'Play sketch preview (metronome)' : 'Load a song first')
-        : 'Sketch preview unavailable — metadata only';
-    }
-
-    // ── Status updates ──────────────────────────────────────────────
-
-    function setStatus(status: PlayerStatus) {
-      if (!lcdStatus || !ledLabel) return;
-
-      const labelText = ledLabel.querySelector('.rb-led__label');
-
-      switch (status) {
-        case 'idle':
-          lcdStatus.textContent = 'IDLE';
-          ledLabel.className = 'rb-led rb-led--pending player-led';
-          if (labelText) labelText.textContent = degradedMode ? 'DEGRADED' : 'PENDING';
-          if (btnPlay) {
-            btnPlay.textContent = '▶';
-            btnPlay.title = 'Play';
-            btnPlay.setAttribute('aria-label', 'Play');
-          }
-          break;
-        case 'loading':
-          lcdStatus.textContent = 'LOAD…';
-          ledLabel.className = 'rb-led rb-led--pending player-led';
-          if (labelText) labelText.textContent = 'LOADING';
-          setMessage(degradedMode ? 'Reading .rbs metadata…' : 'Loading song data…');
-          break;
-        case 'ready':
-          lcdStatus.textContent = degradedMode ? 'META' : 'READY';
-          ledLabel.className = 'rb-led rb-led--online player-led';
-          if (labelText) labelText.textContent = degradedMode ? (canSketch ? 'SKETCH' : 'META') : 'ONLINE';
-          if (btnStop) btnStop.disabled = !songLoaded;
-          if (btnPlay) {
-            btnPlay.textContent = '▶';
-            btnPlay.title = degradedMode && canSketch ? 'Play sketch preview' : 'Play';
-            btnPlay.setAttribute('aria-label', 'Play');
-          }
-          updatePlayAvailability();
-          break;
-        case 'playing':
-          lcdStatus.textContent = degradedMode ? 'SKETCH' : 'PLAY';
-          ledLabel.className = 'rb-led rb-led--online player-led';
-          if (labelText) labelText.textContent = degradedMode ? 'SKETCH' : 'PLAYING';
-          if (btnPlay) {
-            btnPlay.textContent = '❚❚';
-            btnPlay.title = 'Pause';
-            btnPlay.setAttribute('aria-label', 'Pause');
-            btnPlay.disabled = false;
-          }
-          if (btnStop) btnStop.disabled = false;
-          setMessage(degradedMode ? 'Sketch preview active (metronome only)' : 'Playback active');
-          break;
-        case 'error':
-          lcdStatus.textContent = 'ERR';
-          ledLabel.className = 'rb-led rb-led--offline player-led';
-          if (labelText) labelText.textContent = 'ERROR';
-          if (degradedMode && !canSketch) {
-            setMessage('Playback unavailable in metadata-only mode — inspect file info above.');
-          } else if (degradedMode) {
-            setMessage('Sketch preview failed — reload the file and try again.');
-          } else {
-            setMessage('Playback unavailable — check console for details');
-          }
-          updatePlayAvailability();
-          break;
-      }
-    }
-
-    bridge.setStatusCallback(setStatus);
-
-    // ── Position updates ────────────────────────────────────────────
-
-    bridge.setPositionCallback((bar, step) => {
-      if (lcdBar) lcdBar.textContent = String(bar).padStart(2, '0');
-      const currentStep = ((step % 16) + 16) % 16;
-      stepDots.forEach((dot, i) => {
-        dot.classList.toggle('is-current', i === currentStep);
-        dot.classList.toggle('is-active', i <= currentStep);
-      });
-      const litSegments = Math.min(12, Math.max(1, Math.floor(((currentStep + 1) / 16) * 12)));
-      meterSegments.forEach((segment, i) => {
-        segment.classList.toggle('is-active', i < litSegments);
-      });
-    });
-
-    // ── File handling ───────────────────────────────────────────────
-
-    async function loadFile(buffer: ArrayBuffer, sourceLabel?: string) {
-      try {
-        setMessage(degradedMode ? 'Sniffing .rbs header…' : 'Parsing .rbs payload…');
-        const song = await bridge.loadRbsFile(buffer);
-        songLoaded = true;
-        if (metaTitle) metaTitle.textContent = song.title || 'Untitled';
-        if (metaAuthor) metaAuthor.textContent = song.author || 'Unknown';
-        if (metaEl) metaEl.classList.remove('is-hidden');
-        if (lcdBpm) lcdBpm.textContent = String(Math.round(song.bpm));
-        if (tempoSlider) tempoSlider.value = String(Math.round(song.bpm));
-        if (tempoValue) tempoValue.textContent = `${Math.round(song.bpm)} BPM`;
-        if (lcdBar) lcdBar.textContent = '01';
-        if (degradedMode) {
-          setMessage(
-            canSketch
-              ? `Metadata loaded — press Play for sketch preview (${sourceLabel || 'local file'})`
-              : `Metadata loaded (${sourceLabel || 'local file'}) — playback requires WASM engine`
-          );
-        } else {
-          setMessage(`Loaded ${sourceLabel || 'song file'}`);
-        }
-        updatePlayAvailability();
-      } catch (err) {
-        console.error('Failed to load .rbs:', err);
-        songLoaded = false;
-        updatePlayAvailability();
-        setMessage(`Failed to parse .rbs file${sourceLabel ? ` (${sourceLabel})` : ''}`);
-        setStatus('error');
-      }
-    }
-
-    async function loadDemoSong(url: string, label: string) {
-      setMessage(`Fetching demo: ${label}…`);
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const buf = await res.arrayBuffer();
-      await loadFile(buf, label);
-    }
-
-    window.addEventListener('rb:load-demo', async (event) => {
-      const customEvent = event as CustomEvent<{ src?: string; label?: string; bpm?: number }>;
-      const src = customEvent.detail?.src;
-      const label = customEvent.detail?.label || 'archive preview';
-      const bpm = customEvent.detail?.bpm;
-      if (!src) return;
-
-      if (demoSelect) {
-        const existing = Array.from(demoSelect.options).find((option) => option.value === src);
-        if (!existing) {
-          const opt = document.createElement('option');
-          opt.value = src;
-          opt.textContent = label;
-          if (typeof bpm === 'number') opt.dataset.bpm = String(bpm);
-          demoSelect.appendChild(opt);
-        }
-        demoSelect.value = src;
-      }
-
-      try {
-        await loadDemoSong(src, label);
-      } catch (err) {
-        console.error('Failed to load preview demo:', err);
-        setMessage('Preview fetch failed. Use local file load as fallback.');
-      }
-    });
-
-    if (demoSelect) {
-      demos.forEach((demo) => {
-        const opt = document.createElement('option');
-        opt.value = demo.src;
-        opt.textContent = demo.label;
-        opt.dataset.bpm = demo.bpm ? String(demo.bpm) : '';
-        demoSelect.appendChild(opt);
-      });
-    }
-
-    if (fileInput) {
-      fileInput.addEventListener('change', (e) => {
-        const file = (e.target as HTMLInputElement).files?.[0];
-        if (!file) return;
-        file.arrayBuffer().then((buffer) => loadFile(buffer, file.name));
-      });
-    }
-
-    // Drag & drop
-    if (dropZone) {
-      dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.classList.add('drag-over');
-      });
-      dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('drag-over');
-      });
-      dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('drag-over');
-        const file = e.dataTransfer?.files[0];
-        if (file && file.name.endsWith('.rbs')) {
-          file.arrayBuffer().then((buffer) => loadFile(buffer, file.name));
-        }
-      });
-    }
-
-    // ── Transport buttons ───────────────────────────────────────────
-
-    btnPlay?.addEventListener('click', () => {
-      if (degradedMode && !canSketch) {
-        setStatus('error');
-        return;
-      }
-      if (bridge.playerStatus === 'playing') {
-        bridge.pause();
-      } else {
-        bridge.play();
-      }
-    });
-
-    btnStop?.addEventListener('click', () => {
-      bridge.stop();
-    });
-
-    btnLoad?.addEventListener('click', () => {
-      fileInput?.click();
-    });
-
-    btnDemoLoad?.addEventListener('click', async () => {
-      if (!demoSelect?.value) return;
-      try {
-        await loadDemoSong(demoSelect.value, demoSelect.selectedOptions[0]?.textContent || 'demo song');
-      } catch (err) {
-        console.error('Failed to load demo song:', err);
-        setMessage('Demo fetch failed. Use local file load as fallback.');
-      }
-    });
-
-    volumeSlider?.addEventListener('input', () => {
-      const value = Number(volumeSlider.value);
-      bridge.setVolume(value);
-      if (volumeValue) volumeValue.textContent = `${Math.round(value * 100)}%`;
-    });
-
-    tempoSlider?.addEventListener('input', () => {
-      const bpm = Number(tempoSlider.value);
-      if (tempoValue) tempoValue.textContent = `${Math.round(bpm)} BPM`;
-      const didApply = bridge.setTempoBpm(bpm);
-      if (didApply && lcdBpm) lcdBpm.textContent = String(Math.round(bpm));
-    });
-
-    async function activateDegradedMode(reason: InitFailureReason) {
-      if ('dispose' in bridge) bridge.dispose();
-      bridge = new DegradedRbsPlayer({ failureReason: reason });
-      canSketch = (bridge as DegradedRbsPlayer).canPlayAudio;
-      bridge.setStatusCallback(setStatus);
-      bridge.setPositionCallback((bar, step) => {
-        if (lcdBar) lcdBar.textContent = String(bar).padStart(2, '0');
-        const currentStep = ((step % 16) + 16) % 16;
-        stepDots.forEach((dot, i) => {
-          dot.classList.toggle('is-current', i === currentStep);
-          dot.classList.toggle('is-active', i <= currentStep);
-        });
-        const litSegments = Math.min(12, Math.max(1, Math.floor(((currentStep + 1) / 16) * 12)));
-        meterSegments.forEach((segment, i) => {
-          segment.classList.toggle('is-active', i < litSegments);
-        });
-      });
-      showDegradedFallback(reason);
-      setMessage('Initialising degraded preview…');
-      await bridge.init();
-      bridge.setVolume(Number(volumeSlider?.value ?? bridge.outputVolume));
-      if (tempoSlider) tempoSlider.disabled = false;
-      if (volumeSlider) volumeSlider.disabled = !canSketch;
-      if (tempoValue) tempoValue.textContent = `${Math.round(bridge.getTempoBpm() ?? 125)} BPM`;
-      if (!demos.length && btnDemoLoad) btnDemoLoad.disabled = false;
-      if (!demos.length) setMessage('Degraded mode — drop an .rbs file to inspect metadata.');
-    }
-
-    // ── Init ────────────────────────────────────────────────────────
-
+  document.querySelectorAll<HTMLElement>('.rbs-player').forEach((playerEl) => {
+    let demos: DemoSong[] = [];
     try {
-      setMessage('Initialising audio engine…');
-      await bridge.init();
-      setPlayerMode('wasm');
-      bridge.setVolume(Number(volumeSlider?.value ?? bridge.outputVolume));
-
-      const tempoSupported = bridge.canSetTempo();
-      if (tempoSlider) {
-        tempoSlider.disabled = !tempoSupported;
-        tempoSlider.title = tempoSupported
-          ? 'Set playback tempo (BPM)'
-          : 'Tempo control will unlock when WASM tempo API is implemented';
-      }
-      if (tempoSupported) {
-        const engineBpm = bridge.getTempoBpm();
-        if (typeof engineBpm === 'number' && engineBpm > 0) {
-          if (tempoSlider) tempoSlider.value = String(Math.round(engineBpm));
-          if (tempoValue) tempoValue.textContent = `${Math.round(engineBpm)} BPM`;
-        }
-      } else if (tempoValue) {
-        tempoValue.textContent = 'WASM TBD';
-      }
-
-      if (!demos.length && btnDemoLoad) {
-        btnDemoLoad.disabled = true;
-      }
-      if (!demos.length) setMessage('No demos configured — drop an .rbs file to preview.');
-
-      const autoplay = playerEl.dataset.autoplay === 'true';
-      const srcUrl = playerEl.dataset.src;
-
-      if (srcUrl) {
-        await loadDemoSong(srcUrl, 'initial source');
-        if (autoplay) bridge.play();
-      } else if (demos[0] && demoSelect) {
-        demoSelect.value = demos[0].src;
-      }
-    } catch (err) {
-      console.error('WASM init failed:', err);
-      const failure = classifyInitError(err);
-      await activateDegradedMode(failure.reason);
+      demos = JSON.parse(playerEl.dataset.demos || '[]') as DemoSong[];
+    } catch {
+      demos = [];
     }
-  })();
+    initPlayerUI(playerEl, {
+      demos,
+      initialSrc: playerEl.dataset.src || undefined,
+      autoplay: playerEl.dataset.autoplay === 'true',
+    });
+  });
 </script>

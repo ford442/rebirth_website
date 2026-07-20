@@ -209,7 +209,7 @@ const pageTitle = `${folderName} — ${sectionName}`;
                       Size <span class="sort-indicator" aria-hidden="true">↕</span>
                     </button>
                   </th>
-                  <th scope="col" class="col-download">Download</th>
+                  <th scope="col" class="col-actions">Actions</th>
                 </tr>
               </thead>
               <tbody id="folderTableBody">
@@ -225,7 +225,19 @@ const pageTitle = `${folderName} — ${sectionName}`;
                       )}
                     </td>
                     <td class="cell-size">{song.fileSize}</td>
-                    <td class="cell-download">
+                    <td class="cell-actions">
+                      <button
+                        type="button"
+                        class="preview-btn"
+                        data-preview-src={song.url}
+                        data-preview-label={song.title}
+                        data-preview-bpm={song.bpm ?? ''}
+                        aria-label={`Preview ${song.filename} in browser`}
+                        title={`Preview ${song.filename}`}
+                      >
+                        <span class="preview-icon" aria-hidden="true">▶</span>
+                        <span class="sr-only">Play</span>
+                      </button>
                       <a
                         href={song.url}
                         target="_blank"
@@ -419,9 +431,44 @@ const pageTitle = `${folderName} — ${sectionName}`;
 
   .col-size,
   .cell-size,
-  .col-download,
-  .cell-download {
+  .col-actions,
+  .cell-actions {
     text-align: right;
+  }
+
+  .cell-actions {
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+  }
+
+  .preview-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    color: var(--rb-green-bright, #3dba66);
+    background: linear-gradient(180deg, #363636 0%, #282828 100%);
+    border: 1px solid var(--rb-green-dim, #1a5230);
+    border-bottom: 2px solid #111;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 120ms ease;
+  }
+
+  .preview-btn:hover,
+  .preview-btn:focus-visible {
+    color: var(--rb-amber, #ffb000);
+    border-color: var(--rb-amber-dim, #b37800);
+    box-shadow: 0 0 8px rgba(255, 176, 0, 0.15);
+    outline: none;
+  }
+
+  .preview-icon {
+    font-size: 0.75rem;
   }
 
   .cell-name {
@@ -654,4 +701,8 @@ const pageTitle = `${folderName} — ${sectionName}`;
       });
     });
   })();
+</script>
+
+<script>
+  import '../../../scripts/archive-preview';
 </script>

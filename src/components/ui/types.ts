@@ -105,6 +105,8 @@ export interface PanelHeaderProps {
 export interface HardwarePanelProps {
   /** Semantic HTML tag */
   tag?: 'section' | 'div' | 'article';
+  /** Element id attribute */
+  id?: string;
   /** Accessible label for the panel */
   ariaLabel?: string;
   /** ID of element that labels this panel */

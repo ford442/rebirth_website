@@ -7,6 +7,7 @@ interface Props extends HardwarePanelProps {}
 
 const {
   tag: Tag = 'section',
+  id,
   ariaLabel,
   ariaLabelledBy,
   title,
@@ -31,6 +32,7 @@ const animateClass = animate ? 'rb-panel--animate' : '';
 ---
 
 <Tag
+  id={id}
   class={`${isRackmount ? rackClass : 'rb-panel'} ${!isRackmount ? variantClass : ''} ${animateClass} ${className}`.trim()}
   aria-label={ariaLabel}
   aria-labelledby={ariaLabelledBy}
