@@ -193,7 +193,7 @@ const searchIndex: SearchEntry[] = [
   </div>
 </HardwarePanel>
 
-<script define:vars={{ searchIndex }}>
+<script is:inline define:vars={{ searchIndex }}>
   const searchInput = document.getElementById('quickAccessSearch');
   const resultsList = document.getElementById('quickAccessResults');
   const resultCount = document.getElementById('quickAccessResultCount');

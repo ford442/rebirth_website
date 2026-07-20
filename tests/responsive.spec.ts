@@ -53,7 +53,7 @@ test.describe('Responsive Layout Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Check knob sizes (should be at least 40-48px on touch devices)
-    const knobs = await page.locator('.rb-knob__dial');
+    const knobs = page.locator('.rb-knob__dial');
     const knobCount = await knobs.count();
     expect(knobCount).toBeGreaterThan(0);
 
@@ -67,7 +67,7 @@ test.describe('Responsive Layout Tests', () => {
     }
 
     // Check step button sizes
-    const stepButtons = await page.locator('.rb-step-btn');
+    const stepButtons = page.locator('.rb-step-btn');
     const buttonCount = await stepButtons.count();
     expect(buttonCount).toBeGreaterThan(0);
 
@@ -116,11 +116,11 @@ test.describe('Responsive Layout Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Check that panels don't have excessive margins
-    const panels = await page.locator('.rb-rack, .rb-panel');
+    const panels = page.locator('.rb-rack, .rb-panel');
     expect(await panels.count()).toBeGreaterThan(0);
 
     // Verify action buttons are centered and accessible on mobile
-    const actionBtns = await page.locator('.action-btns');
+    const actionBtns = page.locator('.action-btns');
     if (await actionBtns.count() > 0) {
       const style = await actionBtns.first().evaluate((el) => 
         window.getComputedStyle(el).justifyContent
@@ -136,7 +136,7 @@ test.describe('Responsive Layout Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Check main title is readable
-    const title = await page.locator('.master-title__main');
+    const title = page.locator('.master-title__main');
     if (await title.count() > 0) {
       const fontSize = await title.first().evaluate((el) => 
         window.getComputedStyle(el).fontSize
@@ -154,7 +154,7 @@ test.describe('Touch Device Media Queries', () => {
     await page.waitForLoadState('networkidle');
 
     // Check that touch-specific CSS is applied
-    const knobDial = await page.locator('.rb-knob__dial').first();
+    const knobDial = page.locator('.rb-knob__dial').first();
     
     // Verify computed styles exist
     const computedStyle = await knobDial.evaluate((el) => 

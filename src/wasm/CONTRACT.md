@@ -51,7 +51,7 @@ export interface EngineConfig {
 }
 ```
 
-**Rule:** The bridge must flatten the `EngineFeatures` helper object from `audio-module.config.js` into these flat fields before calling `RbsAudioEngine.init()`.
+**Rule:** The bridge must flatten the `EngineFeatures` helper object from `audio-module.config.ts` into these flat fields before calling `RbsAudioEngine.init()`.
 
 ### `PlaybackPosition`
 

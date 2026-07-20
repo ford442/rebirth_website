@@ -90,7 +90,7 @@ npm run astro check
 │   │   ├── song-collections.ts ← Shared collection section definitions
 │   │   └── archive-stats.ts    ← Single source of truth for archive stats
 │   ├── styles/
-│   │   └── global.css          ← Global reset, design tokens, base styles
+│   │   └── global.css          ← CSS layering pointer (SSOT is rebirth-theme.css)
 │   ├── wasm/
 │   │   ├── cpp/
 │   │   │   ├── main.cpp                 # Emscripten entry point + embind exports
@@ -107,7 +107,7 @@ npm run astro check
 │   │   │   └── wasm-audio-types.test.ts # Compile-time bridge contract test
 │   │   ├── CONTRACT.md                  # C++ ↔ TypeScript field-for-field contract
 │   │   ├── README.md                    # Planned WASM audio engine architecture
-│   │   └── audio-module.config.js       # WASM runtime config stub
+│   │   └── audio-module.config.ts       # WASM runtime config
 │   ├── content.config.ts       ← Astro content collection schema (docs)
 │   └── env.d.ts                ← Astro client types reference
 ├── scripts/                    ← Python helper scripts
@@ -388,7 +388,7 @@ The `src/wasm/` directory is reserved for a planned in-browser `.rbs` playback e
 - **Status**: `PENDING` — no compiled binaries exist
 - **Planned toolchain**: Emscripten (C/C++) or wasm-pack (Rust)
 - **Architecture**: `.rbs` binary → WASM parser → AudioWorkletProcessor → Web Audio API
-- **Config stub**: `src/wasm/audio-module.config.js` defines runtime parameters (sample rate, buffer size, feature flags)
+- **Config**: `src/wasm/audio-module.config.ts` defines runtime parameters (sample rate, buffer size, feature flags)
 
 Contributions from anyone with audio DSP or `.rbs` binary format knowledge are welcome.
 

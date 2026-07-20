@@ -5,6 +5,9 @@ import Breadcrumbs from '../components/Breadcrumbs.astro';
 import HardwarePanel from '../components/ui/HardwarePanel.astro';
 import ArchiveLink from '../components/ArchiveLink.astro';
 import { formatStatRange, totalSongsIndexed, totalMods } from '../data/archive-stats';
+import { normalizeBase } from '../lib/url';
+
+const base = normalizeBase(import.meta.env.BASE_URL);
 ---
 
 <BaseLayout
@@ -475,19 +478,19 @@ import { formatStatRange, totalSongsIndexed, totalMods } from '../data/archive-s
         <div class="history-prose explore-cta">
           <p>Ready to hear the files behind the history? Jump directly into the archive collections referenced in this essay.</p>
           <div class="explore-cta__grid">
-            <a class="explore-cta__card" href={`${import.meta.env.BASE_URL}archive/songs/By_Source/Rebirth_2.0/Complete/`}>
+            <a class="explore-cta__card" href={`${base}/archive/songs/By_Source/Rebirth_2.0/Complete/`}>
               <span class="explore-cta__label">Official Demo Source</span>
               <span class="explore-cta__title">ReBirth 2.0 Complete</span>
             </a>
-            <a class="explore-cta__card" href={`${import.meta.env.BASE_URL}archive/songs/By_Source/Rebirth_1.5/Rebirth_1.5_Base/`}>
+            <a class="explore-cta__card" href={`${base}/archive/songs/By_Source/Rebirth_1.5/Rebirth_1.5_Base/`}>
               <span class="explore-cta__label">T.G.ViRUS Classics</span>
               <span class="explore-cta__title">ReBirth 1.5 Base</span>
             </a>
-            <a class="explore-cta__card" href={`${import.meta.env.BASE_URL}archive/songs?q=T.G.ViRUS`}>
+            <a class="explore-cta__card" href={`${base}/archive/songs?q=T.G.ViRUS`}>
               <span class="explore-cta__label">Search Artist</span>
               <span class="explore-cta__title">T.G.ViRUS</span>
             </a>
-            <a class="explore-cta__card" href={`${import.meta.env.BASE_URL}archive/mods?q=Metallicon`}>
+            <a class="explore-cta__card" href={`${base}/archive/mods?q=Metallicon`}>
               <span class="explore-cta__label">Featured Mod</span>
               <span class="explore-cta__title">Metallicon+</span>
             </a>

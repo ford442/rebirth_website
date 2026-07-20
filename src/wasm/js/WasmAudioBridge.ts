@@ -31,7 +31,7 @@ import type {
   RbsAudioEngineInstance,
 } from '../types/wasm-audio';
 
-import { wasmAudioConfig } from '../audio-module.config.js';
+import { wasmAudioConfig } from '../audio-module.config';
 import {
   WasmInitError,
   INIT_FAILURE_MESSAGES,

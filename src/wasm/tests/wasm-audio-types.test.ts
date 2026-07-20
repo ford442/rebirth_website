@@ -6,7 +6,7 @@
  *
  *   - EngineConfig matches the C++ struct shape (flat feature booleans).
  *   - PlaybackPosition matches the Embind value object.
- *   - The bridge can construct an EngineConfig from audio-module.config.js.
+ *   - The bridge can construct an EngineConfig from audio-module.config.ts.
  *   - The bridge's expected EngineModule / RbsAudioEngineInstance signatures
  *     are consistent with the types exported from wasm-audio.ts.
  */
@@ -21,7 +21,7 @@ import type {
   EngineModule,
 } from '../types/wasm-audio';
 
-import { wasmAudioConfig } from '../audio-module.config.js';
+import { wasmAudioConfig } from '../audio-module.config';
 
 // ── EngineConfig shape ───────────────────────────────────────────
 

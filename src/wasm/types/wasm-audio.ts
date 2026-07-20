@@ -81,7 +81,7 @@ export interface PatternRef {
 
 /** Feature flags that can disable sub-devices at runtime.
  *
- *  This is a convenience shape used by `audio-module.config.js`. The bridge
+ *  This is a convenience shape used by `audio-module.config.ts`. The bridge
  *  flattens it into the flat `EngineConfig` fields before calling WASM.
  */
 export interface EngineFeatures {
@@ -92,6 +92,17 @@ export interface EngineFeatures {
   distortion: boolean;
   compressor: boolean;
   delay: boolean;
+}
+
+/** Runtime paths and feature flags from `audio-module.config.ts`. */
+export interface WasmAudioModuleConfig {
+  wasmPath: string;
+  glueScriptPath: string;
+  workletPath: string;
+  sampleRate: number;
+  bufferSize: number;
+  maxVoices: number;
+  features: EngineFeatures;
 }
 
 /** Runtime engine configuration passed from JS to WASM on init.
