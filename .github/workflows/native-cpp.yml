@@ -1,0 +1,42 @@
+name: Native C++ Tests
+
+on:
+  pull_request:
+    paths:
+      - 'src/wasm/cpp/**'
+      - 'src/wasm/test-fixtures/**'
+      - '.github/workflows/native-cpp.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/wasm/cpp/**'
+      - 'src/wasm/test-fixtures/**'
+      - '.github/workflows/native-cpp.yml'
+
+concurrency:
+  group: native-cpp-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-tests:
+    name: CMake build and ctest
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: cmake -S src/wasm/cpp -B src/wasm/cpp/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++
+
+      - name: Build
+        run: cmake --build src/wasm/cpp/build --parallel
+
+      - name: Run tests
+        run: ctest --test-dir src/wasm/cpp/build --output-on-failure
+
+      - name: Smoke-test rbs-inspect JSON output
+        run: |
+          ./src/wasm/cpp/build/rbs-inspect src/wasm/test-fixtures/standard-rebirth.rbs \
+            | node -e "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); if(j.title!=='Standard ReBirth') process.exit(1)"

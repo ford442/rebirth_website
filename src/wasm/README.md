@@ -84,6 +84,44 @@ All control data is pre-allocated or passed through the lock-free `EngineCommand
 
 ## Quick Start
 
+### Native build (no Emscripten)
+
+Fast offline unit tests and hex-level inspection use the **same C++ sources** as the WASM target (`parser/`, `engine/`, `synth/`). CMake is the primary native build:
+
+```bash
+# Configure, build, and run doctest suite (from repo root)
+npm run wasm:test
+
+# Or step by step:
+cmake -S src/wasm/cpp -B src/wasm/cpp/build -DCMAKE_BUILD_TYPE=Release
+cmake --build src/wasm/cpp/build --parallel
+ctest --test-dir src/wasm/cpp/build --output-on-failure
+```
+
+A lightweight Makefile wrapper (`src/wasm/cpp/Makefile`) remains for ad-hoc `g++` builds without CMake.
+
+**Inspect a song file** — default output is JSON (`WasmParsedSong`-compatible):
+
+```bash
+cmake --build src/wasm/cpp/build --target rbs-inspect
+./src/wasm/cpp/build/rbs-inspect src/wasm/test-fixtures/standard-rebirth.rbs
+./src/wasm/cpp/build/rbs-inspect --pretty src/wasm/test-fixtures/blue-planet.rbs
+```
+
+#### What the native tests cover
+
+| Area | Tests |
+|------|-------|
+| Header / container validation | Rejects truncated files and missing `CAT`/`RB40` magic |
+| Metadata extraction | Title, author, info text from golden `.rbs` fixtures |
+| Pattern counts | 32 patterns per device on v2.x fixtures |
+| Sequencer timing | Bar length in samples at 120/140 BPM (±1 ms) |
+| Engine / mixer / drums | Transport, voice routing, procedural drum hits |
+
+Fixtures live in [`test-fixtures/`](test-fixtures/). CI runs this suite in [`.github/workflows/native-cpp.yml`](../../.github/workflows/native-cpp.yml) (no Emscripten, typically under one minute).
+
+### WASM build (Emscripten)
+
 ```bash
 # 1. Install Emscripten (one-time)
 git clone https://github.com/emscripten-core/emsdk.git
@@ -189,24 +227,31 @@ The processor name (`"rbs-player"`) is **not** a linker flag. It is set at runti
 ```
 src/wasm/
 ├── cpp/
+│   ├── CMakeLists.txt           # Native build + ctest (shared sources with WASM)
+│   ├── Makefile                 # Optional g++ wrapper (no CMake required)
 │   ├── main.cpp                 # Emscripten entry point + embind exports
 │   ├── build.sh                 # Emscripten compile script
+│   ├── tools/
+│   │   └── rbs-inspect.cpp      # CLI: .rbs → JSON ParsedSong dump
+│   ├── tests/                   # doctest unit tests (native only)
+│   ├── third_party/doctest.h    # Vendored doctest 2.4.11
 │   ├── parser/
-│   │   ├── RbsParser.h          # .rbs binary parser interface
-│   │   ├── RbsParser.cpp        # Parser implementation (stub)
+│   │   ├── RbsParser.h/.cpp     # .rbs binary parser
+│   │   ├── ParsedSongJson.h/.cpp# ParsedSong → JSON (CLI + debugging)
 │   │   ├── RbsTypes.h           # C++ structs matching .rbs data
 │   │   └── RbsFormat.md         # Reverse-engineered format spec
 │   ├── synth/
 │   │   ├── Voice.h/.cpp         # Abstract voice base class
-│   │   ├── Tb303Voice.h/.cpp    # TB-303 emulation (stub)
-│   │   ├── Tr808Voice.h/.cpp    # TR-808 drums (stub)
-│   │   └── Tr909Voice.h/.cpp    # TR-909 drums (stub)
+│   │   ├── Tb303Voice.h/.cpp    # TB-303 voice
+│   │   ├── Tr808Voice.h/.cpp    # TR-808 drums
+│   │   └── Tr909Voice.h/.cpp    # TR-909 drums
 │   ├── engine/
-│   │   ├── RbsAudioEngine.h/.cpp# Top-level engine (stub)
-│   │   ├── Sequencer.h/.cpp     # Pattern scheduler (stub)
-│   │   └── Mixer.h/.cpp         # Stereo mix + FX (stub)
+│   │   ├── RbsAudioEngine.h/.cpp# Top-level engine
+│   │   ├── Sequencer.h/.cpp     # Pattern scheduler
+│   │   └── Mixer.h/.cpp         # Stereo mix + FX
 │   └── worklet/
-│       └── RbsWorklet.cpp       # AudioWorkletProcessor callback
+│       └── RbsWorklet.cpp       # AudioWorkletProcessor callback (WASM only)
+├── test-fixtures/               # Golden .rbs files for native + browser tests
 ├── js/
 │   └── WasmAudioBridge.ts       # Typed JS wrapper around Emscripten Module
 ├── types/

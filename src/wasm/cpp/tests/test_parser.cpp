@@ -1,6 +1,8 @@
+#include "../parser/ParsedSongJson.h"
 #include "../parser/RbsParser.h"
 #include "../third_party/doctest.h"
 #include <fstream>
+#include <string>
 #include <vector>
 
 using namespace rb338;
@@ -134,6 +136,16 @@ TEST_CASE("standard-rebirth.rbs 303-A bank A pattern 1 decodes correctly") {
 
   CHECK(p->steps[11].slide);
   CHECK(!p->steps[0].slide);
+}
+
+TEST_CASE("parsedSongToJson emits WasmParsedSong-compatible fields") {
+  auto song = parseFixture("standard-rebirth.rbs");
+  const std::string json = parsedSongToJson(song);
+  CHECK(json.find("\"title\":\"Standard ReBirth\"") != std::string::npos);
+  CHECK(json.find("\"author\":") != std::string::npos);
+  CHECK(json.find("\"patterns\":[") != std::string::npos);
+  CHECK(json.find("\"deviceId\":0") != std::string::npos);
+  CHECK(json.find("\"length\":16") != std::string::npos);
 }
 
 TEST_CASE("standard-rebirth.rbs 808 has non-empty drum patterns") {
