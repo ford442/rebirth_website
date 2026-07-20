@@ -31,7 +31,7 @@ import type {
   RbsAudioEngineInstance,
 } from '../types/wasm-audio';
 
-import { wasmAudioConfig } from '../audio-module.config.js';
+import { wasmAudioConfig } from '../audio-module.config';
 import {
   WasmInitError,
   INIT_FAILURE_MESSAGES,
@@ -209,7 +209,7 @@ export class WasmAudioBridge {
         throw new Error('AudioWorklet node was not created');
       }
       // GainNode stays at unity — master volume is applied in WASM (see
-      // audio-module.config.js masterVolumeOwner).
+      // audio-module.config.ts).
       this.gainNode = this.audioContext.createGain();
       this.gainNode.gain.value = 1.0;
       this.workletNode.connect(this.gainNode);

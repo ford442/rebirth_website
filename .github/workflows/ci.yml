@@ -31,6 +31,10 @@ jobs:
       - name: Astro type check
         run: npm run check
 
+      - name: ESLint (warning only)
+        continue-on-error: true
+        run: npm run lint
+
       - name: Production build
         run: npm run build
 

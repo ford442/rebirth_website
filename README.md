@@ -28,7 +28,7 @@ Built with [Astro](https://astro.build).
 
 ### Prerequisites
 
-- **Node.js** ≥ 18.17.1 — [download](https://nodejs.org/)
+- **Node.js** 22.x (CI target) or ≥ 18.17.1 — [download](https://nodejs.org/)
 - **npm** ≥ 9 (bundled with Node.js)
 
 ### Install dependencies
@@ -50,10 +50,13 @@ Astro automatically reloads the page when you edit source files.
 
 | Command           | Description                                       |
 |-------------------|---------------------------------------------------|
-| `npm run dev`     | Start local dev server at `localhost:4321`        |
+| `npm run dev`     | Start local dev server at `localhost:4321/rb338/` |
 | `npm run build`   | Build the production site into `dist/`            |
 | `npm run preview` | Preview the production build locally              |
-| `npm run astro`   | Run Astro CLI directly (e.g. `npm run astro check`) |
+| `npm run check`   | Astro + TypeScript type check (`astro check`)     |
+| `npm run lint`    | ESLint for Astro/TS sources                       |
+| `npm run format`  | Prettier check (Astro/TS/JSON/CSS)                |
+| `npm run astro`   | Run Astro CLI directly                            |
 
 ---
 
@@ -62,24 +65,52 @@ Astro automatically reloads the page when you edit source files.
 ```
 /
 ├── public/
-│   └── archive/
-│       ├── rbs-songs/   ← .rbs song files go here
-│       └── rbm-mods/    ← .rbm mod files go here
+│   ├── archive/
+│   │   ├── rbs-songs/          ← .rbs song files (hosted externally; .gitkeep only)
+│   │   └── rbm-mods/           ← .rbm mod files (hosted externally; .gitkeep only)
+│   ├── styles/
+│   │   └── rebirth-theme.css   ← Single source of truth for global CSS
+│   └── rbs-manifest.json       ← Archive metadata index
 ├── src/
 │   ├── components/
-│   │   └── ModCard.astro        ← Reusable card component
+│   │   ├── archive/            ← ArchivePageShell, ArchiveEmptyState, ArchiveLink
+│   │   ├── ui/                 ← HardwarePanel, Lcd, Led, Knob, ActionButton, …
+│   │   ├── Breadcrumbs.astro
+│   │   ├── ModCard.astro
+│   │   ├── ModBrowserCard.astro
+│   │   ├── CollectionCard.astro
+│   │   ├── RbsPlayer.astro
+│   │   └── ExternalLink.astro
 │   ├── content/
-│   │   ├── config.ts            ← Content collection schema
-│   │   └── docs/                ← Historical docs (v1.0 → v2.0.1)
+│   │   └── docs/               ← Historical docs (v1.0 → v2.0.1)
+│   ├── data/
+│   │   ├── mods-metadata.json
+│   │   ├── mods-full-index.json
+│   │   ├── songs-full-index.json
+│   │   └── archive-stats.ts
 │   ├── layouts/
-│   │   └── BaseLayout.astro     ← Shared HTML shell
+│   │   └── BaseLayout.astro    ← Shared HTML shell (links rebirth-theme.css)
+│   ├── lib/
+│   │   └── url.ts              ← normalizeBase() for internal links
 │   ├── pages/
-│   │   └── index.astro          ← Landing page
+│   │   ├── index.astro         ← Landing page
+│   │   ├── history.astro       ← Deep-dive history essay
+│   │   ├── rbs-archive.astro   ← Redirect → /archive/songs
+│   │   ├── docs/               ← /docs content collection routes
+│   │   └── archive/
+│   │       ├── songs.astro     ← /archive/songs
+│   │       ├── songs/[...slug].astro
+│   │       └── mods.astro      ← /archive/mods
 │   ├── styles/
-│   │   └── (consolidated into public/styles/rebirth-theme.css)
+│   │   └── global.css          ← Layering pointer (not imported; see rebirth-theme.css)
 │   └── wasm/
-│       ├── audio-module.config.js  ← WASM config stub
-│       └── README.md               ← WASM architecture notes
+│       ├── audio-module.config.ts  ← WASM runtime paths + feature flags
+│       ├── js/                     ← WasmAudioBridge, DegradedRbsPlayer, …
+│       ├── types/wasm-audio.ts
+│       ├── cpp/                    ← Emscripten C++ engine (build with npm run wasm:build)
+│       └── README.md
+├── scripts/                    ← Python indexers and upload helpers
+├── tests/                        ← Playwright E2E specs
 ├── astro.config.mjs
 ├── package.json
 └── tsconfig.json
@@ -261,7 +292,9 @@ WASM builds require Emscripten on your machine (`npm run wasm:build`). See
 
 - **Astro** components use `.astro` file extension
 - **TypeScript** strict mode is enabled; avoid `any`
-- **CSS** custom properties and base styles are consolidated in `public/styles/rebirth-theme.css`
+- **CSS** single source of truth: `public/styles/rebirth-theme.css` (linked in `BaseLayout.astro`). `src/styles/global.css` is a layering pointer only — do not import it.
+- **Internal links** must use `normalizeBase(import.meta.env.BASE_URL)` from `src/lib/url.ts`
+- **Linting**: `npm run lint` (ESLint flat config) and `npm run format` (Prettier) cover Astro/TS sources
 - Keep the **retro-industrial aesthetic**: dark background, amber/green palette, monospace
   headings — but always prioritise accessibility (WCAG 2.1 AA)
 

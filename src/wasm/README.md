@@ -168,7 +168,7 @@ Assets live in `public/wasm/` and are served from the site's base path. With `ba
 | WASM | `public/wasm/rbsParser.wasm` | `/rb338/wasm/rbsParser.wasm` |
 | Worklet | `public/wasm/rbsWorklet.js` | `/rb338/wasm/rbsWorklet.js` |
 
-`src/wasm/audio-module.config.js` reads `import.meta.env.BASE_URL` so these paths stay correct in both dev (`/`) and production (`/rb338`).
+`src/wasm/audio-module.config.ts` reads `import.meta.env.BASE_URL` (via `normalizeBase`) so these paths stay correct in both dev (`/`) and production (`/rb338`).
 
 ### AudioWorklet processor name
 
@@ -256,7 +256,7 @@ src/wasm/
 │   └── WasmAudioBridge.ts       # Typed JS wrapper around Emscripten Module
 ├── types/
 │   └── wasm-audio.ts            # Shared TypeScript interfaces
-├── audio-module.config.js       # Runtime paths + feature flags
+├── audio-module.config.ts       # Runtime paths + feature flags
 └── README.md                    # This file
 ```
 

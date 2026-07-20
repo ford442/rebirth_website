@@ -14,7 +14,7 @@ namespace rb338 {
  * DeviceState. Global FX modules honour EngineConfig feature flags.
  *
  * Master output level is applied by RbsAudioEngine after this mix (WASM-side).
- * The JS GainNode in WasmAudioBridge stays at unity — see audio-module.config.js.
+ * The JS GainNode in WasmAudioBridge stays at unity — see audio-module.config.ts.
  */
 class Mixer {
 public:

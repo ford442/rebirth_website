@@ -38,7 +38,7 @@ const schema = jsonLd
 
 <nav class="breadcrumbs" aria-label="Breadcrumb">
   {schema && (
-    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />
   )}
   <ol class="breadcrumbs__list" role="list">
     {resolvedItems.map((item, index) => {
