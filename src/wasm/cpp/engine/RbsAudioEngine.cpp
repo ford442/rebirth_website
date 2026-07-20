@@ -49,6 +49,9 @@ bool RbsAudioEngine::init(const EngineConfig& config) {
   }
 
   m_mixer->init(config.sampleRate);
+  m_mixer->setDistortionEnabled(config.enableDistortion);
+  m_mixer->setCompressorEnabled(config.enableCompressor);
+  m_mixer->setDelayEnabled(config.enableDelay);
 
   m_sequencer->reset();
   m_currentBar.store(1, std::memory_order_relaxed);
@@ -242,9 +245,9 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
 
   // Mix into final stereo interleaved output.
   if (stereoOut && numChannels >= 2) {
-    m_mixer->process(m_voiceBuffers.data(), stereoOut, numFrames);
+    m_mixer->process(m_voiceBuffers.data(), stereoOut, numFrames, effectiveBpm);
 
-    // Apply master volume.
+    // Master volume — sole user-facing gain stage (JS GainNode stays at unity).
     float vol = m_volume.load(std::memory_order_relaxed);
     for (uint32_t i = 0; i < numFrames * 2; ++i) {
       stereoOut[i] *= vol;

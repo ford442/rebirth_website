@@ -208,6 +208,8 @@ export class WasmAudioBridge {
       if (!this.workletNode) {
         throw new Error('AudioWorklet node was not created');
       }
+      // GainNode stays at unity — master volume is applied in WASM (see
+      // audio-module.config.js masterVolumeOwner).
       this.gainNode = this.audioContext.createGain();
       this.gainNode.gain.value = 1.0;
       this.workletNode.connect(this.gainNode);

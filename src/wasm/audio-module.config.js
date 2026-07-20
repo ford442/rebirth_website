@@ -64,6 +64,16 @@ export const wasmAudioConfig = {
     compressor: true,
     delay:      true,
   },
+
+  /**
+   * Master volume ownership
+   * ───────────────────────
+   * Playback volume (0–1) is applied inside WASM by RbsAudioEngine::setVolume()
+   * after the Mixer renders each block. The JS GainNode in WasmAudioBridge stays
+   * at unity (1.0) and exists only as a graph tap / future mute hook — do not
+   * drive user-facing level from both layers.
+   */
+  masterVolumeOwner: 'wasm',
 };
 
 /**
@@ -86,4 +96,5 @@ export const wasmAudioConfig = {
  * @property {number}         bufferSize      - Render quantum size in frames
  * @property {number}         maxVoices       - TB-303 polyphony limit
  * @property {EngineFeatures} features        - Per-module feature flags
+ * @property {'wasm'}         masterVolumeOwner - Where playback gain is applied
  */

@@ -168,7 +168,7 @@ Each 12-byte mixer record:
 | 0 | Mute (0 = muted) |
 | 1 | Level 0–127 |
 | 2 | Pan 0–127 (64 = centre) |
-| 3 | ? |
+| 3 | Delay send 0–127 |
 | 4 | Distortion send (0/1) |
 | 5 | PCF send (0/1) |
 | 6 | Compressor send (0/1) |
