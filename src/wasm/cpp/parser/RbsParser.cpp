@@ -426,6 +426,7 @@ bool RbsParser::parseMixr(const uint8_t* data, size_t size, ParsedSong& song) {
     dev.level = static_cast<float>(data[off + 1]) / 127.0f;
     dev.pan = static_cast<float>(data[off + 2]) / 127.0f;
     // Offsets 3-7 contain sends/flags; decode the ones we are confident about.
+    dev.delaySend = static_cast<float>(data[off + 3]) / 127.0f;
     dev.dist = (data[off + 4] != 0);
     dev.pcf = (data[off + 5] != 0);
     dev.compressor = (data[off + 6] != 0);
