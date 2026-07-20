@@ -6,7 +6,7 @@ CXXFLAGS  = -std=c++17 -Wall -Wextra -O2 -I.
 ROOT      = ../../..
 BUILD_DIR = build
 
-PARSER_SRC = parser/RbsParser.cpp
+PARSER_SRC = parser/RbsParser.cpp parser/ParsedSongJson.cpp
 ENGINE_SRCS = engine/RbsAudioEngine.cpp engine/Sequencer.cpp engine/Mixer.cpp \
               synth/Voice.cpp synth/DrumSynth.cpp synth/Tb303Voice.cpp \
               synth/Tr808Voice.cpp synth/Tr909Voice.cpp

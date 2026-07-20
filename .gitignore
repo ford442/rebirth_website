@@ -33,3 +33,6 @@ tests/screenshots/
 
 # Generated WASM artifacts (rebuilt via npm run wasm:build)
 public/wasm/
+
+# Native C++ CMake / Makefile build output
+src/wasm/cpp/build/
