@@ -16,7 +16,7 @@ const RESULT_LIMIT = 150;
 
 function getBase(): string {
   const meta = document.querySelector<HTMLMetaElement>('meta[name="base-url"]');
-  return normalizeBase(meta?.content ?? '/rb338');
+  return normalizeBase(meta?.content ?? '/rebirth_website');
 }
 
 function escapeHtml(value: string): string {

@@ -559,10 +559,11 @@ const hasSrc = !!src;
   import { initPlayerUI } from '../wasm/js/player-ui';
   import type { DemoSong } from '../wasm/js/player-ui';
 
-  if (import.meta.env.DEV) {
-    (window as Window & { WasmAudioBridge?: typeof WasmAudioBridge; DegradedRbsPlayer?: typeof DegradedRbsPlayer }).WasmAudioBridge = WasmAudioBridge;
-    (window as Window & { WasmAudioBridge?: typeof WasmAudioBridge; DegradedRbsPlayer?: typeof DegradedRbsPlayer }).DegradedRbsPlayer = DegradedRbsPlayer;
-  }
+  // Public integration hook used by the shipping-engine browser checks. These
+  // classes contain no credentials or private state; the player uses the same
+  // exports internally.
+  (window as Window & { WasmAudioBridge?: typeof WasmAudioBridge; DegradedRbsPlayer?: typeof DegradedRbsPlayer }).WasmAudioBridge = WasmAudioBridge;
+  (window as Window & { WasmAudioBridge?: typeof WasmAudioBridge; DegradedRbsPlayer?: typeof DegradedRbsPlayer }).DegradedRbsPlayer = DegradedRbsPlayer;
 
   document.querySelectorAll<HTMLElement>('.rbs-player').forEach((playerEl) => {
     let demos: DemoSong[] = [];

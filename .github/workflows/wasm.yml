@@ -1,31 +1,40 @@
-name: WASM Build
+name: WASM Build and Pages Deploy
 
 on:
-  pull_request:
-    paths:
-      - 'src/wasm/**'
-      - '.github/workflows/wasm.yml'
-      - 'package.json'
-      - 'package-lock.json'
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
     paths:
-      - 'src/wasm/**'
+      - 'src/**'
+      - 'public/**'
+      - 'tests/**'
+      - 'scripts/generate-sw.mjs'
       - '.github/workflows/wasm.yml'
+      - 'astro.config.mjs'
+      - 'pwa.config.mjs'
+      - 'playwright.config.ts'
       - 'package.json'
       - 'package-lock.json'
   schedule:
-    # Nightly at 06:00 UTC
     - cron: '0 6 * * *'
+  workflow_dispatch:
 
 concurrency:
-  group: wasm-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: wasm-pages-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  EMSCRIPTEN_VERSION: '6.0.3'
+  EM_CACHE_FOLDER: emsdk-cache
 
 jobs:
   build-wasm:
-    name: Build WASM and run engine tests
+    name: Build shipping site and test WASM
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
@@ -40,32 +49,53 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Setup Emscripten
-        uses: mymindstorm/setup-emsdk@v14
+      - name: Cache Emscripten SDK and system libraries
+        uses: actions/cache@v4
         with:
-          version-file: src/wasm/cpp/.emscripten-version
-          cache: true
+          path: ${{ env.EM_CACHE_FOLDER }}
+          key: ${{ runner.os }}-emscripten-${{ env.EMSCRIPTEN_VERSION }}-${{ hashFiles('src/wasm/cpp/.emscripten-version') }}
 
-      - name: Build WASM (release)
-        run: npm run wasm:build
+      - name: Setup pinned Emscripten
+        uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: ${{ env.EMSCRIPTEN_VERSION }}
+          actions-cache-folder: ${{ env.EM_CACHE_FOLDER }}
 
-      - name: Production build
-        run: npm run build
+      - name: Verify Emscripten pin
+        shell: bash
+        run: |
+          installed="$(emcc --version | head -n 1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)"
+          pinned="$(tr -d '[:space:]' < src/wasm/cpp/.emscripten-version)"
+          test "$pinned" = "$EMSCRIPTEN_VERSION"
+          test "$installed" = "$EMSCRIPTEN_VERSION"
 
-      - name: Install Playwright browsers
+      - name: Build WASM and production site
+        run: npm run build:ship
+
+      - name: Verify source and deployed WASM artifacts
+        shell: bash
+        run: |
+          for directory in public/wasm dist/wasm; do
+            for file in rbsParser.js rbsParser.wasm rbsWorklet.js wasm-build.json; do
+              test -s "$directory/$file"
+            done
+          done
+
+      - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
-      - name: WASM Playwright tests (preview server)
+      - name: WASM Playwright tests
         run: npx playwright test tests/wasm-assets.spec.ts tests/wasm-engine.spec.ts
         env:
           CI: true
           WASM_BUILT: '1'
 
-      - name: Upload WASM artifacts
+      - name: Upload raw WASM artifacts
         uses: actions/upload-artifact@v4
         with:
           name: wasm-build-${{ github.run_number }}
           path: public/wasm/
+          if-no-files-found: error
           retention-days: 14
 
       - name: Upload Playwright report
@@ -77,3 +107,64 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+
+      - name: Configure GitHub Pages
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: actions/configure-pages@v5
+
+      - name: Upload GitHub Pages artifact
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist/
+
+  github-pages:
+    name: Deploy GitHub Pages
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: build-wasm
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  smoke:
+    name: Smoke-test deployed site
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: github-pages
+    runs-on: ubuntu-latest
+    permissions: {}
+
+    steps:
+      - name: Verify live Pages assets
+        shell: bash
+        run: |
+          check_url() {
+            local url="$1"
+            local output
+            output="$(mktemp)"
+            for attempt in {1..12}; do
+              if curl --fail --silent --show-error --location --output "$output" "$url" && test -s "$output"; then
+                echo "Ready: $url"
+                return 0
+              fi
+              echo "Waiting for deployment ($attempt/12): $url"
+              sleep 10
+            done
+            echo "Failed deployment smoke check: $url" >&2
+            return 1
+          }
+
+          base='https://ford442.github.io/rebirth_website'
+          check_url "$base/"
+          check_url "$base/wasm/wasm-build.json"
+          check_url "$base/wasm/rbsParser.js"
+          check_url "$base/wasm/rbsParser.wasm"
+          check_url "$base/wasm/rbsWorklet.js"

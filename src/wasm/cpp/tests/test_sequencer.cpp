@@ -3,7 +3,10 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <fstream>
+#include <stdexcept>
 #include <vector>
+#include "../parser/RbsParser.h"
 
 using namespace rb338;
 
@@ -33,6 +36,21 @@ ParsedSong makeSong() {
     song.devices[i].id = static_cast<DeviceId>(i);
   }
   return song;
+}
+
+ParsedSong parseFixture(const char* name) {
+  const std::string path = std::string("src/wasm/test-fixtures/") + name;
+  std::ifstream file(path, std::ios::binary);
+  if (!file) throw std::runtime_error("Could not open fixture: " + path);
+  file.seekg(0, std::ios::end);
+  const auto size = static_cast<size_t>(file.tellg());
+  file.seekg(0, std::ios::beg);
+  std::vector<uint8_t> bytes(size);
+  file.read(reinterpret_cast<char*>(bytes.data()), static_cast<std::streamsize>(size));
+  RbsParser parser;
+  auto song = parser.parse(bytes.data(), bytes.size());
+  if (!song) throw std::runtime_error(parser.lastError());
+  return *song;
 }
 
 // Feed the sequencer one frame at a time, recording the cumulative frame index
@@ -187,6 +205,46 @@ TEST_CASE("Sequencer: arrangement drives per-bar pattern selection") {
   CHECK(fired[0].second == 0);
   CHECK(fired[1].first == 2);
   CHECK(fired[1].second == 8);
+}
+
+TEST_CASE("Sequencer: parsed TRAK switches real fixture patterns across bars") {
+  const ParsedSong song = parseFixture("standard-rebirth.rbs");
+  REQUIRE(song.arrangement.size() > 4);
+
+  Sequencer seq;
+  Sequencer::Event events[NUM_DEVICES]{};
+
+  seq.setPosition(1, 0);
+  const uint32_t firstCount = seq.generateEvents(
+    &song, song.bpm, 44100.0f, 1, events, NUM_DEVICES);
+  REQUIRE(firstCount > 0);
+  uint8_t bar1Note = 0;
+  bool foundBar1 = false;
+  for (uint32_t i = 0; i < firstCount; ++i) {
+    if (events[i].device == DeviceId::TB303_A) {
+      bar1Note = events[i].step.note;
+      foundBar1 = true;
+    }
+  }
+  REQUIRE(foundBar1);
+
+  seq.setPosition(5, 0);
+  const uint32_t fifthCount = seq.generateEvents(
+    &song, song.bpm, 44100.0f, 1, events, NUM_DEVICES);
+  REQUIRE(fifthCount > 0);
+  uint8_t bar5Note = 0;
+  bool foundBar5 = false;
+  for (uint32_t i = 0; i < fifthCount; ++i) {
+    if (events[i].device == DeviceId::TB303_A) {
+      bar5Note = events[i].step.note;
+      foundBar5 = true;
+    }
+  }
+  REQUIRE(foundBar5);
+
+  CHECK(bar1Note == 7);
+  CHECK(bar5Note == 10);
+  CHECK(bar1Note != bar5Note);
 }
 
 TEST_CASE("Sequencer: null snapshot emits no events") {

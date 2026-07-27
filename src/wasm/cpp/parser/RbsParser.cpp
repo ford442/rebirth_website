@@ -3,6 +3,7 @@
 #include <array>
 #include <cctype>
 #include <cstring>
+#include <limits>
 
 namespace rb338 {
 
@@ -41,7 +42,7 @@ public:
 
   bool atEnd() const { return m_pos >= m_size; }
 
-  bool canRead(size_t n) const { return m_pos + n <= m_size; }
+  bool canRead(size_t n) const { return n <= m_size - m_pos; }
 
   bool skip(size_t n) {
     if (!canRead(n)) return false;
@@ -106,6 +107,23 @@ bool readChunkHeader(ByteStream& stream, const uint8_t*& id, uint32_t& size) {
   if (!stream.readBytes(4, id)) return false;
   if (!stream.readU32BE(size)) return false;
   return true;
+}
+
+// TRAK event positions are stored as MIDI-style big-endian variable-length
+// quantities. The encoded unit is 1/24 of the 192 PPQN position documented by
+// Propellerhead, so one 4/4 bar occupies 768 / 24 = 32 encoded ticks.
+constexpr uint32_t TRAK_TICKS_PER_BAR = 32;
+
+bool readVlq(ByteStream& stream, uint32_t& out) {
+  out = 0;
+  for (int i = 0; i < 5; ++i) {
+    uint8_t byte = 0;
+    if (!stream.readU8(byte)) return false;
+    if (out > (std::numeric_limits<uint32_t>::max() >> 7)) return false;
+    out = (out << 7) | static_cast<uint32_t>(byte & 0x7f);
+    if ((byte & 0x80) == 0) return true;
+  }
+  return false;
 }
 
 // Skip the chunk body and any odd-alignment padding byte.
@@ -182,6 +200,9 @@ std::string trim(const std::string& s) {
 std::optional<ParsedSong> RbsParser::parse(const uint8_t* data, size_t size) {
   clearError();
   m_seenTb303A = false;
+  m_trakIndex = 0;
+  m_maxTrakPosition = 0;
+  for (auto& changes : m_patternChanges) changes.clear();
 
   if (!data || size < 16) {
     m_error = "File too small to contain a valid ReBirth container";
@@ -190,6 +211,10 @@ std::optional<ParsedSong> RbsParser::parse(const uint8_t* data, size_t size) {
 
   ParsedSong song;
   if (!parseContainer(data, size, song, true)) {
+    return std::nullopt;
+  }
+
+  if (!buildArrangement(song)) {
     return std::nullopt;
   }
 
@@ -352,6 +377,21 @@ bool RbsParser::parseGlob(const uint8_t* data, size_t size, ParsedSong& song) {
   song.globSubFormat = data[0x03];
   song.showInfoOnOpen = (data[0x01] != 0);
 
+  // Propellerhead's RBS 4.2 specification stores tempo as a big-endian
+  // unsigned integer at offset 2, scaled by 1000.
+  ByteStream tempoStream(data + 2, size - 2);
+  uint32_t tempoTimes1000 = 0;
+  if (!tempoStream.readU32BE(tempoTimes1000)) {
+    m_error = "Truncated GLOB tempo field";
+    return false;
+  }
+  const float bpm = static_cast<float>(tempoTimes1000) / 1000.0f;
+  if (bpm < 20.0f || bpm > 500.0f) {
+    m_error = "GLOB tempo is outside ReBirth's 20-500 BPM range";
+    return false;
+  }
+  song.bpm = bpm;
+
   // Title is a null-terminated ASCII string starting at offset 0x0f.
   ByteStream stream(data, size);
   if (!stream.skip(0x0f)) {
@@ -373,9 +413,6 @@ bool RbsParser::parseGlob(const uint8_t* data, size_t size, ParsedSong& song) {
       song.creatorUrl = trim(url);
     }
   }
-
-  // BPM field is not yet reliably identified; leave default.
-  // song.bpm remains 125.0f until a confident tempo field is found.
 
   return true;
 }
@@ -466,32 +503,33 @@ bool RbsParser::parseDeviceChunk(DeviceId primaryId, DeviceId secondaryId,
   DeviceState& dev = song.devices[static_cast<int>(targetId)];
   dev.id = targetId;
 
-  // The first bytes of each device chunk mirror the documented parameter order.
-  dev.tune = static_cast<float>(data[0]) / 127.0f;
-  dev.cutoff = static_cast<float>(data[1]) / 127.0f;
-  dev.resonance = static_cast<float>(data[2]) / 127.0f;
-  dev.envMod = static_cast<float>(data[3]) / 127.0f;
-  dev.decay = static_cast<float>(data[4]) / 127.0f;
-  dev.accent = static_cast<float>(data[5]) / 127.0f;
+  // Every device header starts with enabled + selected-pattern. This is also
+  // the correct fallback when a pattern-mode file has no recorded TRAK data.
+  dev.muted = (data[0] == 0);
+  const uint8_t selectedPattern = data[1];
+  if (selectedPattern >= 32) {
+    m_error = "Device selected-pattern value exceeds the 32 pattern slots";
+    return false;
+  }
+  dev.initialPatternBank = static_cast<uint8_t>(selectedPattern / 8);
+  dev.initialPatternIndex = static_cast<uint8_t>(selectedPattern % 8);
 
   if (is303) {
-    dev.waveform = data[6];
-    // The exact initial-pattern bank/index offsets inside the 9-byte 303 header
-    // have not been confirmed; leave them at defaults to avoid decoding garbage.
-    dev.initialPatternBank = 0;
-    dev.initialPatternIndex = 0;
-    dev.muted = (data[9] == 0);
-  } else {
-    // 808/909 state layout differs; mixer fields come from MIXR.
-    // Initial pattern selection for drum machines is taken from the arrangement.
-    dev.initialPatternBank = 0;
-    dev.initialPatternIndex = 0;
+    dev.tune = static_cast<float>(data[2]) / 127.0f;
+    dev.cutoff = static_cast<float>(data[3]) / 127.0f;
+    dev.resonance = static_cast<float>(data[4]) / 127.0f;
+    dev.envMod = static_cast<float>(data[5]) / 127.0f;
+    dev.decay = static_cast<float>(data[6]) / 127.0f;
+    dev.accent = static_cast<float>(data[7]) / 127.0f;
+    dev.waveform = data[8];
   }
 
   const uint8_t* slotData = data + headerSize;
   for (int slot = 0; slot < 32; ++slot) {
     const uint8_t* slotPtr = slotData + slot * slotSize;
-    uint8_t enabled = slotPtr[0];
+    // Byte 0 is the per-pattern shuffle flag, not an enabled marker. ReBirth
+    // stores every one of the 32 slots; an unused slot is represented by empty
+    // steps and still has a valid length field.
     uint8_t length  = slotPtr[1];
 
     Pattern pattern;
@@ -500,12 +538,10 @@ bool RbsParser::parseDeviceChunk(DeviceId primaryId, DeviceId secondaryId,
     pattern.patternIndex = static_cast<uint8_t>(slot % MAX_PATTERNS_PER_BANK);
     pattern.length = std::min<uint8_t>(length, MAX_STEPS);
 
-    if (enabled != 0) {
-      if (is303) {
-        pattern.steps = decode303Pattern(slotPtr + 2, pattern.length);
-      } else {
-        pattern.steps = decodeDrumPattern(slotPtr + 2, pattern.length);
-      }
+    if (is303) {
+      pattern.steps = decode303Pattern(slotPtr + 2, pattern.length);
+    } else {
+      pattern.steps = decodeDrumPattern(slotPtr + 2, pattern.length);
     }
 
     song.patterns.push_back(pattern);
@@ -515,15 +551,112 @@ bool RbsParser::parseDeviceChunk(DeviceId primaryId, DeviceId secondaryId,
 }
 
 // ═════════════════════════════════════════════════════════════════════
-// TRAK chunk placeholder (phase 3 will decode the event stream)
+// TRAK event stream and arrangement projection
 // ═════════════════════════════════════════════════════════════════════
 
 bool RbsParser::parseTrak(const uint8_t* data, size_t size, ParsedSong& song) {
-  // Phase 1 only validates that the chunk header is well-formed.
-  // The body is stored as raw bytes for later arrangement decoding.
-  (void)data;
-  (void)size;
   (void)song;
+
+  const size_t trackIndex = m_trakIndex++;
+  if (size < 4) {
+    m_error = "TRAK chunk too small for event count";
+    return false;
+  }
+
+  ByteStream stream(data, size);
+  uint32_t eventCount = 0;
+  if (!stream.readU32BE(eventCount)) {
+    m_error = "Truncated TRAK event count";
+    return false;
+  }
+  // Each event needs at least one delta byte, one controller byte and one
+  // value byte. This also bounds work before processing hostile input.
+  if (eventCount > stream.remaining() / 3) {
+    m_error = "TRAK event count exceeds chunk bounds";
+    return false;
+  }
+
+  uint32_t absolutePosition = 0;
+  for (uint32_t eventIndex = 0; eventIndex < eventCount; ++eventIndex) {
+    uint32_t delta = 0;
+    uint8_t controller = 0;
+    uint8_t value = 0;
+    if (!readVlq(stream, delta) || !stream.readU8(controller) ||
+        !stream.readU8(value)) {
+      m_error = "Truncated or invalid variable-length TRAK event";
+      return false;
+    }
+    if (delta > std::numeric_limits<uint32_t>::max() - absolutePosition) {
+      m_error = "TRAK event position overflows 32 bits";
+      return false;
+    }
+    absolutePosition += delta;
+
+    // Tracks 1-4 are 303-A, 303-B, 808 and 909. Controller 1 selects
+    // one of their 32 pattern slots; all other events are automation and are
+    // deliberately length-checked above but not projected yet.
+    if (trackIndex >= 1 && trackIndex <= NUM_DEVICES && controller == 0x01) {
+      if (value >= 32) {
+        m_error = "TRAK selected-pattern value exceeds the 32 pattern slots";
+        return false;
+      }
+      m_patternChanges[trackIndex - 1].emplace_back(absolutePosition, value);
+    }
+  }
+
+  if (!stream.atEnd()) {
+    m_error = "TRAK chunk contains trailing bytes after declared events";
+    return false;
+  }
+  m_maxTrakPosition = std::max(m_maxTrakPosition, absolutePosition);
+  return true;
+}
+
+bool RbsParser::buildArrangement(ParsedSong& song) {
+  bool hasPatternChanges = false;
+  for (const auto& changes : m_patternChanges) {
+    hasPatternChanges = hasPatternChanges || !changes.empty();
+  }
+  if (!hasPatternChanges) return true;
+
+  // An event exactly at the terminal boundary restores state after the final
+  // bar, so the ceiling intentionally excludes an extra empty bar there.
+  const uint32_t roundedBars = m_maxTrakPosition / TRAK_TICKS_PER_BAR +
+    (m_maxTrakPosition % TRAK_TICKS_PER_BAR != 0 ? 1u : 0u);
+  const uint32_t barCount = std::max<uint32_t>(1, roundedBars);
+  if (barCount > std::numeric_limits<uint16_t>::max()) {
+    m_error = "TRAK arrangement exceeds the supported bar count";
+    return false;
+  }
+
+  std::array<uint8_t, NUM_DEVICES> selected{};
+  std::array<size_t, NUM_DEVICES> nextChange{};
+  for (int device = 0; device < NUM_DEVICES; ++device) {
+    const auto& state = song.devices[device];
+    selected[device] = static_cast<uint8_t>(
+      state.initialPatternBank * MAX_PATTERNS_PER_BANK + state.initialPatternIndex);
+  }
+
+  song.arrangement.clear();
+  song.arrangement.reserve(barCount);
+  for (uint32_t bar = 0; bar < barCount; ++bar) {
+    const uint32_t position = bar * TRAK_TICKS_PER_BAR;
+    ArrangementBar out;
+    out.barNumber = static_cast<uint16_t>(bar + 1);
+    for (int device = 0; device < NUM_DEVICES; ++device) {
+      const auto& changes = m_patternChanges[device];
+      while (nextChange[device] < changes.size() &&
+             changes[nextChange[device]].first <= position) {
+        selected[device] = changes[nextChange[device]].second;
+        ++nextChange[device];
+      }
+      out.devicePatterns[device] = PatternRef{
+        static_cast<uint8_t>(selected[device] / MAX_PATTERNS_PER_BANK),
+        static_cast<uint8_t>(selected[device] % MAX_PATTERNS_PER_BANK)
+      };
+    }
+    song.arrangement.push_back(out);
+  }
   return true;
 }
 

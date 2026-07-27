@@ -106,7 +106,7 @@ void rbsWorkletProcessorCreated(EMSCRIPTEN_WEBAUDIO_T context,
 
   // Pass the engine pointer as userData so the audio callback can use it
   // without relying on a global.
-  EMSCRIPTEN_AUDIO_WORKLET_NODE_T node = emscripten_create_wasm_audio_worklet_node(
+  EMSCRIPTEN_WEBAUDIO_T node = emscripten_create_wasm_audio_worklet_node(
     context,
     PROCESSOR_NAME,
     &options,
@@ -147,9 +147,7 @@ void rbsWorkletThreadInitialized(EMSCRIPTEN_WEBAUDIO_T context,
 
 namespace rb338 {
 
-void initAudioWorklet(int contextHandle, uintptr_t enginePtr, val onReady) {
-  RbsAudioEngine* engine = reinterpret_cast<RbsAudioEngine*>(enginePtr);
-
+void initAudioWorklet(int contextHandle, RbsAudioEngine* engine, val onReady) {
   WorkletInitContext* ctx = new WorkletInitContext{
     engine,
     onReady,

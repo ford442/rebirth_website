@@ -59,6 +59,7 @@ bool RbsAudioEngine::init(const EngineConfig& config) {
   m_playing.store(false, std::memory_order_relaxed);
   m_volume.store(0.8f, std::memory_order_relaxed);
   m_bpm.store(125.0f, std::memory_order_relaxed);
+  m_processedBlocks.store(0, std::memory_order_relaxed);
   m_initialised = true;
   return true;
 }
@@ -174,6 +175,18 @@ void RbsAudioEngine::getPlaybackPosition(uint16_t& bar, uint8_t& step) const {
   step = m_currentStep.load(std::memory_order_acquire);
 }
 
+float RbsAudioEngine::renderTestBlock(uint32_t numFrames) {
+  if (numFrames == 0 || numFrames > MAX_PROCESS_BLOCK_FRAMES) return 0.0f;
+  alignas(16) float output[MAX_PROCESS_BLOCK_FRAMES * 2]{};
+  float* buffers[1] = {output};
+  processBlock(buffers, 2, numFrames);
+  float peak = 0.0f;
+  for (uint32_t i = 0; i < numFrames * 2; ++i) {
+    peak = std::max(peak, std::abs(output[i]));
+  }
+  return peak;
+}
+
 void RbsAudioEngine::processBlock(float* const* outputBuffers,
                                    uint32_t numChannels,
                                    uint32_t numFrames) {
@@ -182,6 +195,7 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
       numFrames > MAX_PROCESS_BLOCK_FRAMES) {
     return;
   }
+  m_processedBlocks.fetch_add(1, std::memory_order_relaxed);
 
   // Always drain control commands at the start of the callback.
   drainCommands();

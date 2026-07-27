@@ -5,7 +5,7 @@
 This is a **static website archive** for the legendary **ReBirth RB-338** software synthesizer by Propellerhead Software (1997–2005, now abandonware). The site preserves and catalogs community-contributed `.rbs` song files, `.rbm` mod files, and historical documentation spanning versions 1.0 through 2.0.1.
 
 - **Repository**: `ford442/rebirth_website`
-- **Live URL**: `https://ford442.github.io/rb338`
+- **Live URL**: `https://ford442.github.io/rebirth_website`
 - **Framework**: [Astro](https://astro.build) v6 (static site generator)
 - **Language**: TypeScript with strict mode
 - **Styling**: Pure CSS — no Tailwind, no UI frameworks
@@ -200,7 +200,7 @@ The site uses a **retro-industrial hardware aesthetic** modeled after the Roland
 
 ### Internal Links
 
-Because the site is deployed under a **base path** (`/rb338`), **always** use `import.meta.env.BASE_URL` (or `normalizeBase(import.meta.env.BASE_URL)`) for internal links:
+Because the site is deployed under a **base path** (`/rebirth_website`), **always** use `import.meta.env.BASE_URL` (or `normalizeBase(import.meta.env.BASE_URL)`) for internal links:
 
 ```astro
 import { normalizeBase } from '../lib/url';
@@ -216,7 +216,7 @@ The base path is configured in `astro.config.mjs`:
 ```js
 export default defineConfig({
   site: 'https://ford442.github.io',
-  base: '/rb338',
+  base: '/rebirth_website',
   compressHTML: true,
   build: { assets: '_assets' },
 });
@@ -409,8 +409,8 @@ For manual verification:
 ### GitHub Pages (primary)
 
 - Auto-deploys from the `main` branch
-- Site: `https://ford442.github.io/rb338`
-- Base path `/rb338` is baked into `astro.config.mjs`
+- Site: `https://ford442.github.io/rebirth_website`
+- Base path `/rebirth_website` is baked into `astro.config.mjs`
 
 ### Manual bundle upload (secondary)
 
@@ -459,8 +459,8 @@ For manual verification:
 
 Single service: an Astro static site. Standard commands live in `package.json` (`dev`, `build`, `preview`, `astro`) and `playwright.config.ts` (`test`). The startup update script already runs `npm install` and `npx playwright install`.
 
-- Dev server: `npm run dev` serves under the base path — open `http://localhost:4321/rb338/`, NOT `http://localhost:4321/`. The bare root returns 404 because `base: '/rb338'` is set in `astro.config.mjs`.
+- Dev server: `npm run dev` serves under the base path — open `http://localhost:4321/rebirth_website/`, NOT `http://localhost:4321/`. The bare root returns 404 because `base: '/rebirth_website'` is set in `astro.config.mjs`.
 - Playwright `webServer` auto-starts `npm run dev` and reuses an already-running dev server locally, so tests do not need a separate server.
 - Test suite state (as of setup): most tests in `tests/` are pre-existing failures unrelated to environment. They assert on an outdated `.rb-panel` class (the markup now uses `rb-rack` / `rb-panel__*` / `rb-panel--*`), and `tests/rbs-player.spec.ts` targets the wrong port (`localhost:3000` instead of `4321`). Do not treat these as environment breakage.
-- WASM tests (`tests/wasm-*.spec.ts`) require built artifacts under `public/wasm/` (e.g. `rbsParser.js/.wasm`, `rbsWorklet.js`). These are NOT built — the WASM audio module is a `PENDING` stub and building it needs the Emscripten toolchain (`emcc`, not installed). Expect these to fail until the module is built.
+- WASM tests (`tests/wasm-*.spec.ts`) require generated artifacts under `public/wasm/` (e.g. `rbsParser.js/.wasm`, `rbsWorklet.js`). CI builds them with pinned Emscripten 6.0.3; locally, run `npm run build:ship` with that toolchain active before setting `WASM_BUILT=1`.
 - Type safety is the primary check: `npm run astro check` passes with 0 errors (only lint-style hints). There is no ESLint/Prettier.

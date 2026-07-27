@@ -141,6 +141,11 @@ export interface WasmArrangementBar {
 }
 ```
 
+The parser populates one entry per decoded TRAK bar. `barNumber` is 1-based,
+and `devicePatterns` always follows the engine device order: TB-303 A,
+TB-303 B, TR-808, TR-909. TRAK's flat slot `0..31` maps to `{ bank: slot / 8,
+index: slot % 8 }` before crossing the Embind boundary.
+
 ### `DeviceState`
 
 C++:
@@ -261,7 +266,9 @@ The bridge converts `WasmParsedSong` to the UI-facing `ParsedSong`, mapping nume
 
 ## Class handles
 
-These are C++ classes exposed by Embind and instantiated from JavaScript with `new module.rb338.ClassName()`.
+These are C++ classes exposed by Embind and instantiated from JavaScript with
+`new module.ClassName()`. `EMSCRIPTEN_BINDINGS(rb338_audio)` names the binding
+block; it does not create a JavaScript `rb338` namespace.
 
 ### `RbsAudioEngine`
 
@@ -297,6 +304,10 @@ Embind must register these container types before `ParsedSong` can cross the bou
 - `register_array<DeviceState, NUM_DEVICES>("DeviceStateArray")`
 - `register_array<PatternRef, NUM_DEVICES>("PatternRefArray")`
 
+Registered `std::vector` fields cross the runtime boundary as Embind handles
+with `size()`, `get(index)`, and `delete()` methods. The bridge copies their
+contents to UI arrays and deletes the handles after conversion.
+
 ## Module-level symbols
 
 The Emscripten module must export:
@@ -306,11 +317,16 @@ The Emscripten module must export:
 - `HEAPU8: Uint8Array`
 - `emscriptenRegisterAudioObject(obj: AudioContext): number`
 - `emscriptenGetAudioObject(handle: number): AudioObject`
-- `rb338.RbsAudioEngine` (class constructor)
-- `rb338.RbsParser` (class constructor)
-- `rb338.initAudioWorklet` (function)
+- `RbsAudioEngine` (class constructor)
+- `RbsParser` (class constructor)
+- `initAudioWorklet` (function)
 
-These are configured in `src/wasm/cpp/build.sh` via `-sEXPORTED_FUNCTIONS="['_malloc','_free']"` and `-sEXPORTED_RUNTIME_METHODS="['ccall','cwrap','getValue','setValue','emscriptenRegisterAudioObject','emscriptenGetAudioObject']"`. `HEAPU8` is created automatically when the module initialises.
+`initAudioWorklet` receives the Embind-managed `RbsAudioEngine` object itself;
+JavaScript must not depend on Embind's private raw-pointer representation.
+`renderTestBlock(frames)` is a deterministic browser-test hook that returns the
+absolute peak of a synchronously rendered stereo block.
+
+These are configured in `src/wasm/cpp/build.sh` via `-sEXPORTED_FUNCTIONS="['_malloc','_free']"` and `-sEXPORTED_RUNTIME_METHODS="['ccall','cwrap','getValue','setValue','HEAPU8','emscriptenRegisterAudioObject','emscriptenGetAudioObject']"`.
 
 ## Change protocol
 

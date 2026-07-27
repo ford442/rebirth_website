@@ -13,6 +13,7 @@
 #include "../parser/ParsedSongJson.h"
 #include "../parser/RbsParser.h"
 #include "../parser/RbsTypes.h"
+#include <algorithm>
 #include <cstdint>
 #include <fstream>
 #include <iomanip>
@@ -158,6 +159,21 @@ void printPretty(const ParsedSong& song) {
     std::cout << "(not yet parsed)\n";
   } else {
     std::cout << "Bars: " << song.arrangement.size() << "\n";
+    const size_t shown = std::min<size_t>(song.arrangement.size(), 32);
+    for (size_t i = 0; i < shown; ++i) {
+      const auto& bar = song.arrangement[i];
+      std::cout << "  " << std::setw(4) << bar.barNumber << ":";
+      for (int device = 0; device < NUM_DEVICES; ++device) {
+        const auto& ref = bar.devicePatterns[device];
+        std::cout << " " << deviceName(static_cast<DeviceId>(device)) << "="
+                  << bankLetter(ref.bank) << static_cast<int>(ref.index + 1);
+      }
+      std::cout << "\n";
+    }
+    if (shown < song.arrangement.size()) {
+      std::cout << "  … " << (song.arrangement.size() - shown)
+                << " more bars (use JSON output for the full arrangement)\n";
+    }
   }
 }
 

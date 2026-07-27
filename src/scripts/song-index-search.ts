@@ -59,7 +59,7 @@ let indexData: SongSearchIndex | null = null;
 
 function searchDataUrl(): string {
   const base = normalizeBase(
-    document.querySelector<HTMLMetaElement>('meta[name="base-url"]')?.content ?? '/rb338'
+    document.querySelector<HTMLMetaElement>('meta[name="base-url"]')?.content ?? '/rebirth_website'
   );
   const prefix = base ? `${base}/` : '/';
   return `${prefix}data/songs-search-index.json`;

@@ -11,8 +11,12 @@ export default defineConfig({
   workers: isCI ? 1 : undefined,
   reporter: isCI ? [['github'], ['html', { open: 'never' }]] : 'html',
   use: {
-    baseURL: 'http://localhost:4321',
+    baseURL: 'http://127.0.0.1:4321',
     trace: 'on-first-retry',
+    serviceWorkers: 'block',
+    launchOptions: {
+      args: ['--autoplay-policy=no-user-gesture-required'],
+    },
   },
 
   testIgnore:
@@ -49,8 +53,10 @@ export default defineConfig({
       ],
 
   webServer: {
-    command: isCI ? 'npm run preview' : 'npm run dev',
-    url: 'http://localhost:4321/rb338/',
+    command: isCI
+      ? 'npm run preview -- --host 127.0.0.1'
+      : 'npm run dev -- --host 127.0.0.1',
+    url: 'http://127.0.0.1:4321/rebirth_website/',
     reuseExistingServer: !isCI,
     timeout: 120 * 1000,
   },

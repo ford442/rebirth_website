@@ -2,6 +2,9 @@
 #include "../parser/RbsParser.h"
 #include "../third_party/doctest.h"
 #include <fstream>
+#include <algorithm>
+#include <array>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -31,6 +34,28 @@ ParsedSong parseFixture(const std::string& name) {
     throw std::runtime_error("Parse failed for " + name + ": " + parser.lastError());
   }
   return *song;
+}
+
+size_t findChunk(const std::vector<uint8_t>& bytes, const char (&id)[5]) {
+  const std::array<uint8_t, 4> needle = {
+    static_cast<uint8_t>(id[0]), static_cast<uint8_t>(id[1]),
+    static_cast<uint8_t>(id[2]), static_cast<uint8_t>(id[3])
+  };
+  const auto it = std::search(bytes.begin(), bytes.end(), needle.begin(), needle.end());
+  if (it == bytes.end()) throw std::runtime_error(std::string("Missing chunk: ") + id);
+  return static_cast<size_t>(it - bytes.begin());
+}
+
+void writeU32BE(std::vector<uint8_t>& bytes, size_t offset, uint32_t value) {
+  bytes[offset] = static_cast<uint8_t>(value >> 24);
+  bytes[offset + 1] = static_cast<uint8_t>(value >> 16);
+  bytes[offset + 2] = static_cast<uint8_t>(value >> 8);
+  bytes[offset + 3] = static_cast<uint8_t>(value);
+}
+
+uint8_t selectedPattern(const ArrangementBar& bar, DeviceId device) {
+  const PatternRef& ref = bar.devicePatterns[static_cast<int>(device)];
+  return static_cast<uint8_t>(ref.bank * MAX_PATTERNS_PER_BANK + ref.index);
 }
 
 const Pattern* findPattern(const ParsedSong& song, DeviceId deviceId,
@@ -101,6 +126,62 @@ TEST_CASE("All fixtures extract non-empty info text") {
   }
 }
 
+TEST_CASE("GLOB decodes fixture tempos instead of using the default") {
+  CHECK(parseFixture("standard-rebirth.rbs").bpm == doctest::Approx(150.0f));
+  CHECK(parseFixture("blue-planet.rbs").bpm == doctest::Approx(140.0f));
+  CHECK(parseFixture("no-remorse.rbs").bpm == doctest::Approx(126.0f));
+}
+
+TEST_CASE("TRAK projects real pattern changes into per-bar arrangement") {
+  struct FixtureExpectation {
+    const char* name;
+    size_t minimumBars;
+  };
+  for (const auto& fixture : {
+         FixtureExpectation{"standard-rebirth.rbs", 140},
+         FixtureExpectation{"blue-planet.rbs", 500},
+         FixtureExpectation{"no-remorse.rbs", 400}}) {
+    const auto song = parseFixture(fixture.name);
+    CAPTURE(fixture.name);
+    REQUIRE(song.arrangement.size() >= fixture.minimumBars);
+    CHECK(song.arrangement.front().barNumber == 1);
+    CHECK(song.arrangement.back().barNumber == song.arrangement.size());
+
+    bool changed = false;
+    for (size_t bar = 1; bar < song.arrangement.size(); ++bar) {
+      for (int device = 0; device < NUM_DEVICES; ++device) {
+        const auto id = static_cast<DeviceId>(device);
+        if (selectedPattern(song.arrangement[bar - 1], id) !=
+            selectedPattern(song.arrangement[bar], id)) {
+          changed = true;
+        }
+      }
+    }
+    CHECK(changed);
+  }
+
+  const auto standard = parseFixture("standard-rebirth.rbs");
+  CHECK(selectedPattern(standard.arrangement[0], DeviceId::TB303_A) == 12);
+  CHECK(selectedPattern(standard.arrangement[4], DeviceId::TB303_A) == 13);
+  CHECK(selectedPattern(standard.arrangement[6], DeviceId::TB303_A) == 14);
+}
+
+TEST_CASE("Parser rejects truncated GLOB and TRAK chunks with an error") {
+  const auto path = std::string("src/wasm/test-fixtures/standard-rebirth.rbs");
+
+  auto globBytes = readFile(path);
+  writeU32BE(globBytes, findChunk(globBytes, "GLOB") + 4, 5);
+  RbsParser globParser;
+  CHECK(!globParser.parse(globBytes.data(), globBytes.size()));
+  CHECK(globParser.lastError().find("GLOB") != std::string::npos);
+
+  auto trakBytes = readFile(path);
+  writeU32BE(trakBytes, findChunk(trakBytes, "TRAK") + 4, 4);
+  RbsParser trakParser;
+  CHECK(!trakParser.parse(trakBytes.data(), trakBytes.size()));
+  CHECK(trakParser.lastError().find("TRAK") != std::string::npos);
+}
+
 TEST_CASE("v2.x fixtures expose 32 patterns per device") {
   for (const auto* name : {"standard-rebirth.rbs", "blue-planet.rbs", "no-remorse.rbs"}) {
     auto song = parseFixture(name);
@@ -144,6 +225,8 @@ TEST_CASE("parsedSongToJson emits WasmParsedSong-compatible fields") {
   CHECK(json.find("\"title\":\"Standard ReBirth\"") != std::string::npos);
   CHECK(json.find("\"author\":") != std::string::npos);
   CHECK(json.find("\"patterns\":[") != std::string::npos);
+  CHECK(json.find("\"bpm\":150") != std::string::npos);
+  CHECK(json.find("\"arrangement\":[") != std::string::npos);
   CHECK(json.find("\"deviceId\":0") != std::string::npos);
   CHECK(json.find("\"length\":16") != std::string::npos);
 }

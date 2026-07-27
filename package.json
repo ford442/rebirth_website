@@ -9,6 +9,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build && node scripts/generate-sw.mjs",
+    "build:ship": "npm run wasm:build && npm run build",
     "pwa:icons": "node scripts/generate-pwa-icons.mjs",
     "preview": "astro preview",
     "astro": "astro",

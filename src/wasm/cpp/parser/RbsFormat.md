@@ -104,20 +104,21 @@ parser.
 
 | Offset | Size | Field | Description |
 |--------|------|-------|-------------|
-| 0x00 | 1 | ? | Unknown |
-| 0x01 | 1 | ShowInfoOnOpen | Non-zero when the info text should be shown on load |
-| 0x02 | 1 | ? | Unknown |
-| 0x03 | 1 | Sub-format | `0x01` / `0x02` mirroring HEAD marker |
-| 0x04–0x0e | 11 | ? | Unknown / padding |
-| 0x0f | … | Title | Null-terminated string — song title |
-| 0x119 | … | Creator URL | Null-terminated string (if present) |
+| 0x00 | 1 | Play mode | `0` = pattern, `1` = song |
+| 0x01 | 1 | Loop enabled | `0` = off, `1` = on |
+| 0x02 | 4 | Tempo | Big-endian uint32, BPM multiplied by 1000 |
+| 0x06 | 4 | Loop start | Big-endian uint32, bar position multiplied by 768 |
+| 0x0a | 4 | Loop end | Big-endian uint32, bar position multiplied by 768 |
+| 0x0e | 1 | Shuffle | `0x00`–`0x7f` |
+| 0x0f | 65 | Mod name | Null-terminated string (`Standard ReBirth` for the stock mod) |
+| 0x50 | 201 | Mod FTP URL | Null-terminated string |
+| 0x119 | 201 | Mod web URL | Null-terminated string |
+| 0x1e2 | 1 | Vintage mode | `0` = ReBirth 2.0 sound, `1` = vintage sound |
+| 0x1e3 | 29 | Reserved | Zero-filled |
 
-The title is read as a C string starting at offset `0x0f` and trimmed of
-whitespace. The creator URL is read from offset `0x119` when the chunk is large
-enough.
-
-**BPM / tempo:** The exact tempo field has not yet been confidently identified.
-The parser currently leaves `bpm` at the default `125.0`.
+The current public `ParsedSong.title` retains the archive's established use of
+the mod-name field at `0x0f`. Tempo is rejected when it falls outside ReBirth's
+documented 20–500 BPM range.
 
 ---
 
@@ -287,13 +288,31 @@ A step is active when any mapped byte is non-zero.
 ## 7. Arrangement (`TRKL` Container)
 
 The arrangement lives inside a nested `CAT ` container whose marker is `TRKL`.
-It contains one or more `TRAK` chunks. The exact event format of `TRAK` chunks
-is still being reverse-engineered; the parser currently recognises the
-container but does not yet derive `ArrangementBar` entries from it.
+It contains nine `TRAK` chunks in fixed order: mixer, TB-303 A, TB-303 B,
+TR-808, TR-909, delay, distortion, PCF, and compressor.
 
-Observed `TRAK` chunks vary in size and appear to encode per-device pattern
-changes and automation events. Work is in progress to map their event stream
-to the public `ArrangementBar` structure.
+Each TRAK body is:
+
+| Field | Encoding | Description |
+|-------|----------|-------------|
+| Event count | 4-byte big-endian uint32 | Number of following events |
+| Delta position | 1–5 byte big-endian VLQ | Delta from the previous event |
+| Controller ID | 1 byte | Track-local parameter identifier |
+| Controller value | 1 byte | Track-local value |
+
+Only the delta position is variable-length. Its stored unit represents 24 of
+the documented 192-PPQN ticks, so one 4/4 bar is `768 / 24 = 32` encoded units.
+All observed pattern-selection events occur on bar boundaries.
+
+For instrument tracks 1–4, controller `0x01` selects a flat pattern slot
+`0`–`31`. The parser samples that state at each bar boundary and converts it to
+`PatternRef { bank: slot / 8, index: slot % 8 }`. Other controllers are
+automation: they are fully decoded and bounds-checked, but currently skipped
+after advancing so they cannot desynchronise later events.
+
+The layout and controller IDs are corroborated by Propellerhead's freely
+distributed RBS 4.2 format document and the independent
+[jsynth reference parser](https://github.com/nsauzede/jsynth).
 
 ---
 
@@ -307,10 +326,10 @@ to the public `ArrangementBar` structure.
 - [x] Read all 32 pattern slots per device
 - [x] Decode TB-303 notes / accent / slide
 - [x] Decode 808/909 drum hits
-- [ ] Parse `TRAK` chunks into arrangement bars
-- [ ] Skip or parse automation events
-- [ ] Identify and decode BPM field in GLOB
-- [ ] Validate all offsets and lengths (prevent buffer over-read)
+- [x] Parse `TRAK` chunks into arrangement bars
+- [x] Skip automation events with length-safe advancing
+- [x] Identify and decode BPM field in GLOB
+- [x] Validate all parsed offsets and lengths (prevent buffer over-read)
 
 ---
 

@@ -1,10 +1,19 @@
 import { test, expect } from '@playwright/test';
 
-const LOCAL_DEMO_URL = '/rb338/archive/rbs-songs/demo/noah-cohn-20.rbs';
+const LOCAL_DEMO_URL = '/rebirth_website/archive/rbs-songs/demo/noah-cohn-20.rbs';
 
 test.describe('RbsPlayer degraded fallback', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.route('**/*', (route) => {
+      if (new URL(route.request().url()).pathname.includes('/wasm/')) {
+        return route.abort();
+      }
+      return route.continue();
+    });
+  });
+
   test('shows distinct messaging when WASM assets are missing', async ({ page }) => {
-    await page.goto('/rb338/');
+    await page.goto('/rebirth_website/');
     await page.waitForSelector('.rbs-player');
 
     const player = page.locator('.rbs-player');
@@ -21,7 +30,7 @@ test.describe('RbsPlayer degraded fallback', () => {
   });
 
   test('keeps play disabled until a song is loaded in degraded mode', async ({ page }) => {
-    await page.goto('/rb338/');
+    await page.goto('/rebirth_website/');
     await page.waitForSelector('.rbs-player[data-player-mode^="degraded"]');
 
     const playBtn = page.locator('#rbsBtnPlay');
@@ -29,7 +38,7 @@ test.describe('RbsPlayer degraded fallback', () => {
   });
 
   test('loads metadata from a local demo fixture and enables sketch play', async ({ page }) => {
-    await page.goto('/rb338/');
+    await page.goto('/rebirth_website/');
     await page.waitForSelector('.rbs-player[data-player-mode^="degraded"]');
 
     const response = await page.request.get(LOCAL_DEMO_URL);
@@ -58,7 +67,7 @@ test.describe('RbsPlayer degraded fallback', () => {
   test('Load Demo fetches same-origin demo without external network', async ({ page }) => {
     await page.route('**/*test.1ink.us/**', (route) => route.abort());
 
-    await page.goto('/rb338/');
+    await page.goto('/rebirth_website/');
     await page.waitForSelector('.rbs-player');
 
     const demoSelect = page.locator('#rbsDemoSelect');

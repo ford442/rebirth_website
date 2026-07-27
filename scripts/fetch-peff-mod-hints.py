@@ -93,7 +93,7 @@ def parse_roundup(path: Path) -> list[dict[str, str]]:
 def fetch_wayback_snippets(url: str, limit: int) -> list[str]:
     headers = {
         "User-Agent": (
-            "Mozilla/5.0 (compatible; rebirth-mod-metadata-bot/1.0; +https://ford442.github.io/rb338)"
+            "Mozilla/5.0 (compatible; rebirth-mod-metadata-bot/1.0; +https://ford442.github.io/rebirth_website)"
         )
     }
     request = urllib.request.Request(url, headers=headers)

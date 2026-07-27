@@ -2,8 +2,12 @@
 
 #include "RbsTypes.h"
 #include <cstddef>
+#include <array>
+#include <cstdint>
 #include <optional>
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace rb338 {
 
@@ -50,6 +54,10 @@ public:
 private:
   std::string m_error;
   bool m_seenTb303A = false;
+  size_t m_trakIndex = 0;
+  uint32_t m_maxTrakPosition = 0;
+  std::array<std::vector<std::pair<uint32_t, uint8_t>>, NUM_DEVICES>
+    m_patternChanges;
 
   // ── Container dispatch ──
   bool parseContainer(const uint8_t* data, size_t size, ParsedSong& song,
@@ -64,6 +72,7 @@ private:
   bool parseDeviceChunk(DeviceId primaryId, DeviceId secondaryId,
                         const uint8_t* data, size_t size, ParsedSong& song);
   bool parseTrak(const uint8_t* data, size_t size, ParsedSong& song);
+  bool buildArrangement(ParsedSong& song);
 
   // ── Legacy stubs (kept so existing call sites compile) ──
   bool validateHeader(const uint8_t* data, size_t size);

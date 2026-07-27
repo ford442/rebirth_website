@@ -6,7 +6,7 @@ import { normalizeBase } from '../lib/url';
 
 function getBase(): string {
   const meta = document.querySelector<HTMLMetaElement>('meta[name="base-url"]');
-  return normalizeBase(meta?.content ?? '/rb338');
+  return normalizeBase(meta?.content ?? '/rebirth_website');
 }
 
 document.querySelectorAll<HTMLButtonElement>('.preview-btn').forEach((button) => {

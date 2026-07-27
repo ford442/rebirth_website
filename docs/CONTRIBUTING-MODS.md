@@ -4,7 +4,7 @@ The mod archive contains **367 `.rbm` files**. As of the current milestone, **10
 
 ## Quick contribution path
 
-1. Find an undocumented mod in the [complete mod index](https://ford442.github.io/rb338/archive/mods).
+1. Find an undocumented mod in the [complete mod index](https://ford442.github.io/rebirth_website/archive/mods).
 2. Click **“Help document this mod”** on a raw index row to open a pre-filled GitHub issue.
 3. Fill in as many fields as you can (only `filename` and `title` are required).
 4. Submit the issue. A maintainer will add the entry to `src/data/mods-metadata.json`.

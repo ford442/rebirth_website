@@ -65,8 +65,6 @@ void position;
 // ── Mock WASM module type check ──────────────────────────────────
 
 class MockRbsAudioEngine implements RbsAudioEngineInstance {
-  ptr = 0;
-
   init(_config: EngineConfig): boolean {
     return true;
   }
@@ -90,6 +88,14 @@ class MockRbsAudioEngine implements RbsAudioEngineInstance {
     return false;
   }
 
+  getProcessedBlockCount(): number {
+    return 0;
+  }
+
+  renderTestBlock(_numFrames: number): number {
+    return 0;
+  }
+
   getPlaybackPosition(): PlaybackPosition {
     return { bar: 1, step: 0 };
   }
@@ -110,18 +116,16 @@ class MockRbsParser implements RbsParserInstance {
 }
 
 const mockModule: EngineModule = {
-  rb338: {
-    DeviceId: {
-      TB303_A: 0 as WasmDeviceId,
-      TB303_B: 1 as WasmDeviceId,
-      TR808: 2 as WasmDeviceId,
-      TR909: 3 as WasmDeviceId,
-    },
-    RbsAudioEngine: MockRbsAudioEngine,
-    RbsParser: MockRbsParser,
-    initAudioWorklet(_contextHandle, _enginePtr, callback) {
-      callback(1);
-    },
+  DeviceId: {
+    TB303_A: 0 as WasmDeviceId,
+    TB303_B: 1 as WasmDeviceId,
+    TR808: 2 as WasmDeviceId,
+    TR909: 3 as WasmDeviceId,
+  },
+  RbsAudioEngine: MockRbsAudioEngine,
+  RbsParser: MockRbsParser,
+  initAudioWorklet(_contextHandle, _engine, callback) {
+    callback(1);
   },
   HEAPU8: new Uint8Array(0),
   _malloc(_size: number): number {

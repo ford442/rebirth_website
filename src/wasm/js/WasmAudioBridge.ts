@@ -124,7 +124,15 @@ export class WasmAudioBridge {
       }
 
       // 2. Probe WASM asset availability before importing glue
-      const wasmProbe = await fetch(wasmAudioConfig.wasmPath, { method: 'HEAD' });
+      let wasmProbe: Response;
+      try {
+        wasmProbe = await fetch(wasmAudioConfig.wasmPath, { method: 'HEAD' });
+      } catch {
+        throw new WasmInitError({
+          reason: 'wasm-unavailable',
+          message: INIT_FAILURE_MESSAGES['wasm-unavailable'],
+        });
+      }
       if (!wasmProbe.ok) {
         throw new WasmInitError({
           reason: 'wasm-unavailable',
@@ -150,9 +158,12 @@ export class WasmAudioBridge {
       this.module = await moduleFactory({
         locateFile: (path: string) => {
           if (path.endsWith('.wasm')) return wasmAudioConfig.wasmPath;
-          // Emscripten loads the AudioWorklet bootstrap as <base>.aw.js.
-          // Map it to the stable worklet path produced by the build script.
-          if (path.endsWith('.js') && path.includes('.aw.')) {
+          // Map both the legacy .aw.js sidecar and Emscripten 6's rewritten
+          // module request to the stable worklet path produced by build.sh.
+          if (
+            path.endsWith('rbsWorklet.js') ||
+            (path.endsWith('.js') && path.includes('.aw.'))
+          ) {
             return wasmAudioConfig.workletPath;
           }
           return path;
@@ -177,17 +188,17 @@ export class WasmAudioBridge {
         enableDelay: wasmAudioConfig.features.delay,
       };
 
-      // Engine is exposed via embind as rb338.RbsAudioEngine
-      this.enginePtr = new this.module.rb338.RbsAudioEngine();
+      // EMSCRIPTEN_BINDINGS exports Embind classes directly on the module.
+      this.enginePtr = new this.module.RbsAudioEngine();
       this.enginePtr.init(config);
 
       // 5. Register the JS AudioContext with Emscripten and create the worklet
       const contextHandle = this.module.emscriptenRegisterAudioObject(this.audioContext);
 
       await new Promise<void>((resolve, reject) => {
-        this.module?.rb338.initAudioWorklet(
+        this.module?.initAudioWorklet(
           contextHandle,
-          this.enginePtr?.ptr ?? 0,
+          this.enginePtr!,
           (nodeHandle) => {
             if (nodeHandle == null || nodeHandle === 0) {
               reject(
@@ -251,31 +262,30 @@ export class WasmAudioBridge {
       // Copy file into WASM heap
       const byteLength = buffer.byteLength;
       const ptr = this.module._malloc(byteLength);
-      this.module.HEAPU8.set(new Uint8Array(buffer), ptr);
+      const parser = new this.module.RbsParser();
+      try {
+        this.module.HEAPU8.set(new Uint8Array(buffer), ptr);
 
-      // Parse via Embind-exposed parser
-      const parser = new this.module.rb338.RbsParser();
-      const parsed = parser.parse(ptr, byteLength);
+        // Parse via Embind-exposed parser
+        const parsed = parser.parse(ptr, byteLength);
+        if (parsed === undefined) {
+          const err: EngineError = {
+            code: 'PARSE_ERROR',
+            message: parser.lastError(),
+          };
+          throw err;
+        }
 
-      // Free file buffer
-      this.module._free(ptr);
+        // Load into engine before consuming the Embind vector handles.
+        this.enginePtr.loadSong(parsed);
+        const song = this._toUiParsedSong(parsed);
 
-      if (parsed === undefined) {
-        const err: EngineError = {
-          code: 'PARSE_ERROR',
-          message: parser.lastError(),
-        };
-        throw err;
+        this._setStatus('ready');
+        return song;
+      } finally {
+        parser.delete();
+        this.module._free(ptr);
       }
-
-      // Load into engine
-      this.enginePtr.loadSong(parsed);
-
-      // Convert WASM-facing song to UI-facing metadata
-      const song = this._toUiParsedSong(parsed);
-
-      this._setStatus('ready');
-      return song;
     } catch (err) {
       console.error('[WasmAudioBridge] load failed:', err);
       this._setStatus('error');
@@ -388,14 +398,28 @@ export class WasmAudioBridge {
   }
 
   private _toUiParsedSong(wasmSong: WasmParsedSong): ParsedSong {
+    const patterns = this._consumeVector(wasmSong.patterns);
+    const arrangement = this._consumeVector(wasmSong.arrangement);
     return {
       title: wasmSong.title,
       author: wasmSong.author,
       bpm: wasmSong.bpm,
       devices: wasmSong.devices.map((d) => this._toUiDeviceState(d)),
-      patterns: wasmSong.patterns.map((p) => this._toUiPattern(p)),
-      arrangement: wasmSong.arrangement.map((b) => this._toUiArrangementStep(b)),
+      patterns: patterns.map((p) => this._toUiPattern(p)),
+      arrangement: arrangement.map((b) => this._toUiArrangementStep(b)),
     };
+  }
+
+  private _consumeVector<T>(vector: import('../types/wasm-audio').EmbindVector<T>): T[] {
+    const values: T[] = [];
+    try {
+      for (let index = 0; index < vector.size(); index += 1) {
+        values.push(vector.get(index));
+      }
+      return values;
+    } finally {
+      vector.delete();
+    }
   }
 
   private _toUiDeviceState(wasmDevice: WasmDeviceState): import('../types/wasm-audio').DeviceState {

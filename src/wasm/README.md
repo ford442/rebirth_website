@@ -4,9 +4,9 @@ In-browser playback engine for ReBirth RB-338 `.rbs` song files.
 
 ## Status
 
-> **⚠️ PARTIAL IMPLEMENTATION**  
+> **PARTIAL ENGINE, SHIPPING PIPELINE ACTIVE**
 > Parser, sequencer, transport, and **Phase 1 synthetic TR-808 / TR-909 drums** are implemented in C++.  
-> No compiled WASM binaries ship from CI yet — run `npm run wasm:build` locally with Emscripten.  
+> CI builds and deploys the browser engine with pinned Emscripten 6.0.3. Run `npm run build:ship` locally to reproduce the shipping build.
 > The UI component (`RbsPlayer.astro`) degrades gracefully when WASM is missing: metadata sniffing and sketch preview remain available.
 
 ## Player capability matrix
@@ -126,8 +126,8 @@ Fixtures live in [`test-fixtures/`](test-fixtures/). CI runs this suite in [`.gi
 # 1. Install Emscripten (one-time)
 git clone https://github.com/emscripten-core/emsdk.git
 cd emsdk
-./emsdk install 3.1.74
-./emsdk activate 3.1.74
+./emsdk install 6.0.3
+./emsdk activate 6.0.3
 source ./emsdk_env.sh
 
 # 2. Build (release)
@@ -139,9 +139,13 @@ npm run wasm:build:debug
 # 4. Verify outputs exist
 ls public/wasm/
 # → rbsParser.js  rbsParser.wasm  rbsWorklet.js  wasm-build.json
+
+# 5. Build the complete shipping site (WASM first, then Astro)
+npm run build:ship
+# → the same four files are copied to dist/wasm/
 ```
 
-The pinned Emscripten version lives in [`cpp/.emscripten-version`](cpp/.emscripten-version). Update it deliberately when you need a newer toolchain; the build script warns when the installed version does not match.
+The pinned Emscripten version lives in [`cpp/.emscripten-version`](cpp/.emscripten-version). Update it deliberately when you need a newer toolchain. The build script exits before deleting old artifacts or compiling if `emcc` is missing, its version cannot be detected, or it differs from the pin.
 
 ## Build Profiles
 
@@ -156,19 +160,24 @@ Release uses a fixed heap so the audio callback never triggers a memory resize. 
 
 ### Emitted files
 
-Emscripten produces `rbsParser.js`, `rbsParser.wasm`, and `rbsParser.aw.js`. The build script renames `rbsParser.aw.js` to `rbsWorklet.js` so the rest of the project refers to a stable filename. A `wasm-build.json` manifest is also generated for cache-busting and diagnostics.
+Emscripten produces `rbsParser.js` and `rbsParser.wasm`. Older releases also
+emitted `rbsParser.aw.js`, which the build still accepts. Emscripten 6 folds the
+AudioWorklet code into the ES-module glue, so the build emits a tiny
+`rbsWorklet.js` wrapper that imports the self-starting module inside the worklet scope. A
+`wasm-build.json` manifest is also generated for cache-busting and diagnostics.
 
 ### Deployment paths
 
-Assets live in `public/wasm/` and are served from the site's base path. With `base: '/rb338'` (the GitHub Pages/SFTP deployment), the runtime URLs become:
+Assets live in `public/wasm/` and are served from the site's base path. With `base: '/rebirth_website'` (the canonical GitHub Pages deployment), the runtime URLs become:
 
 | File | Public | Served at |
 |------|--------|-----------|
-| Glue | `public/wasm/rbsParser.js` | `/rb338/wasm/rbsParser.js` |
-| WASM | `public/wasm/rbsParser.wasm` | `/rb338/wasm/rbsParser.wasm` |
-| Worklet | `public/wasm/rbsWorklet.js` | `/rb338/wasm/rbsWorklet.js` |
+| Glue | `public/wasm/rbsParser.js` | `/rebirth_website/wasm/rbsParser.js` |
+| WASM | `public/wasm/rbsParser.wasm` | `/rebirth_website/wasm/rbsParser.wasm` |
+| Worklet | `public/wasm/rbsWorklet.js` | `/rebirth_website/wasm/rbsWorklet.js` |
+| Build manifest | `public/wasm/wasm-build.json` | `/rebirth_website/wasm/wasm-build.json` |
 
-`src/wasm/audio-module.config.ts` reads `import.meta.env.BASE_URL` (via `normalizeBase`) so these paths stay correct in both dev (`/`) and production (`/rb338`).
+`src/wasm/audio-module.config.ts` reads `import.meta.env.BASE_URL` (via `normalizeBase`) so these paths stay correct for the configured deployment base. The generated files remain ignored and are produced by CI rather than committed.
 
 ### AudioWorklet processor name
 
@@ -180,11 +189,11 @@ The processor name (`"rbs-player"`) is **not** a linker flag. It is set at runti
 
 ```yaml
 - name: Install Emscripten
-  uses: mymindstorm/setup-emsdk@v14
+  uses: emscripten-core/setup-emsdk@v15
   with:
-    version: 3.1.74
-- name: Build WASM
-  run: npm run wasm:build
+    version: 6.0.3
+- name: Build shipping site
+  run: npm run build:ship
 ```
 
 ## Architecture

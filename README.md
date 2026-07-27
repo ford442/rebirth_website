@@ -50,8 +50,9 @@ Astro automatically reloads the page when you edit source files.
 
 | Command           | Description                                       |
 |-------------------|---------------------------------------------------|
-| `npm run dev`     | Start local dev server at `localhost:4321/rb338/` |
-| `npm run build`   | Build the production site into `dist/`            |
+| `npm run dev`     | Start local dev server at `localhost:4321/rebirth_website/` |
+| `npm run build`   | Build the production site into `dist/` without requiring Emscripten |
+| `npm run build:ship` | Build pinned WASM artifacts, then the production site |
 | `npm run preview` | Preview the production build locally              |
 | `npm run check`   | Astro + TypeScript type check (`astro check`)     |
 | `npm run lint`    | ESLint for Astro/TS sources                       |
@@ -142,7 +143,7 @@ Most of the 367 archived mods still lack metadata. See [`docs/CONTRIBUTING-MODS.
 
 Quick path:
 
-1. Find an undocumented mod on [`/archive/mods`](https://ford442.github.io/rb338/archive/mods).
+1. Find an undocumented mod on [`/archive/mods`](https://ford442.github.io/rebirth_website/archive/mods).
 2. Click **“Help document this mod”** to open a pre-filled GitHub issue.
 3. Fill in the form (only `filename` and `title` are required).
 4. A maintainer will add the entry to `src/data/mods-metadata.json`.
@@ -214,9 +215,10 @@ Run `npm run build` after regenerating the index so Astro picks up the new data.
 
 ## WebAssembly Audio Module
 
-The `src/wasm/` directory is reserved for a future in-browser `.rbs` playback engine
-built with WebAssembly. See [`src/wasm/README.md`](src/wasm/README.md) for the planned
-architecture.
+The `src/wasm/` directory contains the in-browser `.rbs` playback engine. Shipping
+builds use pinned Emscripten 6.0.3 and publish `rbsParser.js`, `rbsParser.wasm`,
+`rbsWorklet.js`, and `wasm-build.json`. Run `npm run build:ship` to produce and copy
+the complete site into `dist/`; see [`src/wasm/README.md`](src/wasm/README.md).
 
 If you have C/C++/Rust audio DSP experience or knowledge of the `.rbs` binary format,
 contributions to this module are especially welcome.
@@ -226,7 +228,9 @@ contributions to this module are especially welcome.
 ## Deployment
 
 The production site is served from **GitHub Pages** at
-`https://ford442.github.io/rb338` and rebuilds automatically from `main`.
+`https://ford442.github.io/rebirth_website` and rebuilds automatically from `main`.
+The repository administrator must select **Settings → Pages → Source: GitHub Actions**
+before the first workflow deployment.
 
 For manual publishing there is `deploy.py`, which zips the `dist/` build and
 uploads it as a single bundle to the storage manager.
@@ -272,7 +276,7 @@ for `deploy.py` and SFTP upload scripts.
 | Workflow | Triggers | What it checks |
 |----------|----------|----------------|
 | [`ci.yml`](.github/workflows/ci.yml) | PR / `main` | `npm ci`, `astro check`, production build, secrets scan, Playwright against the preview server |
-| [`wasm.yml`](.github/workflows/wasm.yml) | PRs touching `src/wasm/**`, nightly cron | Pinned Emscripten build, WASM Playwright tests, artifact upload |
+| [`wasm.yml`](.github/workflows/wasm.yml) | Every `main` push, relevant PRs, nightly cron, manual runs | Pinned Emscripten 6.0.3 shipping build, WASM Playwright tests, Pages deployment, live smoke checks |
 
 Locally you can mirror the main CI pipeline:
 
@@ -283,7 +287,7 @@ bash scripts/check-no-secrets.sh
 python3 scripts/check-mod-metadata.py --priority   # optional warning
 ```
 
-WASM builds require Emscripten on your machine (`npm run wasm:build`). See
+WASM builds require pinned Emscripten 6.0.3 on your machine (`npm run build:ship`). See
 [`src/wasm/README.md`](src/wasm/README.md) for setup.
 
 ---

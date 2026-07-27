@@ -1,7 +1,7 @@
 /** @typedef {import('vite-plugin-pwa').VitePWAOptions} VitePWAOptions */
 
 /** @type {string} Must match astro.config.mjs `base`. */
-export const PWA_BASE = '/rb338';
+export const PWA_BASE = '/rebirth_website';
 
 /** @returns {VitePWAOptions} */
 export function createPwaOptions() {
@@ -53,10 +53,10 @@ export function createPwaOptions() {
     workbox: {
       globPatterns: ['**/*.{html,css,js,svg,png,ico,json,wasm,woff2,woff,txt,webmanifest}'],
       navigateFallback: `${base}offline/index.html`,
-      navigateFallbackDenylist: [/^\/rb338\/api\//, /\/[^/?]+\.[^/]+$/],
+      navigateFallbackDenylist: [/^\/rebirth_website\/api\//, /\/[^/?]+\.[^/]+$/],
       runtimeCaching: [
         {
-          urlPattern: ({ url }) => url.pathname.startsWith('/rb338/wasm/'),
+          urlPattern: ({ url }) => url.pathname.startsWith('/rebirth_website/wasm/'),
           handler: 'CacheFirst',
           options: {
             cacheName: 'rb338-wasm',
@@ -71,7 +71,7 @@ export function createPwaOptions() {
         },
         {
           urlPattern: ({ url }) =>
-            url.pathname.startsWith('/rb338/archive/rbs-songs/demo/') &&
+            url.pathname.startsWith('/rebirth_website/archive/rbs-songs/demo/') &&
             url.pathname.endsWith('.rbs'),
           handler: 'CacheFirst',
           options: {
@@ -86,7 +86,7 @@ export function createPwaOptions() {
           },
         },
         {
-          urlPattern: ({ url }) => url.pathname.startsWith('/rb338/data/'),
+          urlPattern: ({ url }) => url.pathname.startsWith('/rebirth_website/data/'),
           handler: 'CacheFirst',
           options: {
             cacheName: 'rb338-data-json',

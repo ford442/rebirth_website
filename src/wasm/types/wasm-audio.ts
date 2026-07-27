@@ -202,6 +202,13 @@ export interface WasmPattern {
   steps: WasmStepData[];
 }
 
+/** Runtime handle produced by Embind's `register_vector<T>`. */
+export interface EmbindVector<T> {
+  size(): number;
+  get(index: number): T;
+  delete(): void;
+}
+
 /** Parsed song as encoded in C++ `ParsedSong` */
 export interface WasmParsedSong {
   title: string;
@@ -214,8 +221,8 @@ export interface WasmParsedSong {
   globSubFormat: number;
   showInfoOnOpen: boolean;
   devices: WasmDeviceState[];
-  patterns: WasmPattern[];
-  arrangement: WasmArrangementBar[];
+  patterns: EmbindVector<WasmPattern>;
+  arrangement: EmbindVector<WasmArrangementBar>;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -230,8 +237,6 @@ export type WorkletNodeHandle = number;
 
 /** Class constructor shape exposed by Embind for `RbsAudioEngine` */
 export interface RbsAudioEngineInstance {
-  /** Raw pointer used when passing this instance to AudioWorklet wiring. */
-  ptr: number;
   init(config: EngineConfig): boolean;
   loadSong(song: WasmParsedSong): boolean;
   play(): void;
@@ -243,6 +248,8 @@ export interface RbsAudioEngineInstance {
   getTempo(): number;
   setTempoMultiplier(multiplier: number): void;
   isPlaying(): boolean;
+  getProcessedBlockCount(): number;
+  renderTestBlock(numFrames: number): number;
   getPlaybackPosition(): PlaybackPosition;
   delete(): void;
 }
@@ -258,22 +265,17 @@ export interface RbsParserInstance {
 /** Constructor signature returned by Embind */
 export type EmbindClassConstructor<T> = new () => T;
 
-/** The `rb338` namespace exported from C++ */
-export interface Rb338Namespace {
+/** The instantiated Emscripten module returned by the JS glue */
+export interface EngineModule {
+  /** Embind exports are installed directly on the module object. */
   DeviceId: Record<string, WasmDeviceId>;
   RbsAudioEngine: EmbindClassConstructor<RbsAudioEngineInstance>;
   RbsParser: EmbindClassConstructor<RbsParserInstance>;
   initAudioWorklet(
     contextHandle: AudioObjectHandle,
-    enginePtr: number,
+    engine: RbsAudioEngineInstance,
     callback: (nodeHandle: WorkletNodeHandle | null) => void
   ): void;
-}
-
-/** The instantiated Emscripten module returned by the JS glue */
-export interface EngineModule {
-  /** Exposed C++ namespace */
-  rb338: Rb338Namespace;
 
   /** Heap views */
   HEAPU8: Uint8Array;

@@ -79,6 +79,14 @@ public:
   /** Query whether the engine is currently playing. */
   bool isPlaying() const { return m_playing.load(std::memory_order_acquire); }
 
+  /** Number of render quanta received from the AudioWorklet (diagnostics/tests). */
+  uint32_t getProcessedBlockCount() const {
+    return m_processedBlocks.load(std::memory_order_acquire);
+  }
+
+  /** Render one block synchronously and return its absolute peak (test hook). */
+  float renderTestBlock(uint32_t numFrames);
+
   /** Push a control command from the main thread. Never blocks. */
   bool pushCommand(const EngineCommand& cmd);
 
@@ -112,6 +120,7 @@ private:
   std::atomic<float>    m_volume{0.8f};
   std::atomic<float>    m_bpm{125.0f};
   std::atomic<float>    m_tempoMultiplier{1.0f};
+  std::atomic<uint32_t> m_processedBlocks{0};
 
   // Command queue (lives in shared WASM memory).
   EngineCommandQueue m_commandQueue;

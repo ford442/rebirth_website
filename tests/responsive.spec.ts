@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const TEST_URL = '/rb338/';
+const TEST_URL = '/rebirth_website/';
 
 // Viewport sizes to test
 const viewports = [

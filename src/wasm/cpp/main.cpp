@@ -35,13 +35,19 @@ PlaybackPosition getPlaybackPositionWrapper(const RbsAudioEngine& self) {
   return PlaybackPosition{bar, step};
 }
 
+std::optional<ParsedSong> parseSongWrapper(RbsParser& self,
+                                           uintptr_t dataPtr,
+                                           size_t size) {
+  return self.parse(reinterpret_cast<const uint8_t*>(dataPtr), size);
+}
+
 // Helpers to register fixed-size std::array types with value_array.
 // Embind requires every index to be declared explicitly, so we use
 // index_sequence to generate the .element(index<I>()) chain.
 
 template <typename T, std::size_t N, std::size_t... Is>
 void registerArrayElements(value_array<std::array<T, N>>& builder, std::index_sequence<Is...>) {
-  (builder.element(index<Is>()), ...);
+  (builder.element(emscripten::index<Is>()), ...);
 }
 
 template <typename T, std::size_t N>
@@ -144,7 +150,7 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
   // RbsParser
   class_<RbsParser>("RbsParser")
     .constructor()
-    .function("parse",     &RbsParser::parse, allow_raw_pointer<arg<1>>())
+    .function("parse",     &parseSongWrapper)
     .function("lastError", &RbsParser::lastError);
 
   // EngineConfig
@@ -173,6 +179,8 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .function("getTempo",  &RbsAudioEngine::getTempo)
     .function("setTempoMultiplier", &RbsAudioEngine::setTempoMultiplier)
     .function("isPlaying", &RbsAudioEngine::isPlaying)
+    .function("getProcessedBlockCount", &RbsAudioEngine::getProcessedBlockCount)
+    .function("renderTestBlock", &RbsAudioEngine::renderTestBlock)
     .function("getPlaybackPosition", &getPlaybackPositionWrapper);
 
   // AudioWorklet wiring

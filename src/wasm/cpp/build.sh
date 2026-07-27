@@ -6,8 +6,8 @@
 #  Prerequisites:
 #    git clone https://github.com/emscripten-core/emsdk.git
 #    cd emsdk
-#    ./emsdk install 3.1.74
-#    ./emsdk activate 3.1.74
+#    ./emsdk install 6.0.3
+#    ./emsdk activate 6.0.3
 #    source ./emsdk_env.sh
 #
 #  Usage:
@@ -74,10 +74,12 @@ fi
 
 INSTALLED_VERSION="$($EMCC --version | head -n1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1 || true)"
 if [[ -z "$INSTALLED_VERSION" ]]; then
-  echo "⚠️  Could not detect installed Emscripten version" >&2
+  echo "❌ Could not detect installed Emscripten version" >&2
+  exit 1
 elif [[ "$INSTALLED_VERSION" != "$PINNED_VERSION" ]]; then
-  echo "⚠️  Emscripten version mismatch: installed=${INSTALLED_VERSION}, pinned=${PINNED_VERSION}" >&2
-  echo "   Continuing anyway, but reproducible builds require the pinned version." >&2
+  echo "❌ Emscripten version mismatch: installed=${INSTALLED_VERSION}, pinned=${PINNED_VERSION}" >&2
+  echo "   Activate the pinned toolchain before building." >&2
+  exit 1
 fi
 
 # ── Project version ──────────────────────────────────────────────────
@@ -114,13 +116,14 @@ SOURCES=(
 # ── Common flags ─────────────────────────────────────────────────────
 COMMON_FLAGS=(
   -std=c++17
+  -pthread
   -sAUDIO_WORKLET=1
   -sWASM_WORKERS=1
   -sEXPORT_ES6=1
   -sMODULARIZE=1
   -sEXPORT_NAME="RbsAudioModule"
   -sEXPORTED_FUNCTIONS="['_malloc','_free']"
-  -sEXPORTED_RUNTIME_METHODS="['ccall','cwrap','getValue','setValue','emscriptenRegisterAudioObject','emscriptenGetAudioObject']"
+  -sEXPORTED_RUNTIME_METHODS="['ccall','cwrap','getValue','setValue','HEAPU8','emscriptenRegisterAudioObject','emscriptenGetAudioObject']"
   -sENVIRONMENT="web,worker"
   -sALLOW_TABLE_GROWTH=1
   -sSTACK_SIZE=131072
@@ -186,12 +189,32 @@ echo "🔧 Compiling (${MODE})..."
   "${SOURCES[@]}" \
   -o "$GLUE_FILE"
 
-# ── Rename AudioWorklet bootstrap ────────────────────────────────────
-if [[ ! -f "$WORKLET_SRC" ]]; then
-  echo "❌ Error: Emscripten did not emit the expected AudioWorklet file: $WORKLET_SRC" >&2
-  exit 1
+# ── Materialise the stable AudioWorklet bootstrap ───────────────────
+if [[ -f "$WORKLET_SRC" ]]; then
+  # Older Emscripten releases emitted a dedicated .aw.js sidecar.
+  mv "$WORKLET_SRC" "$WORKLET_DST"
+else
+  # Emscripten 6 folds the AudioWorklet bootstrap into the ES-module glue but
+  # no longer emits a dedicated .aw.js sidecar. The generated module detects
+  # AudioWorkletGlobalScope and starts itself, so the stable wrapper imports it
+  # only for side effects. Invoking its factory here registers processors twice.
+  node -e "
+const fs = require('fs');
+const file = '$GLUE_FILE';
+const needle = 'locateFile(\"${GLUE_BASENAME}.js\")';
+const replacement = 'locateFile(\"rbsWorklet.js\")';
+const source = fs.readFileSync(file, 'utf8');
+if (!source.includes(needle)) {
+  console.error('AudioWorklet module locator was not found in generated glue');
+  process.exit(1);
+}
+fs.writeFileSync(file, source.replace(needle, replacement));
+fs.writeFileSync(
+  '$WORKLET_DST',
+  \"import './${GLUE_BASENAME}.js';\\n\"
+);
+"
 fi
-mv "$WORKLET_SRC" "$WORKLET_DST"
 
 # The generic Wasm Worker bootstrap is emitted alongside the AudioWorklet file,
 # but this project only uses AudioWorklets. Remove the unused .ww.js to keep

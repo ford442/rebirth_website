@@ -25,9 +25,9 @@ class RbsAudioEngine;
  *      `onReady(null)` on failure.
  *
  * @param contextHandle  Handle obtained from `emscriptenRegisterAudioObject()`.
- * @param enginePtr      Raw pointer to the RbsAudioEngine instance.
+ * @param engine         Embind-managed RbsAudioEngine instance.
  * @param onReady        JS callback function(nodeHandle).
  */
-void initAudioWorklet(int contextHandle, uintptr_t enginePtr, emscripten::val onReady);
+void initAudioWorklet(int contextHandle, RbsAudioEngine* engine, emscripten::val onReady);
 
 } // namespace rb338

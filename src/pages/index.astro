@@ -11,6 +11,7 @@ import RbsPlayer from '../components/RbsPlayer.astro';
 import ModCard from '../components/ModCard.astro';
 import { songCollections } from '../data/song-collections';
 import { normalizeBase } from '../lib/url';
+import { getWasmBuildStatus } from '../lib/wasm-build-status';
 import { DEMO_BY_ID, demoSongUrl, toPlayerDemos } from '../data/demo-songs';
 import { formatStatRange, totalSongsIndexed, totalMods, latestVersion } from '../data/archive-stats';
 
@@ -43,6 +44,7 @@ interface SkinGalleryItem {
 }
 
 const base = normalizeBase(import.meta.env.BASE_URL);
+const wasmBuild = getWasmBuildStatus();
 
 /* ── Data ──────────────────────────────────────────────────────── */
 
@@ -225,7 +227,7 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
       <div class="homepage-hero__meta">
         <div class="master-leds">
           <Led status="online" label="ARCHIVE ONLINE" />
-          <Led status="pending" label="WASM PENDING" />
+          <Led status={wasmBuild.ready ? 'online' : 'pending'} label={wasmBuild.ready ? 'WASM READY' : 'WASM PENDING'} />
         </div>
         <div class="master-stats" aria-label="Archive stats">
           <div class="master-stat" title={`${totalSongsIndexed.toLocaleString()} indexed .rbs files`}>
@@ -381,7 +383,7 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
   songs  : <span class="t-green">{formatStatRange(totalSongsIndexed)}</span>
   mods   : <span class="t-green">{formatStatRange(totalMods)}</span>
   version: <span class="t-amber">{latestVersion}</span>
-  wasm   : <span class="t-dim">pending</span>
+  wasm   : <span class={wasmBuild.ready ? 't-green' : 't-dim'}>{wasmBuild.ready ? 'ready' : 'pending'}</span>
 
 $ rb338 --formats
   *.rbs  — ReBirth Song file
