@@ -38,7 +38,7 @@ function renderResultRow(song: SearchSongRecord, base: string): string {
   const sub = song.subcollectionDisplay ?? song.subcollection ?? '';
   const metaParts = [song.collection, sub].filter((part) => Boolean(part)).map((part) => escapeHtml(String(part)));
   const bpm = song.bpm ? `<span class="result-bpm">${song.bpm} BPM</span>` : '';
-  const modBadge = song.hasModDependency ? '<span class="result-mod">MOD</span>' : '';
+  const modBadge = song.hasModDependency ? '<span class="result-mod" title="Best heard with a specific .rbm mod loaded">MOD REQUIRED</span>' : '';
 
   return `
     <article class="song-result" data-id="${song.id}">

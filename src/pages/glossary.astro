@@ -1,0 +1,104 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HardwarePanel from '../components/ui/HardwarePanel.astro';
+import { normalizeBase } from '../lib/url';
+
+const base = normalizeBase(import.meta.env.BASE_URL);
+
+const terms = [
+  {
+    term: '.rbs',
+    meaning: 'ReBirth Song file. It stores sequencing, instrument settings, and arrangement data.',
+  },
+  {
+    term: '.rbm',
+    meaning: 'ReBirth Mod file. It changes graphics and often swaps drum or synth sample sets.',
+  },
+  {
+    term: 'TB-303',
+    meaning: 'Roland bass synthesizer famous for acidic, squelchy patterns used in techno and house.',
+  },
+  {
+    term: 'TR-808 / TR-909',
+    meaning: 'Iconic Roland drum machines that define many electronic rhythm styles.',
+  },
+  {
+    term: 'Pattern',
+    meaning: 'A step-sequenced musical phrase that can be chained into complete songs.',
+  },
+  {
+    term: 'Mod-dependent song',
+    meaning: 'A song designed for a specific mod, often sounding or looking best with that mod loaded.',
+  },
+];
+---
+
+<BaseLayout
+  title="Glossary"
+  description="Plain-language explanations of common ReBirth RB-338 archive terms."
+>
+  <div class="container glossary-page">
+    <HardwarePanel
+      variant="rackmount-chassis"
+      animate
+      title="GLOSSARY — REBIRTH TERMS"
+      ledStatus="online"
+      ledLabel="HELP"
+    >
+      <p class="glossary-intro">
+        New to ReBirth? Use this glossary whenever you see unfamiliar archive terms.
+      </p>
+      <dl class="glossary-list">
+        {terms.map((entry) => (
+          <>
+            <dt>{entry.term}</dt>
+            <dd>{entry.meaning}</dd>
+          </>
+        ))}
+      </dl>
+      <p class="glossary-footer">
+        Continue exploring: <a href={`${base}/beginner-guide`}>Beginner Guide</a> · <a href={`${base}/archive/songs`}>Song Archive</a> · <a href={`${base}/archive/mods`}>Mod Archive</a>
+      </p>
+    </HardwarePanel>
+  </div>
+</BaseLayout>
+
+<style>
+  .glossary-page {
+    padding-block: 2rem 4rem;
+  }
+
+  .glossary-intro {
+    margin: 0 0 1rem;
+    color: var(--color-text-muted);
+  }
+
+  .glossary-list {
+    display: grid;
+    gap: 0.35rem 1rem;
+    grid-template-columns: 1fr;
+    margin: 0;
+  }
+
+  .glossary-list dt {
+    font-family: var(--rb-font-display);
+    letter-spacing: 0.06em;
+    color: var(--rb-amber);
+    margin-top: 0.65rem;
+  }
+
+  .glossary-list dd {
+    margin: 0;
+    color: var(--color-text);
+    line-height: 1.5;
+  }
+
+  .glossary-footer {
+    margin: 1rem 0 0;
+    color: var(--color-text-muted);
+  }
+
+  .glossary-footer a {
+    color: var(--rb-amber);
+  }
+</style>

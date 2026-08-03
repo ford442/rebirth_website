@@ -1,0 +1,158 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HardwarePanel from '../components/ui/HardwarePanel.astro';
+import { normalizeBase } from '../lib/url';
+
+const base = normalizeBase(import.meta.env.BASE_URL);
+
+const listeningOrder = [
+  {
+    title: 'Cavey — Acid Lockdown',
+    artist: 'Cavey',
+    href: `${base}/archive/songs/Artists/Cavey/`,
+    note: 'Start here for the classic rolling TB-303 sound with a steady club tempo.',
+  },
+  {
+    title: 'DJ Knightmare — Factory Sequence',
+    artist: 'DJ Knightmare',
+    href: `${base}/archive/songs/Artists/DJ%20Knightmare/`,
+    note: 'Move to darker drums and heavier industrial mood once you hear the 303 groove.',
+  },
+  {
+    title: 'Noah Cohn — Euro Acid Line',
+    artist: 'Noah Cohn',
+    href: `${base}/archive/songs/Artists/Noah_Cohn_Complete/`,
+    note: 'A longer melodic set that shows how ReBirth songs can evolve over time.',
+  },
+  {
+    title: 'Fanatic — Saturday Morning Sessions',
+    artist: 'Fanatic',
+    href: `${base}/archive/songs/Artists/Fanatic/`,
+    note: 'Great contrast: playful melodies layered over classic drum-machine patterns.',
+  },
+  {
+    title: 'Misc Artist Sampler',
+    artist: 'Various',
+    href: `${base}/archive/songs?filter=featured`,
+    note: 'Finish with the featured section to branch into your own favorites.',
+  },
+];
+---
+
+<BaseLayout
+  title="Beginner Listening Guide"
+  description="A first-time listener guide to ReBirth RB-338 songs with curated picks and listening tips."
+>
+  <div class="container beginner-guide">
+    <HardwarePanel
+      variant="rackmount-chassis"
+      animate
+      title="START HERE — FIRST REBIRTH LISTEN"
+      ledStatus="online"
+      ledLabel="BEGINNER MODE"
+    >
+      <p class="intro">
+        ReBirth RB-338 is a classic software groovebox that emulates the TB-303 bass synth plus TR-808/TR-909 drums.
+        This guide helps new listeners hear the signature sound quickly.
+      </p>
+      <ul class="focus-list">
+        <li><strong>303 basslines:</strong> squelchy, repeating acid patterns.</li>
+        <li><strong>Drum machine punch:</strong> 808/909 kicks, hats, and claps driving the groove.</li>
+        <li><strong>Pattern variation:</strong> subtle step-sequencer changes that keep loops alive.</li>
+      </ul>
+    </HardwarePanel>
+
+    <HardwarePanel
+      variant="rackmount-module"
+      animate
+      title="SUGGESTED LISTENING ORDER"
+      ledStatus="online"
+      ledLabel="5 PICKS"
+    >
+      <ol class="listening-order">
+        {listeningOrder.map((item) => (
+          <li>
+            <a href={item.href}>{item.title}</a>
+            <span class="artist">{item.artist}</span>
+            <p>{item.note}</p>
+          </li>
+        ))}
+      </ol>
+    </HardwarePanel>
+
+    <HardwarePanel
+      variant="rackmount"
+      title="NEXT STEPS"
+      ledStatus="pending"
+      ledLabel="EXPLORE"
+    >
+      <div class="next-links">
+        <a class="rb-pattern-btn" href={`${base}/archive/songs`}>Browse Full Song Archive</a>
+        <a class="rb-mix-btn" href={`${base}/archive/mods`}>Browse Mod Archive</a>
+        <a class="rb-pattern-btn" href={`${base}/history`}>Read ReBirth History</a>
+      </div>
+    </HardwarePanel>
+  </div>
+</BaseLayout>
+
+<style>
+  .beginner-guide {
+    display: grid;
+    gap: 1rem;
+    padding-block: 2rem 4rem;
+  }
+
+  .intro {
+    margin: 0;
+    max-width: 70ch;
+    color: var(--color-text);
+  }
+
+  .focus-list {
+    margin: 0.9rem 0 0;
+    padding-left: 1.2rem;
+    display: grid;
+    gap: 0.45rem;
+    color: var(--color-text-muted);
+  }
+
+  .listening-order {
+    margin: 0;
+    padding-left: 1.25rem;
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .listening-order a {
+    color: var(--rb-amber);
+    text-decoration: none;
+    font-family: var(--rb-font-display);
+  }
+
+  .listening-order a:hover,
+  .listening-order a:focus-visible {
+    color: var(--rb-green-bright);
+    text-decoration: underline;
+  }
+
+  .artist {
+    display: inline-block;
+    margin-left: 0.45rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--rb-silver-dim);
+  }
+
+  .listening-order p {
+    margin: 0.25rem 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .next-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+</style>
