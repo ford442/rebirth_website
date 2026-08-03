@@ -43,6 +43,18 @@ interface SkinGalleryItem {
   label: string;
 }
 
+interface BeginnerPick {
+  title: string;
+  href: string;
+  note: string;
+}
+
+interface InspirationLink {
+  name: string;
+  href: string;
+  takeaway: string;
+}
+
 const base = normalizeBase(import.meta.env.BASE_URL);
 const wasmBuild = getWasmBuildStatus();
 
@@ -106,6 +118,52 @@ const featuredSongs: FeaturedItem[] = [
 ];
 
 const demoSongs = toPlayerDemos(base);
+
+const beginnerPicks: BeginnerPick[] = [
+  {
+    title: 'Cavey',
+    href: `${base}/archive/songs/Artists/Cavey/`,
+    note: 'Classic acid groove and easy first listen.',
+  },
+  {
+    title: 'DJ Knightmare',
+    href: `${base}/archive/songs/Artists/DJ%20Knightmare/`,
+    note: 'Darker industrial tone with strong drum programming.',
+  },
+  {
+    title: 'Noah Cohn Complete',
+    href: `${base}/archive/songs/Artists/Noah_Cohn_Complete/`,
+    note: 'Large artist catalog with varied arrangements.',
+  },
+  {
+    title: 'Fanatic',
+    href: `${base}/archive/songs/Artists/Fanatic/`,
+    note: 'Melodic and playful style for contrast.',
+  },
+  {
+    title: 'Featured Sampler',
+    href: `${base}/archive/songs?filter=featured`,
+    note: 'Quick route to curated picks.',
+  },
+];
+
+const inspirationLinks: InspirationLink[] = [
+  {
+    name: 'Internet Archive (Audio Collections)',
+    href: 'https://archive.org/details/audio',
+    takeaway: 'Strong discovery labels and collection context for first-time visitors.',
+  },
+  {
+    name: 'The Mod Archive',
+    href: 'https://modarchive.org/',
+    takeaway: 'Clear metadata and contributor visibility build trust quickly.',
+  },
+  {
+    name: 'Bandcamp Discover',
+    href: 'https://bandcamp.com/discover',
+    takeaway: 'Genre-led browsing and quick recommendations reduce newcomer friction.',
+  },
+];
 
 const featuredMods: FeaturedItem[] = [
   {
@@ -247,11 +305,46 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
     </div>
   </HardwarePanel>
 
+  <HardwarePanel
+    ariaLabel="Start here guide for new visitors"
+    variant="rackmount-module"
+    animate
+    title="START HERE — NEW TO REBIRTH?"
+    ledStatus="online"
+    ledLabel="QUICK INTRO"
+    class="start-here-panel"
+  >
+    <div class="start-here">
+      <p class="start-here__summary">
+        ReBirth RB-338 is a software groovebox that recreates the <abbr title="Roland TB-303 Bass Line">TB-303</abbr>,
+        <abbr title="Roland TR-808 drum machine">TR-808</abbr>, and <abbr title="Roland TR-909 drum machine">TR-909</abbr>.
+        This archive preserves songs and mods so new listeners can discover the sound.
+      </p>
+      <div class="start-here__links" role="navigation" aria-label="New visitor quick links">
+        <a class="start-here__link" href={`${base}/archive/songs`}>Listen to Songs</a>
+        <a class="start-here__link" href={`${base}/archive/mods`}>Browse Mods</a>
+        <a class="start-here__link" href={`${base}/history`}>Read History</a>
+        <a class="start-here__link" href={`${base}/beginner-guide`}>Beginner Guide</a>
+      </div>
+      <div class="start-here__picks">
+        <h2>If you&apos;re new, start with these 5 picks</h2>
+        <ol>
+          {beginnerPicks.map((pick) => (
+            <li>
+              <a href={pick.href}>{pick.title}</a>
+              <span>{pick.note}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  </HardwarePanel>
+
   <div class="archive-entry-strip" role="navigation" aria-label="Quick archive links">
     <a class="archive-entry-strip__link archive-entry-strip__link--songs" href={`${base}/archive/songs`}>Browse Songs</a>
     <a class="archive-entry-strip__link archive-entry-strip__link--mods" href={`${base}/archive/mods`}>Browse Mods</a>
     <a class="archive-entry-strip__link" href={`${base}/history`}>History</a>
-    <a class="archive-entry-strip__link" href="https://github.com/ford442/rebirth_website" target="_blank" rel="noopener noreferrer">Contribute</a>
+    <a class="archive-entry-strip__link" href={`${base}/beginner-guide`}>Start Here</a>
   </div>
 
   <ArchiveQuickAccess />
@@ -388,6 +481,7 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
 $ rb338 --formats
   *.rbs  — ReBirth Song file
   *.rbm  — ReBirth Mod file
+  glossary: <span class="t-green">{base}/glossary</span>
 
 $ rb338 --about
   <span class="t-green">Propellerhead ReBirth RB-338</span>
@@ -479,7 +573,7 @@ $ _<span class="cursor-blink">█</span></code></pre>
                 <span class="rb-panel__title">WHAT IS THIS SITE?</span>
                 <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
               </div>
-              <p>This community archive preserves <code>.rbs</code> song files and <code>.rbm</code> mod files contributed by enthusiasts worldwide. It also hosts historical documentation spanning versions <code>1.0</code> through <code>2.0.1</code> and lays the groundwork for in-browser <code>.rbs</code> preview via WebAssembly.</p>
+              <p>This community archive preserves <code>.rbs</code> song files and <code>.rbm</code> mod files contributed by enthusiasts worldwide. It also hosts historical documentation spanning versions <code>1.0</code> through <code>2.0.1</code> and lays the groundwork for in-browser <code>.rbs</code> preview via WebAssembly. Need term help? Open the <a href={`${base}/glossary`}>glossary</a>.</p>
             </article>
             <article class="rb-file-card rb-card-rack">
               <div class="rb-panel__header rb-panel--clean-header">
@@ -490,6 +584,70 @@ $ _<span class="cursor-blink">█</span></code></pre>
             </article>
           </div>
         </div>
+      </HardwarePanel>
+    </div>
+  </details>
+
+  <details class="mobile-accordion" open>
+    <summary class="mobile-accordion__summary">Community trust and discovery</summary>
+    <div class="mobile-accordion__content">
+      <HardwarePanel
+        ariaLabel="Community trust signals"
+        animate
+        variant="rackmount"
+        title="ARCHIVE TRUST SIGNALS"
+        ledStatus="online"
+        ledLabel="COMMUNITY"
+      >
+        <div class="trust-grid">
+          <article class="rb-file-card rb-card-rack">
+            <div class="rb-panel__header rb-panel--clean-header">
+              <span class="rb-panel__title">WHY THIS ARCHIVE EXISTS</span>
+              <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
+            </div>
+            <p>This is a preservation project for ReBirth-era community music, visuals, and documentation. The goal is long-term public access for newcomers and original fans.</p>
+          </article>
+          <article class="rb-file-card rb-card-rack">
+            <div class="rb-panel__header rb-panel--clean-header">
+              <span class="rb-panel__title">CONTRIBUTE</span>
+              <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
+            </div>
+            <p>Help document mods, add archive metadata, or submit fixes through the <a href="https://github.com/ford442/rebirth_website" target="_blank" rel="noopener noreferrer">GitHub repository</a>.</p>
+          </article>
+          <article class="rb-file-card rb-card-rack">
+            <div class="rb-panel__header rb-panel--clean-header">
+              <span class="rb-panel__title">NEW TO THE FORMAT?</span>
+              <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
+            </div>
+            <p>Use the <a href={`${base}/glossary`}>Glossary</a> for terms like <code>.rbs</code>, <code>.rbm</code>, and pattern sequencing before diving into the full archive.</p>
+          </article>
+        </div>
+      </HardwarePanel>
+    </div>
+  </details>
+
+  <details class="mobile-accordion" open>
+    <summary class="mobile-accordion__summary">Archive inspiration links</summary>
+    <div class="mobile-accordion__content">
+      <HardwarePanel
+        ariaLabel="Reference music archive links"
+        animate
+        variant="rackmount-module"
+        title="REFERENCE ARCHIVES & UX INSPIRATION"
+        ledStatus="pending"
+        ledLabel="3 SOURCES"
+      >
+        <p class="inspiration-intro">
+          We benchmark newcomer-friendly discovery patterns against established music archive sites:
+        </p>
+        <ul class="inspiration-list">
+          {inspirationLinks.map((link) => (
+            <li>
+              <a href={link.href} target="_blank" rel="noopener noreferrer">{link.name}</a>
+              <p>{link.takeaway}</p>
+            </li>
+          ))}
+        </ul>
       </HardwarePanel>
     </div>
   </details>
@@ -573,6 +731,80 @@ main > .skin-gallery {
     margin: 0;
     color: var(--color-text);
     font-size: 1rem;
+  }
+
+  .start-here-panel {
+    margin-top: 1rem;
+  }
+
+  .start-here {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .start-here__summary {
+    margin: 0;
+    max-width: 74ch;
+    color: var(--color-text);
+  }
+
+  .start-here__links {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .start-here__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.8rem;
+    border: 1px solid var(--rb-border);
+    border-radius: var(--rb-radius);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: var(--rb-font-display);
+    font-size: 0.72rem;
+    color: var(--rb-silver);
+    background: linear-gradient(180deg, #2a2a2a 0%, #1c1c1c 100%);
+  }
+
+  .start-here__link:hover,
+  .start-here__link:focus-visible {
+    color: var(--rb-amber);
+    border-color: var(--rb-amber-dim);
+  }
+
+  .start-here__picks h2 {
+    margin: 0 0 0.6rem;
+    font-size: 0.95rem;
+    color: var(--rb-silver);
+  }
+
+  .start-here__picks ol {
+    margin: 0;
+    padding-left: 1.25rem;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .start-here__picks li a {
+    color: var(--rb-amber);
+    text-decoration: none;
+    font-family: var(--rb-font-display);
+  }
+
+  .start-here__picks li a:hover,
+  .start-here__picks li a:focus-visible {
+    color: var(--rb-green-bright);
+    text-decoration: underline;
+  }
+
+  .start-here__picks li span {
+    margin-left: 0.4rem;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
   }
 
   .archive-entry-strip {
@@ -778,14 +1010,51 @@ main > .skin-gallery {
     gap: 1rem;
   }
 
+  .trust-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .inspiration-intro {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .inspiration-list {
+    margin: 0.75rem 0 0;
+    padding-left: 1.2rem;
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .inspiration-list a {
+    color: var(--rb-amber);
+    text-decoration: none;
+    font-family: var(--rb-font-display);
+  }
+
+  .inspiration-list a:hover,
+  .inspiration-list a:focus-visible {
+    color: var(--rb-green-bright);
+    text-decoration: underline;
+  }
+
+  .inspiration-list p {
+    margin: 0.25rem 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.86rem;
+  }
+
   @media (min-width: 768px) and (max-width: 1023px) {
-    .about-row {
+    .about-row,
+    .trust-grid {
       grid-template-columns: repeat(2, 1fr);
     }
   }
 
   @media (min-width: 1024px) {
-    .about-row {
+    .about-row,
+    .trust-grid {
       grid-template-columns: repeat(3, 1fr);
     }
 
@@ -800,6 +1069,7 @@ main > .skin-gallery {
 
   @media (max-width: 1023px) {
     .archive-entry-strip,
+    .start-here__links,
     .featured-deck,
     .gallery-grid,
     .card-grid--compact {

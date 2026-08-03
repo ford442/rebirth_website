@@ -8,6 +8,7 @@ import Led from '../../components/ui/Led.astro';
 import modsData from '../../data/mods-metadata.json';
 import fullIndex from '../../data/mods-full-index.json';
 import { totalMods, documentedMods as totalDocumented, modCoveragePercent } from '../../data/archive-stats';
+import { normalizeBase } from '../../lib/url';
 
 const documentedMods = modsData.mods || [];
 const allMods = fullIndex.mods || [];
@@ -29,6 +30,7 @@ const grouped = alphaLetters.map(letter => ({
 const baseModsUrl = 'https://storage.1ink.us/rebirth_mods';
 const issueBaseUrl = 'https://github.com/ford442/rebirth_website/issues/new';
 const coveragePercent = modCoveragePercent;
+const baseUrl = normalizeBase(import.meta.env.BASE_URL);
 
 const archiveStats = [
   { label: 'DOCUMENTED', value: totalDocumented, ariaLabel: 'Documented mods' },
@@ -49,7 +51,7 @@ const archiveStats = [
   headingClass="rb-heading-yellow"
   headerTitle="RBM MODS ARCHIVE"
   headerLedLabel={`${totalRaw} FILES`}
-  headerSubtitle="Download custom ReBirth module modifications and skins"
+  headerSubtitle="Browse downloadable ReBirth mod files (.rbm skins + sound sets) with plain-language filters."
   stats={archiveStats}
 >
   <Fragment slot="header-extra">
@@ -76,6 +78,9 @@ const archiveStats = [
 
   <Fragment slot="search">
     <div class="sticky-search">
+      <p class="search-explainer">
+        First time here? Read the <a href={`${baseUrl}/beginner-guide`}>Beginner Guide</a> and <a href={`${baseUrl}/glossary`}>Glossary</a> before exploring advanced mod terms.
+      </p>
       <div class="search-filter-bar">
         <input
           type="text"
@@ -86,12 +91,12 @@ const archiveStats = [
           aria-describedby="modsResultCount"
         />
         <div class="filter-tags">
-          <button class="rb-tag-filter active" data-tag="" aria-label="Show all mods">All</button>
-          <button class="rb-tag-filter" data-tag="industrial" aria-label="Filter industrial mods">Industrial</button>
-          <button class="rb-tag-filter" data-tag="house" aria-label="Filter house mods">House</button>
-          <button class="rb-tag-filter" data-tag="dark" aria-label="Filter dark mods">Dark</button>
-          <button class="rb-tag-filter" data-tag="synth" aria-label="Filter synth mods">Synth</button>
-          <button class="rb-tag-filter" data-tag="official" aria-label="Filter official mods">Official</button>
+          <button class="rb-tag-filter active" data-tag="" aria-label="Show all mods">All Documented Mods</button>
+          <button class="rb-tag-filter" data-tag="official" aria-label="Filter official mods">Recommended: Official</button>
+          <button class="rb-tag-filter" data-tag="industrial" aria-label="Filter industrial mods">Industrial Style</button>
+          <button class="rb-tag-filter" data-tag="house" aria-label="Filter house mods">House Style</button>
+          <button class="rb-tag-filter" data-tag="dark" aria-label="Filter dark mods">Dark Style</button>
+          <button class="rb-tag-filter" data-tag="synth" aria-label="Filter synth mods">Synth Focus</button>
         </div>
         <div id="modsResultCount" class="mods-result-count" aria-live="polite" aria-atomic="true">
           Showing all documented mods
@@ -121,7 +126,7 @@ const archiveStats = [
 
     <ArchiveEmptyState
       id="emptyState"
-      message="No documented mods match your search. Try different keywords or browse the complete index below."
+      message="No documented mods match your search. Try another keyword, or click Recommended: Official for a quick start."
     />
   </Fragment>
 
@@ -221,7 +226,7 @@ const archiveStats = [
         ))}
       </div>
 
-      <ArchiveEmptyState id="rawEmpty" message="No files match your filter." />
+      <ArchiveEmptyState id="rawEmpty" message="No files match your filter. Clear search or try a shorter filename fragment." />
     </HardwarePanel>
 
     <!-- Stats footer -->
@@ -322,6 +327,23 @@ const archiveStats = [
     flex-direction: column;
     gap: 1rem;
     margin-bottom: 2rem;
+  }
+
+  .search-explainer {
+    margin: 0 0 0.6rem;
+    font-size: 0.78rem;
+    color: var(--rb-silver-dim);
+  }
+
+  .search-explainer a {
+    color: var(--rb-amber);
+    text-decoration: none;
+  }
+
+  .search-explainer a:hover,
+  .search-explainer a:focus-visible {
+    color: var(--rb-green-bright);
+    text-decoration: underline;
   }
 
   .filter-tags {

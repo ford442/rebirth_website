@@ -107,6 +107,12 @@ const base = normalizeBase(import.meta.env.BASE_URL);
             </li>
             <li>
               <a
+                href={`${base}/beginner-guide`}
+                class={`rb-nav-btn${currentPath.includes('/beginner-guide') ? ' is-active' : ''}`}
+              >Start Here</a>
+            </li>
+            <li>
+              <a
                 href={`${base}/history`}
                 class={`rb-nav-btn${currentPath.includes('/history') ? ' is-active' : ''}`}
               >History</a>
@@ -153,7 +159,9 @@ const base = normalizeBase(import.meta.env.BASE_URL);
             <h2 id="footer-resources-heading" class="footer-heading">Resources</h2>
             <ul class="footer-links" role="list">
               <li><a href={`${base}/history`}>History</a></li>
+              <li><a href={`${base}/beginner-guide`}>Beginner Guide</a></li>
               <li><a href={`${base}/docs`}>Documentation</a></li>
+              <li><a href={`${base}/glossary`}>Glossary</a></li>
               <li><a href="https://github.com/ford442/rebirth_website/issues/new?template=mod-metadata.yml" target="_blank" rel="noopener noreferrer">Contributing</a></li>
               <li><a href="https://github.com/ford442/rebirth_website" target="_blank" rel="noopener noreferrer">GitHub Repository</a></li>
             </ul>

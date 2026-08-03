@@ -290,9 +290,9 @@ function updateResultCount(sections: number, folders: number, rows: number) {
   if (!el) return;
 
   if (currentQuery === '' && currentFilter === 'all' && currentSort === null) {
-    el.textContent = `Showing all ${sections} collections (${folders} folders, ${rows} rows)`;
+    el.textContent = `Showing all ${sections} song collections (${folders} folders)`;
   } else {
-    el.textContent = `Showing ${sections} collections • ${folders} folders • ${rows} rows`;
+    el.textContent = `Showing ${sections} collections • ${folders} matching folders • ${rows} list entries`;
   }
 }
 

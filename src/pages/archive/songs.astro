@@ -64,32 +64,35 @@ const archiveStats = [
   headingClass="rb-heading-green"
   headerTitle="RBS SONG ARCHIVE BROWSER"
   headerLedLabel={`${formatStatRange(totalSongsIndexed)} INDEXED`}
-  headerSubtitle="Browse collections and search every catalogued .rbs file in the archive"
+  headerSubtitle="Browse song folders and search every catalogued .rbs song file in plain language."
   stats={archiveStats}
   showViewToggle={true}
 >
   <Fragment slot="search">
     <div class="sticky-search">
+      <p class="search-explainer">
+        New here? Start with <a href={`${baseUrl}/beginner-guide`}>Beginner Guide</a> or open the <a href={`${baseUrl}/glossary`}>Glossary</a> for <abbr title="ReBirth Song file">.rbs</abbr> terms.
+      </p>
       <div class="search-bar">
         <input
           type="text"
           id="searchInput"
-          placeholder="Search collections and artists... (Press / to focus)"
+          placeholder="Search song groups and artist names... (Press / to focus)"
           class="rb-search-input"
-          aria-label="Search collections"
+          aria-label="Search song collections"
         />
         <ActionButton variant="mix" onclick="clearAllFilters()">Clear All</ActionButton>
       </div>
       <div class="filter-bar" role="group" aria-label="Quick filters">
-        <button class="rb-filter-btn active" data-filter="all" type="button" aria-pressed="true">All</button>
-        <button class="rb-filter-btn" data-filter="featured" type="button" aria-pressed="false">Featured</button>
-        <button class="rb-filter-btn" data-filter="bySource" type="button" aria-pressed="false">By Source</button>
-        <button class="rb-filter-btn" data-filter="artists" type="button" aria-pressed="false">Artists</button>
-        <button class="rb-filter-btn" data-filter="monthly" type="button" aria-pressed="false">Monthly</button>
-        <button class="rb-filter-btn" data-filter="other" type="button" aria-pressed="false">Other</button>
+        <button class="rb-filter-btn active" data-filter="all" type="button" aria-pressed="true">All Song Groups</button>
+        <button class="rb-filter-btn" data-filter="featured" type="button" aria-pressed="false">Recommended</button>
+        <button class="rb-filter-btn" data-filter="bySource" type="button" aria-pressed="false">By Archive Source</button>
+        <button class="rb-filter-btn" data-filter="artists" type="button" aria-pressed="false">Songs by Artist</button>
+        <button class="rb-filter-btn" data-filter="monthly" type="button" aria-pressed="false">Monthly Packs</button>
+        <button class="rb-filter-btn" data-filter="other" type="button" aria-pressed="false">Other Collections</button>
       </div>
       <div class="results-bar" aria-live="polite" aria-atomic="true">
-        <span id="resultCount" class="result-count">Showing all collections</span>
+        <span id="resultCount" class="result-count">Showing all song collections</span>
       </div>
     </div>
   </Fragment>
@@ -122,7 +125,7 @@ const archiveStats = [
           <CollectionCard section={songCollections.other} meta={collectionsMeta.other} archiveUrl={archiveBaseUrl} rackmount={true} />
         )}
       </div>
-      <ArchiveEmptyState id="gridEmptyState" message="No collections match your search. Try different keywords or clear the filter." />
+      <ArchiveEmptyState id="gridEmptyState" message="No song groups match your search. Try another keyword, or open Recommended for quick picks." />
     </div>
 
     <!-- List view -->
@@ -134,13 +137,13 @@ const archiveStats = [
               <tr>
                 <th scope="col">
                   <button class="sort-btn" data-sort="name" type="button" aria-label="Sort by collection name">
-                    Collection <span class="sort-indicator" aria-hidden="true">↕</span>
+                    Song Group <span class="sort-indicator" aria-hidden="true">↕</span>
                   </button>
                 </th>
-                <th scope="col">Section</th>
+                <th scope="col">Category</th>
                 <th scope="col" class="col-numeric">
                   <button class="sort-btn" data-sort="count" type="button" aria-label="Sort by file count">
-                    Files <span class="sort-indicator" aria-hidden="true">↕</span>
+                    Song Files <span class="sort-indicator" aria-hidden="true">↕</span>
                   </button>
                 </th>
                 <th scope="col">Tags</th>
@@ -152,7 +155,7 @@ const archiveStats = [
             <tbody id="listTableBody"></tbody>
           </table>
         </div>
-        <ArchiveEmptyState id="listEmptyState" message="No collections match your search. Try different keywords or clear the filter." />
+        <ArchiveEmptyState id="listEmptyState" message="No song groups match your search. Try another keyword, or switch to Recommended." />
       </HardwarePanel>
     </div>
   </Fragment>
@@ -163,7 +166,7 @@ const archiveStats = [
     {artistDirectory.length > 0 && (
       <HardwarePanel variant="rackmount" title="ARTIST DIRECTORY" class="artist-directory-panel">
         <p class="raw-subtitle">
-          Canonical artist pages aggregate folder variants (e.g. Noah Cohn Complete + Extended → one profile).
+          Artist pages merge duplicate folder names (example: Noah Cohn Complete + Extended) into one profile.
         </p>
         <ul class="artist-directory" role="list">
           {artistDirectory.map((artist) => (
@@ -241,11 +244,11 @@ const archiveStats = [
         </div>
 
         <p id="songSearchHint" class="search-hint">
-          Type to search, or pick a facet. Showing up to 150 matches at a time for fast mobile filtering.
+          Type to search, or pick a facet. For your first session, try “Songs by Artist” and browse one creator at a time.
         </p>
 
         <div id="songResults" class="song-results" aria-live="polite"></div>
-        <ArchiveEmptyState id="songEmpty" message="No songs match your search or filters." />
+        <ArchiveEmptyState id="songEmpty" message="No songs match your search or filters. Clear filters or try a broader artist or collection term." />
       </div>
     </HardwarePanel>
   </Fragment>
@@ -253,6 +256,23 @@ const archiveStats = [
 
 <style>
   /* Search bar */
+  .search-explainer {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--rb-silver-dim);
+  }
+
+  .search-explainer a {
+    color: var(--rb-amber);
+    text-decoration: none;
+  }
+
+  .search-explainer a:hover,
+  .search-explainer a:focus-visible {
+    color: var(--rb-green-bright);
+    text-decoration: underline;
+  }
+
   .search-bar {
     display: flex;
     gap: 0.5rem;
@@ -602,9 +622,10 @@ const archiveStats = [
   :global(.result-mod) {
     display: inline-block;
     margin-left: 0.35rem;
-    font-size: 0.58rem;
+    font-size: 0.56rem;
     padding: 1px 4px;
     border-radius: 2px;
+    letter-spacing: 0.03em;
   }
 
   :global(.result-bpm) {
