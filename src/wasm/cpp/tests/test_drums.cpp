@@ -98,15 +98,17 @@ TEST_CASE("Engine: 808 drum pattern produces non-silent mix output") {
   REQUIRE(eng.init(drumsOnlyConfig()));
   REQUIRE(eng.loadSong(makeDrumSong(DeviceId::TR808, DrumHit::BD | DrumHit::SD | DrumHit::CH)));
 
-  float buffer[256] = {0};
-  float* buffers[1] = {buffer};
+  float left[128] = {0};
+  float right[128] = {0};
+  float* buffers[2] = {left, right};
 
   eng.play();
   float peak = 0.0f;
   for (int i = 0; i < 8; ++i) {
     eng.processBlock(buffers, 2, 128);
-    for (int s = 0; s < 256; ++s) {
-      peak = std::max(peak, std::fabs(buffer[s]));
+    for (int s = 0; s < 128; ++s) {
+      peak = std::max(peak, std::fabs(left[s]));
+      peak = std::max(peak, std::fabs(right[s]));
     }
   }
 
@@ -121,8 +123,9 @@ TEST_CASE("Engine: mixer honors device mute") {
   song.devices[static_cast<int>(DeviceId::TR808)].muted = true;
   REQUIRE(eng.loadSong(song));
 
-  float buffer[256] = {0};
-  float* buffers[1] = {buffer};
+  float left[128] = {0};
+  float right[128] = {0};
+  float* buffers[2] = {left, right};
 
   eng.play();
   for (int i = 0; i < 8; ++i) {
@@ -130,8 +133,9 @@ TEST_CASE("Engine: mixer honors device mute") {
   }
 
   float peak = 0.0f;
-  for (float sample : buffer) {
-    peak = std::max(peak, std::fabs(sample));
+  for (int s = 0; s < 128; ++s) {
+    peak = std::max(peak, std::fabs(left[s]));
+    peak = std::max(peak, std::fabs(right[s]));
   }
   CHECK(peak == doctest::Approx(0.0f));
 }
@@ -145,20 +149,21 @@ TEST_CASE("Engine: mixer pan shifts energy between channels") {
   song.devices[static_cast<int>(DeviceId::TR909)].level = 1.0f;
   REQUIRE(eng.loadSong(song));
 
-  float buffer[256] = {0};
-  float* buffers[1] = {buffer};
+  float left[128] = {0};
+  float right[128] = {0};
+  float* buffers[2] = {left, right};
 
   eng.play();
   for (int i = 0; i < 16; ++i) {
     eng.processBlock(buffers, 2, 128);
   }
 
-  float left = 0.0f;
-  float right = 0.0f;
+  float leftPeak = 0.0f;
+  float rightPeak = 0.0f;
   for (int i = 0; i < 128; ++i) {
-    left = std::max(left, std::fabs(buffer[i * 2]));
-    right = std::max(right, std::fabs(buffer[i * 2 + 1]));
+    leftPeak = std::max(leftPeak, std::fabs(left[i]));
+    rightPeak = std::max(rightPeak, std::fabs(right[i]));
   }
 
-  CHECK(left > right);
+  CHECK(leftPeak > rightPeak);
 }

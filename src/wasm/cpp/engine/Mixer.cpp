@@ -110,12 +110,13 @@ void Mixer::processDelaySample(float input, float& outL, float& outR) {
   outR = wet;
 }
 
-void Mixer::process(const float* const* deviceBuffers, float* stereoOut,
+void Mixer::process(const float* const* deviceBuffers, float* leftOut, float* rightOut,
                     uint32_t numFrames, float bpm) {
-  if (!stereoOut || numFrames == 0) return;
+  if (!leftOut || !rightOut || numFrames == 0) return;
 
   updateDelayTap(bpm);
-  std::memset(stereoOut, 0, numFrames * 2 * sizeof(float));
+  std::memset(leftOut, 0, numFrames * sizeof(float));
+  std::memset(rightOut, 0, numFrames * sizeof(float));
 
   const float limiterReleaseCoeff =
       std::exp(-1.0f / (kLimiterRelease * m_sampleRate));
@@ -191,8 +192,8 @@ void Mixer::process(const float* const* deviceBuffers, float* stereoOut,
       outR *= m_limiterEnvelope;
     }
 
-    stereoOut[frame * 2 + 0] = flushDenormal(outL);
-    stereoOut[frame * 2 + 1] = flushDenormal(outR);
+    leftOut[frame] = flushDenormal(outL);
+    rightOut[frame] = flushDenormal(outR);
   }
 }
 

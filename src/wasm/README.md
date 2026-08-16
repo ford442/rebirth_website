@@ -61,7 +61,7 @@ We use **Architecture A — Emscripten Wasm Audio Worklet**.
   - Owns the `Sequencer`, `Mixer`, and all `Voice` instances.
   - Drains the command queue at the start of every 128-frame render quantum.
   - Generates sample-accurate step events from the current BPM and sample rate.
-  - Renders each voice into a scratch mono buffer and mixes to interleaved stereo.
+  - Renders each voice into a scratch mono buffer and mixes to planar stereo (L/R channel buffers).
   - Publishes `bar`/`step` via atomic variables so the main thread can read them without locking.
 
 This keeps latency low (128-frame Web Audio quanta), avoids main-thread synthesis work, and matches the existing `-sAUDIO_WORKLET=1` / `-sWASM_WORKERS=1` build configuration.

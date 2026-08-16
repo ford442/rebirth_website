@@ -137,15 +137,17 @@ TEST_CASE("Engine: TB-303 pattern produces non-silent audio") {
   REQUIRE(eng.init(tb303OnlyConfig()));
   REQUIRE(eng.loadSong(make303Song()));
 
-  float buffer[256] = {0};
-  float* buffers[1] = {buffer};
+  float left[128] = {0};
+  float right[128] = {0};
+  float* buffers[2] = {left, right};
 
   eng.play();
   float peak = 0.0f;
   for (int i = 0; i < 200; ++i) {
     eng.processBlock(buffers, 2, 128);
-    for (int s = 0; s < 256; ++s) {
-      peak = std::max(peak, std::fabs(buffer[s]));
+    for (int s = 0; s < 128; ++s) {
+      peak = std::max(peak, std::fabs(left[s]));
+      peak = std::max(peak, std::fabs(right[s]));
     }
   }
   CHECK(peak > 0.01f);

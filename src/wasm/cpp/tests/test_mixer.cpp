@@ -24,10 +24,10 @@ std::array<float, kFrames> makeConstant(float value) {
   return buf;
 }
 
-float peakChannel(const float* stereo, uint32_t frames, bool right) {
+float peakPlanar(const float* channel, uint32_t frames) {
   float peak = 0.0f;
   for (uint32_t i = 0; i < frames; ++i) {
-    const float sample = stereo[i * 2 + (right ? 1 : 0)];
+    const float sample = channel[i];
     if (std::isnan(sample) || std::isinf(sample)) {
       return -1.0f;
     }
@@ -51,20 +51,22 @@ TEST_CASE("Mixer: pan hard-left and hard-right route to one channel") {
   devices[0].pan = 0.0f; // hard left
   mixer.setDeviceStates(devices);
 
-  float leftOut[kFrames * 2] = {0};
-  mixer.process(leftInputs, leftOut, kFrames, 120.0f);
-  const float leftOnlyLeft = peakChannel(leftOut, kFrames, false);
-  const float leftOnlyRight = peakChannel(leftOut, kFrames, true);
+  float leftOut[kFrames] = {0};
+  float rightOut[kFrames] = {0};
+  mixer.process(leftInputs, leftOut, rightOut, kFrames, 120.0f);
+  const float leftOnlyLeft = peakPlanar(leftOut, kFrames);
+  const float leftOnlyRight = peakPlanar(rightOut, kFrames);
   CHECK(leftOnlyLeft > leftOnlyRight);
   CHECK(leftOnlyLeft > 0.0f);
 
   devices[0].pan = 1.0f; // hard right
   mixer.setDeviceStates(devices);
 
-  float rightOut[kFrames * 2] = {0};
-  mixer.process(leftInputs, rightOut, kFrames, 120.0f);
-  const float rightOnlyLeft = peakChannel(rightOut, kFrames, false);
-  const float rightOnlyRight = peakChannel(rightOut, kFrames, true);
+  std::memset(leftOut, 0, sizeof(leftOut));
+  std::memset(rightOut, 0, sizeof(rightOut));
+  mixer.process(leftInputs, leftOut, rightOut, kFrames, 120.0f);
+  const float rightOnlyLeft = peakPlanar(leftOut, kFrames);
+  const float rightOnlyRight = peakPlanar(rightOut, kFrames);
   CHECK(rightOnlyRight > rightOnlyLeft);
   CHECK(rightOnlyRight > 0.0f);
 }
@@ -87,13 +89,17 @@ TEST_CASE("Mixer: silence produces no NaNs or denormals") {
   const float* inputs[NUM_DEVICES] = {
       silence.data(), silence.data(), silence.data(), silence.data()};
 
-  float out[kFrames * 2] = {0};
-  mixer.process(inputs, out, kFrames, 120.0f);
+  float leftOut[kFrames] = {0};
+  float rightOut[kFrames] = {0};
+  mixer.process(inputs, leftOut, rightOut, kFrames, 120.0f);
 
-  for (uint32_t i = 0; i < kFrames * 2; ++i) {
-    CHECK_FALSE(std::isnan(out[i]));
-    CHECK_FALSE(std::isinf(out[i]));
-    CHECK(out[i] == doctest::Approx(0.0f).epsilon(1e-12));
+  for (uint32_t i = 0; i < kFrames; ++i) {
+    CHECK_FALSE(std::isnan(leftOut[i]));
+    CHECK_FALSE(std::isinf(leftOut[i]));
+    CHECK(leftOut[i] == doctest::Approx(0.0f).epsilon(1e-12));
+    CHECK_FALSE(std::isnan(rightOut[i]));
+    CHECK_FALSE(std::isinf(rightOut[i]));
+    CHECK(rightOut[i] == doctest::Approx(0.0f).epsilon(1e-12));
   }
 }
 
@@ -114,15 +120,17 @@ TEST_CASE("Mixer: distortion send changes the output waveform") {
   auto tone = makeConstant(0.6f);
   const float* inputs[NUM_DEVICES] = {tone.data(), nullptr, nullptr, nullptr};
 
-  float dryOut[kFrames * 2] = {0};
-  mixer.process(inputs, dryOut, kFrames, 120.0f);
-  const float dryPeak = peakChannel(dryOut, kFrames, false);
+  float dryLeft[kFrames] = {0};
+  float dryRight[kFrames] = {0};
+  mixer.process(inputs, dryLeft, dryRight, kFrames, 120.0f);
+  const float dryPeak = peakPlanar(dryLeft, kFrames);
 
   devices[0].dist = true;
   mixer.setDeviceStates(devices);
-  float wetOut[kFrames * 2] = {0};
-  mixer.process(inputs, wetOut, kFrames, 120.0f);
-  const float wetPeak = peakChannel(wetOut, kFrames, false);
+  float wetLeft[kFrames] = {0};
+  float wetRight[kFrames] = {0};
+  mixer.process(inputs, wetLeft, wetRight, kFrames, 120.0f);
+  const float wetPeak = peakPlanar(wetLeft, kFrames);
 
   CHECK(wetPeak != doctest::Approx(dryPeak).epsilon(0.01));
   CHECK(wetPeak > dryPeak);
@@ -152,21 +160,22 @@ TEST_CASE("Mixer: delay send produces energy after the tap time") {
   float earlyPeak = 0.0f;
   float latePeak = 0.0f;
 
-  std::array<float, 512> block{};
-  float* stereo = block.data();
+  std::array<float, 512> leftBlock{};
+  std::array<float, 512> rightBlock{};
   uint32_t rendered = 0;
   while (rendered < totalFrames) {
     const uint32_t frames = std::min(kFrames, totalFrames - rendered);
-    std::memset(stereo, 0, frames * 2 * sizeof(float));
+    std::memset(leftBlock.data(), 0, frames * sizeof(float));
+    std::memset(rightBlock.data(), 0, frames * sizeof(float));
     const float* blockInputs[NUM_DEVICES] = {nullptr, nullptr, nullptr, nullptr};
     if (rendered < kFrames) {
       blockInputs[0] = impulse.data();
     }
-    mixer.process(blockInputs, stereo, frames, 120.0f);
+    mixer.process(blockInputs, leftBlock.data(), rightBlock.data(), frames, 120.0f);
 
     for (uint32_t i = 0; i < frames; ++i) {
       const uint32_t globalFrame = rendered + i;
-      const float sample = std::fabs(stereo[i * 2]);
+      const float sample = std::fabs(leftBlock[i]);
       if (globalFrame < 4) {
         earlyPeak = std::max(earlyPeak, sample);
       }
@@ -199,9 +208,10 @@ TEST_CASE("Mixer: feature flags disable heavy FX") {
   auto tone = makeConstant(0.8f);
   const float* inputs[NUM_DEVICES] = {tone.data(), nullptr, nullptr, nullptr};
 
-  float out[kFrames * 2] = {0};
-  mixer.process(inputs, out, kFrames, 120.0f);
+  float leftOut[kFrames] = {0};
+  float rightOut[kFrames] = {0};
+  mixer.process(inputs, leftOut, rightOut, kFrames, 120.0f);
 
-  const float peak = peakChannel(out, kFrames, false);
+  const float peak = peakPlanar(leftOut, kFrames);
   CHECK(peak == doctest::Approx(0.8f * 0.70710678f).epsilon(0.05));
 }

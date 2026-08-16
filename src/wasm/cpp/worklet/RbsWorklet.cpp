@@ -11,8 +11,10 @@
  */
 
 #include "RbsWorklet.h"
+#include "../engine/AudioThreadLimits.h"
 #include "../engine/RbsAudioEngine.h"
 
+#include <algorithm>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 #include <emscripten/webaudio.h>
@@ -23,7 +25,6 @@ using namespace rb338;
 namespace {
 
 constexpr const char* PROCESSOR_NAME = "rbs-player";
-constexpr size_t AUDIO_THREAD_STACK_SIZE = 4096;
 
 // Stack for the Emscripten audio worklet thread. Must be visible to both the
 // main thread and the worklet thread, so it lives in shared WASM memory.
@@ -72,12 +73,16 @@ bool rbsProcessCallback(int numInputs,
 
   const uint32_t frames = outputs[0].samplesPerChannel;
   const uint32_t channels = outputs[0].numberOfChannels;
+  float* planarData = outputs[0].data;
 
-  // The engine renders into the first interleaved output buffer.
-  float* buffer = outputs[0].data;
-  float* channelPtrs[2] = { buffer, buffer };
+  // Emscripten AudioSampleFrame::data is planar: all L samples, then all R.
+  float* channelPtrs[2] = {nullptr, nullptr};
+  const uint32_t channelCount = std::min<uint32_t>(channels, 2);
+  for (uint32_t ch = 0; ch < channelCount; ++ch) {
+    channelPtrs[ch] = planarData + static_cast<size_t>(ch) * frames;
+  }
 
-  engine->processBlock(channelPtrs, channels, frames);
+  engine->processBlock(channelPtrs, channelCount, frames);
 
   return true;
 }

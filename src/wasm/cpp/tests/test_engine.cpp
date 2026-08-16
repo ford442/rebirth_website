@@ -1,5 +1,7 @@
 #include "../engine/RbsAudioEngine.h"
+#include "../engine/AudioThreadLimits.h"
 #include "../third_party/doctest.h"
+#include <cmath>
 #include <array>
 #include <cstdint>
 
@@ -42,8 +44,9 @@ TEST_CASE("Engine: play advances the transport, stop returns to bar 1") {
   REQUIRE(eng.init(makeConfig()));
   REQUIRE(eng.loadSong(makeSong(120.0f)));
 
-  float buffer[256] = {0};
-  float* buffers[1] = {buffer};
+  float left[128] = {0};
+  float right[128] = {0};
+  float* buffers[2] = {left, right};
 
   eng.play();
   // ~1200 * 128 = 153600 samples > one 88200-sample bar.
@@ -70,8 +73,9 @@ TEST_CASE("Engine: seek moves to the requested bar") {
   REQUIRE(eng.init(makeConfig()));
   REQUIRE(eng.loadSong(makeSong(120.0f)));
 
-  float buffer[256] = {0};
-  float* buffers[1] = {buffer};
+  float left[128] = {0};
+  float right[128] = {0};
+  float* buffers[2] = {left, right};
 
   eng.seek(4);
   eng.processBlock(buffers, 2, 128); // drain Seek command
@@ -90,8 +94,9 @@ TEST_CASE("Engine: getTempo reflects loaded song, setTempo, and clamping") {
   REQUIRE(eng.loadSong(makeSong(140.0f)));
   CHECK(eng.getTempo() == doctest::Approx(140.0f));
 
-  float buffer[256] = {0};
-  float* buffers[1] = {buffer};
+  float left[128] = {0};
+  float right[128] = {0};
+  float* buffers[2] = {left, right};
 
   eng.setTempo(95.0f);
   eng.processBlock(buffers, 2, 128); // drain SetTempo command
@@ -100,4 +105,50 @@ TEST_CASE("Engine: getTempo reflects loaded song, setTempo, and clamping") {
   // Out-of-range song tempo is clamped to the supported 40–250 BPM range.
   REQUIRE(eng.loadSong(makeSong(300.0f)));
   CHECK(eng.getTempo() == doctest::Approx(250.0f));
+}
+
+TEST_CASE("Engine: hard-left pan isolates right channel") {
+  RbsAudioEngine eng;
+  REQUIRE(eng.init(makeConfig()));
+
+  ParsedSong song = makeSong(120.0f);
+  song.devices[0].pan = 0.0f;
+  song.devices[0].level = 1.0f;
+  REQUIRE(eng.loadSong(song));
+
+  float left[128] = {0};
+  float right[128] = {0};
+  float* buffers[2] = {left, right};
+
+  eng.play();
+  for (int i = 0; i < 32; ++i) {
+    eng.processBlock(buffers, 2, 128);
+  }
+
+  float leftPeak = 0.0f;
+  float rightPeak = 0.0f;
+  for (int i = 0; i < 128; ++i) {
+    leftPeak = std::max(leftPeak, std::fabs(left[i]));
+    rightPeak = std::max(rightPeak, std::fabs(right[i]));
+  }
+
+  CHECK(leftPeak > 0.01f);
+  CHECK(rightPeak < leftPeak * 0.01f);
+}
+
+TEST_CASE("Engine: 128-frame processBlock uses member scratch without stack overflow") {
+  RbsAudioEngine eng;
+  REQUIRE(eng.init(makeConfig()));
+  REQUIRE(eng.loadSong(makeSong(120.0f)));
+
+  float left[128] = {0};
+  float right[128] = {0};
+  float* buffers[2] = {left, right};
+
+  eng.play();
+  for (int i = 0; i < 256; ++i) {
+    eng.processBlock(buffers, 2, AUDIO_WORKLET_FRAMES);
+  }
+
+  CHECK(eng.getProcessedBlockCount() == 256);
 }

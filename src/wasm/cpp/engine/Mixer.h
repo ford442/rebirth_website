@@ -30,15 +30,16 @@ public:
   void setDeviceStates(const std::array<DeviceState, NUM_DEVICES>& devices);
 
   /**
-   * Mix device outputs into final stereo buffer.
+   * Mix device outputs into planar stereo buffers.
    *
    * @param deviceBuffers  4 pointers to mono float buffers (one per device)
-   * @param stereoOut      Interleaved stereo output [L,R,L,R,...]
+   * @param leftOut        Left channel output (numFrames samples)
+   * @param rightOut       Right channel output (numFrames samples)
    * @param numFrames      Number of frames to process
    * @param bpm            Effective tempo (BPM) for tempo-sync delay
    */
-  void process(const float* const* deviceBuffers, float* stereoOut, uint32_t numFrames,
-               float bpm);
+  void process(const float* const* deviceBuffers, float* leftOut, float* rightOut,
+               uint32_t numFrames, float bpm);
 
   void setDistortionEnabled(bool on) { m_distortionOn = on; }
   void setCompressorEnabled(bool on) { m_compressorOn = on; }
