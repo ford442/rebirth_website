@@ -13,6 +13,7 @@ const result = await generateSW({
   ...opts.workbox,
   swDest: 'dist/sw.js',
   globDirectory: 'dist',
+  importScripts: ['coi-serviceworker.js'],
   modifyURLPrefix: {
     '': basePrefix,
   },

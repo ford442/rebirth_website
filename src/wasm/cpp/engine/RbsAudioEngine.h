@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AudioThreadLimits.h"
 #include "../parser/RbsTypes.h"
 #include "../synth/Voice.h"
 #include "EngineCommands.h"
@@ -96,8 +97,7 @@ public:
   /**
    * Audio callback — called by the Emscripten Wasm Audio Worklet every 128 frames.
    *
-   * @param outputBuffers  Array of float* buffers, one per channel. For stereo
-   *                       the first buffer is interleaved [L,R,L,R,...].
+   * @param outputBuffers  Planar output: one float* per channel, each numFrames long.
    * @param numChannels    Number of output channels (typically 2).
    * @param numFrames      Number of frames to render (typically 128).
    *
@@ -136,7 +136,8 @@ private:
   // Voices: [0]=303-A, [1]=303-B, [2]=808, [3]=909
   std::array<std::unique_ptr<Voice>, NUM_DEVICES> m_voices;
 
-  // Per-device mono render buffers (stack-allocated pointers in processBlock).
+  // Per-device mono scratch buffers (member storage — not on the audio-thread stack).
+  alignas(16) float m_scratchBuffers[NUM_DEVICES][MAX_RENDER_TEST_FRAMES];
   std::array<float*, NUM_DEVICES> m_voiceBuffers{};
 };
 

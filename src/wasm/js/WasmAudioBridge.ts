@@ -36,6 +36,7 @@ import {
   WasmInitError,
   INIT_FAILURE_MESSAGES,
 } from './rbs-init-errors';
+import { waitForCrossOriginIsolation } from '../../scripts/coi-bootstrap';
 
 /** Callback invoked when playback position changes (bar, step). */
 export type PositionCallback = (bar: number, step: number) => void;
@@ -121,6 +122,16 @@ export class WasmAudioBridge {
           reason: 'worklet-unavailable',
           message: INIT_FAILURE_MESSAGES['worklet-unavailable'],
         });
+      }
+
+      if (typeof crossOriginIsolated !== 'undefined' && !crossOriginIsolated) {
+        const isolated = await waitForCrossOriginIsolation();
+        if (!isolated) {
+          throw new WasmInitError({
+            reason: 'not-cross-origin-isolated',
+            message: INIT_FAILURE_MESSAGES['not-cross-origin-isolated'],
+          });
+        }
       }
 
       // 2. Probe WASM asset availability before importing glue

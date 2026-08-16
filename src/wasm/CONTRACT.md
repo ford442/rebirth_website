@@ -324,7 +324,39 @@ The Emscripten module must export:
 `initAudioWorklet` receives the Embind-managed `RbsAudioEngine` object itself;
 JavaScript must not depend on Embind's private raw-pointer representation.
 `renderTestBlock(frames)` is a deterministic browser-test hook that returns the
-absolute peak of a synchronously rendered stereo block.
+absolute peak of a synchronously rendered planar stereo block.
+
+## Audio buffer layout (engine ↔ worklet)
+
+`RbsAudioEngine::processBlock()` and `Mixer::process()` use **planar** stereo
+output: `outputBuffers[0]` is the left channel (`numFrames` samples),
+`outputBuffers[1]` is the right channel. This matches Emscripten's
+`AudioSampleFrame::data` layout and the Web Audio API.
+
+The Wasm Audio Worklet callback derives per-channel pointers as
+`outputs[0].data + channelIndex * samplesPerChannel`.
+
+Scratch buffers for per-device mono renders live in `RbsAudioEngine` members
+(not on the audio-thread stack). `AUDIO_THREAD_STACK_SIZE` (64 KiB) is enforced
+in `engine/AudioThreadLimits.h` with a `static_assert` against remaining
+`processBlock()` stack locals.
+
+## Cross-origin isolation and remote `.rbs` fetches
+
+The shipping WASM build uses pthreads + AudioWorklet (`-pthread -sWASM_WORKERS=1
+-sAUDIO_WORKLET=1`), which requires `crossOriginIsolated === true`. GitHub Pages
+cannot set COOP/COEP response headers; the production service worker
+(`dist/sw.js`) imports `coi-serviceworker.js` to synthesize them.
+
+`WasmAudioBridge.init()` waits for isolation (service-worker reload when needed)
+and fails with `not-cross-origin-isolated` when SharedArrayBuffer is unavailable.
+
+**CORP for `test.1ink.us`:** remote song fetches use `require-corp` COEP. The
+archive host already responds with `Cross-Origin-Resource-Policy: cross-origin`
+(and COOP/COEP on direct asset URLs), so cross-origin `.rbs` downloads remain
+allowed without same-origin mirroring. If a host omits CORP, enable
+`credentialless` COEP via the COI service worker message path or mirror assets
+same-origin.
 
 These are configured in `src/wasm/cpp/build.sh` via `-sEXPORTED_FUNCTIONS="['_malloc','_free']"` and `-sEXPORTED_RUNTIME_METHODS="['ccall','cwrap','getValue','setValue','HEAPU8','emscriptenRegisterAudioObject','emscriptenGetAudioObject']"`.
 

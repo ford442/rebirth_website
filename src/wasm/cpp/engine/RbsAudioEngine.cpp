@@ -10,7 +10,7 @@ namespace rb338 {
 
 namespace {
 
-constexpr uint32_t MAX_PROCESS_BLOCK_FRAMES = 2048;
+constexpr uint32_t MAX_PROCESS_BLOCK_FRAMES = MAX_RENDER_TEST_FRAMES;
 
 uint32_t floatBits(float f) {
   uint32_t bits;
@@ -177,12 +177,14 @@ void RbsAudioEngine::getPlaybackPosition(uint16_t& bar, uint8_t& step) const {
 
 float RbsAudioEngine::renderTestBlock(uint32_t numFrames) {
   if (numFrames == 0 || numFrames > MAX_PROCESS_BLOCK_FRAMES) return 0.0f;
-  alignas(16) float output[MAX_PROCESS_BLOCK_FRAMES * 2]{};
-  float* buffers[1] = {output};
+  alignas(16) float left[MAX_PROCESS_BLOCK_FRAMES]{};
+  alignas(16) float right[MAX_PROCESS_BLOCK_FRAMES]{};
+  float* buffers[2] = {left, right};
   processBlock(buffers, 2, numFrames);
   float peak = 0.0f;
-  for (uint32_t i = 0; i < numFrames * 2; ++i) {
-    peak = std::max(peak, std::abs(output[i]));
+  for (uint32_t i = 0; i < numFrames; ++i) {
+    peak = std::max(peak, std::abs(left[i]));
+    peak = std::max(peak, std::abs(right[i]));
   }
   return peak;
 }
@@ -200,21 +202,21 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
   // Always drain control commands at the start of the callback.
   drainCommands();
 
-  // Clear the output buffer.
-  float* stereoOut = outputBuffers[0];
-  if (stereoOut) {
-    std::memset(stereoOut, 0, numFrames * numChannels * sizeof(float));
+  // Clear planar output channels.
+  for (uint32_t ch = 0; ch < numChannels; ++ch) {
+    if (outputBuffers[ch]) {
+      std::memset(outputBuffers[ch], 0, numFrames * sizeof(float));
+    }
   }
 
   if (!m_playing.load(std::memory_order_relaxed)) {
     return;
   }
 
-  // Allocate scratch mono buffers on the stack (fixed size, no malloc).
-  alignas(16) float scratchBuffers[NUM_DEVICES][MAX_PROCESS_BLOCK_FRAMES];
+  // Scratch mono buffers live in engine members (not on the audio-thread stack).
   for (int i = 0; i < NUM_DEVICES; ++i) {
-    m_voiceBuffers[i] = scratchBuffers[i];
-    std::memset(scratchBuffers[i], 0, numFrames * sizeof(float));
+    m_voiceBuffers[i] = m_scratchBuffers[i];
+    std::memset(m_scratchBuffers[i], 0, numFrames * sizeof(float));
   }
 
   // Read the current immutable song snapshot. Holding a local shared_ptr for
@@ -257,14 +259,16 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
     m_voices[i]->render(m_voiceBuffers[i], numFrames);
   }
 
-  // Mix into final stereo interleaved output.
-  if (stereoOut && numChannels >= 2) {
-    m_mixer->process(m_voiceBuffers.data(), stereoOut, numFrames, effectiveBpm);
+  // Mix into planar stereo output.
+  if (numChannels >= 2 && outputBuffers[0] && outputBuffers[1]) {
+    m_mixer->process(
+        m_voiceBuffers.data(), outputBuffers[0], outputBuffers[1], numFrames, effectiveBpm);
 
     // Master volume — sole user-facing gain stage (JS GainNode stays at unity).
-    float vol = m_volume.load(std::memory_order_relaxed);
-    for (uint32_t i = 0; i < numFrames * 2; ++i) {
-      stereoOut[i] *= vol;
+    const float vol = m_volume.load(std::memory_order_relaxed);
+    for (uint32_t i = 0; i < numFrames; ++i) {
+      outputBuffers[0][i] *= vol;
+      outputBuffers[1][i] *= vol;
     }
   }
 

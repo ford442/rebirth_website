@@ -5,6 +5,7 @@
 
 export type InitFailureReason =
   | 'unsupported-browser'
+  | 'not-cross-origin-isolated'
   | 'wasm-unavailable'
   | 'wasm-load-failed'
   | 'worklet-unavailable'
@@ -31,6 +32,8 @@ export class WasmInitError extends Error {
 export const INIT_FAILURE_MESSAGES: Record<InitFailureReason, string> = {
   'unsupported-browser':
     'This browser lacks WebAssembly or AudioWorklet support required for full playback.',
+  'not-cross-origin-isolated':
+    'Full playback needs cross-origin isolation (SharedArrayBuffer). Reload once if a service-worker update was pending, or open the site from its canonical URL.',
   'wasm-unavailable':
     'WASM engine binaries are not built yet — metadata preview and sketch playback are available.',
   'wasm-load-failed':
@@ -73,6 +76,18 @@ export function classifyInitError(err: unknown): InitFailure {
 
   if (lower.includes('audioworklet')) {
     return { reason: 'worklet-init-failed', message: INIT_FAILURE_MESSAGES['worklet-init-failed'], cause: err };
+  }
+
+  if (
+    lower.includes('cross-origin isolation') ||
+    lower.includes('crossoriginisolated') ||
+    lower.includes('not-cross-origin-isolated')
+  ) {
+    return {
+      reason: 'not-cross-origin-isolated',
+      message: INIT_FAILURE_MESSAGES['not-cross-origin-isolated'],
+      cause: err,
+    };
   }
 
   return { reason: 'engine-init-failed', message: INIT_FAILURE_MESSAGES['engine-init-failed'], cause: err };
