@@ -2,13 +2,14 @@
 
 #include "AudioThreadLimits.h"
 #include "../parser/RbsTypes.h"
-#include "../synth/Voice.h"
 #include "EngineCommands.h"
-#include "Mixer.h"
+#include "EngineSnapshot.h"
 #include "Sequencer.h"
+#include <array>
 #include <atomic>
 #include <cstdint>
 #include <memory>
+#include <vector>
 
 namespace rb338 {
 
@@ -77,6 +78,12 @@ public:
   /** Set tempo multiplier (0.25–4.0, 1.0 = normal). Used for UI scrubbing. */
   void setTempoMultiplier(float multiplier);
 
+  /**
+   * Live device/mixer parameter. Main thread only — enqueued for the audio
+   * callback. Session-only; does not rewrite the loaded song file.
+   */
+  void setDeviceParam(uint8_t deviceId, uint8_t paramId, float value);
+
   /** Query whether the engine is currently playing. */
   bool isPlaying() const { return m_playing.load(std::memory_order_acquire); }
 
@@ -108,7 +115,14 @@ public:
 private:
   void drainCommands();
   void handleCommand(const EngineCommand& cmd);
-  void resetState();
+  EngineSnapshot* pinSnapshot();
+  void reclaimRetiredSnapshots();
+  void resetVoices(EngineSnapshot* snap);
+  void applyDeviceParam(EngineSnapshot* snap, uint8_t deviceId, DeviceParamId param,
+                        float value);
+  bool deviceEnabled(int deviceIndex) const;
+  void renderSpan(EngineSnapshot& snap, uint32_t start, uint32_t count,
+                  float* left, float* right, uint32_t numChannels, float bpm, float volume);
 
   EngineConfig m_config{};
   bool m_initialised = false;
@@ -125,16 +139,16 @@ private:
   // Command queue (lives in shared WASM memory).
   EngineCommandQueue m_commandQueue;
 
-  // Immutable song snapshot shared with the audio thread. Loading a new song
-  // publishes a fresh snapshot via std::atomic_store; the audio thread reads it
-  // with std::atomic_load, so a song can be swapped in mid-play without tearing.
-  std::shared_ptr<const ParsedSong> m_activeSong;
+  // Lock-free snapshot handoff. Audio loads a raw pointer and publishes it
+  // as the in-use hazard; main retires unique_ptrs once the epoch has moved on.
+  static_assert(std::atomic<EngineSnapshot*>::is_always_lock_free,
+                "EngineSnapshot* atomics must be lock-free");
+  std::atomic<EngineSnapshot*> m_published{nullptr};
+  std::atomic<EngineSnapshot*> m_inUse{nullptr};
+  std::vector<std::unique_ptr<EngineSnapshot>> m_owned; // main thread only
 
-  // Sub-systems
+  // Sequencer transport lives on the engine (audio-thread owned after init).
   std::unique_ptr<Sequencer> m_sequencer;
-  std::unique_ptr<Mixer> m_mixer;
-  // Voices: [0]=303-A, [1]=303-B, [2]=808, [3]=909
-  std::array<std::unique_ptr<Voice>, NUM_DEVICES> m_voices;
 
   // Per-device mono scratch buffers (member storage — not on the audio-thread stack).
   alignas(16) float m_scratchBuffers[NUM_DEVICES][MAX_RENDER_TEST_FRAMES];

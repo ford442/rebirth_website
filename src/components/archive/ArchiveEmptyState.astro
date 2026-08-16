@@ -12,6 +12,11 @@ const {
 } = Astro.props;
 ---
 
-<div class={`rb-empty-state is-hidden ${className}`.trim()} id={id} aria-live="polite" aria-atomic="true">
+<div
+  class={`rb-empty-state is-hidden ${className}`.trim()}
+  id={id}
+  aria-live="polite"
+  aria-atomic="true"
+>
   <p>{message}</p>
 </div>

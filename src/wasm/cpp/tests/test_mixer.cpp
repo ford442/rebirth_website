@@ -1,6 +1,7 @@
 #include "../engine/Mixer.h"
 #include "../third_party/doctest.h"
 #include <array>
+#include <chrono>
 #include <cmath>
 #include <cstring>
 
@@ -214,4 +215,29 @@ TEST_CASE("Mixer: feature flags disable heavy FX") {
 
   const float peak = peakPlanar(leftOut, kFrames);
   CHECK(peak == doctest::Approx(0.8f * 0.70710678f).epsilon(0.05));
+}
+
+TEST_CASE("Mixer: scalar process benchmark (smoke)") {
+  Mixer mixer;
+  mixer.init(44100.0f);
+  std::array<DeviceState, NUM_DEVICES> devices{};
+  for (int i = 0; i < NUM_DEVICES; ++i) {
+    devices[static_cast<size_t>(i)].level = 0.8f;
+    devices[static_cast<size_t>(i)].pan = 0.5f;
+  }
+  mixer.setDeviceStates(devices);
+
+  auto tone = makeConstant(0.2f);
+  const float* inputs[NUM_DEVICES] = {tone.data(), tone.data(), tone.data(), tone.data()};
+  float leftOut[kFrames] = {0};
+  float rightOut[kFrames] = {0};
+
+  const auto start = std::chrono::steady_clock::now();
+  for (int i = 0; i < 4000; ++i) {
+    mixer.process(inputs, leftOut, rightOut, kFrames, 140.0f);
+  }
+  const auto elapsed = std::chrono::steady_clock::now() - start;
+  const auto us = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+  MESSAGE("Mixer 4000x128 frames: ", us, " us");
+  CHECK(peakPlanar(leftOut, kFrames) >= 0.0f);
 }

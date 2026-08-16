@@ -65,14 +65,18 @@ const finalRel = rel ?? 'noopener noreferrer';
   aria-label={finalAriaLabel}
 >
   <span class="external-link__label">{label}</span>
-  {parsedHost ? (
-    <span class="external-link__host" aria-hidden="true">
-      <span class="external-link__icon">{icon}</span>
-      <span class="external-link__host-name">{parsedHost}</span>
-    </span>
-  ) : (
-    <span class="external-link__icon" aria-hidden="true">{icon}</span>
-  )}
+  {
+    parsedHost ? (
+      <span class="external-link__host" aria-hidden="true">
+        <span class="external-link__icon">{icon}</span>
+        <span class="external-link__host-name">{parsedHost}</span>
+      </span>
+    ) : (
+      <span class="external-link__icon" aria-hidden="true">
+        {icon}
+      </span>
+    )
+  }
 </a>
 
 <style>

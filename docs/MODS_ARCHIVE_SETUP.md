@@ -1,11 +1,13 @@
 # RBM Mods Archive Setup
 
 ## Overview
+
 A searchable, filterable browser for ReBirth RB-338 RBM mod files (modifications and skins) hosted at `storage.1ink.us/rebirth_mods/`.
 
 ## Files Created
 
 ### 1. **Metadata File** (`src/data/mods-metadata.json`)
+
 - Central repository for mod documentation
 - 26 documented mods with metadata: 17 with full descriptions, 9 with minimal metadata (title, author, tags only)
 - Easily extendable with more mods
@@ -26,6 +28,7 @@ A searchable, filterable browser for ReBirth RB-338 RBM mod files (modifications
 ```
 
 ### 2. **Component** (`src/components/ModBrowserCard.astro`)
+
 - Displays a single mod card with:
   - Title and year
   - Author information
@@ -35,6 +38,7 @@ A searchable, filterable browser for ReBirth RB-338 RBM mod files (modifications
 - Styled with retro hardware theme (amber glow, dark panels)
 
 ### 3. **Page** (`src/pages/archive/mods.astro`)
+
 - Full-featured mods browser at `/archive/mods`
 - Features:
   - **Search**: Real-time search by title, author, description
@@ -45,17 +49,21 @@ A searchable, filterable browser for ReBirth RB-338 RBM mod files (modifications
   - **Call-to-action**: Link to GitHub for contributing metadata
 
 ### 4. **Navigation**
+
 - Mods archive link already exists in header navigation (BaseLayout.astro line 51)
 - Accessible from: Home → Mods
 
 ## Usage
 
 ### Accessing the Page
+
 - Live at: `/rebirth_website/archive/mods` (deployed)
 - Local dev: `localhost:4321/rebirth_website/archive/mods`
 
 ### Adding More Mods
+
 1. Add entry to `src/data/mods-metadata.json`:
+
 ```json
 {
   "filename": "YourMod.rbm",
@@ -75,6 +83,7 @@ A searchable, filterable browser for ReBirth RB-338 RBM mod files (modifications
 3. Rebuild: `npm run build`
 
 ### Download URL
+
 - Mods download from: `https://storage.1ink.us/rebirth_mods/{filename}`
 - This URL is hardcoded in `ModBrowserCard.astro`
 

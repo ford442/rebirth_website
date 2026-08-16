@@ -23,8 +23,14 @@ interface SearchEntry {
 }
 
 const base = normalizeBase(import.meta.env.BASE_URL);
-const songSections = Object.entries(songCollections) as [SongCollectionKey, (typeof songCollections)[SongCollectionKey]][];
-const songFolderCount = songSections.reduce((count, [, section]) => count + section.folders.length, 0);
+const songSections = Object.entries(songCollections) as [
+  SongCollectionKey,
+  (typeof songCollections)[SongCollectionKey],
+][];
+const songFolderCount = songSections.reduce(
+  (count, [, section]) => count + section.folders.length,
+  0
+);
 const documentedModCount = modsData.mods.length;
 const totalModIndexCount = fullIndex.mods.length;
 
@@ -70,12 +76,7 @@ const searchIndex: SearchEntry[] = [
       title: folder.name,
       kind: 'song' as const,
       subtitle: section.name,
-      keywords: [
-        section.name,
-        section.description ?? '',
-        ...(section.tags ?? []),
-        folder.path,
-      ],
+      keywords: [section.name, section.description ?? '', ...(section.tags ?? []), folder.path],
       href: `${base}/archive/songs?filter=${sectionKey}&q=${encodeURIComponent(folder.name)}`,
     }))
   ),
@@ -84,12 +85,7 @@ const searchIndex: SearchEntry[] = [
     title: mod.title,
     kind: 'mod' as const,
     subtitle: mod.author ?? mod.filename,
-    keywords: [
-      mod.filename,
-      mod.author ?? '',
-      mod.description ?? '',
-      ...(mod.tags ?? []),
-    ],
+    keywords: [mod.filename, mod.author ?? '', mod.description ?? '', ...(mod.tags ?? [])],
     href: `${base}/archive/mods?q=${encodeURIComponent(mod.title)}`,
   })),
 ];
@@ -108,7 +104,10 @@ const searchIndex: SearchEntry[] = [
     <div class="quick-access__primary">
       <div class="quick-access__heading">
         <h2 id="quick-access-heading">Search the archive before you leave the homepage.</h2>
-        <p>Unified lookup across song folders and documented mods, plus direct filters into the archive browsers.</p>
+        <p>
+          Unified lookup across song folders and documented mods, plus direct filters into the
+          archive browsers.
+        </p>
       </div>
 
       <div class="quick-access__search">
@@ -120,35 +119,46 @@ const searchIndex: SearchEntry[] = [
           placeholder="Search artists, collections, or documented mods"
           aria-describedby="quickAccessResultCount"
         />
-        <span id="quickAccessResultCount" class="quick-access__count" aria-live="polite" aria-atomic="true">
+        <span
+          id="quickAccessResultCount"
+          class="quick-access__count"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           Showing 4 suggested results
         </span>
       </div>
 
       <div class="quick-access__chips" role="list" aria-label="Quick archive categories">
-        {categoryChips.map((chip) => (
-          <a
-            class={`quick-access__chip quick-access__chip--${chip.tone}`}
-            href={chip.href}
-            role="listitem"
-          >
-            {chip.label}
-          </a>
-        ))}
+        {
+          categoryChips.map((chip) => (
+            <a
+              class={`quick-access__chip quick-access__chip--${chip.tone}`}
+              href={chip.href}
+              role="listitem"
+            >
+              {chip.label}
+            </a>
+          ))
+        }
       </div>
 
       <ul id="quickAccessResults" class="quick-access__results" aria-label="Search results">
-        {searchIndex.slice(0, 4).map((entry) => (
-          <li class="quick-access__result">
-            <a class="quick-access__result-link" href={entry.href} data-kind={entry.kind}>
-              <span class="quick-access__result-kind">{entry.kind === 'song' ? '.rbs' : '.rbm'}</span>
-              <span class="quick-access__result-body">
-                <span class="quick-access__result-title">{entry.title}</span>
-                <span class="quick-access__result-subtitle">{entry.subtitle}</span>
-              </span>
-            </a>
-          </li>
-        ))}
+        {
+          searchIndex.slice(0, 4).map((entry) => (
+            <li class="quick-access__result">
+              <a class="quick-access__result-link" href={entry.href} data-kind={entry.kind}>
+                <span class="quick-access__result-kind">
+                  {entry.kind === 'song' ? '.rbs' : '.rbm'}
+                </span>
+                <span class="quick-access__result-body">
+                  <span class="quick-access__result-title">{entry.title}</span>
+                  <span class="quick-access__result-subtitle">{entry.subtitle}</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
       </ul>
     </div>
 
@@ -171,22 +181,26 @@ const searchIndex: SearchEntry[] = [
       <div class="quick-access__highlights">
         <h3>Top picks</h3>
         <ul>
-          {highlights.map((highlight) => (
-            <li class="quick-access__highlight">
-              <div>
-                <span class={`quick-access__highlight-kind quick-access__highlight-kind--${highlight.kind}`}>
-                  {highlight.kind === 'song' ? 'Browse' : 'Download'}
-                </span>
-                <strong>{highlight.title}</strong>
-                <p>{highlight.description}</p>
-              </div>
-              <ExternalLink
-                href={highlight.href}
-                kind={highlight.kind === 'song' ? 'browse-folder' : 'download-rbm'}
-                class={highlight.kind === 'song' ? 'rb-pattern-btn' : 'rb-mix-btn'}
-              />
-            </li>
-          ))}
+          {
+            highlights.map((highlight) => (
+              <li class="quick-access__highlight">
+                <div>
+                  <span
+                    class={`quick-access__highlight-kind quick-access__highlight-kind--${highlight.kind}`}
+                  >
+                    {highlight.kind === 'song' ? 'Browse' : 'Download'}
+                  </span>
+                  <strong>{highlight.title}</strong>
+                  <p>{highlight.description}</p>
+                </div>
+                <ExternalLink
+                  href={highlight.href}
+                  kind={highlight.kind === 'song' ? 'browse-folder' : 'download-rbm'}
+                  class={highlight.kind === 'song' ? 'rb-pattern-btn' : 'rb-mix-btn'}
+                />
+              </li>
+            ))
+          }
         </ul>
       </div>
     </aside>
@@ -544,7 +558,7 @@ const searchIndex: SearchEntry[] = [
       gap: 0.6rem;
     }
 
-    .quick-access__results li:nth-child(n+3) {
+    .quick-access__results li:nth-child(n + 3) {
       display: none;
     }
 

@@ -29,7 +29,9 @@ export function displaySegment(segment: string): string {
 /** Fix monthly archive folder labels (e.g. JANRUARY → January). */
 export function displaySubcollection(raw: string | null): string | null {
   if (!raw) return null;
-  return monthlyFolderDisplay[raw] ?? monthlyFolderDisplay[raw.toUpperCase()] ?? displaySegment(raw);
+  return (
+    monthlyFolderDisplay[raw] ?? monthlyFolderDisplay[raw.toUpperCase()] ?? displaySegment(raw)
+  );
 }
 
 function matchArtistAlias(label: string | null): { name: string; slug: string } | null {
@@ -56,7 +58,8 @@ export function inferModDependency(path: string): boolean {
 }
 
 export function enrichSong(song: SongIndexEntry): EnrichedSongEntry {
-  const artistLabel = song.artist ?? (song.collection === 'Artists' ? song.subcollection : null);
+  const pathArtist = song.artist ?? (song.collection === 'Artists' ? song.subcollection : null);
+  const artistLabel = pathArtist ?? (song.parseOk === false ? null : (song.metaAuthor ?? null));
   const artistMatch = matchArtistAlias(artistLabel);
 
   return {

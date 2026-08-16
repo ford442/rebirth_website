@@ -41,11 +41,11 @@ v1.5 files (not yet observed in the archive) are expected to omit the second
 
 ## 2. Root Container
 
-| Offset | Size | Field | Description |
-|--------|------|-------|-------------|
-| 0x00 | 4 | Chunk ID | `"CAT "` (0x43 0x41 0x54 0x20) |
-| 0x04 | 4 | Chunk Size | Big-endian uint32 — size of the container body that follows |
-| 0x08 | 4 | Format Marker | `"RB40"` (0x52 0x42 0x34 0x30) |
+| Offset | Size | Field         | Description                                                 |
+| ------ | ---- | ------------- | ----------------------------------------------------------- |
+| 0x00   | 4    | Chunk ID      | `"CAT "` (0x43 0x41 0x54 0x20)                              |
+| 0x04   | 4    | Chunk Size    | Big-endian uint32 — size of the container body that follows |
+| 0x08   | 4    | Format Marker | `"RB40"` (0x52 0x42 0x34 0x30)                              |
 
 The body after `"RB40"` is a sequence of top-level chunks. Each chunk has a
 4-byte ID, a 4-byte big-endian size, then `size` bytes of data. If `size` is
@@ -68,11 +68,11 @@ offset.
 
 Top-level chunks observed in v2.x files:
 
-| ID | Purpose |
-|----|---------|
-| `HEAD` | File/version header |
-| `GLOB` | Global song settings + title |
-| `USRI` | Author / info text |
+| ID     | Purpose                                                  |
+| ------ | -------------------------------------------------------- |
+| `HEAD` | File/version header                                      |
+| `GLOB` | Global song settings + title                             |
+| `USRI` | Author / info text                                       |
 | `CAT ` | Nested container (device list `DEVL`, track list `TRKL`) |
 
 Unknown chunks should be skipped.
@@ -81,19 +81,19 @@ Unknown chunks should be skipped.
 
 ## 3. HEAD Chunk
 
-| Offset | Size | Field | Description |
-|--------|------|-------|-------------|
-| 0x00 | 4 | Signature | `"[T[T"` (0x5b 0x54 0x5b 0x54) |
-| 0x04 | … | Header data | Version-specific fields |
-| 0x06 | 1 | Sub-format marker | `0x01` or `0x02` in observed v2.x files |
+| Offset | Size | Field             | Description                             |
+| ------ | ---- | ----------------- | --------------------------------------- |
+| 0x00   | 4    | Signature         | `"[T[T"` (0x5b 0x54 0x5b 0x54)          |
+| 0x04   | …    | Header data       | Version-specific fields                 |
+| 0x06   | 1    | Sub-format marker | `0x01` or `0x02` in observed v2.x files |
 
 The byte at offset `0x06` inside the HEAD chunk data is the main version
 marker seen in the wild:
 
-| Value | Mapped version |
-|-------|----------------|
-| `0x01` | v2.0 |
-| `0x02` | v2.0.1 |
+| Value  | Mapped version |
+| ------ | -------------- |
+| `0x01` | v2.0           |
+| `0x02` | v2.0.1         |
 
 The rest of the 256-byte HEAD chunk is currently reserved / unused by the
 parser.
@@ -102,19 +102,19 @@ parser.
 
 ## 4. GLOB Chunk — Global Settings & Title
 
-| Offset | Size | Field | Description |
-|--------|------|-------|-------------|
-| 0x00 | 1 | Play mode | `0` = pattern, `1` = song |
-| 0x01 | 1 | Loop enabled | `0` = off, `1` = on |
-| 0x02 | 4 | Tempo | Big-endian uint32, BPM multiplied by 1000 |
-| 0x06 | 4 | Loop start | Big-endian uint32, bar position multiplied by 768 |
-| 0x0a | 4 | Loop end | Big-endian uint32, bar position multiplied by 768 |
-| 0x0e | 1 | Shuffle | `0x00`–`0x7f` |
-| 0x0f | 65 | Mod name | Null-terminated string (`Standard ReBirth` for the stock mod) |
-| 0x50 | 201 | Mod FTP URL | Null-terminated string |
-| 0x119 | 201 | Mod web URL | Null-terminated string |
-| 0x1e2 | 1 | Vintage mode | `0` = ReBirth 2.0 sound, `1` = vintage sound |
-| 0x1e3 | 29 | Reserved | Zero-filled |
+| Offset | Size | Field        | Description                                                   |
+| ------ | ---- | ------------ | ------------------------------------------------------------- |
+| 0x00   | 1    | Play mode    | `0` = pattern, `1` = song                                     |
+| 0x01   | 1    | Loop enabled | `0` = off, `1` = on                                           |
+| 0x02   | 4    | Tempo        | Big-endian uint32, BPM multiplied by 1000                     |
+| 0x06   | 4    | Loop start   | Big-endian uint32, bar position multiplied by 768             |
+| 0x0a   | 4    | Loop end     | Big-endian uint32, bar position multiplied by 768             |
+| 0x0e   | 1    | Shuffle      | `0x00`–`0x7f`                                                 |
+| 0x0f   | 65   | Mod name     | Null-terminated string (`Standard ReBirth` for the stock mod) |
+| 0x50   | 201  | Mod FTP URL  | Null-terminated string                                        |
+| 0x119  | 201  | Mod web URL  | Null-terminated string                                        |
+| 0x1e2  | 1    | Vintage mode | `0` = ReBirth 2.0 sound, `1` = vintage sound                  |
+| 0x1e3  | 29   | Reserved     | Zero-filled                                                   |
 
 The current public `ParsedSong.title` retains the archive's established use of
 the mod-name field at `0x0f`. Tempo is rejected when it falls outside ReBirth's
@@ -140,59 +140,59 @@ paragraph shown to the user when `ShowInfoOnOpen` is true.
 Device data lives inside a nested `CAT ` container whose marker is `DEVL`.
 Inside `DEVL` the chunks are:
 
-| ID | Purpose |
-|----|---------|
+| ID     | Purpose                                                 |
+| ------ | ------------------------------------------------------- |
 | `MIXR` | Mixer levels, mutes, pan, FX sends for all four devices |
-| `DELY` | Delay settings |
-| `PCF ` | PCF settings |
-| `DIST` | Distortion settings |
-| `COMP` | Compressor settings |
-| `303 ` | TB-303 state + 32 patterns (×2) |
-| `808 ` | TR-808 state + 32 patterns |
-| `909 ` | TR-909 state + 32 patterns |
+| `DELY` | Delay settings                                          |
+| `PCF ` | PCF settings                                            |
+| `DIST` | Distortion settings                                     |
+| `COMP` | Compressor settings                                     |
+| `303 ` | TB-303 state + 32 patterns (×2)                         |
+| `808 ` | TR-808 state + 32 patterns                              |
+| `909 ` | TR-909 state + 32 patterns                              |
 
 ### 6a. MIXR Chunk
 
-| Offset | Size | Field | Description |
-|--------|------|-------|-------------|
-| 0x00 | 1 | Master level | 0–127 |
-| 0x01–0x0f | 15 | ? | Unknown / padding |
-| 0x10 | 12 | Device 0 mixer record | 303-A |
-| 0x1c | 12 | Device 1 mixer record | 303-B |
-| 0x28 | 12 | Device 2 mixer record | 808 |
-| 0x34 | 12 | Device 3 mixer record | 909 |
+| Offset    | Size | Field                 | Description       |
+| --------- | ---- | --------------------- | ----------------- |
+| 0x00      | 1    | Master level          | 0–127             |
+| 0x01–0x0f | 15   | ?                     | Unknown / padding |
+| 0x10      | 12   | Device 0 mixer record | 303-A             |
+| 0x1c      | 12   | Device 1 mixer record | 303-B             |
+| 0x28      | 12   | Device 2 mixer record | 808               |
+| 0x34      | 12   | Device 3 mixer record | 909               |
 
 Each 12-byte mixer record:
 
-| Offset | Field |
-|--------|-------|
-| 0 | Mute (0 = muted) |
-| 1 | Level 0–127 |
-| 2 | Pan 0–127 (64 = centre) |
-| 3 | Delay send 0–127 |
-| 4 | Distortion send (0/1) |
-| 5 | PCF send (0/1) |
-| 6 | Compressor send (0/1) |
-| 7–11 | ? |
+| Offset | Field                   |
+| ------ | ----------------------- |
+| 0      | Mute (0 = muted)        |
+| 1      | Level 0–127             |
+| 2      | Pan 0–127 (64 = centre) |
+| 3      | Delay send 0–127        |
+| 4      | Distortion send (0/1)   |
+| 5      | PCF send (0/1)          |
+| 6      | Compressor send (0/1)   |
+| 7–11   | ?                       |
 
 ### 6b. TB-303 Device Chunk (`303 `)
 
 Total chunk size observed: **1097 bytes**.
 
-| Offset | Size | Field | Description |
-|--------|------|-------|-------------|
-| 0x00 | 1 | Tune | 0–127 |
-| 0x01 | 1 | Cutoff | 0–127 |
-| 0x02 | 1 | Resonance | 0–127 |
-| 0x03 | 1 | EnvMod | 0–127 |
-| 0x04 | 1 | Decay | 0–127 |
-| 0x05 | 1 | Accent | 0–127 |
-| 0x06 | 1 | Waveform | 0 = saw, 1 = square |
-| 0x07 | 1 | Initial pattern bank | 0–3 |
-| 0x08 | 1 | Initial pattern index | 0–7 |
-| 0x09 | 1 | ? | Unknown |
-| 0x0a–0x08 | ? | State padding | To offset 9 |
-| 0x09 | 32 × 34 bytes | Pattern slots | See below |
+| Offset    | Size          | Field                 | Description         |
+| --------- | ------------- | --------------------- | ------------------- |
+| 0x00      | 1             | Tune                  | 0–127               |
+| 0x01      | 1             | Cutoff                | 0–127               |
+| 0x02      | 1             | Resonance             | 0–127               |
+| 0x03      | 1             | EnvMod                | 0–127               |
+| 0x04      | 1             | Decay                 | 0–127               |
+| 0x05      | 1             | Accent                | 0–127               |
+| 0x06      | 1             | Waveform              | 0 = saw, 1 = square |
+| 0x07      | 1             | Initial pattern bank  | 0–3                 |
+| 0x08      | 1             | Initial pattern index | 0–7                 |
+| 0x09      | 1             | ?                     | Unknown             |
+| 0x0a–0x08 | ?             | State padding         | To offset 9         |
+| 0x09      | 32 × 34 bytes | Pattern slots         | See below           |
 
 Header size: **9 bytes**.
 Pattern slot size: **34 bytes**.
@@ -218,11 +218,11 @@ Pattern slot size: **194 bytes**.
 
 Each of the 32 slots has a 2-byte header followed by 16 steps:
 
-| Offset | Size | Field | Description |
-|--------|------|-------|-------------|
-| 0x00 | 1 | Enable flag | Non-zero when the slot is used |
-| 0x01 | 1 | Length | Number of steps, usually `16` (`0x10`) |
-| 0x02 | … | Step data | Format depends on device |
+| Offset | Size | Field       | Description                            |
+| ------ | ---- | ----------- | -------------------------------------- |
+| 0x00   | 1    | Enable flag | Non-zero when the slot is used         |
+| 0x01   | 1    | Length      | Number of steps, usually `16` (`0x10`) |
+| 0x02   | …    | Step data   | Format depends on device               |
 
 Slot index → bank/index mapping:
 
@@ -235,51 +235,51 @@ patternIndex = slot % 8   // 0–7
 
 Each step is **2 bytes**: `[note, flags]` × 16 steps.
 
-| Byte | Field |
-|------|-------|
-| 0 | Note value (maps directly to MIDI; `0` treated as rest) |
-| 1 | Flags — bit 0 = accent, bit 1 = slide |
+| Byte | Field                                                   |
+| ---- | ------------------------------------------------------- |
+| 0    | Note value (maps directly to MIDI; `0` treated as rest) |
+| 1    | Flags — bit 0 = accent, bit 1 = slide                   |
 
 #### TR-808 / TR-909 step format
 
 Each step is **12 bytes**. The observed layout is:
 
-| Byte | Drum |
-|------|------|
-| 0 | Bass Drum (BD) hit / flag |
-| 1 | Bass Drum velocity / accent / tweak (also treated as a BD indicator) |
-| 2 | Snare Drum (SD) |
-| 3 | Low Tom (LT) |
-| 4 | Mid Tom (MT) |
-| 5 | Hi Tom (HT) |
-| 6 | Closed Hat (CH) |
-| 7 | Open Hat (OH) |
-| 8 | Clap / Claves (CL) |
-| 9 | Clap / Crash (CP / CC) |
-| 10 | Maracas / Ride (MA / RC) |
-| 11 | Rimshot / Reverse cymbal (RS) |
+| Byte | Drum                                                                 |
+| ---- | -------------------------------------------------------------------- |
+| 0    | Bass Drum (BD) hit / flag                                            |
+| 1    | Bass Drum velocity / accent / tweak (also treated as a BD indicator) |
+| 2    | Snare Drum (SD)                                                      |
+| 3    | Low Tom (LT)                                                         |
+| 4    | Mid Tom (MT)                                                         |
+| 5    | Hi Tom (HT)                                                          |
+| 6    | Closed Hat (CH)                                                      |
+| 7    | Open Hat (OH)                                                        |
+| 8    | Clap / Claves (CL)                                                   |
+| 9    | Clap / Crash (CP / CC)                                               |
+| 10   | Maracas / Ride (MA / RC)                                             |
+| 11   | Rimshot / Reverse cymbal (RS)                                        |
 
 For the WASM engine the eight primary voices are packed into a single drum-hit
 bitfield stored in `StepData.note`:
 
 | Bit | Drum |
-|-----|------|
-| 0 | BD |
-| 1 | SD |
-| 2 | LT |
-| 3 | MT |
-| 4 | HT |
-| 5 | CH |
-| 6 | OH |
-| 7 | CL |
+| --- | ---- |
+| 0   | BD   |
+| 1   | SD   |
+| 2   | LT   |
+| 3   | MT   |
+| 4   | HT   |
+| 5   | CH   |
+| 6   | OH   |
+| 7   | CL   |
 
 Secondary hits are packed into `StepData.drumExtra`:
 
-| Bit | Drum |
-|-----|------|
-| 0 | CP (clap / crash) |
-| 1 | MA (maracas / ride) |
-| 2 | RS (rimshot) |
+| Bit | Drum                |
+| --- | ------------------- |
+| 0   | CP (clap / crash)   |
+| 1   | MA (maracas / ride) |
+| 2   | RS (rimshot)        |
 
 A step is active when any mapped byte is non-zero.
 
@@ -293,12 +293,12 @@ TR-808, TR-909, delay, distortion, PCF, and compressor.
 
 Each TRAK body is:
 
-| Field | Encoding | Description |
-|-------|----------|-------------|
-| Event count | 4-byte big-endian uint32 | Number of following events |
-| Delta position | 1–5 byte big-endian VLQ | Delta from the previous event |
-| Controller ID | 1 byte | Track-local parameter identifier |
-| Controller value | 1 byte | Track-local value |
+| Field            | Encoding                 | Description                      |
+| ---------------- | ------------------------ | -------------------------------- |
+| Event count      | 4-byte big-endian uint32 | Number of following events       |
+| Delta position   | 1–5 byte big-endian VLQ  | Delta from the previous event    |
+| Controller ID    | 1 byte                   | Track-local parameter identifier |
+| Controller value | 1 byte                   | Track-local value                |
 
 Only the delta position is variable-length. Its stored unit represents 24 of
 the documented 192-PPQN ticks, so one 4/4 bar is `768 / 24 = 32` encoded units.
@@ -335,7 +335,7 @@ distributed RBS 4.2 format document and the independent
 
 ## 9. References
 
-- Propellerhead Software. *ReBirth RB-338 v2.01 Manual* (PDF)
+- Propellerhead Software. _ReBirth RB-338 v2.01 Manual_ (PDF)
 - [ReBirth Museum](https://www.rebirthmuseum.com/) — abandonware download + history
 - [Peff.com ReBirth Resources](https://web.archive.org/web/*/http://peff.com) (Wayback Machine)
 - [Happy TB303 Patterns](https://www.synthtopia.com/content/2008/12/23/free-patterns-and-midi-files-for-tb-303-tr-909-and-tr-808/)

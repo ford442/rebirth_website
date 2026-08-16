@@ -42,8 +42,7 @@ export const INIT_FAILURE_MESSAGES: Record<InitFailureReason, string> = {
     'AudioWorklet is not available in this browser. Metadata preview is still available.',
   'worklet-init-failed':
     'AudioWorklet initialisation failed. Using sketch preview instead of full synthesis.',
-  'engine-init-failed':
-    'Audio engine initialisation failed. Using degraded preview mode.',
+  'engine-init-failed': 'Audio engine initialisation failed. Using degraded preview mode.',
 };
 
 export function classifyInitError(err: unknown): InitFailure {
@@ -56,12 +55,24 @@ export function classifyInitError(err: unknown): InitFailure {
 
   if (lower.includes('does not support required audio apis')) {
     if (typeof WebAssembly !== 'object') {
-      return { reason: 'unsupported-browser', message: INIT_FAILURE_MESSAGES['unsupported-browser'], cause: err };
+      return {
+        reason: 'unsupported-browser',
+        message: INIT_FAILURE_MESSAGES['unsupported-browser'],
+        cause: err,
+      };
     }
     if (typeof AudioWorkletNode === 'undefined') {
-      return { reason: 'worklet-unavailable', message: INIT_FAILURE_MESSAGES['worklet-unavailable'], cause: err };
+      return {
+        reason: 'worklet-unavailable',
+        message: INIT_FAILURE_MESSAGES['worklet-unavailable'],
+        cause: err,
+      };
     }
-    return { reason: 'unsupported-browser', message: INIT_FAILURE_MESSAGES['unsupported-browser'], cause: err };
+    return {
+      reason: 'unsupported-browser',
+      message: INIT_FAILURE_MESSAGES['unsupported-browser'],
+      cause: err,
+    };
   }
 
   if (
@@ -71,11 +82,19 @@ export function classifyInitError(err: unknown): InitFailure {
     lower.includes('importing a module script failed') ||
     lower.includes('error loading dynamically imported module')
   ) {
-    return { reason: 'wasm-load-failed', message: INIT_FAILURE_MESSAGES['wasm-load-failed'], cause: err };
+    return {
+      reason: 'wasm-load-failed',
+      message: INIT_FAILURE_MESSAGES['wasm-load-failed'],
+      cause: err,
+    };
   }
 
   if (lower.includes('audioworklet')) {
-    return { reason: 'worklet-init-failed', message: INIT_FAILURE_MESSAGES['worklet-init-failed'], cause: err };
+    return {
+      reason: 'worklet-init-failed',
+      message: INIT_FAILURE_MESSAGES['worklet-init-failed'],
+      cause: err,
+    };
   }
 
   if (
@@ -90,5 +109,9 @@ export function classifyInitError(err: unknown): InitFailure {
     };
   }
 
-  return { reason: 'engine-init-failed', message: INIT_FAILURE_MESSAGES['engine-init-failed'], cause: err };
+  return {
+    reason: 'engine-init-failed',
+    message: INIT_FAILURE_MESSAGES['engine-init-failed'],
+    cause: err,
+  };
 }

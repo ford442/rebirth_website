@@ -23,12 +23,7 @@ export interface Props {
   demos?: { label: string; src: string; bpm?: number }[];
 }
 
-const {
-  src,
-  autoplay = false,
-  title = 'BROWSER PLAYBACK ENGINE',
-  demos = [],
-} = Astro.props;
+const { src, autoplay = false, title = 'BROWSER PLAYBACK ENGINE', demos = [] } = Astro.props;
 
 // LED status derived from props
 const hasSrc = !!src;
@@ -47,7 +42,6 @@ const hasSrc = !!src;
     data-src={src ?? ''}
     data-demos={JSON.stringify(demos)}
   >
-
     <!-- Status row: LCDs + LED -->
     <div class="player-status-row">
       <Lcd label="STATUS" value="IDLE" size="sm" class="player-lcd-status" />
@@ -60,9 +54,11 @@ const hasSrc = !!src;
     <div class="player-dropzone" id="rbsDropZone">
       <span class="dropzone-icon" aria-hidden="true">📂</span>
       <p class="dropzone-text">
-        {hasSrc
-          ? 'Click Play to preview, or drop another .rbs file here'
-          : 'Drop an .rbs file here, or click to browse'}
+        {
+          hasSrc
+            ? 'Click Play to preview, or drop another .rbs file here'
+            : 'Drop an .rbs file here, or click to browse'
+        }
       </p>
       <input
         type="file"
@@ -83,9 +79,12 @@ const hasSrc = !!src;
       <div class="player-meta__devices" id="rbsMetaDevices" aria-label="ReBirth devices"></div>
     </div>
 
-    <div class="player-toast-stack" id="rbsToastStack" aria-live="polite" aria-relevant="additions"></div>
+    <div class="player-toast-stack" id="rbsToastStack" aria-live="polite" aria-relevant="additions">
+    </div>
 
-    <div class="player-message" id="rbsMessage" aria-live="polite">Ready to initialise WASM bridge…</div>
+    <div class="player-message" id="rbsMessage" aria-live="polite">
+      Ready to initialise WASM bridge…
+    </div>
 
     <div class="player-demo-controls">
       <label for="rbsDemoSelect" class="player-control-label">DEMO</label>
@@ -95,29 +94,244 @@ const hasSrc = !!src;
       <button class="rb-pattern-btn" id="rbsBtnDemoLoad" type="button">Load Demo</button>
     </div>
 
+    <section
+      class="player-studio"
+      id="rbsStudio"
+      data-studio="1"
+      aria-label="Pattern grid and device panel"
+    >
+      <div class="studio-toolbar">
+        <span class="player-control-label">DEVICE</span>
+        <div class="studio-device-tabs" role="tablist" aria-label="Select device">
+          <button
+            type="button"
+            class="studio-tab is-selected"
+            data-studio-device="tb303-a"
+            role="tab"
+            aria-selected="true">303 A</button
+          >
+          <button
+            type="button"
+            class="studio-tab"
+            data-studio-device="tb303-b"
+            role="tab"
+            aria-selected="false">303 B</button
+          >
+          <button
+            type="button"
+            class="studio-tab"
+            data-studio-device="tr808"
+            role="tab"
+            aria-selected="false">808</button
+          >
+          <button
+            type="button"
+            class="studio-tab"
+            data-studio-device="tr909"
+            role="tab"
+            aria-selected="false">909</button
+          >
+        </div>
+        <label class="player-control-label" for="rbsStudioBank">BANK</label>
+        <select id="rbsStudioBank" class="player-select studio-select" aria-label="Pattern bank">
+          <option value="0">A</option>
+          <option value="1">B</option>
+          <option value="2">C</option>
+          <option value="3">D</option>
+        </select>
+        <label class="player-control-label" for="rbsStudioPattern">PTN</label>
+        <select
+          id="rbsStudioPattern"
+          class="player-select studio-select"
+          aria-label="Pattern number"
+        >
+          {Array.from({ length: 8 }, (_, i) => <option value={String(i)}>{i + 1}</option>)}
+        </select>
+      </div>
+
+      <div class="studio-grid" id="rbsStudioGrid" role="grid" aria-label="16-step pattern grid">
+        {
+          Array.from({ length: 16 }, (_, i) => (
+            <div
+              class={`studio-step${i % 4 === 0 ? ' studio-step--beat' : ''}`}
+              data-studio-step={i}
+              role="gridcell"
+              aria-label={`Step ${i + 1}`}
+            >
+              <span class="studio-step__index">{i + 1}</span>
+              <span class="studio-step__label" data-studio-label />
+              <span class="studio-step__flags" data-studio-flags />
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="studio-knobs" id="rbsStudioKnobs" data-studio-knobs>
+        <label class="studio-knob" data-knob-wrap="cutoff">
+          <span>CUTOFF</span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value="0.5"
+            data-studio-param="1"
+            data-studio-knob="cutoff"
+            disabled
+          />
+        </label>
+        <label class="studio-knob" data-knob-wrap="resonance">
+          <span>RESO</span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value="0.5"
+            data-studio-param="2"
+            data-studio-knob="resonance"
+            disabled
+          />
+        </label>
+        <label class="studio-knob" data-knob-wrap="envMod">
+          <span>ENV</span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value="0.5"
+            data-studio-param="3"
+            data-studio-knob="envMod"
+            disabled
+          />
+        </label>
+        <label class="studio-knob" data-knob-wrap="decay">
+          <span>DECAY</span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value="0.5"
+            data-studio-param="4"
+            data-studio-knob="decay"
+            disabled
+          />
+        </label>
+        <label class="studio-knob" data-knob-wrap="accent">
+          <span>ACC</span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value="0.5"
+            data-studio-param="5"
+            data-studio-knob="accent"
+            disabled
+          />
+        </label>
+        <label class="studio-knob" data-knob-wrap="tune">
+          <span>TUNE</span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value="0.5"
+            data-studio-param="0"
+            data-studio-knob="tune"
+            disabled
+          />
+        </label>
+        <label class="studio-knob" data-knob-wrap="level">
+          <span>LEVEL</span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value="0.8"
+            data-studio-param="7"
+            data-studio-knob="level"
+            disabled
+          />
+        </label>
+        <label class="studio-knob" data-knob-wrap="pan">
+          <span>PAN</span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value="0.5"
+            data-studio-param="8"
+            data-studio-knob="pan"
+            disabled
+          />
+        </label>
+        <label class="studio-knob studio-knob--toggle" data-knob-wrap="waveform">
+          <span>WAVE</span>
+          <select
+            data-studio-param="6"
+            data-studio-knob="waveform"
+            disabled
+            aria-label="303 waveform"
+          >
+            <option value="0">SAW</option>
+            <option value="1">SQR</option>
+          </select>
+        </label>
+        <label class="studio-knob studio-knob--toggle" data-knob-wrap="mute">
+          <span>MUTE</span>
+          <input type="checkbox" data-studio-param="9" data-studio-knob="mute" disabled />
+        </label>
+      </div>
+      <p class="studio-hint" id="rbsStudioHint">
+        Load a song in the WASM engine to tweak live knobs.
+      </p>
+    </section>
+
     <!-- Mini 16-step sequencer visualiser -->
     <div class="player-stepbar" aria-label="Step sequencer visualiser" role="img">
-      {Array.from({ length: 16 }, (_, i) => (
-        <span
-          class={`step-dot${i % 4 === 0 ? ' step-dot--beat' : ''}`}
-          data-step={i}
-          aria-hidden="true"
-        />
-      ))}
+      {
+        Array.from({ length: 16 }, (_, i) => (
+          <span
+            class={`step-dot${i % 4 === 0 ? ' step-dot--beat' : ''}`}
+            data-step={i}
+            aria-hidden="true"
+          />
+        ))
+      }
     </div>
 
     <div class="player-levelmeter" aria-hidden="true">
-      {Array.from({ length: 12 }, (_, i) => (
-        <span class="meter-segment" data-meter={i}></span>
-      ))}
+      {Array.from({ length: 12 }, (_, i) => <span class="meter-segment" data-meter={i} />)}
     </div>
 
     <div class="player-controls">
       <label for="rbsVolume" class="player-control-label">VOL</label>
-      <input id="rbsVolume" class="player-slider" type="range" min="0" max="1" step="0.05" value="0.8" />
+      <input
+        id="rbsVolume"
+        class="player-slider"
+        type="range"
+        min="0"
+        max="1"
+        step="0.05"
+        value="0.8"
+      />
       <span id="rbsVolumeValue" class="player-control-value">80%</span>
       <label for="rbsTempo" class="player-control-label">TEMPO</label>
-      <input id="rbsTempo" class="player-slider" type="range" min="70" max="170" step="1" value="120" />
+      <input
+        id="rbsTempo"
+        class="player-slider"
+        type="range"
+        min="70"
+        max="170"
+        step="1"
+        value="120"
+      />
       <span id="rbsTempoValue" class="player-control-value">120 BPM</span>
     </div>
 
@@ -129,23 +343,23 @@ const hasSrc = !!src;
         type="button"
         aria-label="Play"
         title="Play"
-        disabled
-      >▶</button>
+        disabled>▶</button
+      >
       <button
         class="rb-transport-btn"
         id="rbsBtnStop"
         type="button"
         aria-label="Stop"
         title="Stop"
-        disabled
-      >■</button>
+        disabled>■</button
+      >
       <button
         class="rb-transport-btn rb-transport-btn--rec"
         id="rbsBtnLoad"
         type="button"
         aria-label="Load file"
-        title="Load file"
-      >●</button>
+        title="Load file">●</button
+      >
     </nav>
 
     <!-- Error / fallback message -->
@@ -177,10 +391,18 @@ const hasSrc = !!src;
     align-items: center;
   }
 
-  .player-lcd-status { flex: 1 1 80px; }
-  .player-lcd-bpm    { flex: 1 1 60px; }
-  .player-lcd-bar    { flex: 1 1 60px; }
-  .player-led        { margin-left: auto; }
+  .player-lcd-status {
+    flex: 1 1 80px;
+  }
+  .player-lcd-bpm {
+    flex: 1 1 60px;
+  }
+  .player-lcd-bar {
+    flex: 1 1 60px;
+  }
+  .player-led {
+    margin-left: auto;
+  }
 
   /* Drop zone */
   .player-dropzone {
@@ -189,7 +411,9 @@ const hasSrc = !!src;
     padding: 1.5rem 1rem;
     text-align: center;
     cursor: pointer;
-    transition: border-color 150ms ease, background 150ms ease;
+    transition:
+      border-color 150ms ease,
+      background 150ms ease;
     position: relative;
   }
 
@@ -343,8 +567,14 @@ const hasSrc = !!src;
   }
 
   @keyframes toast-in {
-    from { opacity: 0; transform: translateY(-4px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .player--reduced-motion :global(.player-toast) {
@@ -397,7 +627,9 @@ const hasSrc = !!src;
     border-radius: 2px;
     background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
     border: 1px solid #444;
-    transition: background 80ms ease, box-shadow 80ms ease;
+    transition:
+      background 80ms ease,
+      box-shadow 80ms ease;
   }
 
   .step-dot--beat {
@@ -426,6 +658,148 @@ const hasSrc = !!src;
     box-shadow: 0 0 6px rgba(57, 255, 20, 0.4);
   }
 
+  .player-studio {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 0.65rem;
+    border: 1px solid var(--rb-border, #3a3a3a);
+    background: rgba(0, 0, 0, 0.22);
+  }
+
+  .studio-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 0.6rem;
+    align-items: center;
+  }
+
+  .studio-device-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .studio-tab {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #888;
+    background: #1a1a1a;
+    border: 1px solid #3a3a3a;
+    padding: 0.3rem 0.5rem;
+    cursor: pointer;
+  }
+
+  .studio-tab.is-selected {
+    color: #111;
+    background: var(--rb-amber, #ffb000);
+    border-color: var(--rb-amber, #ffb000);
+  }
+
+  .studio-select {
+    width: auto;
+    min-width: 3.5rem;
+    min-height: 32px;
+    padding: 0.25rem 0.4rem;
+  }
+
+  .studio-grid {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 0.3rem;
+  }
+
+  .studio-step {
+    min-height: 3.1rem;
+    padding: 0.2rem;
+    border: 1px solid #3a3a3a;
+    background: #161616;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.58rem;
+    color: #666;
+  }
+
+  .studio-step--beat {
+    border-color: #5a2030;
+  }
+
+  .studio-step.is-active {
+    background: #2a2410;
+    border-color: #8a7010;
+    color: var(--rb-amber, #ffb000);
+  }
+
+  .studio-step.is-current {
+    box-shadow: inset 0 0 0 1px var(--rb-green, #39ff14);
+  }
+
+  .studio-step__index {
+    opacity: 0.55;
+  }
+
+  .studio-step__label {
+    color: inherit;
+    word-break: break-all;
+    line-height: 1.15;
+  }
+
+  .studio-step__flags {
+    color: var(--rb-red, #c41e3a);
+    letter-spacing: 0.04em;
+  }
+
+  .studio-knobs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+    gap: 0.45rem 0.65rem;
+  }
+
+  .studio-knob[hidden] {
+    display: none !important;
+  }
+
+  .studio-knob {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.58rem;
+    letter-spacing: 0.05em;
+    color: #888;
+  }
+
+  .studio-knob input[type='range'] {
+    width: 100%;
+    accent-color: var(--rb-amber, #ffb000);
+  }
+
+  .studio-knob select {
+    background: #111;
+    color: #c0c0c0;
+    border: 1px solid #3a3a3a;
+    font-size: 0.65rem;
+  }
+
+  .studio-hint {
+    margin: 0;
+    font-size: 0.7rem;
+    color: #777;
+  }
+
+  .rbs-player[data-player-mode^='degraded'] .studio-knobs,
+  .rbs-player[data-studio-live='0'] .studio-knobs {
+    opacity: 0.4;
+  }
+
+  .player--reduced-motion .studio-step {
+    transition: none;
+  }
+
   .player-levelmeter {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -437,7 +811,9 @@ const hasSrc = !!src;
     border-radius: 1px;
     background: #232323;
     border: 1px solid #343434;
-    transition: background 90ms ease, box-shadow 90ms ease;
+    transition:
+      background 90ms ease,
+      box-shadow 90ms ease;
   }
 
   .meter-segment.is-active {
@@ -543,6 +919,10 @@ const hasSrc = !!src;
       padding: 1.25rem 0.75rem;
     }
 
+    .studio-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
     .dropzone-text {
       font-size: 0.8rem;
     }
@@ -562,8 +942,18 @@ const hasSrc = !!src;
   // Public integration hook used by the shipping-engine browser checks. These
   // classes contain no credentials or private state; the player uses the same
   // exports internally.
-  (window as Window & { WasmAudioBridge?: typeof WasmAudioBridge; DegradedRbsPlayer?: typeof DegradedRbsPlayer }).WasmAudioBridge = WasmAudioBridge;
-  (window as Window & { WasmAudioBridge?: typeof WasmAudioBridge; DegradedRbsPlayer?: typeof DegradedRbsPlayer }).DegradedRbsPlayer = DegradedRbsPlayer;
+  (
+    window as Window & {
+      WasmAudioBridge?: typeof WasmAudioBridge;
+      DegradedRbsPlayer?: typeof DegradedRbsPlayer;
+    }
+  ).WasmAudioBridge = WasmAudioBridge;
+  (
+    window as Window & {
+      WasmAudioBridge?: typeof WasmAudioBridge;
+      DegradedRbsPlayer?: typeof DegradedRbsPlayer;
+    }
+  ).DegradedRbsPlayer = DegradedRbsPlayer;
 
   document.querySelectorAll<HTMLElement>('.rbs-player').forEach((playerEl) => {
     let demos: DemoSong[] = [];

@@ -7,7 +7,11 @@ import HardwarePanel from '../../components/ui/HardwarePanel.astro';
 import Led from '../../components/ui/Led.astro';
 import modsData from '../../data/mods-metadata.json';
 import fullIndex from '../../data/mods-full-index.json';
-import { totalMods, documentedMods as totalDocumented, modCoveragePercent } from '../../data/archive-stats';
+import {
+  totalMods,
+  documentedMods as totalDocumented,
+  modCoveragePercent,
+} from '../../data/archive-stats';
 import { normalizeBase } from '../../lib/url';
 
 const documentedMods = modsData.mods || [];
@@ -16,15 +20,15 @@ const totalRaw = totalMods;
 
 // Group raw mods by first letter
 const letters = new Set<string>();
-allMods.forEach(m => {
+allMods.forEach((m) => {
   const c = m.filename?.charAt(0)?.toUpperCase();
   if (c) letters.add(c);
 });
 const alphaLetters = Array.from(letters).sort();
 
-const grouped = alphaLetters.map(letter => ({
+const grouped = alphaLetters.map((letter) => ({
   letter,
-  mods: allMods.filter(m => m.filename?.charAt(0)?.toUpperCase() === letter),
+  mods: allMods.filter((m) => m.filename?.charAt(0)?.toUpperCase() === letter),
 }));
 
 const baseModsUrl = 'https://storage.1ink.us/rebirth_mods';
@@ -36,7 +40,12 @@ const archiveStats = [
   { label: 'DOCUMENTED', value: totalDocumented, ariaLabel: 'Documented mods' },
   { label: 'TOTAL', value: totalRaw, ariaLabel: 'Total available mods' },
   { label: 'SOURCE', value: 'storage.1ink.us', ariaLabel: 'Mod file host' },
-  { label: 'COVERAGE', value: `${coveragePercent}%`, ariaLabel: 'Metadata coverage percentage', title: `${totalDocumented} of ${totalRaw} mods documented` },
+  {
+    label: 'COVERAGE',
+    value: `${coveragePercent}%`,
+    ariaLabel: 'Metadata coverage percentage',
+    title: `${totalDocumented} of ${totalRaw} mods documented`,
+  },
 ];
 ---
 
@@ -58,7 +67,9 @@ const archiveStats = [
     <div class="coverage-panel" role="region" aria-label="Metadata coverage">
       <div class="coverage-header">
         <span class="coverage-label">Metadata coverage</span>
-        <span class="coverage-value">{totalDocumented} / {totalRaw} documented — {coveragePercent}%</span>
+        <span class="coverage-value"
+          >{totalDocumented} / {totalRaw} documented — {coveragePercent}%</span
+        >
       </div>
       <div class="coverage-track" aria-hidden="true">
         <div class="coverage-bar" style={`width: ${coveragePercent}%`}></div>
@@ -79,7 +90,9 @@ const archiveStats = [
   <Fragment slot="search">
     <div class="sticky-search">
       <p class="search-explainer">
-        First time here? Read the <a href={`${baseUrl}/beginner-guide`}>Beginner Guide</a> and <a href={`${baseUrl}/glossary`}>Glossary</a> before exploring advanced mod terms.
+        First time here? Read the <a href={`${baseUrl}/beginner-guide`}>Beginner Guide</a> and <a
+          href={`${baseUrl}/glossary`}>Glossary</a
+        > before exploring advanced mod terms.
       </p>
       <div class="search-filter-bar">
         <input
@@ -91,12 +104,24 @@ const archiveStats = [
           aria-describedby="modsResultCount"
         />
         <div class="filter-tags">
-          <button class="rb-tag-filter active" data-tag="" aria-label="Show all mods">All Documented Mods</button>
-          <button class="rb-tag-filter" data-tag="official" aria-label="Filter official mods">Recommended: Official</button>
-          <button class="rb-tag-filter" data-tag="industrial" aria-label="Filter industrial mods">Industrial Style</button>
-          <button class="rb-tag-filter" data-tag="house" aria-label="Filter house mods">House Style</button>
-          <button class="rb-tag-filter" data-tag="dark" aria-label="Filter dark mods">Dark Style</button>
-          <button class="rb-tag-filter" data-tag="synth" aria-label="Filter synth mods">Synth Focus</button>
+          <button class="rb-tag-filter active" data-tag="" aria-label="Show all mods"
+            >All Documented Mods</button
+          >
+          <button class="rb-tag-filter" data-tag="official" aria-label="Filter official mods"
+            >Recommended: Official</button
+          >
+          <button class="rb-tag-filter" data-tag="industrial" aria-label="Filter industrial mods"
+            >Industrial Style</button
+          >
+          <button class="rb-tag-filter" data-tag="house" aria-label="Filter house mods"
+            >House Style</button
+          >
+          <button class="rb-tag-filter" data-tag="dark" aria-label="Filter dark mods"
+            >Dark Style</button
+          >
+          <button class="rb-tag-filter" data-tag="synth" aria-label="Filter synth mods"
+            >Synth Focus</button
+          >
         </div>
         <div id="modsResultCount" class="mods-result-count" aria-live="polite" aria-atomic="true">
           Showing all documented mods
@@ -111,17 +136,19 @@ const archiveStats = [
     </div>
 
     <div id="modsGrid" class="mods-grid" role="main">
-      {documentedMods.map((mod: any) => (
-        <ModBrowserCard
-          filename={mod.filename}
-          title={mod.title}
-          author={mod.author}
-          year={mod.year}
-          description={mod.description}
-          tags={mod.tags}
-          rackmount={true}
-        />
-      ))}
+      {
+        documentedMods.map((mod: any) => (
+          <ModBrowserCard
+            filename={mod.filename}
+            title={mod.title}
+            author={mod.author}
+            year={mod.year}
+            description={mod.description}
+            tags={mod.tags}
+            rackmount={true}
+          />
+        ))
+      }
     </div>
 
     <ArchiveEmptyState
@@ -154,84 +181,98 @@ const archiveStats = [
 
       <!-- A-Z jump nav -->
       <nav class="az-nav" aria-label="Jump to letter">
-        {alphaLetters.map(letter => (
-          <a href={`#letter-${letter}`} class="az-nav__link">{letter}</a>
-        ))}
+        {
+          alphaLetters.map((letter) => (
+            <a href={`#letter-${letter}`} class="az-nav__link">
+              {letter}
+            </a>
+          ))
+        }
       </nav>
 
       <!-- Grouped list -->
       <div id="rawIndex" class="raw-index">
-        {grouped.map(({ letter, mods }) => (
-          <section class="raw-group" id={`letter-${letter}`} data-letter={letter}>
-            <h2 class="raw-group__heading">
-              <span class="raw-group__letter">{letter}</span>
-              <Led status="online" label={`${mods.length} FILE${mods.length !== 1 ? 'S' : ''}`} ariaHidden={true} />
-            </h2>
-            <div class="raw-list">
-              {mods.map(m => (
-                <div class={`raw-item ${m.hasMeta ? 'raw-item--documented' : ''}`} data-filename={m.filename.toLowerCase()}>
-                  <span class="raw-item__name">
-                    {m.filename.replace(/\.rbm$/i, '')}
-                  </span>
-                  <div class="raw-item__row raw-item__row--meta">
-                    <span class="raw-item__size">{m.size}</span>
-                    {m.hasMeta && (
-                      <span class="raw-item__badge">DOC</span>
+        {
+          grouped.map(({ letter, mods }) => (
+            <section class="raw-group" id={`letter-${letter}`} data-letter={letter}>
+              <h2 class="raw-group__heading">
+                <span class="raw-group__letter">{letter}</span>
+                <Led
+                  status="online"
+                  label={`${mods.length} FILE${mods.length !== 1 ? 'S' : ''}`}
+                  ariaHidden={true}
+                />
+              </h2>
+              <div class="raw-list">
+                {mods.map((m) => (
+                  <div
+                    class={`raw-item ${m.hasMeta ? 'raw-item--documented' : ''}`}
+                    data-filename={m.filename.toLowerCase()}
+                  >
+                    <span class="raw-item__name">{m.filename.replace(/\.rbm$/i, '')}</span>
+                    <div class="raw-item__row raw-item__row--meta">
+                      <span class="raw-item__size">{m.size}</span>
+                      {m.hasMeta && <span class="raw-item__badge">DOC</span>}
+                    </div>
+                    {m.hasMeta && m.title && <span class="raw-item__title">{m.title}</span>}
+                    {m.hasMeta && (m.author || (m.tags && m.tags.length > 0)) && (
+                      <div class="raw-item__row raw-item__row--details">
+                        {m.author && <span class="raw-item__author">by {m.author}</span>}
+                        {m.tags && m.tags.length > 0 && (
+                          <span class="raw-item__tags">
+                            {m.tags.slice(0, 3).map((tag: string) => (
+                              <span class="raw-tag">{tag}</span>
+                            ))}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {m.hasMeta ? (
+                      <a
+                        href={`${baseModsUrl}/${encodeURIComponent(m.filename)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="raw-item__link"
+                        aria-label={`Download ${m.filename} from storage.1ink.us, opens in new tab`}
+                        title={`Download ${m.filename} from storage.1ink.us (opens in new tab)`}
+                      >
+                        <span aria-hidden="true">↓</span>
+                      </a>
+                    ) : (
+                      <a
+                        href={`${issueBaseUrl}?template=mod-metadata.yml&title=${encodeURIComponent(`Add metadata for: ${m.filename}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="raw-item__link raw-item__link--document"
+                        aria-label={`Help document ${m.filename} on GitHub, opens in new tab`}
+                        title={`Help document ${m.filename} on GitHub (opens in new tab)`}
+                      >
+                        <span aria-hidden="true">?</span>
+                      </a>
                     )}
                   </div>
-                  {m.hasMeta && m.title && (
-                    <span class="raw-item__title">{m.title}</span>
-                  )}
-                  {m.hasMeta && (m.author || (m.tags && m.tags.length > 0)) && (
-                    <div class="raw-item__row raw-item__row--details">
-                      {m.author && (
-                        <span class="raw-item__author">by {m.author}</span>
-                      )}
-                      {m.tags && m.tags.length > 0 && (
-                        <span class="raw-item__tags">
-                          {m.tags.slice(0, 3).map((tag: string) => (
-                            <span class="raw-tag">{tag}</span>
-                          ))}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  {m.hasMeta ? (
-                    <a
-                      href={`${baseModsUrl}/${encodeURIComponent(m.filename)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="raw-item__link"
-                      aria-label={`Download ${m.filename} from storage.1ink.us, opens in new tab`}
-                      title={`Download ${m.filename} from storage.1ink.us (opens in new tab)`}
-                    >
-                      <span aria-hidden="true">↓</span>
-                    </a>
-                  ) : (
-                    <a
-                      href={`${issueBaseUrl}?template=mod-metadata.yml&title=${encodeURIComponent(`Add metadata for: ${m.filename}`)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="raw-item__link raw-item__link--document"
-                      aria-label={`Help document ${m.filename} on GitHub, opens in new tab`}
-                      title={`Help document ${m.filename} on GitHub (opens in new tab)`}
-                    >
-                      <span aria-hidden="true">?</span>
-                    </a>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        ))}
+                ))}
+              </div>
+            </section>
+          ))
+        }
       </div>
 
-      <ArchiveEmptyState id="rawEmpty" message="No files match your filter. Clear search or try a shorter filename fragment." />
+      <ArchiveEmptyState
+        id="rawEmpty"
+        message="No files match your filter. Clear search or try a shorter filename fragment."
+      />
     </HardwarePanel>
 
     <!-- Stats footer -->
     <div class="mods-footer">
-      <p>Want to add documentation for a mod? <a href="https://github.com/ford442/rebirth_website/issues" rel="noopener noreferrer" target="_blank">Open an issue on GitHub</a> with the mod filename and details.</p>
+      <p>
+        Want to add documentation for a mod? <a
+          href="https://github.com/ford442/rebirth_website/issues"
+          rel="noopener noreferrer"
+          target="_blank">Open an issue on GitHub</a
+        > with the mod filename and details.
+      </p>
     </div>
   </Fragment>
 </ArchivePageShell>
@@ -275,7 +316,11 @@ const archiveStats = [
 
   .coverage-bar {
     height: 100%;
-    background: linear-gradient(90deg, var(--rb-green-dim, #1a5230) 0%, var(--rb-green, #39ff14) 100%);
+    background: linear-gradient(
+      90deg,
+      var(--rb-green-dim, #1a5230) 0%,
+      var(--rb-green, #39ff14) 100%
+    );
     box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
     transition: width 600ms ease;
     min-width: 4px;
@@ -432,7 +477,7 @@ const archiveStats = [
   .az-nav__link:hover {
     color: var(--rb-amber);
     border-color: var(--rb-amber-dim);
-    box-shadow: 0 0 8px rgba(255,176,0,0.1);
+    box-shadow: 0 0 8px rgba(255, 176, 0, 0.1);
   }
 
   .raw-index {
@@ -455,7 +500,7 @@ const archiveStats = [
     font-size: 1.2rem;
     font-weight: 700;
     color: var(--rb-amber);
-    text-shadow: 0 0 10px rgba(255,176,0,0.25);
+    text-shadow: 0 0 10px rgba(255, 176, 0, 0.25);
     min-width: 24px;
   }
 
@@ -484,26 +529,28 @@ const archiveStats = [
     grid-template-rows: auto auto auto auto; /* 4 rows: name / size / title / details */
     gap: 0.05rem 0.45rem;
     padding: 0.4rem 0.5rem;
-    background: rgba(0,0,0,0.15);
+    background: rgba(0, 0, 0, 0.15);
     border: 1px solid transparent;
     border-radius: 3px;
-    transition: background 120ms ease, border-color 120ms ease;
+    transition:
+      background 120ms ease,
+      border-color 120ms ease;
     position: relative;
   }
 
   .raw-item:hover {
-    background: rgba(255,176,0,0.04);
-    border-color: rgba(255,176,0,0.15);
+    background: rgba(255, 176, 0, 0.04);
+    border-color: rgba(255, 176, 0, 0.15);
   }
 
   .raw-item--documented {
-    background: rgba(57,255,20,0.03);
+    background: rgba(57, 255, 20, 0.03);
     border-left: 2px solid var(--rb-green-dim);
   }
 
   .raw-item--documented:hover {
-    background: rgba(57,255,20,0.06);
-    border-color: rgba(57,255,20,0.2);
+    background: rgba(57, 255, 20, 0.06);
+    border-color: rgba(57, 255, 20, 0.2);
   }
 
   .raw-item__name {
@@ -536,7 +583,7 @@ const archiveStats = [
     text-transform: uppercase;
     padding: 1px 4px;
     border-radius: 2px;
-    background: rgba(57,255,20,0.1);
+    background: rgba(57, 255, 20, 0.1);
     color: var(--rb-green-bright);
     border: 1px solid var(--rb-green-dim);
     white-space: nowrap;
@@ -581,9 +628,9 @@ const archiveStats = [
     font-size: 0.55rem;
     padding: 1px 4px;
     border-radius: 2px;
-    background: rgba(255,176,0,0.08);
+    background: rgba(255, 176, 0, 0.08);
     color: var(--rb-amber-dim);
-    border: 1px solid rgba(255,176,0,0.15);
+    border: 1px solid rgba(255, 176, 0, 0.15);
     white-space: nowrap;
   }
 
@@ -611,7 +658,7 @@ const archiveStats = [
   .raw-item__link:hover {
     color: var(--rb-amber);
     border-color: var(--rb-amber-dim);
-    box-shadow: 0 0 8px rgba(255,176,0,0.15);
+    box-shadow: 0 0 8px rgba(255, 176, 0, 0.15);
   }
 
   .raw-item__link--document {
@@ -735,7 +782,8 @@ const archiveStats = [
   function syncModUrl() {
     const params = new URLSearchParams(window.location.search);
     const searchTerm = (modSearch as HTMLInputElement | null)?.value.trim() ?? '';
-    const activeTag = document.querySelector('.rb-tag-filter.active')?.getAttribute('data-tag') ?? '';
+    const activeTag =
+      document.querySelector('.rb-tag-filter.active')?.getAttribute('data-tag') ?? '';
 
     if (searchTerm) {
       params.set('q', searchTerm);
@@ -756,16 +804,24 @@ const archiveStats = [
 
   function filterMods() {
     const searchTerm = (modSearch as HTMLInputElement | null)?.value.toLowerCase() ?? '';
-    const activeTag = document.querySelector('.rb-tag-filter.active')?.getAttribute('data-tag') ?? '';
+    const activeTag =
+      document.querySelector('.rb-tag-filter.active')?.getAttribute('data-tag') ?? '';
     let visibleCount = 0;
 
     modCards.forEach((card) => {
       const title = card.querySelector('.mod-card__title')?.textContent?.toLowerCase() ?? '';
       const author = card.querySelector('.mod-card__author')?.textContent?.toLowerCase() ?? '';
-      const description = card.querySelector('.mod-card__description')?.textContent?.toLowerCase() ?? '';
-      const tags = Array.from(card.querySelectorAll('.mod-tag')).map((t: any) => t.textContent.toLowerCase());
-      
-      const matchesSearch = !searchTerm || title.includes(searchTerm) || author.includes(searchTerm) || description.includes(searchTerm);
+      const description =
+        card.querySelector('.mod-card__description')?.textContent?.toLowerCase() ?? '';
+      const tags = Array.from(card.querySelectorAll('.mod-tag')).map((t: any) =>
+        t.textContent.toLowerCase()
+      );
+
+      const matchesSearch =
+        !searchTerm ||
+        title.includes(searchTerm) ||
+        author.includes(searchTerm) ||
+        description.includes(searchTerm);
       const matchesTag = !activeTag || tags.includes(activeTag);
       const isVisible = matchesSearch && matchesTag;
       (card as HTMLElement).style.display = isVisible ? '' : 'none';
@@ -777,9 +833,10 @@ const archiveStats = [
     }
 
     if (modsResultCount) {
-      modsResultCount.textContent = searchTerm || activeTag
-        ? `Showing ${visibleCount} documented mod${visibleCount === 1 ? '' : 's'}`
-        : `Showing all ${visibleCount} documented mods`;
+      modsResultCount.textContent =
+        searchTerm || activeTag
+          ? `Showing ${visibleCount} documented mod${visibleCount === 1 ? '' : 's'}`
+          : `Showing all ${visibleCount} documented mods`;
     }
   }
 
@@ -845,7 +902,9 @@ const archiveStats = [
     });
 
     if (rawCount) {
-      rawCount.textContent = term ? `${visibleFiles} of ${rawItems.length} files` : `${rawItems.length} files`;
+      rawCount.textContent = term
+        ? `${visibleFiles} of ${rawItems.length} files`
+        : `${rawItems.length} files`;
     }
     if (rawEmpty) {
       rawEmpty.classList.toggle('is-hidden', visibleFiles > 0);

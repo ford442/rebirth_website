@@ -11,35 +11,34 @@ In-browser playback engine for ReBirth RB-338 `.rbs` song files.
 
 ## Player capability matrix
 
-| Capability | WASM engine | Degraded (sketch) | Degraded (metadata only) |
-|------------|-------------|-------------------|--------------------------|
-| Load `.rbs` via drag/drop or file picker | ✅ | ✅ | ✅ |
-| Show title / author from file header | ✅ | ✅ | ✅ |
-| Full ReBirth synthesis (303/808/909) | ✅ | ❌ | ❌ |
-| Transport play / pause / stop | ✅ | ✅ (metronome sketch) | ❌ (play disabled) |
-| Step bar + level meter animation | ✅ | ✅ | ❌ |
-| Tempo slider | ✅ | ✅ | ✅ (display only) |
-| Volume slider | ✅ | ✅ | ❌ |
+| Capability                               | WASM engine | Degraded (sketch)     | Degraded (metadata only) |
+| ---------------------------------------- | ----------- | --------------------- | ------------------------ |
+| Load `.rbs` via drag/drop or file picker | ✅          | ✅                    | ✅                       |
+| Show title / author from file header     | ✅          | ✅                    | ✅                       |
+| Full ReBirth synthesis (303/808/909)     | ✅          | ❌                    | ❌                       |
+| Transport play / pause / stop            | ✅          | ✅ (metronome sketch) | ❌ (play disabled)       |
+| Step bar + level meter animation         | ✅          | ✅                    | ❌                       |
+| Tempo slider                             | ✅          | ✅                    | ✅ (display only)        |
+| Volume slider                            | ✅          | ✅                    | ❌                       |
 
 ### Init failure reasons
 
 When `WasmAudioBridge.init()` fails, `RbsPlayer` classifies the error and switches to `DegradedRbsPlayer`:
 
-| Reason | Typical cause | User message |
-|--------|---------------|--------------|
-| `unsupported-browser` | No WebAssembly | Browser lacks required APIs |
-| `wasm-unavailable` | `public/wasm/` empty (not built) | WASM binaries not built yet |
-| `wasm-load-failed` | 404 / blocked glue script | WASM assets failed to load |
-| `worklet-unavailable` | No `AudioWorkletNode` | AudioWorklet not supported |
-| `worklet-init-failed` | Worklet registration error | Worklet init failed |
-| `engine-init-failed` | Other engine errors | Generic degraded fallback |
+| Reason                | Typical cause                    | User message                |
+| --------------------- | -------------------------------- | --------------------------- |
+| `unsupported-browser` | No WebAssembly                   | Browser lacks required APIs |
+| `wasm-unavailable`    | `public/wasm/` empty (not built) | WASM binaries not built yet |
+| `wasm-load-failed`    | 404 / blocked glue script        | WASM assets failed to load  |
+| `worklet-unavailable` | No `AudioWorkletNode`            | AudioWorklet not supported  |
+| `worklet-init-failed` | Worklet registration error       | Worklet init failed         |
+| `engine-init-failed`  | Other engine errors              | Generic degraded fallback   |
 
 Pure-TS metadata parsing lives in `src/wasm/js/RbsMetadataSniffer.ts` (HEAD / GLOB / USRI chunks). Sketch preview uses Web Audio oscillators in `src/wasm/js/DegradedRbsPlayer.ts` — audible metronome clicks, not silent success.
 
-
 ## Integration Roadmap (Phase Plan)
 
-1. **Parser completion** — metadata and patterns decode from real `.rbs` payloads ✅. Arrangement (`TRAK` chunks) is pending.
+1. **Parser completion** — metadata, patterns, and TRAK arrangement decode from real `.rbs` payloads (`RbsParser::readArrangement` / `buildArrangement`) ✅. `.rbm` mods are `CAT `/`PRBM` + `EMBF` resource bundles (`RbmParser`, `RbmFormat.md`) ✅ — sample playback is not wired yet.
 2. **Audio engine parity** — Phase 1 procedural TR-808 / TR-909 drums (BD, SD, CH, OH, RS, CP / clap) ✅. TB-303 filter/slide DSP and `.rbm` sample playback remain future work.
 3. **Realtime control API** — transport + tempo + volume commands flow through a lock-free queue ✅.
 4. **Archive demo pipeline** — add curated demo `.rbs` files under `public/archive/rbs-songs/demo/` for direct browser previews.
@@ -58,11 +57,12 @@ We use **Architecture A — Emscripten Wasm Audio Worklet**.
   - Polls `getPlaybackPosition()` for UI updates.
 
 - **Audio thread** (`RbsWorklet` / `RbsAudioEngine::processBlock()`):
-  - Owns the `Sequencer`, `Mixer`, and all `Voice` instances.
+  - Pins an `EngineSnapshot*` via a lock-free hazard (no `shared_ptr` in the callback).
   - Drains the command queue at the start of every 128-frame render quantum.
-  - Generates sample-accurate step events from the current BPM and sample rate.
-  - Renders each voice into a scratch mono buffer and mixes to planar stereo (L/R channel buffers).
+  - Generates sample-accurate step events and renders **sub-blocks** at each `sampleOffset`.
+  - Mixes to planar stereo (L/R). Master volume uses WASM SIMD128 when compiled with Emscripten.
   - Publishes `bar`/`step` via atomic variables so the main thread can read them without locking.
+  - The main thread builds a new snapshot (voices + mixer + song) and retires the old one once the audio epoch has advanced.
 
 This keeps latency low (128-frame Web Audio quanta), avoids main-thread synthesis work, and matches the existing `-sAUDIO_WORKLET=1` / `-sWASM_WORKERS=1` build configuration.
 
@@ -98,7 +98,10 @@ cmake --build src/wasm/cpp/build --parallel
 ctest --test-dir src/wasm/cpp/build --output-on-failure
 ```
 
-A lightweight Makefile wrapper (`src/wasm/cpp/Makefile`) remains for ad-hoc `g++` builds without CMake.
+A lightweight Makefile (`src/wasm/cpp/Makefile`) wraps CMake / `build.sh`. All
+translation units live in `src/wasm/cpp/sources.cmake` — do not add `.cpp` files
+to `CMakeLists.txt`, `Makefile`, or `build.sh` individually. `build.sh` is an
+`emcmake` wrapper.
 
 **Inspect a song file** — default output is JSON (`WasmParsedSong`-compatible):
 
@@ -110,13 +113,13 @@ cmake --build src/wasm/cpp/build --target rbs-inspect
 
 #### What the native tests cover
 
-| Area | Tests |
-|------|-------|
+| Area                          | Tests                                                  |
+| ----------------------------- | ------------------------------------------------------ |
 | Header / container validation | Rejects truncated files and missing `CAT`/`RB40` magic |
-| Metadata extraction | Title, author, info text from golden `.rbs` fixtures |
-| Pattern counts | 32 patterns per device on v2.x fixtures |
-| Sequencer timing | Bar length in samples at 120/140 BPM (±1 ms) |
-| Engine / mixer / drums | Transport, voice routing, procedural drum hits |
+| Metadata extraction           | Title, author, info text from golden `.rbs` fixtures   |
+| Pattern counts                | 32 patterns per device on v2.x fixtures                |
+| Sequencer timing              | Bar length in samples at 120/140 BPM (±1 ms)           |
+| Engine / mixer / drums        | Transport, voice routing, procedural drum hits         |
 
 Fixtures live in [`test-fixtures/`](test-fixtures/). CI runs this suite in [`.github/workflows/native-cpp.yml`](../../.github/workflows/native-cpp.yml) (no Emscripten, typically under one minute).
 
@@ -151,10 +154,10 @@ The pinned Emscripten version lives in [`cpp/.emscripten-version`](cpp/.emscript
 
 The build script (`src/wasm/cpp/build.sh`) supports two modes:
 
-| Mode | Command | Optimisation | Memory growth | Best for |
-|------|---------|--------------|---------------|----------|
-| Release | `npm run wasm:build` | `-O3 -flto` | Disabled, fixed 64 MB heap | Shipping |
-| Debug | `npm run wasm:build:debug` | `-O0 -g3` | Enabled, 32–128 MB cap | Development |
+| Mode    | Command                    | Optimisation | Memory growth              | Best for    |
+| ------- | -------------------------- | ------------ | -------------------------- | ----------- |
+| Release | `npm run wasm:build`       | `-O3 -flto`  | Disabled, fixed 64 MB heap | Shipping    |
+| Debug   | `npm run wasm:build:debug` | `-O0 -g3`    | Enabled, 32–128 MB cap     | Development |
 
 Release uses a fixed heap so the audio callback never triggers a memory resize. Debug enables `ASSERTIONS`, `SAFE_HEAP`, `STACK_OVERFLOW_CHECK`, and `WEBAUDIO_DEBUG` to catch memory and worklet issues early.
 
@@ -170,11 +173,11 @@ AudioWorklet code into the ES-module glue, so the build emits a tiny
 
 Assets live in `public/wasm/` and are served from the site's base path. With `base: '/rebirth_website'` (the canonical GitHub Pages deployment), the runtime URLs become:
 
-| File | Public | Served at |
-|------|--------|-----------|
-| Glue | `public/wasm/rbsParser.js` | `/rebirth_website/wasm/rbsParser.js` |
-| WASM | `public/wasm/rbsParser.wasm` | `/rebirth_website/wasm/rbsParser.wasm` |
-| Worklet | `public/wasm/rbsWorklet.js` | `/rebirth_website/wasm/rbsWorklet.js` |
+| File           | Public                        | Served at                               |
+| -------------- | ----------------------------- | --------------------------------------- |
+| Glue           | `public/wasm/rbsParser.js`    | `/rebirth_website/wasm/rbsParser.js`    |
+| WASM           | `public/wasm/rbsParser.wasm`  | `/rebirth_website/wasm/rbsParser.wasm`  |
+| Worklet        | `public/wasm/rbsWorklet.js`   | `/rebirth_website/wasm/rbsWorklet.js`   |
 | Build manifest | `public/wasm/wasm-build.json` | `/rebirth_website/wasm/wasm-build.json` |
 
 `src/wasm/audio-module.config.ts` reads `import.meta.env.BASE_URL` (via `normalizeBase`) so these paths stay correct for the configured deployment base. The generated files remain ignored and are produced by CI rather than committed.
@@ -236,10 +239,11 @@ The processor name (`"rbs-player"`) is **not** a linker flag. It is set at runti
 ```
 src/wasm/
 ├── cpp/
-│   ├── CMakeLists.txt           # Native build + ctest (shared sources with WASM)
+│   ├── CMakeLists.txt           # Native + emcmake WASM (includes sources.cmake)
+│   ├── sources.cmake            # Single source list for engine / parser / worklet
 │   ├── Makefile                 # Optional g++ wrapper (no CMake required)
 │   ├── main.cpp                 # Emscripten entry point + embind exports
-│   ├── build.sh                 # Emscripten compile script
+│   ├── build.sh                 # Thin emcmake wrapper + worklet/manifest post-process
 │   ├── tools/
 │   │   └── rbs-inspect.cpp      # CLI: .rbs → JSON ParsedSong dump
 │   ├── tests/                   # doctest unit tests (native only)
@@ -285,6 +289,7 @@ High-level structure:
 ## Contributing
 
 If you have experience with:
+
 - **Audio DSP** — TB-303 / TR-808 / TR-909 synthesis algorithms
 - **Reverse engineering** — binary file format analysis
 - **Emscripten / Web Audio** — WASM Audio Worklet optimisation

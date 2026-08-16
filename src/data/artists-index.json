@@ -1,7 +1,7 @@
 {
   "meta": {
-    "generated": "2026-07-20T08:00:49.827645+00:00",
-    "artistCount": 6
+    "generated": "2026-08-16T14:05:16.556154+00:00",
+    "artistCount": 82
   },
   "artists": [
     {
@@ -50,9 +50,34 @@
       "aliases": [
         "DJ Knightmare"
       ],
-      "songCount": 68,
+      "songCount": 69,
       "folders": [
-        "Artists/DJ Knightmare"
+        "Artists/DJ Knightmare",
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "c-i-p-h-e-r",
+      "name": "c i p h e r",
+      "aliases": [
+        "c i p h e r"
+      ],
+      "songCount": 10,
+      "folders": [
+        "Featured_Collections/MODs/Regulation Issue Mod",
+        "Featured_Collections/MODs/Regulator MOD"
+      ]
+    },
+    {
+      "slug": "l-u-c",
+      "name": "L u c",
+      "aliases": [
+        "L u c"
+      ],
+      "songCount": 10,
+      "folders": [
+        "Featured_Collections/MODs/Regulation Issue Mod",
+        "Featured_Collections/MODs/Regulator MOD"
       ]
     },
     {
@@ -67,6 +92,462 @@
       ]
     },
     {
+      "slug": "jordan-dub-virus",
+      "name": "Jordan/Dub Virus",
+      "aliases": [
+        "Jordan/Dub Virus"
+      ],
+      "songCount": 4,
+      "folders": [
+        "Featured_Collections/MODs/Regulation Issue Mod",
+        "Featured_Collections/MODs/Regulator MOD"
+      ]
+    },
+    {
+      "slug": "vptm",
+      "name": "vptm",
+      "aliases": [
+        "vptm"
+      ],
+      "songCount": 4,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "cybernetique-98",
+      "name": "Cybernetique - 98",
+      "aliases": [
+        "Cybernetique - 98"
+      ],
+      "songCount": 3,
+      "folders": [
+        "Featured_Collections/MODs/Orbit 2.0 Mod",
+        "Featured_Collections/MODs/Orbit MOD",
+        "Featured_Collections/Contests/Rotorkopf Contest 2"
+      ]
+    },
+    {
+      "slug": "the-silenced-seraphim",
+      "name": "The Silenced Seraphim",
+      "aliases": [
+        "The Silenced Seraphim"
+      ],
+      "songCount": 3,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2",
+        "Featured_Collections/MODs/NordBeat MOD"
+      ]
+    },
+    {
+      "slug": "ahtsi",
+      "name": "AHTSI",
+      "aliases": [
+        "AHTSI"
+      ],
+      "songCount": 2,
+      "folders": [
+        "Featured_Collections/MODs/NordBeat MOD"
+      ]
+    },
+    {
+      "slug": "cipher-s-schitzo-klepto-mix",
+      "name": "cipher's [schitzo/klepto] mix",
+      "aliases": [
+        "cipher's [schitzo/klepto] mix"
+      ],
+      "songCount": 2,
+      "folders": [
+        "Featured_Collections/MODs/Regulation Issue Mod",
+        "Featured_Collections/MODs/Regulator MOD"
+      ]
+    },
+    {
+      "slug": "cipher-s-sighlowsighbihn-take-away-mix",
+      "name": "cipher's [sighlowsighbihn take-away] mix",
+      "aliases": [
+        "cipher's [sighlowsighbihn take-away] mix"
+      ],
+      "songCount": 2,
+      "folders": [
+        "Featured_Collections/MODs/Regulation Issue Mod",
+        "Featured_Collections/MODs/Regulator MOD"
+      ]
+    },
+    {
+      "slug": "dj-mouse-98",
+      "name": "DJ Mouse \u00b498",
+      "aliases": [
+        "DJ Mouse \u00b498"
+      ],
+      "songCount": 2,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "elektrisches-descent-msm2-0",
+      "name": "Elektrisches Descent           MSM2.0",
+      "aliases": [
+        "Elektrisches Descent           MSM2.0"
+      ],
+      "songCount": 2,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "entropy-singularity",
+      "name": "Entropy/SiNGULARiTY",
+      "aliases": [
+        "Entropy/SiNGULARiTY"
+      ],
+      "songCount": 2,
+      "folders": [
+        "Featured_Collections/MODs/Orbit 2.0 Mod",
+        "Featured_Collections/MODs/Orbit MOD"
+      ]
+    },
+    {
+      "slug": "hami-and-janjan",
+      "name": "Hami and JanJan",
+      "aliases": [
+        "Hami and JanJan"
+      ],
+      "songCount": 2,
+      "folders": [
+        "Featured_Collections/MODs/Regulation Issue Mod",
+        "Featured_Collections/MODs/Regulator MOD"
+      ]
+    },
+    {
+      "slug": "high-society",
+      "name": "High Society",
+      "aliases": [
+        "High Society"
+      ],
+      "songCount": 2,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2",
+        "Featured_Collections/MODs/NordBeat MOD"
+      ]
+    },
+    {
+      "slug": "joao-ventura",
+      "name": "Joao Ventura",
+      "aliases": [
+        "Joao Ventura"
+      ],
+      "songCount": 2,
+      "folders": [
+        "Featured_Collections/MODs/Orbit 2.0 Mod",
+        "Featured_Collections/MODs/Orbit MOD"
+      ]
+    },
+    {
+      "slug": "jordan",
+      "name": "Jordan",
+      "aliases": [
+        "Jordan"
+      ],
+      "songCount": 2,
+      "folders": [
+        "Featured_Collections/MODs/Regulation Issue Mod",
+        "Featured_Collections/MODs/Regulator MOD"
+      ]
+    },
+    {
+      "slug": "krzysztof-kozio",
+      "name": "Krzysztof Kozio\u00b3",
+      "aliases": [
+        "Krzysztof Kozio\u00b3"
+      ],
+      "songCount": 2,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "m-h-tec",
+      "name": "M.H.TeC",
+      "aliases": [
+        "M.H.TeC"
+      ],
+      "songCount": 2,
+      "folders": [
+        "Featured_Collections/MODs/Orbit 2.0 Mod",
+        "Featured_Collections/MODs/Orbit MOD"
+      ]
+    },
+    {
+      "slug": "rx-7-rebirth-2-0-mod",
+      "name": "RX-7------------Rebirth 2.0 MOD",
+      "aliases": [
+        "RX-7------------Rebirth 2.0 MOD"
+      ],
+      "songCount": 2,
+      "folders": [
+        "Featured_Collections/MODs/Orbit 2.0 Mod",
+        "Featured_Collections/MODs/Orbit MOD"
+      ]
+    },
+    {
+      "slug": "s-p-a-s-t-i-k-vs-c-i-p-h-e-r",
+      "name": "s p a s t i k -vs-  c i p h e r",
+      "aliases": [
+        "s p a s t i k -vs-  c i p h e r"
+      ],
+      "songCount": 2,
+      "folders": [
+        "Featured_Collections/MODs/Regulation Issue Mod",
+        "Featured_Collections/MODs/Regulator MOD"
+      ]
+    },
+    {
+      "slug": "slice",
+      "name": "SLiCE",
+      "aliases": [
+        "SLiCE"
+      ],
+      "songCount": 2,
+      "folders": [
+        "Featured_Collections/MODs/Orbit 2.0 Mod",
+        "Featured_Collections/MODs/Orbit MOD"
+      ]
+    },
+    {
+      "slug": "subliminal",
+      "name": "Subliminal",
+      "aliases": [
+        "Subliminal"
+      ],
+      "songCount": 2,
+      "folders": [
+        "Featured_Collections/MODs/Orbit 2.0 Mod",
+        "Featured_Collections/MODs/Orbit MOD"
+      ]
+    },
+    {
+      "slug": "the-groovpushr",
+      "name": "the groovpushr",
+      "aliases": [
+        "the groovpushr"
+      ],
+      "songCount": 2,
+      "folders": [
+        "Featured_Collections/MODs/NordBeat MOD"
+      ]
+    },
+    {
+      "slug": "expansion-mix",
+      "name": "((( expansion mix )))",
+      "aliases": [
+        "((( expansion mix )))"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Drum & Bass Contest"
+      ]
+    },
+    {
+      "slug": "blast-shield",
+      "name": "- Blast Shield",
+      "aliases": [
+        "- Blast Shield"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2"
+      ]
+    },
+    {
+      "slug": "by-phool-l",
+      "name": "--->By Phool <-----l",
+      "aliases": [
+        "--->By Phool <-----l"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2"
+      ]
+    },
+    {
+      "slug": "the-technique-wizard-pbe",
+      "name": "-=THE TECHNIQUE WIZARD=- - PBE",
+      "aliases": [
+        "-=THE TECHNIQUE WIZARD=- - PBE"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "4-28-majilkreb-jth98-dj-m-a-t-h-e-o",
+      "name": "4.28..majiLkReb\u00d6\u00f6jtH98-Dj..m.a.t.h.e.o.",
+      "aliases": [
+        "4.28..majiLkReb\u00d6\u00f6jtH98-Dj..m.a.t.h.e.o."
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "arh",
+      "name": "> ARh+",
+      "aliases": [
+        "> ARh+"
+      ],
+      "songCount": 1,
+      "folders": [
+        "By_Source/Rebirth_2.0/Complete"
+      ]
+    },
+    {
+      "slug": "action-jackson",
+      "name": "Action Jackson",
+      "aliases": [
+        "Action Jackson"
+      ],
+      "songCount": 1,
+      "folders": [
+        "By_Source/Rebirth_2.0/Complete"
+      ]
+    },
+    {
+      "slug": "alex-m-for-rebirth-2-0-1-only",
+      "name": "Alex M    ... for ReBirth 2.0.1 only!",
+      "aliases": [
+        "Alex M    ... for ReBirth 2.0.1 only!"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2"
+      ]
+    },
+    {
+      "slug": "back-on-track",
+      "name": "back on track",
+      "aliases": [
+        "back on track"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "behind-the-wheel-golden-hill-dance-mix",
+      "name": "Behind The Wheel...Golden Hill Dance Mix",
+      "aliases": [
+        "Behind The Wheel...Golden Hill Dance Mix"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "by-miltoroto",
+      "name": "by Miltoroto",
+      "aliases": [
+        "by Miltoroto"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "by-23",
+      "name": "By-23",
+      "aliases": [
+        "By-23"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "ck-vs-dj-k-rb2-illumitech-2",
+      "name": "CK Vs DJ K  [ RB2 \\ Illumitech 2 ]",
+      "aliases": [
+        "CK Vs DJ K  [ RB2 \\ Illumitech 2 ]"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "crow",
+      "name": "CroW",
+      "aliases": [
+        "CroW"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "deep-garage-by-roll-kah",
+      "name": "deep&garage by RolL Kah",
+      "aliases": [
+        "deep&garage by RolL Kah"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "dj-rx-7-msm-2-0",
+      "name": "Dj Rx-7-----------------------MSM 2.0---",
+      "aliases": [
+        "Dj Rx-7-----------------------MSM 2.0---"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "drop",
+      "name": "Drop",
+      "aliases": [
+        "Drop"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/MODs/NordBeat MOD"
+      ]
+    },
+    {
+      "slug": "elektrisches-descent",
+      "name": "Elektrisches Descent",
+      "aliases": [
+        "Elektrisches Descent"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "fala-p-ynnej-exxtazzy-by-wara",
+      "name": "fala p\u00b3ynnej exxtazzy - by WaRa",
+      "aliases": [
+        "fala p\u00b3ynnej exxtazzy - by WaRa"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
       "slug": "fanatic",
       "name": "Fanatic",
       "aliases": [
@@ -75,6 +556,380 @@
       "songCount": 1,
       "folders": [
         "Artists/Fanatic"
+      ]
+    },
+    {
+      "slug": "fr-ta-3-y-by-scr-f",
+      "name": "fR@<Ta|~|]3|@Y ~*by*~ (`^~Scr\u00dcf-)",
+      "aliases": [
+        "fR@<Ta|~|]3|@Y ~*by*~ (`^~Scr\u00dcf-)"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2"
+      ]
+    },
+    {
+      "slug": "grapefruit-moon",
+      "name": "Grapefruit Moon",
+      "aliases": [
+        "Grapefruit Moon"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "hidrah-recordings",
+      "name": "Hidrah Recordings\u00ae",
+      "aliases": [
+        "Hidrah Recordings\u00ae"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/MODs/NordBeat MOD"
+      ]
+    },
+    {
+      "slug": "information-teknology-7-up-8-down",
+      "name": "information teknology - 7 up! 8 down!",
+      "aliases": [
+        "information teknology - 7 up! 8 down!"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "joe-satriani",
+      "name": "Joe Satriani",
+      "aliases": [
+        "Joe Satriani"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "m-ehring-vs-drop-transvison-edit",
+      "name": "M.Ehring vs. Drop (Transvison edit)",
+      "aliases": [
+        "M.Ehring vs. Drop (Transvison edit)"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2"
+      ]
+    },
+    {
+      "slug": "mixed-by-djrx-7-mettallicon2-0",
+      "name": "MIxed By ---DjRX-7-METTALLICON2.0",
+      "aliases": [
+        "MIxed By ---DjRX-7-METTALLICON2.0"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "mtak",
+      "name": "MTAK",
+      "aliases": [
+        "MTAK"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2"
+      ]
+    },
+    {
+      "slug": "new-energy99",
+      "name": "New Energy99",
+      "aliases": [
+        "New Energy99"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/MODs/NordBeat MOD"
+      ]
+    },
+    {
+      "slug": "only-nord-beat-mod",
+      "name": "Only Nord Beat Mod",
+      "aliases": [
+        "Only Nord Beat Mod"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/MODs/NordBeat MOD"
+      ]
+    },
+    {
+      "slug": "paranerd",
+      "name": "paranerd",
+      "aliases": [
+        "paranerd"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "paranormal-plastik-blob-made-by-wara",
+      "name": "Paranormal Plastik Blob  - made by WaRa",
+      "aliases": [
+        "Paranormal Plastik Blob  - made by WaRa"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "pure-t-music-from-vptm",
+      "name": "pure T-music from vptm",
+      "aliases": [
+        "pure T-music from vptm"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "rebirther-a-e",
+      "name": "Rebirther A.E.",
+      "aliases": [
+        "Rebirther A.E."
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/MODs/NordBeat MOD"
+      ]
+    },
+    {
+      "slug": "recreated-by-high-society",
+      "name": "ReCreated by High Society",
+      "aliases": [
+        "ReCreated by High Society"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2"
+      ]
+    },
+    {
+      "slug": "remake-of-l-ndler-mid",
+      "name": "ReMake of L\u00e4ndler.mid",
+      "aliases": [
+        "ReMake of L\u00e4ndler.mid"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "remix-by-elysium",
+      "name": "Remix by Elysium",
+      "aliases": [
+        "Remix by Elysium"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "remix-by-the-professor-6-09",
+      "name": "Remix by The Professor - 6:09",
+      "aliases": [
+        "Remix by The Professor - 6:09"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "rx-7-pbe-2-0",
+      "name": "Rx-7 -------------------PBE 2.0",
+      "aliases": [
+        "Rx-7 -------------------PBE 2.0"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "sascha-fox-freax-simply-acid",
+      "name": "Sascha Fox - FREAX   SIMPLY ACID",
+      "aliases": [
+        "Sascha Fox - FREAX   SIMPLY ACID"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2"
+      ]
+    },
+    {
+      "slug": "slap-happy",
+      "name": "SLaP HaPPy",
+      "aliases": [
+        "SLaP HaPPy"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2"
+      ]
+    },
+    {
+      "slug": "song-by-the-professor-2-54",
+      "name": "Song by The Professor - 2:54",
+      "aliases": [
+        "Song by The Professor - 2:54"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2"
+      ]
+    },
+    {
+      "slug": "song-by-the-professor-4-58",
+      "name": "Song by The Professor - 4:58",
+      "aliases": [
+        "Song by The Professor - 4:58"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2"
+      ]
+    },
+    {
+      "slug": "song-by-the-professor-7-49",
+      "name": "Song by The Professor - 7:49",
+      "aliases": [
+        "Song by The Professor - 7:49"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2"
+      ]
+    },
+    {
+      "slug": "stephane",
+      "name": "Stephane",
+      "aliases": [
+        "Stephane"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2"
+      ]
+    },
+    {
+      "slug": "surf-on-the-wave",
+      "name": "Surf on the WaVe!",
+      "aliases": [
+        "Surf on the WaVe!"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2"
+      ]
+    },
+    {
+      "slug": "teknohazard",
+      "name": "Teknohazard",
+      "aliases": [
+        "Teknohazard"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "the-merrymaker",
+      "name": "The Merrymaker",
+      "aliases": [
+        "The Merrymaker"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Monthly_Archive/SEPTEMBER"
+      ]
+    },
+    {
+      "slug": "trance-the-minderaser-11-98",
+      "name": "Trance: the MindEraser (11/98)",
+      "aliases": [
+        "Trance: the MindEraser (11/98)"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2"
+      ]
+    },
+    {
+      "slug": "vptm-polbox-com",
+      "name": "vptm@polbox.com",
+      "aliases": [
+        "vptm@polbox.com"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "vptm-polbox-com-100-answer",
+      "name": "vptm@polbox.com - 100% answer",
+      "aliases": [
+        "vptm@polbox.com - 100% answer"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "when-there-is-no-sign",
+      "name": "when there is no sign...",
+      "aliases": [
+        "when there is no sign..."
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
+      ]
+    },
+    {
+      "slug": "rop",
+      "name": "\u00ae \u0083)rop",
+      "aliases": [
+        "\u00ae \u0083)rop"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest 2"
+      ]
+    },
+    {
+      "slug": "98-technoloop-productions",
+      "name": "\u00b498 TechnoLoOp Productions",
+      "aliases": [
+        "\u00b498 TechnoLoOp Productions"
+      ],
+      "songCount": 1,
+      "folders": [
+        "Featured_Collections/Contests/Rotorkopf Contest"
       ]
     }
   ]

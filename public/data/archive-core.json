@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "generated": "2026-08-16T14:05:16.205687+00:00",
+    "count": 8,
+    "policy": "split"
+  },
+  "songs": [
+    {
+      "path": "Artists/Cavey/3_acid.rbs",
+      "sha256": "f1ccf745d66b02725c4ebb45609b80178f4a7974a4891ab284cd6d02a7f63e3b",
+      "bytes": 27163,
+      "localPath": "archive/rbs-songs/demo/cavey-3-acid.rbs"
+    },
+    {
+      "path": "Artists/DJ Knightmare/amnesya.rbs",
+      "sha256": "a6ae17971b44aac0987fbd2ae433bb69b95f0a3126456871b6d72057abd96563",
+      "bytes": 36990,
+      "localPath": "archive/rbs-songs/demo/dj-knightmare-amnesya.rbs"
+    },
+    {
+      "path": "Artists/Noah_Cohn_Complete/20.rbs",
+      "sha256": "2955ac427df7ec5cbd00888cd34f95967d629790042ffb9257c8eae3390aadb1",
+      "bytes": 16840,
+      "localPath": "archive/rbs-songs/demo/noah-cohn-20.rbs"
+    },
+    {
+      "path": "By_Source/Rebirth_2.0/Complete/#008.rbs",
+      "sha256": "d6f6318af6afe3005aba4451bea1358348abed432485418bc17db36b1b3e577c",
+      "bytes": 24904,
+      "localPath": "archive/rbs-songs/demo/propellerhead-008.rbs"
+    },
+    {
+      "path": "By_Source/Rebirth_2.0/Complete/A Taste of Haste.rbs",
+      "sha256": "baaadda4629e70fff662fb8594fa5056423de7d01dc16f3a18349142372894f0",
+      "bytes": 27532,
+      "localPath": "archive/rbs-songs/demo/a-taste-of-haste.rbs"
+    },
+    {
+      "path": "By_Source/Rebirth_2.0/Complete/Metallicon City.rbs",
+      "sha256": "9b4a891af8071650ccac325ded6bdc4a197753d04ccf1bdca5cfcbef3093def0",
+      "bytes": 26296,
+      "localPath": "archive/rbs-songs/demo/metallicon-city.rbs"
+    },
+    {
+      "path": "Monthly_Archive/FEBRUARY/Orbiting your Heart.rbs",
+      "sha256": "b5f78acfbd44caf7d9cdf13c72cc02b6eb5749b7c36bb510bc6374ac8ffae200",
+      "bytes": 26824,
+      "localPath": "archive/rbs-songs/demo/orbiting-your-heart.rbs"
+    },
+    {
+      "path": "Monthly_Archive/SEPTEMBER/Troublemakers.rbs",
+      "sha256": "8d1002977b70d63747b150cb3720d64931ca934ea922a43d501c32436f742f17",
+      "bytes": 24566,
+      "localPath": "archive/rbs-songs/demo/troublemakers.rbs"
+    }
+  ]
+}

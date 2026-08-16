@@ -4,16 +4,18 @@ const TEST_URL = '/rebirth_website/';
 
 // Viewport sizes to test
 const viewports = [
-  { name: 'Mobile (Small)', width: 375, height: 667 },    // iPhone SE
-  { name: 'Mobile (Large)', width: 414, height: 896 },    // iPhone 11
+  { name: 'Mobile (Small)', width: 375, height: 667 }, // iPhone SE
+  { name: 'Mobile (Large)', width: 414, height: 896 }, // iPhone 11
   { name: 'Tablet (Portrait)', width: 768, height: 1024 }, // iPad
   { name: 'Tablet (Landscape)', width: 1024, height: 768 },
   { name: 'Desktop', width: 1280, height: 720 },
 ];
 
 test.describe('Responsive Layout Tests', () => {
-  viewports.forEach(viewport => {
-    test(`should render properly on ${viewport.name} (${viewport.width}x${viewport.height})`, async ({ page }) => {
+  viewports.forEach((viewport) => {
+    test(`should render properly on ${viewport.name} (${viewport.width}x${viewport.height})`, async ({
+      page,
+    }) => {
       // Set viewport
       await page.setViewportSize({
         width: viewport.width,
@@ -99,12 +101,12 @@ test.describe('Responsive Layout Tests', () => {
     }
 
     const knobs = page.locator('.rb-knob');
-    if (await knobs.count() > 0) {
+    if ((await knobs.count()) > 0) {
       const firstKnob = knobs.first();
       if (await firstKnob.isVisible()) {
         await firstKnob.hover();
       }
-      
+
       // Check if element is interactive
       expect(firstKnob).toBeDefined();
     }
@@ -121,10 +123,10 @@ test.describe('Responsive Layout Tests', () => {
 
     // Verify action buttons are centered and accessible on mobile
     const actionBtns = page.locator('.action-btns');
-    if (await actionBtns.count() > 0) {
-      const style = await actionBtns.first().evaluate((el) => 
-        window.getComputedStyle(el).justifyContent
-      );
+    if ((await actionBtns.count()) > 0) {
+      const style = await actionBtns
+        .first()
+        .evaluate((el) => window.getComputedStyle(el).justifyContent);
       // Should be centered on mobile
       expect(['center', 'center']).toContain(style);
     }
@@ -137,10 +139,8 @@ test.describe('Responsive Layout Tests', () => {
 
     // Check main title is readable
     const title = page.locator('.master-title__main');
-    if (await title.count() > 0) {
-      const fontSize = await title.first().evaluate((el) => 
-        window.getComputedStyle(el).fontSize
-      );
+    if ((await title.count()) > 0) {
+      const fontSize = await title.first().evaluate((el) => window.getComputedStyle(el).fontSize);
       // Font size should not be zero
       expect(fontSize).not.toBe('0px');
     }
@@ -155,12 +155,10 @@ test.describe('Touch Device Media Queries', () => {
 
     // Check that touch-specific CSS is applied
     const knobDial = page.locator('.rb-knob__dial').first();
-    
+
     // Verify computed styles exist
-    const computedStyle = await knobDial.evaluate((el) => 
-      window.getComputedStyle(el)
-    );
-    
+    const computedStyle = await knobDial.evaluate((el) => window.getComputedStyle(el));
+
     // Just verify the element is styled (not null)
     expect(computedStyle).toBeDefined();
   });

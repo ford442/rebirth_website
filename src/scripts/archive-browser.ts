@@ -63,12 +63,9 @@ const dom = {
   listEmptyState: document.getElementById('listEmptyState'),
   btnGrid: document.getElementById('btnGrid'),
   btnList: document.getElementById('btnList'),
-  wrappers: () =>
-    document.querySelectorAll<HTMLElement>('.collection-wrapper'),
-  filterBtns: () =>
-    document.querySelectorAll<HTMLElement>('.rb-filter-btn'),
-  sortBtns: () =>
-    document.querySelectorAll<HTMLButtonElement>('.sort-btn'),
+  wrappers: () => document.querySelectorAll<HTMLElement>('.collection-wrapper'),
+  filterBtns: () => document.querySelectorAll<HTMLElement>('.rb-filter-btn'),
+  sortBtns: () => document.querySelectorAll<HTMLButtonElement>('.sort-btn'),
 };
 
 /* ------------------------------------------------------------------ */
@@ -498,9 +495,9 @@ function bindEvents() {
     const wrapper = active.closest('.collection-wrapper');
     if (!wrapper) return;
 
-    const items = Array.from(
-      wrapper.querySelectorAll<HTMLElement>('.folder-item')
-    ).filter((item) => item.style.display !== 'none');
+    const items = Array.from(wrapper.querySelectorAll<HTMLElement>('.folder-item')).filter(
+      (item) => item.style.display !== 'none'
+    );
 
     const idx = items.indexOf(active as HTMLElement);
     if (idx === -1) return;
@@ -517,18 +514,14 @@ function bindEvents() {
         document.querySelectorAll<HTMLElement>('.collection-wrapper')
       ).filter((w) => !w.classList.contains('is-hidden'));
       const wrapperIdx = allWrappers.indexOf(wrapper as HTMLElement);
-      allWrappers[wrapperIdx + 1]
-        ?.querySelector<HTMLElement>('.folder-item')
-        ?.focus();
+      allWrappers[wrapperIdx + 1]?.querySelector<HTMLElement>('.folder-item')?.focus();
     } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
       const allWrappers = Array.from(
         document.querySelectorAll<HTMLElement>('.collection-wrapper')
       ).filter((w) => !w.classList.contains('is-hidden'));
       const wrapperIdx = allWrappers.indexOf(wrapper as HTMLElement);
-      allWrappers[wrapperIdx - 1]
-        ?.querySelector<HTMLElement>('.folder-item')
-        ?.focus();
+      allWrappers[wrapperIdx - 1]?.querySelector<HTMLElement>('.folder-item')?.focus();
     }
   });
 }

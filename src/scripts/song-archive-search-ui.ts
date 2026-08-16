@@ -2,6 +2,7 @@
  * Mount the complete song index search UI (MiniSearch + facets).
  */
 import { previewSong } from '../lib/player-events';
+import { publicAssetUrl } from '../lib/archive-urls';
 import { normalizeBase } from '../lib/url';
 import {
   countSearchResults,
@@ -36,21 +37,31 @@ function renderResultRow(song: SearchSongRecord, base: string): string {
         : '';
 
   const sub = song.subcollectionDisplay ?? song.subcollection ?? '';
-  const metaParts = [song.collection, sub].filter((part) => Boolean(part)).map((part) => escapeHtml(String(part)));
+  const metaParts = [song.collection, sub]
+    .filter((part) => Boolean(part))
+    .map((part) => escapeHtml(String(part)));
   const bpm = song.bpm ? `<span class="result-bpm">${song.bpm} BPM</span>` : '';
-  const modBadge = song.hasModDependency ? '<span class="result-mod" title="Best heard with a specific .rbm mod loaded">MOD REQUIRED</span>' : '';
+  const modBadge = song.hasModDependency
+    ? '<span class="result-mod" title="Best heard with a specific .rbm mod loaded">MOD REQUIRED</span>'
+    : '';
+  const deadBadge =
+    song.linkStatus === 'dead'
+      ? '<span class="result-mod" title="Remote copy returned 404 during the last mirror">DEAD LINK</span>'
+      : '';
+  const playSrc = song.localPath ? publicAssetUrl(base, song.localPath) : song.url;
+  const downloadHref = song.localPath ? publicAssetUrl(base, song.localPath) : song.url;
 
   return `
     <article class="song-result" data-id="${song.id}">
       <div class="song-result__main">
         <h3 class="song-result__title" title="${escapeHtml(song.filename)}">${escapeHtml(song.title)}</h3>
-        <p class="song-result__meta">${metaParts.join(' · ')} ${artistLink ? `· ${artistLink}` : ''} ${bpm} ${modBadge}</p>
+        <p class="song-result__meta">${metaParts.join(' · ')} ${artistLink ? `· ${artistLink}` : ''} ${bpm} ${modBadge} ${deadBadge}</p>
       </div>
       <div class="song-result__actions">
-        <button type="button" class="preview-btn song-result__play" data-preview-src="${escapeHtml(song.url)}" data-preview-label="${escapeHtml(song.title)}" data-preview-bpm="${song.bpm ?? ''}" aria-label="Preview ${escapeHtml(song.filename)}">
+        <button type="button" class="preview-btn song-result__play" data-preview-src="${escapeHtml(playSrc)}" data-preview-label="${escapeHtml(song.title)}" data-preview-bpm="${song.bpm ?? ''}" aria-label="Preview ${escapeHtml(song.filename)}">
           ▶
         </button>
-        <a href="${escapeHtml(song.url)}" target="_blank" rel="noopener noreferrer" class="song-result__download" aria-label="Download ${escapeHtml(song.filename)}">↓</a>
+        <a href="${escapeHtml(downloadHref)}" target="_blank" rel="noopener noreferrer" class="song-result__download" aria-label="Download ${escapeHtml(song.filename)}">↓</a>
       </div>
     </article>
   `;
@@ -112,7 +123,12 @@ function renderResults(root: HTMLElement, base: string) {
 
   if (hint) {
     const hasFilter = Boolean(
-      filters.query || filters.collection || filters.sourceVersion || filters.modOnly || filters.bpmMin || filters.bpmMax
+      filters.query ||
+      filters.collection ||
+      filters.sourceVersion ||
+      filters.modOnly ||
+      filters.bpmMin ||
+      filters.bpmMax
     );
     hint.classList.toggle('is-hidden', hasFilter || results.length > 0);
   }

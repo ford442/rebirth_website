@@ -31,9 +31,11 @@ jobs:
       - name: Astro type check
         run: npm run check
 
-      - name: ESLint (warning only)
-        continue-on-error: true
+      - name: ESLint
         run: npm run lint
+
+      - name: Prettier
+        run: npm run format
 
       - name: Production build
         run: npm run build
@@ -44,6 +46,12 @@ jobs:
       - name: Mod metadata coverage (warning only)
         continue-on-error: true
         run: python3 scripts/check-mod-metadata.py --priority --no-fail-on-gaps
+
+      - name: Song discovery index sanity
+        run: python3 scripts/check-song-discovery.py
+
+      - name: Archive integrity (local-core hashes)
+        run: python3 scripts/check-archive-integrity.py
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium

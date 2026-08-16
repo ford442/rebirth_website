@@ -3,7 +3,6 @@
 #include "Sequencer.h"
 #include <cstddef>
 #include <cstdint>
-#include <memory>
 
 namespace rb338 {
 
@@ -16,12 +15,12 @@ constexpr uint32_t MAX_RENDER_TEST_FRAMES = 2048;
 /**
  * Stack allocated for the Emscripten Wasm Audio Worklet pthread.
  * Must exceed worst-case processBlock() stack usage (scratch buffers live in
- * RbsAudioEngine members; remaining locals are events + shared_ptr + spills).
+ * RbsAudioEngine members; remaining locals are events + spills).
  */
 constexpr size_t AUDIO_THREAD_STACK_SIZE = 65536;
 
 constexpr size_t PROCESS_BLOCK_MAX_STACK_FRAME_BYTES =
-    sizeof(Sequencer::Event) * 128 + sizeof(std::shared_ptr<const ParsedSong>) + 4096;
+    sizeof(Sequencer::Event) * 128 + 4096;
 
 static_assert(
     AUDIO_THREAD_STACK_SIZE >= PROCESS_BLOCK_MAX_STACK_FRAME_BYTES,

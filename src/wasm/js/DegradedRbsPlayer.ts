@@ -145,6 +145,10 @@ export class DegradedRbsPlayer {
     }
   }
 
+  setDeviceParam(_deviceId: number, _paramId: number, _value: number): boolean {
+    return false;
+  }
+
   setVolume(level: number): void {
     const clamped = Math.max(0, Math.min(1, Number.isFinite(level) ? level : this.volume));
     this.volume = clamped;
@@ -178,7 +182,11 @@ export class DegradedRbsPlayer {
   }
 
   private _canSketch(): boolean {
-    return typeof AudioContext !== 'undefined' || typeof (window as unknown as { webkitAudioContext?: unknown }).webkitAudioContext !== 'undefined';
+    return (
+      typeof AudioContext !== 'undefined' ||
+      typeof (window as unknown as { webkitAudioContext?: unknown }).webkitAudioContext !==
+        'undefined'
+    );
   }
 
   private _setStatus(status: PlayerStatus) {
@@ -188,7 +196,7 @@ export class DegradedRbsPlayer {
 
   private _startSketch() {
     this._stopSketch();
-    const msPerStep = (60_000 / this.tempoBpm) / 4;
+    const msPerStep = 60_000 / this.tempoBpm / 4;
     this.sketchTimer = setInterval(() => {
       this._playStepClick(this.currentStep);
       this.onPosition?.(this.currentBar, this.currentStep);
@@ -221,7 +229,10 @@ export class DegradedRbsPlayer {
     osc.type = isBeat ? 'square' : 'triangle';
     osc.frequency.value = isBeat ? 880 : 440;
     env.gain.setValueAtTime(0.0001, now);
-    env.gain.exponentialRampToValueAtTime(isBeat ? 0.18 * this.volume : 0.08 * this.volume, now + 0.005);
+    env.gain.exponentialRampToValueAtTime(
+      isBeat ? 0.18 * this.volume : 0.08 * this.volume,
+      now + 0.005
+    );
     env.gain.exponentialRampToValueAtTime(0.0001, now + (isBeat ? 0.06 : 0.04));
 
     osc.connect(env);

@@ -3,6 +3,9 @@
  * Used by ModCard, archive folder pages, and the RbsPlayer component.
  */
 
+import { resolveArchivePlaybackUrl } from './archive-urls';
+import { normalizeBase } from './url';
+
 export const PLAYER_SCROLL_TARGET = 'player-zone';
 
 export interface LoadDemoDetail {
@@ -80,13 +83,14 @@ export function parsePlayerQuery(): {
   };
 }
 
-/** Resolve a relative archive path (from ?play=) to a full download URL. */
+/** Resolve a relative archive path (from ?play=) to a playback URL. */
 export function resolvePlayPath(relativePath: string): string {
-  const encoded = relativePath
-    .split('/')
-    .map((segment) => encodeURIComponent(segment))
-    .join('/');
-  return `https://test.1ink.us/rb338/archive/rbs-songs/${encoded}`;
+  const meta =
+    typeof document !== 'undefined'
+      ? document.querySelector<HTMLMetaElement>('meta[name="base-url"]')?.content
+      : undefined;
+  const base = normalizeBase(meta ?? '/rebirth_website');
+  return resolveArchivePlaybackUrl(base, relativePath);
 }
 
 /** Load demo in-page when player exists; otherwise navigate to /play. */

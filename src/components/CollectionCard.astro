@@ -42,7 +42,11 @@ const folderCount = section.folders.length;
 const itemTotal = meta?.totalItems ?? section.folders.reduce((sum, f) => sum + (f.count ?? 0), 0);
 ---
 
-<div class={`collection-section ${rackmount ? 'rb-rack-variant' : ''}`} role="region" aria-label={`${section.name} collection`}>
+<div
+  class={`collection-section ${rackmount ? 'rb-rack-variant' : ''}`}
+  role="region"
+  aria-label={`${section.name} collection`}
+>
   <ScrewCorners cross />
 
   <div class="section-header">
@@ -54,43 +58,48 @@ const itemTotal = meta?.totalItems ?? section.folders.reduce((sum, f) => sum + (
     />
   </div>
 
-  {meta && (
-    <div class="section-meta">
-      {meta.description && <p class="meta-desc">{meta.description}</p>}
-      <div class="meta-row">
-        {meta.tags && meta.tags.length > 0 && (
-          <div class="meta-tags" aria-label="Collection tags">
-            {meta.tags.map(tag => (
-              <span class="meta-tag">{tag}</span>
-            ))}
-          </div>
-        )}
-        <span class="meta-stats" aria-label="Collection stats">
-          {itemTotal > 0 && <span class="meta-stat">{itemTotal} items</span>}
-          {meta.curator && <span class="meta-stat">Curator: {meta.curator}</span>}
-          {meta.lastUpdated && <span class="meta-stat">Updated: {meta.lastUpdated}</span>}
-        </span>
+  {
+    meta && (
+      <div class="section-meta">
+        {meta.description && <p class="meta-desc">{meta.description}</p>}
+        <div class="meta-row">
+          {meta.tags && meta.tags.length > 0 && (
+            <div class="meta-tags" aria-label="Collection tags">
+              {meta.tags.map((tag) => (
+                <span class="meta-tag">{tag}</span>
+              ))}
+            </div>
+          )}
+          <span class="meta-stats" aria-label="Collection stats">
+            {itemTotal > 0 && <span class="meta-stat">{itemTotal} items</span>}
+            {meta.curator && <span class="meta-stat">Curator: {meta.curator}</span>}
+            {meta.lastUpdated && <span class="meta-stat">Updated: {meta.lastUpdated}</span>}
+          </span>
+        </div>
       </div>
-    </div>
-  )}
+    )
+  }
 
   <div class="folder-list">
-    {section.folders.map(folder => {
-      const folderSlug = folder.path.split('/').map(encodeURIComponent).join('/');
-      return (
-        <a
-          href={`${baseUrl}/archive/songs/${folderSlug}/`}
-          class="folder-item"
-        >
-          <span class="folder-icon" aria-hidden="true">📁</span>
-          <span class="folder-name">{folder.name}</span>
-          {typeof folder.count === 'number' && folder.count > 0 && (
-            <span class="folder-count-badge">{folder.count} files</span>
-          )}
-          <span class="folder-arrow" aria-hidden="true">→</span>
-        </a>
-      );
-    })}
+    {
+      section.folders.map((folder) => {
+        const folderSlug = folder.path.split('/').map(encodeURIComponent).join('/');
+        return (
+          <a href={`${baseUrl}/archive/songs/${folderSlug}/`} class="folder-item">
+            <span class="folder-icon" aria-hidden="true">
+              📁
+            </span>
+            <span class="folder-name">{folder.name}</span>
+            {typeof folder.count === 'number' && folder.count > 0 && (
+              <span class="folder-count-badge">{folder.count} files</span>
+            )}
+            <span class="folder-arrow" aria-hidden="true">
+              →
+            </span>
+          </a>
+        );
+      })
+    }
   </div>
 </div>
 
@@ -103,12 +112,13 @@ const itemTotal = meta?.totalItems ?? section.folders.reduce((sum, f) => sum + (
     border: 1px solid #3a3a3a;
     border-top: 2px solid #555;
     box-shadow:
-      0 4px 16px rgba(0,0,0,0.6),
-      inset 0 1px 0 rgba(255,255,255,0.04),
-      inset 0 -1px 0 rgba(0,0,0,0.2);
-    transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
-                box-shadow 180ms ease,
-                border-color 180ms ease;
+      0 4px 16px rgba(0, 0, 0, 0.6),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+    transition:
+      transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 180ms ease,
+      border-color 180ms ease;
     position: relative;
     will-change: transform;
   }
@@ -117,10 +127,10 @@ const itemTotal = meta?.totalItems ?? section.folders.reduce((sum, f) => sum + (
     border-color: #4a4a4a;
     border-top-color: #666;
     box-shadow:
-      0 8px 28px rgba(0,0,0,0.65),
-      0 0 10px rgba(255,176,0,0.08),
-      inset 0 1px 0 rgba(255,255,255,0.06),
-      inset 0 -1px 0 rgba(0,0,0,0.25);
+      0 8px 28px rgba(0, 0, 0, 0.65),
+      0 0 10px rgba(255, 176, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.25);
     transform: translateY(-2px);
   }
 
@@ -154,7 +164,7 @@ const itemTotal = meta?.totalItems ?? section.folders.reduce((sum, f) => sum + (
     height: 7px;
     border-radius: 50%;
     background: #ffb000;
-    box-shadow: 0 0 6px rgba(255,176,0,0.5);
+    box-shadow: 0 0 6px rgba(255, 176, 0, 0.5);
     flex-shrink: 0;
   }
 
@@ -162,7 +172,7 @@ const itemTotal = meta?.totalItems ?? section.folders.reduce((sum, f) => sum + (
   .section-meta {
     padding: 0.6rem 1rem;
     border-bottom: 1px solid #2a2a2a;
-    background: rgba(0,0,0,0.15);
+    background: rgba(0, 0, 0, 0.15);
   }
 
   .meta-desc {
@@ -232,7 +242,9 @@ const itemTotal = meta?.totalItems ?? section.folders.reduce((sum, f) => sum + (
     align-items: center;
     gap: 0.6rem;
     cursor: pointer;
-    transition: background-color 120ms ease, color 120ms ease;
+    transition:
+      background-color 120ms ease,
+      color 120ms ease;
     text-decoration: none;
     color: #888;
     font-family: var(--rb-font-display, 'Courier New', Courier, monospace);
@@ -263,7 +275,7 @@ const itemTotal = meta?.totalItems ?? section.folders.reduce((sum, f) => sum + (
 
   .folder-item:hover::before {
     background: #ffb000;
-    box-shadow: 0 0 6px rgba(255,176,0,0.3);
+    box-shadow: 0 0 6px rgba(255, 176, 0, 0.3);
   }
 
   .folder-item:active {
@@ -296,7 +308,9 @@ const itemTotal = meta?.totalItems ?? section.folders.reduce((sum, f) => sum + (
     background: rgba(57, 255, 20, 0.08);
     color: var(--rb-green-bright, #3dba66);
     border: 1px solid var(--rb-green-dim, #1a5230);
-    transition: background 120ms ease, border-color 120ms ease;
+    transition:
+      background 120ms ease,
+      border-color 120ms ease;
   }
 
   .folder-item:hover .folder-count-badge {
@@ -307,7 +321,9 @@ const itemTotal = meta?.totalItems ?? section.folders.reduce((sum, f) => sum + (
   .folder-arrow {
     color: #555;
     font-size: 0.85em;
-    transition: color 120ms ease, transform 120ms ease;
+    transition:
+      color 120ms ease,
+      transform 120ms ease;
     flex-shrink: 0;
   }
 
@@ -346,6 +362,6 @@ const itemTotal = meta?.totalItems ?? section.folders.reduce((sum, f) => sum + (
 
   .folder-item:focus-visible::before {
     background: #ffb000;
-    box-shadow: 0 0 6px rgba(255,176,0,0.3);
+    box-shadow: 0 0 6px rgba(255, 176, 0, 0.3);
   }
 </style>

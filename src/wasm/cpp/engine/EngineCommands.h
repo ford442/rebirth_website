@@ -29,6 +29,21 @@ enum class EngineCommandType : uint8_t {
   SetTempo,
   SetTempoMultiplier,
   LoadSong,
+  SetDeviceParam,
+};
+
+/** Live knob / mixer params pushed from the UI (session-only). */
+enum class DeviceParamId : uint8_t {
+  Tune = 0,
+  Cutoff,
+  Resonance,
+  EnvMod,
+  Decay,
+  Accent,
+  Waveform,
+  Level,
+  Pan,
+  Mute,
 };
 
 struct EngineCommand {
@@ -39,7 +54,10 @@ struct EngineCommand {
 
 class EngineCommandQueue {
 public:
-  static constexpr size_t Capacity = 64;
+  // Power-of-two so slot = index & (Capacity - 1) is a visible bound.
+  static constexpr uint32_t Capacity = 64;
+
+  static_assert((Capacity & (Capacity - 1u)) == 0u, "Capacity must be a power of two");
 
   bool push(const EngineCommand& cmd);
   bool pop(EngineCommand& cmd);
@@ -50,33 +68,12 @@ public:
   }
 
 private:
+  static constexpr uint32_t kIndexMask = Capacity - 1u;
+
   std::atomic<uint32_t> m_writeIndex{0};
   std::atomic<uint32_t> m_readIndex{0};
   EngineCommand m_commands[Capacity];
 };
 
-inline bool EngineCommandQueue::push(const EngineCommand& cmd) {
-  const uint32_t writeIdx = m_writeIndex.load(std::memory_order_relaxed);
-  const uint32_t nextWrite = (writeIdx + 1) % Capacity;
-  // Single-producer: only the main thread writes, so we don't need to sync
-  // against other writers. We do need to ensure the consumer sees the new data
-  // after the index update.
-  if (nextWrite == m_readIndex.load(std::memory_order_acquire)) {
-    return false; // queue full
-  }
-  m_commands[writeIdx] = cmd;
-  m_writeIndex.store(nextWrite, std::memory_order_release);
-  return true;
-}
-
-inline bool EngineCommandQueue::pop(EngineCommand& cmd) {
-  const uint32_t readIdx = m_readIndex.load(std::memory_order_relaxed);
-  if (readIdx == m_writeIndex.load(std::memory_order_acquire)) {
-    return false; // queue empty
-  }
-  cmd = m_commands[readIdx];
-  m_readIndex.store((readIdx + 1) % Capacity, std::memory_order_release);
-  return true;
-}
-
 } // namespace rb338
+

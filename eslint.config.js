@@ -9,6 +9,7 @@ export default tseslint.config(
       'dist/**',
       'node_modules/**',
       'public/wasm/**',
+      'public/coi-serviceworker.js',
       'src/wasm/cpp/**',
       'redesign_content/**',
       '.astro/**',
@@ -18,6 +19,19 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   ...eslintPluginAstro.configs.recommended,
   eslintConfigPrettier,
+  {
+    files: ['scripts/**/*.{js,mjs}', '*.mjs', 'pwa.config.mjs'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        Buffer: 'readonly',
+        URL: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+      },
+    },
+  },
   {
     files: ['**/*.{ts,tsx,astro}'],
     rules: {
@@ -35,5 +49,5 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
     },
-  },
+  }
 );

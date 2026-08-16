@@ -73,10 +73,10 @@ Historical documentation lives in `src/content/docs/` as Markdown files. Each fi
 
 ```markdown
 ---
-title: "ReBirth RB-338 — Your Doc Title"
-version: "X.Y.Z"
-releaseDate: "YYYY-MM-DD"     # Optional
-description: "One-sentence summary."  # Optional
+title: 'ReBirth RB-338 — Your Doc Title'
+version: 'X.Y.Z'
+releaseDate: 'YYYY-MM-DD' # Optional
+description: 'One-sentence summary.' # Optional
 ---
 ```
 
@@ -87,6 +87,7 @@ Schema is defined in `src/content.config.ts`. The loader uses `glob` to auto-dis
 The site uses a **retro-industrial hardware aesthetic** modeled after TB-303 and TR-909 synthesizers.
 
 **CSS custom properties** (theme and base variables):
+
 - `--rb-amber`, `--rb-red`, `--rb-green`, `--rb-silver`, `--rb-darkest`, `--rb-panel` (hardware colors)
 - `--color-amber`, `--color-green` (semantic accents)
 - `--font-mono`, `--font-sans` (typography)
@@ -111,6 +112,7 @@ Apply theme via semantic class names: `rb-header`, `rb-nav`, `rb-logo`, `rb-pane
 ## Contributing Workflow
 
 Contributors add:
+
 1. `.rbs` files to `public/archive/rbs-songs/` (with kebab-case names)
 2. `.rbm` files to `public/archive/rbm-mods/`
 3. Metadata/card entries to the relevant page

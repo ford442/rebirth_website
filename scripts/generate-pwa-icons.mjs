@@ -33,7 +33,10 @@ async function main() {
         },
       }).composite([
         {
-          input: await sharp(svg).resize(Math.round(entry.size * 0.72)).png().toBuffer(),
+          input: await sharp(svg)
+            .resize(Math.round(entry.size * 0.72))
+            .png()
+            .toBuffer(),
           gravity: 'center',
         },
       ]);

@@ -9,6 +9,10 @@ export interface SongIndexEntry {
   bpm: number | null;
   fileSize: string;
   source: string;
+  metaTitle?: string | null;
+  metaAuthor?: string | null;
+  metaBpm?: number | null;
+  parseOk?: boolean;
 }
 
 /** Collect every ancestor folder path that contains indexed songs. */

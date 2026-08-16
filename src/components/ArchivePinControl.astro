@@ -1,0 +1,58 @@
+---
+/**
+ * Pin the same-origin playable core for offline use.
+ * Integrity hashes are verified in the browser before Cache/IndexedDB write.
+ */
+---
+
+<section class="archive-pin" data-archive-pin>
+  <p class="archive-pin__copy">
+    Pin the playable core (same-origin demos) for offline listening. Files are verified against the
+    committed SHA-256 integrity record.
+  </p>
+  <button type="button" class="archive-pin__btn rb-mix-btn" data-archive-pin-btn>
+    Pin core for offline
+  </button>
+  <p class="archive-pin__status" data-archive-pin-status role="status"></p>
+</section>
+
+<script>
+  import { mountArchivePin } from '../scripts/archive-pin';
+  mountArchivePin();
+</script>
+
+<style>
+  .archive-pin {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin: 0 0 1.25rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #333;
+    background: #1a1a1a;
+  }
+
+  .archive-pin__copy {
+    flex: 1 1 16rem;
+    margin: 0;
+    font-size: 0.8rem;
+    color: #aaa;
+    line-height: 1.4;
+  }
+
+  .archive-pin__btn {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .archive-pin__status {
+    flex: 1 1 100%;
+    margin: 0;
+    font-family: var(--rb-font-mono, monospace);
+    font-size: 0.75rem;
+    color: var(--rb-amber, #ffb000);
+    min-height: 1.1em;
+  }
+</style>

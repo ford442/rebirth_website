@@ -22,8 +22,7 @@ export type SongCollectionKey = 'featured' | 'bySource' | 'artists' | 'monthly' 
 export const songCollections: Record<SongCollectionKey, SongSection> = {
   featured: {
     name: 'Featured Collections',
-    description:
-      'Contest winners and curated MOD song packs hand-picked from the community.',
+    description: 'Contest winners and curated MOD song packs hand-picked from the community.',
     tags: ['contests', 'curated', 'highlights'],
     folders: [
       { name: 'Contests', path: 'Featured_Collections/Contests', count: 48 },
@@ -43,8 +42,7 @@ export const songCollections: Record<SongCollectionKey, SongSection> = {
   },
   artists: {
     name: 'Artists',
-    description:
-      'Individual artist folders spanning acid, industrial, techno, and melodic styles.',
+    description: 'Individual artist folders spanning acid, industrial, techno, and melodic styles.',
     tags: ['artists', 'acid', 'industrial', 'techno'],
     folders: [
       { name: 'Cavey', path: 'Artists/Cavey', count: 22 },
@@ -61,14 +59,11 @@ export const songCollections: Record<SongCollectionKey, SongSection> = {
     name: 'Monthly Archive',
     description: 'A full year of monthly song drops archived in chronological order.',
     tags: ['monthly', 'chronological', 'archive'],
-    folders: [
-      { name: 'January to December', path: 'Monthly_Archive', count: 624 },
-    ],
+    folders: [{ name: 'January to December', path: 'Monthly_Archive', count: 624 }],
   },
   other: {
     name: 'Other Collections',
-    description:
-      'Themed packs and special collections: Euro, freestyle, Color X, and more.',
+    description: 'Themed packs and special collections: Euro, freestyle, Color X, and more.',
     tags: ['themed', 'packs', 'special'],
     folders: [
       { name: 'Color X', path: 'Other_Collections/Color X', count: 30 },

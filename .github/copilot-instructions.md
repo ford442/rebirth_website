@@ -59,6 +59,7 @@ public/
 The site uses a **retro-industrial hardware aesthetic** modeled after TB-303 and TR-909 synthesizers. All styling is CSS-based with CSS custom properties for theming.
 
 **Key theme CSS variables** (all defined in `public/styles/rebirth-theme.css`):
+
 - `--rb-amber`: Primary accent color (#ffb000, LCD glow)
 - `--rb-red`: Danger/pattern button (#c41e3a)
 - `--rb-green`: Success/pattern indicator (#3dba66)
@@ -67,12 +68,14 @@ The site uses a **retro-industrial hardware aesthetic** modeled after TB-303 and
 - `--rb-panel`: Module background (#262626)
 
 **Base theme variables** (all defined in `public/styles/rebirth-theme.css`):
+
 - `--color-amber`, `--color-green`: Primary/secondary accents
 - `--font-mono`: Monospace for headings/displays
 - `--font-sans`: System font for body
 - `--space-xs` through `--space-xl`: Spacing scale
 
 **To apply the theme to a new page:**
+
 1. Use `BaseLayout.astro` as the wrapper (it imports global styles and links the theme)
 2. Use class names: `rb-header`, `rb-nav`, `rb-logo`, `rb-panel`, `rb-module`, `rb-button`, `rb-knob`, etc.
 3. Reference CSS variables for consistent colors and spacing
@@ -83,10 +86,10 @@ Documents (historical ReBirth manuals, release notes, etc.) are stored in `src/c
 
 ```markdown
 ---
-title: "ReBirth RB-338 — Your Doc Title"
-version: "X.Y.Z"
-releaseDate: "YYYY-MM-DD"
-description: "One-sentence summary."
+title: 'ReBirth RB-338 — Your Doc Title'
+version: 'X.Y.Z'
+releaseDate: 'YYYY-MM-DD'
+description: 'One-sentence summary.'
 ---
 ```
 
@@ -144,6 +147,7 @@ All internal links must use `${import.meta.env.BASE_URL}` because the site is de
 ## Contributing Workflow
 
 Contributors are expected to:
+
 1. Add `.rbs` or `.rbm` files to `public/archive/rbs-songs/` or `public/archive/rbm-mods/`
 2. Add metadata/cards to the relevant page (e.g., update `index.astro` featured songs/mods)
 3. For doc contributions, add Markdown files to `src/content/docs/` with required frontmatter

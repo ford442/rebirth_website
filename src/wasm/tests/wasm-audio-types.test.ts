@@ -11,6 +11,8 @@
  *     are consistent with the types exported from wasm-audio.ts.
  */
 
+import { buildStepCells, pickPattern } from '../js/player-studio';
+import type { ParsedSong } from '../types/wasm-audio';
 import type {
   EngineConfig,
   PlaybackPosition,
@@ -83,6 +85,7 @@ class MockRbsAudioEngine implements RbsAudioEngineInstance {
     return 120;
   }
   setTempoMultiplier(_multiplier: number): void {}
+  setDeviceParam(_deviceId: number, _paramId: number, _value: number): void {}
 
   isPlaying(): boolean {
     return false;
@@ -145,7 +148,11 @@ void mockModule;
 // ── Static assertions via assignability ──────────────────────────
 
 // If these assignments fail, the bridge contract is out of sync.
-type AssertEngineConfig = EngineConfig extends { sampleRate: number; bufferSize: number; enableTb303A: boolean }
+type AssertEngineConfig = EngineConfig extends {
+  sampleRate: number;
+  bufferSize: number;
+  enableTb303A: boolean;
+}
   ? true
   : false;
 type AssertPlaybackPosition = PlaybackPosition extends { bar: number; step: number } ? true : false;
@@ -155,3 +162,57 @@ const _assertPosition: AssertPlaybackPosition = true;
 
 void _assertConfig;
 void _assertPosition;
+
+const studioSong: ParsedSong = {
+  title: 'fixture',
+  author: 'test',
+  bpm: 128,
+  devices: [
+    {
+      deviceId: 'tb303-a',
+      knobs: {},
+      muted: false,
+      level: 0.8,
+      pan: 0.5,
+      waveform: 0,
+      initialPatternBank: 0,
+      initialPatternIndex: 0,
+    },
+  ],
+  patterns: [
+    {
+      deviceId: 'tb303-a',
+      bank: 0,
+      patternIndex: 0,
+      steps: Array.from({ length: 16 }, (_, i) => ({
+        active: i === 0 || i === 4,
+        note: 48,
+        accent: i === 0,
+        slide: i === 4,
+      })),
+    },
+    {
+      deviceId: 'tr808',
+      bank: 0,
+      patternIndex: 0,
+      steps: Array.from({ length: 16 }, (_, i) => ({
+        active: i === 0,
+        note: 0x01,
+        accent: false,
+        slide: false,
+        drumExtra: 0,
+      })),
+    },
+  ],
+  arrangement: [],
+};
+
+const acidPattern = pickPattern(studioSong, 'tb303-a', 0, 0);
+const acidCells = buildStepCells(acidPattern, 'tb303-a');
+const drumCells = buildStepCells(pickPattern(studioSong, 'tr808', 0, 0), 'tr808');
+const _assertAcidGrid: true =
+  acidCells[0].active && acidCells[0].accent && acidCells[4].slide ? true : (undefined as never);
+const _assertDrumGrid: true = drumCells[0].label.includes('BD') ? true : (undefined as never);
+
+void _assertAcidGrid;
+void _assertDrumGrid;

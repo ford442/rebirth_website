@@ -10,6 +10,7 @@
     "dev-dist",
     "playwright-report",
     "test-results",
-    "src/wasm/cpp/build"
+    "src/wasm/cpp/build",
+    "src/wasm/cpp/build-*"
   ]
 }

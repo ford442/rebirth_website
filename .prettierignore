@@ -5,3 +5,16 @@ public/wasm/
 playwright-report/
 test-results/
 tests/screenshots/
+src/data/songs-full-index.json
+src/data/songs-binary-meta.json
+src/data/songs-search-index.json
+src/data/mods-full-index.json
+src/data/artists-index.json
+public/data/songs-search-index.json
+src/data/archive-integrity.json
+public/data/archive-core.json
+package-lock.json
+src/wasm/cpp/build/
+src/wasm/cpp/build-*/
+src/wasm/cpp/build-wasm/
+public/coi-serviceworker.js

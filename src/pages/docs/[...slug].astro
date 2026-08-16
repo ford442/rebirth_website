@@ -43,17 +43,24 @@ const orderedDocs = [...allDocs].sort((left, right) => {
 
 const currentIndex = orderedDocs.findIndex((doc) => doc.id === entry.id);
 const previousDoc = currentIndex > 0 ? orderedDocs[currentIndex - 1] : null;
-const nextDoc = currentIndex >= 0 && currentIndex < orderedDocs.length - 1 ? orderedDocs[currentIndex + 1] : null;
+const nextDoc =
+  currentIndex >= 0 && currentIndex < orderedDocs.length - 1 ? orderedDocs[currentIndex + 1] : null;
 ---
 
-<BaseLayout title={entry.data.title} description={entry.data.description ?? `Documentation for ReBirth RB-338 version ${entry.data.version}.`}>
+<BaseLayout
+  title={entry.data.title}
+  description={entry.data.description ??
+    `Documentation for ReBirth RB-338 version ${entry.data.version}.`}
+>
   <div class="docs-page">
     <div class="container">
-      <Breadcrumbs items={[
-        { label: 'Home', href: '/' },
-        { label: 'Docs', href: '/docs' },
-        { label: entry.data.title },
-      ]} />
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Docs', href: '/docs' },
+          { label: entry.data.title },
+        ]}
+      />
 
       <HardwarePanel
         variant="rackmount-chassis"
@@ -68,7 +75,11 @@ const nextDoc = currentIndex >= 0 && currentIndex < orderedDocs.length - 1 ? ord
             <span>Version {entry.data.version}</span>
             {entry.data.releaseDate && <span>{entry.data.releaseDate}</span>}
           </p>
-          {entry.data.description && <p class="doc-header__description">{entry.data.description}</p>}
+          {
+            entry.data.description && (
+              <p class="doc-header__description">{entry.data.description}</p>
+            )
+          }
         </div>
       </HardwarePanel>
 
@@ -85,23 +96,30 @@ const nextDoc = currentIndex >= 0 && currentIndex < orderedDocs.length - 1 ? ord
       </HardwarePanel>
 
       <div class="docs-nav">
-        {previousDoc ? (
-          <a class="docs-nav__link" href={`${base}/docs/${docPath(previousDoc)}`}>
-            <span class="docs-nav__label">Previous</span>
-            <span class="docs-nav__title">{previousDoc.data.title}</span>
-          </a>
-        ) : (
-          <span></span>
-        )}
+        {
+          previousDoc ? (
+            <a class="docs-nav__link" href={`${base}/docs/${docPath(previousDoc)}`}>
+              <span class="docs-nav__label">Previous</span>
+              <span class="docs-nav__title">{previousDoc.data.title}</span>
+            </a>
+          ) : (
+            <span />
+          )
+        }
 
-        {nextDoc ? (
-          <a class="docs-nav__link docs-nav__link--next" href={`${base}/docs/${docPath(nextDoc)}`}>
-            <span class="docs-nav__label">Next</span>
-            <span class="docs-nav__title">{nextDoc.data.title}</span>
-          </a>
-        ) : (
-          <span></span>
-        )}
+        {
+          nextDoc ? (
+            <a
+              class="docs-nav__link docs-nav__link--next"
+              href={`${base}/docs/${docPath(nextDoc)}`}
+            >
+              <span class="docs-nav__label">Next</span>
+              <span class="docs-nav__title">{nextDoc.data.title}</span>
+            </a>
+          ) : (
+            <span />
+          )
+        }
       </div>
     </div>
   </div>

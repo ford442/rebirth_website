@@ -37,34 +37,40 @@ const animateClass = animate ? 'rb-panel--animate' : '';
   aria-label={ariaLabel}
   aria-labelledby={ariaLabelledBy}
 >
-  {isRackmount && (
-    <>
-      <span class="rb-rack__ear rb-rack__ear--left" aria-hidden="true"></span>
-      <span class="rb-rack__ear rb-rack__ear--right" aria-hidden="true"></span>
-    </>
-  )}
+  {
+    isRackmount && (
+      <>
+        <span class="rb-rack__ear rb-rack__ear--left" aria-hidden="true" />
+        <span class="rb-rack__ear rb-rack__ear--right" aria-hidden="true" />
+      </>
+    )
+  }
 
   {screws && !isRackmount && <ScrewCorners cross={screwCross} />}
   {screws && isRackmount && <ScrewCorners cross={true} />}
 
-  {title && !isRackmount && (
-    <PanelHeader title={title} ledStatus={ledStatus} ledLabel={ledLabel} class={headerClass}>
-      <slot name="header-extra" />
-    </PanelHeader>
-  )}
+  {
+    title && !isRackmount && (
+      <PanelHeader title={title} ledStatus={ledStatus} ledLabel={ledLabel} class={headerClass}>
+        <slot name="header-extra" />
+      </PanelHeader>
+    )
+  }
 
-  {title && isRackmount && (
-    <div class={`rb-rack__header ${headerClass}`.trim()}>
-      <span class="rb-panel__title">{title}</span>
-      {ledStatus && ledLabel ? (
-        <span class={`rb-led rb-led--${ledStatus}`} aria-hidden="true">
-          <span class="rb-led__dot"></span>
-          <span class="rb-led__label">{ledLabel}</span>
-        </span>
-      ) : null}
-      <slot name="header-extra" />
-    </div>
-  )}
+  {
+    title && isRackmount && (
+      <div class={`rb-rack__header ${headerClass}`.trim()}>
+        <span class="rb-panel__title">{title}</span>
+        {ledStatus && ledLabel ? (
+          <span class={`rb-led rb-led--${ledStatus}`} aria-hidden="true">
+            <span class="rb-led__dot" />
+            <span class="rb-led__label">{ledLabel}</span>
+          </span>
+        ) : null}
+        <slot name="header-extra" />
+      </div>
+    )
+  }
 
   <slot name="header" />
 

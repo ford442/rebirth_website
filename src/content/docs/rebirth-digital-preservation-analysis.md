@@ -1,7 +1,7 @@
 ---
-title: "ReBirth RB-338 Digital Preservation Analysis"
-version: "2.0.1"
-description: "Exhaustive analysis of ReBirth RB-338 archives, executables, mods, utilities, hardware interfaces, and cultural legacy."
+title: 'ReBirth RB-338 Digital Preservation Analysis'
+version: '2.0.1'
+description: 'Exhaustive analysis of ReBirth RB-338 archives, executables, mods, utilities, hardware interfaces, and cultural legacy.'
 ---
 
 # ReBirth RB-338 Digital Preservation Analysis
@@ -24,14 +24,14 @@ When Propellerhead discontinued ReBirth, they released the commercial CD-ROM ISO
 
 ### Reliable executable sources
 
-| Source / Repository | Direct URL / Identifier | Notes |
-|---------------------|-------------------------|-------|
-| Internet Archive (Base ISO) | https://archive.org/details/rebirthrb338 | 220.4 MB Windows 98 PC installation ISO with era-accurate dependencies.
-| Internet Archive (Modernized Installers) | https://archive.org/details/rebirthrb338forwin7810 | 1.6 GB collection with 32-bit/64-bit installers for Windows 7–11 and WinHelp32 patches.
-| CjCity Repository | http://cjcity.ru/2/downloader.php?id=20 | Community-verified alternative legacy download.
-| Wikipedia citation magnet | Citation #19 on Wikipedia | Peer-to-peer magnet link maintained by editors.
-| GitHub No-CD patch | https://github.com/TheKikGen/REBIRTH-NOCD | Bypasses CD verification for modern Windows.
-| Wayback Machine snapshot | https://web.archive.org/web/20050924081030/http://rebirthmuseum.com/ | Historical documentation and FAQs from the original ReBirth Museum.
+| Source / Repository                      | Direct URL / Identifier                                              | Notes                                                                                   |
+| ---------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Internet Archive (Base ISO)              | https://archive.org/details/rebirthrb338                             | 220.4 MB Windows 98 PC installation ISO with era-accurate dependencies.                 |
+| Internet Archive (Modernized Installers) | https://archive.org/details/rebirthrb338forwin7810                   | 1.6 GB collection with 32-bit/64-bit installers for Windows 7–11 and WinHelp32 patches. |
+| CjCity Repository                        | http://cjcity.ru/2/downloader.php?id=20                              | Community-verified alternative legacy download.                                         |
+| Wikipedia citation magnet                | Citation #19 on Wikipedia                                            | Peer-to-peer magnet link maintained by editors.                                         |
+| GitHub No-CD patch                       | https://github.com/TheKikGen/REBIRTH-NOCD                            | Bypasses CD verification for modern Windows.                                            |
+| Wayback Machine snapshot                 | https://web.archive.org/web/20050924081030/http://rebirthmuseum.com/ | Historical documentation and FAQs from the original ReBirth Museum.                     |
 
 ### 64-bit and compatibility challenges
 
@@ -163,12 +163,12 @@ ReBirth's MIDI implementation enabled extensive physical control. Users could ma
 
 A modern archive should also link to hardware that embodies ReBirth's original vision.
 
-| Device | ReBirth Equivalent |
-|--------|-------------------|
-| Roland Boutique TB-03 / TR-08 / TR-09 | Direct hardware recreations of the ReBirth synth and drum machines.
-| Novation Circuit | Portable groovebox with a sketchpad workflow similar to ReBirth.
-| Roland MC-101 | ZEN-Core-based groovebox for modern mobile production.
-| Elektron Analog Rytm / Analog Four | Deep analog sequencing and drum synthesis inspired by ReBirth's concepts.
+| Device                                | ReBirth Equivalent                                                        |
+| ------------------------------------- | ------------------------------------------------------------------------- |
+| Roland Boutique TB-03 / TR-08 / TR-09 | Direct hardware recreations of the ReBirth synth and drum machines.       |
+| Novation Circuit                      | Portable groovebox with a sketchpad workflow similar to ReBirth.          |
+| Roland MC-101                         | ZEN-Core-based groovebox for modern mobile production.                    |
+| Elektron Analog Rytm / Analog Four    | Deep analog sequencing and drum synthesis inspired by ReBirth's concepts. |
 
 ---
 
@@ -204,6 +204,7 @@ ReBirth's mod culture evolved into Reason's ReFill ecosystem. ReFills became the
 Building a ReBirth RB-338 archive is digital archaeology.
 
 A complete repository should preserve:
+
 - verified executables and compatibility patches,
 - `.rbs` song archives and ReMaker workflows,
 - `.rbm` mods and mod creation tools,

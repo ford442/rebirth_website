@@ -11,7 +11,12 @@ const {
 } = Astro.props;
 
 import { normalizeBase } from '../lib/url';
-import { formatStatRange, totalSongsIndexed, totalMods, latestVersion } from '../data/archive-stats';
+import {
+  formatStatRange,
+  totalSongsIndexed,
+  totalMods,
+  latestVersion,
+} from '../data/archive-stats';
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const currentPath = Astro.url.pathname;
@@ -47,7 +52,10 @@ const base = normalizeBase(import.meta.env.BASE_URL);
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Global styles are imported via the component's style tag below -->
     <link rel="stylesheet" href={`${base}/styles/rebirth-theme.css`} />
@@ -91,37 +99,42 @@ const base = normalizeBase(import.meta.env.BASE_URL);
               <a
                 href={`${base}/`}
                 class={`rb-nav-btn${currentPath === '/' || currentPath === `${base}/` || currentPath === base ? ' is-active' : ''}`}
-              >Home</a>
+                >Home</a
+              >
             </li>
             <li>
               <a
                 href={`${base}/archive/songs`}
                 class={`rb-nav-btn${currentPath.includes('/archive/songs') ? ' is-active' : ''}`}
-              >Songs</a>
+                >Songs</a
+              >
             </li>
             <li>
               <a
                 href={`${base}/archive/mods`}
                 class={`rb-nav-btn${currentPath.includes('/archive/mods') ? ' is-active' : ''}`}
-              >Mods</a>
+                >Mods</a
+              >
             </li>
             <li>
               <a
                 href={`${base}/beginner-guide`}
                 class={`rb-nav-btn${currentPath.includes('/beginner-guide') ? ' is-active' : ''}`}
-              >Start Here</a>
+                >Start Here</a
+              >
             </li>
             <li>
               <a
                 href={`${base}/history`}
                 class={`rb-nav-btn${currentPath.includes('/history') ? ' is-active' : ''}`}
-              >History</a>
+                >History</a
+              >
             </li>
             <li>
               <a
                 href={`${base}/docs`}
-                class={`rb-nav-btn${currentPath.includes('/docs') ? ' is-active' : ''}`}
-              >Docs</a>
+                class={`rb-nav-btn${currentPath.includes('/docs') ? ' is-active' : ''}`}>Docs</a
+              >
             </li>
           </ul>
         </nav>
@@ -162,21 +175,37 @@ const base = normalizeBase(import.meta.env.BASE_URL);
               <li><a href={`${base}/beginner-guide`}>Beginner Guide</a></li>
               <li><a href={`${base}/docs`}>Documentation</a></li>
               <li><a href={`${base}/glossary`}>Glossary</a></li>
-              <li><a href="https://github.com/ford442/rebirth_website/issues/new?template=mod-metadata.yml" target="_blank" rel="noopener noreferrer">Contributing</a></li>
-              <li><a href="https://github.com/ford442/rebirth_website" target="_blank" rel="noopener noreferrer">GitHub Repository</a></li>
+              <li>
+                <a
+                  href="https://github.com/ford442/rebirth_website/issues/new?template=mod-metadata.yml"
+                  target="_blank"
+                  rel="noopener noreferrer">Contributing</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/ford442/rebirth_website"
+                  target="_blank"
+                  rel="noopener noreferrer">GitHub Repository</a
+                >
+              </li>
             </ul>
           </section>
 
           <section class="footer-col" aria-labelledby="footer-about-heading">
             <h2 id="footer-about-heading" class="footer-heading">About</h2>
             <p class="footer-about">
-              ReBirth RB-338 is a virtual emulation of the Roland TB-303, TR-808, and TR-909 grooveboxes, originally released by Propellerhead Software.
+              ReBirth RB-338 is a virtual emulation of the Roland TB-303, TR-808, and TR-909
+              grooveboxes, originally released by Propellerhead Software.
             </p>
             <p class="footer-stats">
-              {formatStatRange(totalSongsIndexed)} songs · {formatStatRange(totalMods)} mods · v{latestVersion}
+              {formatStatRange(totalSongsIndexed)} songs · {formatStatRange(totalMods)} mods · v{
+                latestVersion
+              }
             </p>
             <p class="footer-disclaimer">
-              Community-maintained archive. Not affiliated with Propellerhead Software / Reason Studios.
+              Community-maintained archive. Not affiliated with Propellerhead Software / Reason
+              Studios.
             </p>
           </section>
         </div>
@@ -184,27 +213,33 @@ const base = normalizeBase(import.meta.env.BASE_URL);
 
       <div class="container footer-build-row">
         <p class="footer-build">
-          Built with <a href="https://astro.build" target="_blank" rel="noopener noreferrer">Astro</a> ·
-          <a href="https://github.com/ford442/rebirth_website" target="_blank" rel="noopener noreferrer">Contribute on GitHub</a>
+          Built with <a href="https://astro.build" target="_blank" rel="noopener noreferrer"
+            >Astro</a
+          > ·
+          <a
+            href="https://github.com/ford442/rebirth_website"
+            target="_blank"
+            rel="noopener noreferrer">Contribute on GitHub</a
+          >
         </p>
       </div>
     </footer>
 
     <!-- Mobile menu toggle script -->
     <script>
-      (function() {
+      (function () {
         var toggle = document.getElementById('rb-mobile-toggle');
         var menu = document.getElementById('rb-mobile-menu');
         var led = document.getElementById('menu-led');
         if (!toggle || !menu) return;
-        toggle.addEventListener('click', function() {
+        toggle.addEventListener('click', function () {
           var isOpen = menu!.classList.toggle('is-open');
           toggle!.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
           if (led) led.classList.toggle('is-on', isOpen);
         });
         // Close menu when clicking a nav link (mobile)
-        menu.querySelectorAll('a').forEach(function(link) {
-          link.addEventListener('click', function() {
+        menu.querySelectorAll('a').forEach(function (link) {
+          link.addEventListener('click', function () {
             menu!.classList.remove('is-open');
             toggle!.setAttribute('aria-expanded', 'false');
             if (led) led.classList.remove('is-on');
@@ -325,7 +360,9 @@ const base = normalizeBase(import.meta.env.BASE_URL);
     color: var(--rb-amber, #ffb000);
   }
 
-  .footer-build { color: var(--color-text-muted); }
+  .footer-build {
+    color: var(--color-text-muted);
+  }
 
   .pwa-update-banner {
     position: fixed;

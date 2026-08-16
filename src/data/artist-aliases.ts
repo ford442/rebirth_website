@@ -16,7 +16,13 @@ export const artistAliases: ArtistAliasEntry[] = [
   {
     slug: 'noah-cohn',
     name: 'Noah Cohn',
-    aliases: ['Noah Cohn', 'Noah Cohn Complete', 'Noah Cohn Extended', 'Noah_Cohn_Complete', 'Noah_Cohn_Extended'],
+    aliases: [
+      'Noah Cohn',
+      'Noah Cohn Complete',
+      'Noah Cohn Extended',
+      'Noah_Cohn_Complete',
+      'Noah_Cohn_Extended',
+    ],
   },
   {
     slug: 'rotorkopf',

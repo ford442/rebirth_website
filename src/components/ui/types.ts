@@ -2,7 +2,15 @@
 
 export type LedStatus = 'online' | 'pending' | 'offline' | 'flicker' | 'flicker-green';
 
-export type PanelVariant = 'default' | 'amber' | 'green' | 'red' | 'chassis' | 'rackmount' | 'rackmount-module' | 'rackmount-chassis';
+export type PanelVariant =
+  | 'default'
+  | 'amber'
+  | 'green'
+  | 'red'
+  | 'chassis'
+  | 'rackmount'
+  | 'rackmount-module'
+  | 'rackmount-chassis';
 
 export type ActionVariant = 'pattern' | 'mix';
 

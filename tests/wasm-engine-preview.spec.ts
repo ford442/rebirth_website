@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const WASM_FIXTURE_URL =
-  '/rebirth_website/archive/rbs-songs/demo/propellerhead-008.rbs';
+const WASM_FIXTURE_URL = '/rebirth_website/archive/rbs-songs/demo/propellerhead-008.rbs';
 
 /**
  * WASM engine integration against the production preview server (no dev COI headers).

@@ -48,16 +48,16 @@ Astro automatically reloads the page when you edit source files.
 
 ### Other commands
 
-| Command           | Description                                       |
-|-------------------|---------------------------------------------------|
-| `npm run dev`     | Start local dev server at `localhost:4321/rebirth_website/` |
-| `npm run build`   | Build the production site into `dist/` without requiring Emscripten |
-| `npm run build:ship` | Build pinned WASM artifacts, then the production site |
-| `npm run preview` | Preview the production build locally              |
-| `npm run check`   | Astro + TypeScript type check (`astro check`)     |
-| `npm run lint`    | ESLint for Astro/TS sources                       |
-| `npm run format`  | Prettier check (Astro/TS/JSON/CSS)                |
-| `npm run astro`   | Run Astro CLI directly                            |
+| Command              | Description                                                         |
+| -------------------- | ------------------------------------------------------------------- |
+| `npm run dev`        | Start local dev server at `localhost:4321/rebirth_website/`         |
+| `npm run build`      | Build the production site into `dist/` without requiring Emscripten |
+| `npm run build:ship` | Build pinned WASM artifacts, then the production site               |
+| `npm run preview`    | Preview the production build locally                                |
+| `npm run check`      | Astro + TypeScript type check (`astro check`)                       |
+| `npm run lint`       | ESLint for Astro/TS sources                                         |
+| `npm run format`     | Prettier check (Astro/TS/JSON/CSS)                                  |
+| `npm run astro`      | Run Astro CLI directly                                              |
 
 ---
 
@@ -172,10 +172,10 @@ New files must include frontmatter matching the schema in `src/content/config.ts
 
 ```markdown
 ---
-title: "ReBirth RB-338 — Your Doc Title"
-version: "X.Y.Z"
-releaseDate: "YYYY-MM-DD"
-description: "One-sentence summary."
+title: 'ReBirth RB-338 — Your Doc Title'
+version: 'X.Y.Z'
+releaseDate: 'YYYY-MM-DD'
+description: 'One-sentence summary.'
 ---
 ```
 
@@ -184,7 +184,36 @@ description: "One-sentence summary."
 ## Archive Indexers
 
 The full `.rbs` song index (`src/data/songs-full-index.json`) is generated from the
-remote archive rather than maintained by hand.
+remote archive rather than maintained by hand. Discovery (search + artist pages) is a
+**three-step pipeline** — re-run in this order after the remote archive changes:
+
+1. `python3 scripts/index-rbs-archive.py` — crawl listings → `src/data/songs-full-index.json`
+2. `npm run archive:mirror` — hash the same-origin playable core and seed `src/data/archive-integrity.json` (use `--scope all` on a disk-rich machine for the full corpus)
+3. `npm run songs:enrich` — inspect `.rbs` binaries (Phase A: demos + `Artists/` + Featured) → `src/data/songs-binary-meta.json`. After a full mirror, pass `--local-mirror .mirror/paths`.
+4. `npm run songs:discovery` — merge crawl + sidecar + integrity + overrides → search/artist indexes
+5. `npm run build` — so Astro and the MiniSearch JSON ship together
+
+Hosting policy (split: in-repo playable core + off-repo long tail) is recorded in
+[`docs/adr/0001-archive-hosting-split.md`](docs/adr/0001-archive-hosting-split.md).
+CI verifies SHA-256 of every `local-core` file (`npm run archive:check`). A Monday
+06:00 UTC workflow HEADs a sample of remaining remote URLs and opens an issue on rot.
+
+`npm run songs:enrich:all` is Phase B (full catalog). Requires a built `rbs-inspect` binary
+(`cmake --build src/wasm/cpp/build --target rbs-inspect`). Enrichment is resumable and
+rate-limited; failures are logged per path and do not abort the batch.
+
+Human title/artist/BPM corrections go in `scripts/song-metadata-overrides.json` (keyed by
+archive `path`) and always win over binary metadata. Artist folder aliases must stay in
+sync between `src/data/artist-aliases.ts` and `scripts/build-song-discovery.py`.
+
+GLOB `title` in most `.rbs` files is the **loaded mod name** (e.g. `Standard ReBirth`,
+`Orbit 2.0`), not the song title. Discovery stores that as `modName` and only promotes it
+to `title` when it does not match a known default/mod label. USRI `author` is used for
+artist pages when the path is not already under `Artists/`. Many `.rbs` listings are
+actually MIDI (`MThd`); those are logged as parse failures and skipped.
+
+CI runs `python3 scripts/check-song-discovery.py` (`npm run songs:check`) to verify search
+index counts and sidecar schema.
 
 ### Regenerate the song index
 
@@ -192,7 +221,7 @@ remote archive rather than maintained by hand.
 python3 scripts/index-rbs-archive.py
 ```
 
-This recursively crawls `http://test.1ink.us/rb338/archive/rbs-songs`, extracts every
+This recursively crawls `https://test.1ink.us/rb338/archive/rbs-songs`, extracts every
 `.rbs` filename and size, infers collection/artist metadata from folder paths, and writes
 `src/data/songs-full-index.json`. The script also computes coverage statistics against
 `public/rbs-manifest.json`.
@@ -204,12 +233,10 @@ Options:
 
 ```bash
 python3 scripts/index-rbs-archive.py \
-  --base-url http://test.1ink.us/rb338/archive/rbs-songs \
+  --base-url https://test.1ink.us/rb338/archive/rbs-songs \
   --output src/data/songs-full-index.json \
   --manifest public/rbs-manifest.json
 ```
-
-Run `npm run build` after regenerating the index so Astro picks up the new data.
 
 ---
 
@@ -250,13 +277,13 @@ npm run build
 python3 deploy.py
 ```
 
-| Variable            | Used by            | Purpose                                                  |
-|---------------------|--------------------|----------------------------------------------------------|
-| `DEPLOY_TOKEN`      | `deploy.py`        | Auth token for the storage endpoint (if required)        |
-| `CONTABO_BASE_URL`  | `deploy.py`        | Override the storage endpoint URL                        |
-| `DEPLOY_FOLDER`     | `deploy.py`        | Override the remote target folder                        |
-| `SFTP_HOST` / `SFTP_USER` | SFTP tooling | Host + user for SFTP uploads (e.g. `scripts/rebirth_mod_upload.py`) |
-| `SFTP_PASSWORD` *or* `SFTP_KEY_FILE` | SFTP tooling | Password **or** (preferred) private-key path |
+| Variable                             | Used by      | Purpose                                                             |
+| ------------------------------------ | ------------ | ------------------------------------------------------------------- |
+| `DEPLOY_TOKEN`                       | `deploy.py`  | Auth token for the storage endpoint (if required)                   |
+| `CONTABO_BASE_URL`                   | `deploy.py`  | Override the storage endpoint URL                                   |
+| `DEPLOY_FOLDER`                      | `deploy.py`  | Override the remote target folder                                   |
+| `SFTP_HOST` / `SFTP_USER`            | SFTP tooling | Host + user for SFTP uploads (e.g. `scripts/rebirth_mod_upload.py`) |
+| `SFTP_PASSWORD` _or_ `SFTP_KEY_FILE` | SFTP tooling | Password **or** (preferred) private-key path                        |
 
 `scripts/rebirth_mod_upload.py` accepts `--password` / `--key-file` on the
 command line; prefer key-based auth and pass secrets from your environment
@@ -273,9 +300,9 @@ GitHub Actions runs on every pull request and push to `main`. **No repository
 secrets are required** for public CI — deploy credentials are only needed locally
 for `deploy.py` and SFTP upload scripts.
 
-| Workflow | Triggers | What it checks |
-|----------|----------|----------------|
-| [`ci.yml`](.github/workflows/ci.yml) | PR / `main` | `npm ci`, `astro check`, production build, secrets scan, Playwright against the preview server |
+| Workflow                                 | Triggers                                                   | What it checks                                                                                     |
+| ---------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| [`ci.yml`](.github/workflows/ci.yml)     | PR / `main`                                                | `npm ci`, `astro check`, production build, secrets scan, Playwright against the preview server     |
 | [`wasm.yml`](.github/workflows/wasm.yml) | Every `main` push, relevant PRs, nightly cron, manual runs | Pinned Emscripten 6.0.3 shipping build, WASM Playwright tests, Pages deployment, live smoke checks |
 
 Locally you can mirror the main CI pipeline:

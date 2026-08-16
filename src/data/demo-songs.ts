@@ -78,10 +78,9 @@ export const DEMO_SONGS: DemoSongEntry[] = [
 ];
 
 /** Map demo id → entry for featured-card preview wiring. */
-export const DEMO_BY_ID = Object.fromEntries(DEMO_SONGS.map((entry) => [entry.id, entry])) as Record<
-  string,
-  DemoSongEntry
->;
+export const DEMO_BY_ID = Object.fromEntries(
+  DEMO_SONGS.map((entry) => [entry.id, entry])
+) as Record<string, DemoSongEntry>;
 
 /** Same-origin URL for a hosted demo file (works with import.meta.env.BASE_URL). */
 export function demoSongUrl(base: string, entry: DemoSongEntry): string {

@@ -4,14 +4,14 @@ This document is the single source of truth for the data shape shared between th
 
 ## Primitive mappings
 
-| C++ type | Embind wire type | TypeScript type | Notes |
-|----------|------------------|-----------------|-------|
-| `bool` | boolean | `boolean` | |
-| `uint8_t` | number | `number` | 0–255 |
-| `uint16_t` | number | `number` | 0–65535 |
-| `float` | number | `number` | |
-| `std::string` | string | `string` | UTF-8 |
-| `DeviceId` (enum) | number | `WasmDeviceId` | 0=TB303_A, 1=TB303_B, 2=TR808, 3=TR909 |
+| C++ type          | Embind wire type | TypeScript type | Notes                                  |
+| ----------------- | ---------------- | --------------- | -------------------------------------- |
+| `bool`            | boolean          | `boolean`       |                                        |
+| `uint8_t`         | number           | `number`        | 0–255                                  |
+| `uint16_t`        | number           | `number`        | 0–65535                                |
+| `float`           | number           | `number`        |                                        |
+| `std::string`     | string           | `string`        | UTF-8                                  |
+| `DeviceId` (enum) | number           | `WasmDeviceId`  | 0=TB303_A, 1=TB303_B, 2=TR808, 3=TR909 |
 
 ## Value objects
 
@@ -272,27 +272,28 @@ block; it does not create a JavaScript `rb338` namespace.
 
 ### `RbsAudioEngine`
 
-| C++ API | Embind name | TS signature |
-|---------|-------------|--------------|
-| `bool init(const EngineConfig&)` | `init` | `(config: EngineConfig) => boolean` |
-| `bool loadSong(const ParsedSong&)` | `loadSong` | `(song: WasmParsedSong) => boolean` |
-| `void play()` | `play` | `() => void` |
-| `void pause()` | `pause` | `() => void` |
-| `void stop()` | `stop` | `() => void` |
-| `void seek(uint16_t)` | `seek` | `(bar: number) => void` |
-| `void setVolume(float)` | `setVolume` | `(volume: number) => void` |
-| `void setTempo(float)` | `setTempo` | `(bpm: number) => void` |
-| `float getTempo() const` | `getTempo` | `() => number` |
-| `void setTempoMultiplier(float)` | `setTempoMultiplier` | `(multiplier: number) => void` |
-| `bool isPlaying() const` | `isPlaying` | `() => boolean` |
-| `void getPlaybackPosition(...)` (wrapped) | `getPlaybackPosition` | `() => PlaybackPosition` |
+| C++ API                                   | Embind name           | TS signature                        |
+| ----------------------------------------- | --------------------- | ----------------------------------- |
+| `bool init(const EngineConfig&)`          | `init`                | `(config: EngineConfig) => boolean` |
+| `bool loadSong(const ParsedSong&)`        | `loadSong`            | `(song: WasmParsedSong) => boolean` |
+| `void play()`                             | `play`                | `() => void`                        |
+| `void pause()`                            | `pause`               | `() => void`                        |
+| `void stop()`                             | `stop`                | `() => void`                        |
+| `void seek(uint16_t)`                     | `seek`                | `(bar: number) => void`             |
+| `void setVolume(float)`                   | `setVolume`           | `(volume: number) => void`          |
+| `void setTempo(float)`                    | `setTempo`            | `(bpm: number) => void`             |
+| `float getTempo() const`                  | `getTempo`            | `() => number`                      |
+| `void setTempoMultiplier(float)`          | `setTempoMultiplier`  | `(multiplier: number) => void`      |
+| `void setDeviceParam(uint8_t,uint8_t,float)` | `setDeviceParam`   | `(deviceId, paramId, value) => void` |
+| `bool isPlaying() const`                  | `isPlaying`           | `() => boolean`                     |
+| `void getPlaybackPosition(...)` (wrapped) | `getPlaybackPosition` | `() => PlaybackPosition`            |
 
 ### `RbsParser`
 
-| C++ API | Embind name | TS signature |
-|---------|-------------|--------------|
-| `std::optional<ParsedSong> parse(const uint8_t*, size_t)` | `parse` | `(ptr: number, size: number) => WasmParsedSong \| null` |
-| `const std::string& lastError() const` | `lastError` | `() => string` |
+| C++ API                                                   | Embind name | TS signature                                            |
+| --------------------------------------------------------- | ----------- | ------------------------------------------------------- |
+| `std::optional<ParsedSong> parse(const uint8_t*, size_t)` | `parse`     | `(ptr: number, size: number) => WasmParsedSong \| null` |
+| `const std::string& lastError() const`                    | `lastError` | `() => string`                                          |
 
 ## Container registrations
 

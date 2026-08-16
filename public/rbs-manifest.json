@@ -209,9 +209,7 @@
     "created": "2026-03-15",
     "lastUpdated": "2026-03-15",
     "archiveType": "RBS (Rebirth Song Files)",
-    "supportedFormats": [
-      ".rbs"
-    ],
+    "supportedFormats": [".rbs"],
     "description": "RBS (Rebirth Song) files are Rebirth music sequences created with Propellerhead Software's Rebirth synthesizer software"
   },
   "navigation": {

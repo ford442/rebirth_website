@@ -2,6 +2,9 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#ifdef __wasm_simd128__
+#include <wasm_simd128.h>
+#endif
 
 namespace rb338 {
 
@@ -82,6 +85,21 @@ void Mixer::setDeviceStates(const std::array<DeviceState, NUM_DEVICES>& devices)
   m_devices = devices;
 }
 
+void Mixer::setChannelLevel(int deviceIndex, float level) {
+  if (deviceIndex < 0 || deviceIndex >= NUM_DEVICES) return;
+  m_devices[static_cast<size_t>(deviceIndex)].level = std::clamp(level, 0.0f, 1.0f);
+}
+
+void Mixer::setChannelPan(int deviceIndex, float pan) {
+  if (deviceIndex < 0 || deviceIndex >= NUM_DEVICES) return;
+  m_devices[static_cast<size_t>(deviceIndex)].pan = std::clamp(pan, 0.0f, 1.0f);
+}
+
+void Mixer::setChannelMuted(int deviceIndex, bool muted) {
+  if (deviceIndex < 0 || deviceIndex >= NUM_DEVICES) return;
+  m_devices[static_cast<size_t>(deviceIndex)].muted = muted;
+}
+
 void Mixer::updateDelayTap(float bpm) {
   const float clampedBpm = std::clamp(bpm, 40.0f, 250.0f);
   // One 16th-note step (ReBirth master step) — tempo-sync delay subdivision.
@@ -143,6 +161,19 @@ void Mixer::process(const float* const* deviceBuffers, float* leftOut, float* ri
         sample *= level;
       }
 
+#ifdef __wasm_simd128__
+      const v128_t gains = wasm_f32x4_make(
+          constantPowerPanLeft(pan), constantPowerPanRight(pan),
+          (m_distortionOn && m_devices[d].dist) ? 1.0f : 0.0f,
+          m_delayOn ? std::clamp(m_devices[d].delaySend, 0.0f, 1.0f) : 0.0f);
+      const v128_t scaled = wasm_f32x4_mul(wasm_f32x4_splat(sample), gains);
+      alignas(16) float lanes[4];
+      wasm_v128_store(lanes, scaled);
+      dryL += lanes[0];
+      dryR += lanes[1];
+      distBus += lanes[2];
+      delayBus += lanes[3];
+#else
       const float leftGain = constantPowerPanLeft(pan);
       const float rightGain = constantPowerPanRight(pan);
       dryL += sample * leftGain;
@@ -158,6 +189,7 @@ void Mixer::process(const float* const* deviceBuffers, float* leftOut, float* ri
           delayBus += sample * send;
         }
       }
+#endif
     }
 
     float wetL = 0.0f;

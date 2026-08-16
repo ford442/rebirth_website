@@ -16,10 +16,15 @@ export interface SearchSongRecord {
   subcollectionDisplay: string | null;
   artistCanonical: string | null;
   artistSlug: string | null;
+  metaAuthor: string | null;
+  modName: string | null;
   bpm: number | null;
   fileSize: string;
   sourceVersion: string | null;
   hasModDependency: boolean;
+  localPath: string | null;
+  linkStatus: string | null;
+  sha256: string | null;
 }
 
 export interface SearchFacets {
@@ -76,7 +81,16 @@ export async function loadSongSearchIndex(): Promise<SongSearchIndex> {
       .then((data) => {
         indexData = data;
         miniSearch = new MiniSearch({
-          fields: ['title', 'filename', 'artistCanonical', 'collection', 'subcollectionDisplay', 'path'],
+          fields: [
+            'title',
+            'filename',
+            'artistCanonical',
+            'metaAuthor',
+            'modName',
+            'collection',
+            'subcollectionDisplay',
+            'path',
+          ],
           storeFields: [
             'id',
             'filename',
@@ -87,15 +101,20 @@ export async function loadSongSearchIndex(): Promise<SongSearchIndex> {
             'subcollectionDisplay',
             'artistCanonical',
             'artistSlug',
+            'metaAuthor',
+            'modName',
             'bpm',
             'fileSize',
             'sourceVersion',
             'hasModDependency',
+            'localPath',
+            'linkStatus',
+            'sha256',
           ],
           searchOptions: {
             prefix: true,
             fuzzy: 0.15,
-            boost: { title: 2, artistCanonical: 1.5, filename: 1.2 },
+            boost: { title: 2, artistCanonical: 1.5, metaAuthor: 1.3, filename: 1.2 },
           },
         });
         miniSearch.addAll(data.songs);
@@ -117,7 +136,9 @@ function passesFacets(song: SearchSongRecord, filters: SongSearchFilters): boole
 function resolveHits(ids: Array<{ id: number }>): SearchSongRecord[] {
   if (!indexData) return [];
   const byId = new Map(indexData.songs.map((song) => [song.id, song as SearchSongRecord]));
-  return ids.map((hit) => byId.get(hit.id)).filter((song): song is SearchSongRecord => Boolean(song));
+  return ids
+    .map((hit) => byId.get(hit.id))
+    .filter((song): song is SearchSongRecord => Boolean(song));
 }
 
 export function searchSongs(

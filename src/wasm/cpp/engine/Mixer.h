@@ -41,6 +41,10 @@ public:
   void process(const float* const* deviceBuffers, float* leftOut, float* rightOut,
                uint32_t numFrames, float bpm);
 
+  void setChannelLevel(int deviceIndex, float level);
+  void setChannelPan(int deviceIndex, float pan);
+  void setChannelMuted(int deviceIndex, bool muted);
+
   void setDistortionEnabled(bool on) { m_distortionOn = on; }
   void setCompressorEnabled(bool on) { m_compressorOn = on; }
   void setDelayEnabled(bool on) { m_delayOn = on; }

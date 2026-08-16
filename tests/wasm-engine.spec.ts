@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const WASM_FIXTURE_URL =
-  '/rebirth_website/archive/rbs-songs/demo/propellerhead-008.rbs';
+const WASM_FIXTURE_URL = '/rebirth_website/archive/rbs-songs/demo/propellerhead-008.rbs';
 
 /**
  * Integration test for the WASM audio engine.
@@ -37,6 +36,12 @@ test.describe('WASM audio engine', () => {
       }
       const workletBlocks = bridge.enginePtr.getProcessedBlockCount();
       await bridge.ctx?.suspend();
+
+      if (typeof bridge.setDeviceParam !== 'function' || !bridge.setDeviceParam(0, 1, 0.25)) {
+        throw new Error('setDeviceParam cutoff failed');
+      }
+      bridge.setDeviceParam(0, 2, 0.8);
+      bridge.setDeviceParam(0, 4, 0.4);
 
       bridge.setTempoMultiplier(4);
       bridge.play();

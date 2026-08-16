@@ -1,7 +1,7 @@
 ---
-title: "ReBirth RB-338 Website Structure Plan"
-version: "2.0.1"
-description: "Recommended website sections and content layout for ReBirth RB-338 resources, downloads, and extras."
+title: 'ReBirth RB-338 Website Structure Plan'
+version: '2.0.1'
+description: 'Recommended website sections and content layout for ReBirth RB-338 resources, downloads, and extras.'
 ---
 
 # ReBirth RB-338 Website Structure Plan
@@ -11,6 +11,7 @@ This document breaks the curated ReBirth resource collection into website sectio
 ## 1. Downloads Page
 
 ### Tabs / sections
+
 - **Mods (.rbm)**
   - Primary curated hub: Peff’s ReBirth Mod Archive
   - Direct featured downloads and descriptions
@@ -24,6 +25,7 @@ This document breaks the curated ReBirth resource collection into website sectio
   - Add a short compatibility note for each track bundle
 
 ### Recommended content elements
+
 - Quick setup note: “Requires ReBirth v2.0.1 (free ISO on Archive.org). Test in compatibility mode if needed.”
 - Warning callout: “Old files may require legacy OS/compatibility layers and could behave differently than modern DAWs.”
 - Legal note: “These are community/fan-preserved archives. Respect original copyrights.”
@@ -31,6 +33,7 @@ This document breaks the curated ReBirth resource collection into website sectio
 ## 2. Community & Extras Page
 
 ### Sections to include
+
 - **ReMaker 1.32**
   - Explain it extracts `.rbs` MIDI / automation / arrangement data.
   - Link to Archive.org pack and mention modern DAW utility.
@@ -51,6 +54,7 @@ This document breaks the curated ReBirth resource collection into website sectio
 ## 3. Content organization strategy
 
 ### Suggested grouping
+
 - **Mods by type**
   - Classic vintage-style mods
   - Drum kit / sample mods
@@ -64,6 +68,7 @@ This document breaks the curated ReBirth resource collection into website sectio
   - Mod-linked bundles
 
 ### User-facing labels
+
 - “Curated downloads” for hand-picked direct links
 - “Bulk archives” for large collections and GitHub mirrors
 - “Modern companion tools” for ReMaker and hardware

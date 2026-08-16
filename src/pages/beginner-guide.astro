@@ -52,13 +52,17 @@ const listeningOrder = [
       ledLabel="BEGINNER MODE"
     >
       <p class="intro">
-        ReBirth RB-338 is a classic software groovebox that emulates the TB-303 bass synth plus TR-808/TR-909 drums.
-        This guide helps new listeners hear the signature sound quickly.
+        ReBirth RB-338 is a classic software groovebox that emulates the TB-303 bass synth plus
+        TR-808/TR-909 drums. This guide helps new listeners hear the signature sound quickly.
       </p>
       <ul class="focus-list">
         <li><strong>303 basslines:</strong> squelchy, repeating acid patterns.</li>
-        <li><strong>Drum machine punch:</strong> 808/909 kicks, hats, and claps driving the groove.</li>
-        <li><strong>Pattern variation:</strong> subtle step-sequencer changes that keep loops alive.</li>
+        <li>
+          <strong>Drum machine punch:</strong> 808/909 kicks, hats, and claps driving the groove.
+        </li>
+        <li>
+          <strong>Pattern variation:</strong> subtle step-sequencer changes that keep loops alive.
+        </li>
       </ul>
     </HardwarePanel>
 
@@ -70,22 +74,19 @@ const listeningOrder = [
       ledLabel="5 PICKS"
     >
       <ol class="listening-order">
-        {listeningOrder.map((item) => (
-          <li>
-            <a href={item.href}>{item.title}</a>
-            <span class="artist">{item.artist}</span>
-            <p>{item.note}</p>
-          </li>
-        ))}
+        {
+          listeningOrder.map((item) => (
+            <li>
+              <a href={item.href}>{item.title}</a>
+              <span class="artist">{item.artist}</span>
+              <p>{item.note}</p>
+            </li>
+          ))
+        }
       </ol>
     </HardwarePanel>
 
-    <HardwarePanel
-      variant="rackmount"
-      title="NEXT STEPS"
-      ledStatus="pending"
-      ledLabel="EXPLORE"
-    >
+    <HardwarePanel variant="rackmount" title="NEXT STEPS" ledStatus="pending" ledLabel="EXPLORE">
       <div class="next-links">
         <a class="rb-pattern-btn" href={`${base}/archive/songs`}>Browse Full Song Archive</a>
         <a class="rb-mix-btn" href={`${base}/archive/mods`}>Browse Mod Archive</a>

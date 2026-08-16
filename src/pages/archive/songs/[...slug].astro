@@ -86,7 +86,7 @@ const folderSegments = folderPath.split('/');
 const rawFolderName = folderSegments[folderSegments.length - 1].replace(/_/g, ' ');
 const folderName =
   topSegment === 'Monthly_Archive'
-    ? displaySubcollection(folderSegments[folderSegments.length - 1]) ?? rawFolderName
+    ? (displaySubcollection(folderSegments[folderSegments.length - 1]) ?? rawFolderName)
     : rawFolderName;
 
 const songs = fullIndex.songs
@@ -126,13 +126,14 @@ const pageTitle = `${folderName} — ${sectionName}`;
 >
   <div class="folder-page">
     <div class="container">
-
-      <Breadcrumbs items={[
-        { label: 'Home', href: '/' },
-        { label: 'Songs', href: '/archive/songs/' },
-        { label: sectionName, href: '/archive/songs/' },
-        { label: folderName },
-      ]} />
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Songs', href: '/archive/songs/' },
+          { label: sectionName, href: '/archive/songs/' },
+          { label: folderName },
+        ]}
+      />
 
       <div class="rb-heading rb-heading-blue">{sectionName}</div>
 
@@ -144,23 +145,27 @@ const pageTitle = `${folderName} — ${sectionName}`;
         ledStatus={fileCount > 0 ? 'online' : 'offline'}
         ledLabel={`${fileCount.toLocaleString()} FILE${fileCount === 1 ? '' : 'S'}`}
       >
-        {sectionMeta?.description && (
-          <p class="folder-description">{sectionMeta.description}</p>
-        )}
+        {sectionMeta?.description && <p class="folder-description">{sectionMeta.description}</p>}
         <div class="folder-meta">
-          {sectionMeta?.curator && (
-            <span class="folder-meta__stat">Curator: {sectionMeta.curator}</span>
-          )}
-          {sectionMeta?.lastUpdated && (
-            <span class="folder-meta__stat">Updated: {sectionMeta.lastUpdated}</span>
-          )}
-          {sectionData?.tags && sectionData.tags.length > 0 && (
-            <span class="folder-meta__tags">
-              {sectionData.tags.map((tag) => (
-                <span class="folder-meta__tag">{tag}</span>
-              ))}
-            </span>
-          )}
+          {
+            sectionMeta?.curator && (
+              <span class="folder-meta__stat">Curator: {sectionMeta.curator}</span>
+            )
+          }
+          {
+            sectionMeta?.lastUpdated && (
+              <span class="folder-meta__stat">Updated: {sectionMeta.lastUpdated}</span>
+            )
+          }
+          {
+            sectionData?.tags && sectionData.tags.length > 0 && (
+              <span class="folder-meta__tags">
+                {sectionData.tags.map((tag) => (
+                  <span class="folder-meta__tag">{tag}</span>
+                ))}
+              </span>
+            )
+          }
         </div>
       </HardwarePanel>
 
@@ -170,121 +175,153 @@ const pageTitle = `${folderName} — ${sectionName}`;
         <Lcd label="SECTION" value={sectionName} ariaLabel="Section" />
       </div>
 
-      {subfolders.length > 0 && (
-        <HardwarePanel variant="rackmount" title={`SUBFOLDERS IN ${folderName.toUpperCase()}`}>
-          <ul class="subfolder-list" role="list">
-            {subfolders.map((subfolder) => (
-              <li>
-                <a class="subfolder-link" href={subfolder.href}>
-                  <span class="subfolder-link__icon" aria-hidden="true">📁</span>
-                  <span class="subfolder-link__name">{subfolder.name}</span>
-                  <span class="subfolder-link__count">{subfolder.fileCount} files</span>
-                  <span class="subfolder-link__arrow" aria-hidden="true">→</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </HardwarePanel>
-      )}
+      {
+        subfolders.length > 0 && (
+          <HardwarePanel variant="rackmount" title={`SUBFOLDERS IN ${folderName.toUpperCase()}`}>
+            <ul class="subfolder-list" role="list">
+              {subfolders.map((subfolder) => (
+                <li>
+                  <a class="subfolder-link" href={subfolder.href}>
+                    <span class="subfolder-link__icon" aria-hidden="true">
+                      📁
+                    </span>
+                    <span class="subfolder-link__name">{subfolder.name}</span>
+                    <span class="subfolder-link__count">{subfolder.fileCount} files</span>
+                    <span class="subfolder-link__arrow" aria-hidden="true">
+                      →
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </HardwarePanel>
+        )
+      }
 
-      {fileCount > 0 ? (
-        <HardwarePanel variant="rackmount" title={`FILES IN ${folderName.toUpperCase()}`}>
-          <div class="table-controls">
-            <input
-              type="text"
-              id="folderSearch"
-              placeholder={`Search ${fileCount.toLocaleString()} files...`}
-              class="rb-search-input"
-              aria-label="Search files in this folder"
-            />
-            <span id="folderCount" class="folder-count">{fileCount.toLocaleString()} files</span>
-          </div>
+      {
+        fileCount > 0 ? (
+          <HardwarePanel variant="rackmount" title={`FILES IN ${folderName.toUpperCase()}`}>
+            <div class="table-controls">
+              <input
+                type="text"
+                id="folderSearch"
+                placeholder={`Search ${fileCount.toLocaleString()} files...`}
+                class="rb-search-input"
+                aria-label="Search files in this folder"
+              />
+              <span id="folderCount" class="folder-count">
+                {fileCount.toLocaleString()} files
+              </span>
+            </div>
 
-          <div class="table-scroll">
-            <table class="folder-table" id="folderTable">
-              <thead>
-                <tr>
-                  <th scope="col">
-                    <button class="sort-btn" data-sort="name" type="button" aria-label="Sort by name">
-                      Name <span class="sort-indicator" aria-hidden="true">↕</span>
-                    </button>
-                  </th>
-                  <th scope="col" class="col-size">
-                    <button class="sort-btn" data-sort="size" type="button" aria-label="Sort by size">
-                      Size <span class="sort-indicator" aria-hidden="true">↕</span>
-                    </button>
-                  </th>
-                  <th scope="col" class="col-actions">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="folderTableBody">
-                {songs.map((song) => (
-                  <tr class="file-row" data-filename={song.filename.toLowerCase()} data-size={song.sizeBytes} data-name={song.filename.toLowerCase()}>
-                    <td class="cell-name">
-                      <span class="file-title" title={song.filename}>
-                        {song.title}
-                      </span>
-                      <span class="file-extension">.rbs</span>
-                      {song.bpm && (
-                        <span class="file-bpm">{song.bpm} BPM</span>
-                      )}
-                    </td>
-                    <td class="cell-size">{song.fileSize}</td>
-                    <td class="cell-actions">
+            <div class="table-scroll">
+              <table class="folder-table" id="folderTable">
+                <thead>
+                  <tr>
+                    <th scope="col">
                       <button
+                        class="sort-btn"
+                        data-sort="name"
                         type="button"
-                        class="preview-btn"
-                        data-preview-src={song.url}
-                        data-preview-label={song.title}
-                        data-preview-bpm={song.bpm ?? ''}
-                        aria-label={`Preview ${song.filename} in browser`}
-                        title={`Preview ${song.filename}`}
+                        aria-label="Sort by name"
                       >
-                        <span class="preview-icon" aria-hidden="true">▶</span>
-                        <span class="sr-only">Play</span>
+                        Name{' '}
+                        <span class="sort-indicator" aria-hidden="true">
+                          ↕
+                        </span>
                       </button>
-                      <a
-                        href={song.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="download-btn"
-                        aria-label={`Download ${song.filename} from test.1ink.us, opens in new tab`}
-                        title={`Download ${song.filename} from test.1ink.us (opens in new tab)`}
+                    </th>
+                    <th scope="col" class="col-size">
+                      <button
+                        class="sort-btn"
+                        data-sort="size"
+                        type="button"
+                        aria-label="Sort by size"
                       >
-                        <span class="download-icon" aria-hidden="true">↓</span>
-                        <span class="sr-only">Download</span>
-                      </a>
-                    </td>
+                        Size{' '}
+                        <span class="sort-indicator" aria-hidden="true">
+                          ↕
+                        </span>
+                      </button>
+                    </th>
+                    <th scope="col" class="col-actions">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody id="folderTableBody">
+                  {songs.map((song) => (
+                    <tr
+                      class="file-row"
+                      data-filename={song.filename.toLowerCase()}
+                      data-size={song.sizeBytes}
+                      data-name={song.filename.toLowerCase()}
+                    >
+                      <td class="cell-name">
+                        <span class="file-title" title={song.filename}>
+                          {song.title}
+                        </span>
+                        <span class="file-extension">.rbs</span>
+                        {song.bpm && <span class="file-bpm">{song.bpm} BPM</span>}
+                      </td>
+                      <td class="cell-size">{song.fileSize}</td>
+                      <td class="cell-actions">
+                        <button
+                          type="button"
+                          class="preview-btn"
+                          data-preview-src={song.url}
+                          data-preview-label={song.title}
+                          data-preview-bpm={song.bpm ?? ''}
+                          aria-label={`Preview ${song.filename} in browser`}
+                          title={`Preview ${song.filename}`}
+                        >
+                          <span class="preview-icon" aria-hidden="true">
+                            ▶
+                          </span>
+                          <span class="sr-only">Play</span>
+                        </button>
+                        <a
+                          href={song.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="download-btn"
+                          aria-label={`Download ${song.filename} from test.1ink.us, opens in new tab`}
+                          title={`Download ${song.filename} from test.1ink.us (opens in new tab)`}
+                        >
+                          <span class="download-icon" aria-hidden="true">
+                            ↓
+                          </span>
+                          <span class="sr-only">Download</span>
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-          <div id="folderEmpty" class="rb-empty-state is-hidden">
-            <p>No files match your search.</p>
-          </div>
-        </HardwarePanel>
-      ) : hasContent ? null : (
-        <HardwarePanel variant="rackmount" title="NO INDEX DATA" ledStatus="offline">
-          <p class="folder-empty-message">
-            No indexed files were found for this folder.
-          </p>
-          <p>
-            <a
-              href={externalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="open-link"
-              aria-label="Browse directory listing on test.1ink.us, opens in new tab"
-              title="Browse directory listing on test.1ink.us (opens in new tab)"
-            >
-              Browse directory listing on test.1ink.us ↗
-            </a>
-          </p>
-        </HardwarePanel>
-      )}
-
+            <div id="folderEmpty" class="rb-empty-state is-hidden">
+              <p>No files match your search.</p>
+            </div>
+          </HardwarePanel>
+        ) : hasContent ? null : (
+          <HardwarePanel variant="rackmount" title="NO INDEX DATA" ledStatus="offline">
+            <p class="folder-empty-message">No indexed files were found for this folder.</p>
+            <p>
+              <a
+                href={externalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="open-link"
+                aria-label="Browse directory listing on test.1ink.us, opens in new tab"
+                title="Browse directory listing on test.1ink.us (opens in new tab)"
+              >
+                Browse directory listing on test.1ink.us ↗
+              </a>
+            </p>
+          </HardwarePanel>
+        )
+      }
     </div>
   </div>
 </BaseLayout>
@@ -297,7 +334,9 @@ const pageTitle = `${folderName} — ${sectionName}`;
   }
 
   /* Header */
-  .folder-header { margin-bottom: 1.5rem; }
+  .folder-header {
+    margin-bottom: 1.5rem;
+  }
 
   .folder-header :global(.rb-panel__body) {
     display: flex;
@@ -570,7 +609,10 @@ const pageTitle = `${folderName} — ${sectionName}`;
     font-family: var(--rb-font-display, 'Courier New', monospace);
     font-size: 0.82rem;
     letter-spacing: 0.04em;
-    transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+    transition:
+      border-color 120ms ease,
+      color 120ms ease,
+      background 120ms ease;
   }
 
   .subfolder-link:hover,
@@ -641,9 +683,7 @@ const pageTitle = `${folderName} — ${sectionName}`;
     });
 
     if (countLabel) {
-      countLabel.textContent = term
-        ? `${visible} of ${rows.length} files`
-        : `${rows.length} files`;
+      countLabel.textContent = term ? `${visible} of ${rows.length} files` : `${rows.length} files`;
     }
     if (emptyState) {
       emptyState.classList.toggle('is-hidden', visible > 0);
@@ -699,7 +739,9 @@ const pageTitle = `${folderName} — ${sectionName}`;
   (function labelFolderTable() {
     const table = document.querySelector('.folder-table');
     if (!table) return;
-    const headers = Array.from(table.querySelectorAll('thead th')).map((th) => th.textContent?.trim() ?? '');
+    const headers = Array.from(table.querySelectorAll('thead th')).map(
+      (th) => th.textContent?.trim() ?? ''
+    );
     table.querySelectorAll('tbody tr').forEach((row) => {
       row.querySelectorAll('td').forEach((td, i) => {
         if (headers[i]) td.dataset.label = headers[i];

@@ -98,62 +98,6 @@ fi
 
 BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-# ── Source files ─────────────────────────────────────────────────────
-SOURCES=(
-  "$SRC_DIR/main.cpp"
-  "$SRC_DIR/parser/RbsParser.cpp"
-  "$SRC_DIR/engine/RbsAudioEngine.cpp"
-  "$SRC_DIR/engine/Sequencer.cpp"
-  "$SRC_DIR/engine/Mixer.cpp"
-  "$SRC_DIR/synth/Voice.cpp"
-  "$SRC_DIR/synth/DrumSynth.cpp"
-  "$SRC_DIR/synth/Tb303Voice.cpp"
-  "$SRC_DIR/synth/Tr808Voice.cpp"
-  "$SRC_DIR/synth/Tr909Voice.cpp"
-  "$SRC_DIR/worklet/RbsWorklet.cpp"
-)
-
-# ── Common flags ─────────────────────────────────────────────────────
-COMMON_FLAGS=(
-  -std=c++17
-  -pthread
-  -sAUDIO_WORKLET=1
-  -sWASM_WORKERS=1
-  -sEXPORT_ES6=1
-  -sMODULARIZE=1
-  -sEXPORT_NAME="RbsAudioModule"
-  -sEXPORTED_FUNCTIONS="['_malloc','_free']"
-  -sEXPORTED_RUNTIME_METHODS="['ccall','cwrap','getValue','setValue','HEAPU8','emscriptenRegisterAudioObject','emscriptenGetAudioObject']"
-  -sENVIRONMENT="web,worker"
-  -sALLOW_TABLE_GROWTH=1
-  -sSTACK_SIZE=131072
-  --no-entry
-  -lembind
-  -I"$SRC_DIR"
-)
-
-# ── Mode-specific flags ──────────────────────────────────────────────
-if [[ "$MODE" == "debug" ]]; then
-  MODE_FLAGS=(
-    -O0
-    -g3
-    -sASSERTIONS=1
-    -sSAFE_HEAP=1
-    -sSTACK_OVERFLOW_CHECK=2
-    -sWEBAUDIO_DEBUG=1
-    -sALLOW_MEMORY_GROWTH=1
-    -sINITIAL_MEMORY=33554432
-    -sMAXIMUM_MEMORY=134217728
-  )
-else
-  MODE_FLAGS=(
-    -O3
-    -flto
-    -sALLOW_MEMORY_GROWTH=0
-    -sINITIAL_MEMORY=67108864
-  )
-fi
-
 # ── Output artifacts ─────────────────────────────────────────────────
 GLUE_BASENAME="rbsParser"
 GLUE_FILE="$OUT_DIR/${GLUE_BASENAME}.js"
@@ -180,14 +124,34 @@ rm -f \
   "$OUT_DIR/${GLUE_BASENAME}.ww.js" \
   "$MANIFEST_FILE"
 
-# ── Build ────────────────────────────────────────────────────────────
+# ── Build via emcmake (single source list in sources.cmake) ──────────
+if ! command -v emcmake &>/dev/null; then
+  echo "❌ Error: 'emcmake' not found. Activate the Emscripten SDK." >&2
+  exit 1
+fi
+
+CMAKE_BUILD_TYPE="Release"
+if [[ "$MODE" == "debug" ]]; then
+  CMAKE_BUILD_TYPE="Debug"
+fi
+
+WASM_BUILD_DIR="$SRC_DIR/build-wasm"
 echo ""
+echo "🔧 Configuring emcmake (${MODE})..."
+emcmake cmake \
+  -S "$SRC_DIR" \
+  -B "$WASM_BUILD_DIR" \
+  -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" \
+  -DRB338_WASM_OUT="$OUT_DIR"
+
 echo "🔧 Compiling (${MODE})..."
-"$EMCC" \
-  "${MODE_FLAGS[@]}" \
-  "${COMMON_FLAGS[@]}" \
-  "${SOURCES[@]}" \
-  -o "$GLUE_FILE"
+cmake --build "$WASM_BUILD_DIR" --target rbsParser --parallel
+
+# CMake emits rbsParser.js into public/wasm; keep the historical glue name.
+if [[ ! -f "$GLUE_FILE" ]]; then
+  echo "❌ emcmake did not produce $GLUE_FILE" >&2
+  exit 1
+fi
 
 # ── Materialise the stable AudioWorklet bootstrap ───────────────────
 if [[ -f "$WORKLET_SRC" ]]; then

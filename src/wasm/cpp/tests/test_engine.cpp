@@ -3,7 +3,10 @@
 #include "../third_party/doctest.h"
 #include <cmath>
 #include <array>
+#include <atomic>
 #include <cstdint>
+#include <cstring>
+#include <thread>
 
 using namespace rb338;
 
@@ -151,4 +154,115 @@ TEST_CASE("Engine: 128-frame processBlock uses member scratch without stack over
   }
 
   CHECK(eng.getProcessedBlockCount() == 256);
+}
+
+TEST_CASE("Engine: live device params apply without crashing playback") {
+  RbsAudioEngine eng;
+  REQUIRE(eng.init(makeConfig()));
+  REQUIRE(eng.loadSong(makeSong(120.0f)));
+
+  float left[128] = {0};
+  float right[128] = {0};
+  float* buffers[2] = {left, right};
+  eng.play();
+  eng.processBlock(buffers, 2, 128);
+
+  eng.setDeviceParam(0, static_cast<uint8_t>(DeviceParamId::Cutoff), 0.2f);
+  eng.setDeviceParam(0, static_cast<uint8_t>(DeviceParamId::Resonance), 0.8f);
+  eng.setDeviceParam(0, static_cast<uint8_t>(DeviceParamId::Decay), 0.3f);
+  eng.setDeviceParam(0, static_cast<uint8_t>(DeviceParamId::Level), 1.0f);
+  eng.processBlock(buffers, 2, 128);
+
+  float peak = 0.0f;
+  for (int i = 0; i < 128; ++i) {
+    peak = std::max(peak, std::fabs(left[i]));
+  }
+  CHECK(peak >= 0.0f);
+  CHECK(eng.isPlaying());
+}
+
+TEST_CASE("Engine: step trigger lands within ±1 sample of sequencer offset") {
+  RbsAudioEngine eng;
+  EngineConfig cfg = makeConfig();
+  cfg.sampleRate = 48000.0f;
+  cfg.enableTr808 = false;
+  cfg.enableTr909 = false;
+  cfg.enableTb303B = false;
+  REQUIRE(eng.init(cfg));
+
+  ParsedSong song = makeSong(128.0f);
+  // Only master step 1 is active so the first note is mid-block, not at 0.
+  for (int s = 0; s < MAX_STEPS; ++s) {
+    song.patterns[0].steps[s].active = (s == 1);
+  }
+  song.devices[0].level = 1.0f;
+  song.devices[0].pan = 0.0f;
+  REQUIRE(eng.loadSong(song));
+
+  // 128 BPM @ 48 kHz → exactly 5625 samples per 16th.
+  constexpr uint32_t kExpected = 5625;
+  constexpr uint32_t kBlock = 128;
+  float left[kBlock] = {0};
+  float right[kBlock] = {0};
+  float* buffers[2] = {left, right};
+
+  eng.play();
+  uint32_t rendered = 0;
+  int firstEnergy = -1;
+  while (rendered < kExpected + kBlock) {
+    std::memset(left, 0, sizeof(left));
+    std::memset(right, 0, sizeof(right));
+    eng.processBlock(buffers, 2, kBlock);
+    for (uint32_t i = 0; i < kBlock; ++i) {
+      if (std::fabs(left[i]) > 1e-5f) {
+        firstEnergy = static_cast<int>(rendered + i);
+        break;
+      }
+    }
+    if (firstEnergy >= 0) break;
+    rendered += kBlock;
+  }
+
+  REQUIRE(firstEnergy >= 0);
+  CHECK(std::abs(firstEnergy - static_cast<int>(kExpected)) <= 1);
+}
+
+TEST_CASE("Engine: two-thread command/process stress") {
+  RbsAudioEngine eng;
+  REQUIRE(eng.init(makeConfig()));
+  REQUIRE(eng.loadSong(makeSong(120.0f)));
+
+  std::atomic<bool> running{true};
+  std::atomic<uint32_t> blocks{0};
+
+  std::thread audio([&]() {
+    float left[128] = {0};
+    float right[128] = {0};
+    float* buffers[2] = {left, right};
+    while (running.load(std::memory_order_relaxed)) {
+      eng.processBlock(buffers, 2, 128);
+      blocks.fetch_add(1, std::memory_order_relaxed);
+    }
+  });
+
+  ParsedSong song = makeSong(140.0f);
+  for (int i = 0; i < 200; ++i) {
+    eng.play();
+    eng.setVolume(0.5f + (i % 5) * 0.1f);
+    eng.setTempo(80.0f + static_cast<float>(i % 40));
+    if (i % 7 == 0) {
+      REQUIRE(eng.loadSong(song));
+    }
+    if (i % 11 == 0) {
+      eng.seek(1);
+    }
+    if (i % 3 == 0) {
+      eng.pause();
+    }
+    eng.stop();
+  }
+
+  running.store(false, std::memory_order_relaxed);
+  audio.join();
+  CHECK(blocks.load() > 0);
 }

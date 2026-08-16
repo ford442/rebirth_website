@@ -3,15 +3,21 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import RbsPlayer from '../components/RbsPlayer.astro';
-import { rbsDownloadUrl } from '../lib/archive-urls';
+import { resolveArchivePlaybackUrl } from '../lib/archive-urls';
+import { normalizeBase } from '../lib/url';
+import ArchivePinControl from '../components/ArchivePinControl.astro';
 
 /** Server-side query parsing for SSR title/description */
 const srcParam = Astro.url.searchParams.get('src');
 const playParam = Astro.url.searchParams.get('play');
 const labelParam = Astro.url.searchParams.get('label');
 
-const resolvedSrc = srcParam ?? (playParam ? rbsDownloadUrl(playParam) : null);
-const pageLabel = labelParam ?? (playParam ? playParam.split('/').pop()?.replace(/_/g, ' ') : null) ?? 'Song Preview';
+const siteBase = normalizeBase(import.meta.env.BASE_URL);
+const resolvedSrc = srcParam ?? (playParam ? resolveArchivePlaybackUrl(siteBase, playParam) : null);
+const pageLabel =
+  labelParam ??
+  (playParam ? playParam.split('/').pop()?.replace(/_/g, ' ') : null) ??
+  'Song Preview';
 ---
 
 <BaseLayout
@@ -20,23 +26,26 @@ const pageLabel = labelParam ?? (playParam ? playParam.split('/').pop()?.replace
 >
   <div class="play-page">
     <div class="container">
-      <Breadcrumbs items={[
-        { label: 'Home', href: '/' },
-        { label: 'Songs', href: '/archive/songs/' },
-        { label: 'Preview' },
-      ]} />
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Songs', href: '/archive/songs/' },
+          { label: 'Preview' },
+        ]}
+      />
 
       <h1 class="play-page__title" id="player-zone" tabindex="-1">{pageLabel}</h1>
       <p class="play-page__lead">
         In-browser preview powered by the WASM playback engine.
-        {resolvedSrc ? ' Song loads automatically — press Play to hear audio.' : ' Select a demo or drop an .rbs file below.'}
+        {
+          resolvedSrc
+            ? ' Song loads automatically — press Play to hear audio.'
+            : ' Select a demo or drop an .rbs file below.'
+        }
       </p>
 
-      <RbsPlayer
-        title="ARCHIVE PREVIEW"
-        src={resolvedSrc ?? undefined}
-        demos={[]}
-      />
+      <ArchivePinControl />
+      <RbsPlayer title="ARCHIVE PREVIEW" src={resolvedSrc ?? undefined} demos={[]} />
     </div>
   </div>
 </BaseLayout>

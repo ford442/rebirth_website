@@ -14,12 +14,10 @@ const target = `${base}/archive/songs`;
 
   <div class="redirect-page">
     <div class="container">
-      <HardwarePanel
-        title="REDIRECT"
-        ledStatus="pending"
-        ledLabel="MOVED"
-      >
-        <p style="text-align:center;color:#888;margin:0 0 1rem;">The song archive has moved to a new location.</p>
+      <HardwarePanel title="REDIRECT" ledStatus="pending" ledLabel="MOVED">
+        <p style="text-align:center;color:#888;margin:0 0 1rem;">
+          The song archive has moved to a new location.
+        </p>
         <p style="text-align:center;">
           <ActionButton variant="pattern" href={target}>Go to Song Archive →</ActionButton>
         </p>

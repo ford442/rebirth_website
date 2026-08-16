@@ -37,27 +37,27 @@ const schema = jsonLd
 ---
 
 <nav class="breadcrumbs" aria-label="Breadcrumb">
-  {schema && (
-    <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />
-  )}
+  {schema && <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />}
   <ol class="breadcrumbs__list" role="list">
-    {resolvedItems.map((item, index) => {
-      const isLast = index === resolvedItems.length - 1;
-      return (
-        <li
-          class={`breadcrumbs__item ${isLast ? 'breadcrumbs__item--current' : ''}`}
-          {...(isLast ? { 'aria-current': 'page' } : {})}
-        >
-          {isLast || !item.href ? (
-            <span class="breadcrumbs__current">{item.label}</span>
-          ) : (
-            <a class="breadcrumbs__link" href={item.href}>
-              {item.label}
-            </a>
-          )}
-        </li>
-      );
-    })}
+    {
+      resolvedItems.map((item, index) => {
+        const isLast = index === resolvedItems.length - 1;
+        return (
+          <li
+            class={`breadcrumbs__item ${isLast ? 'breadcrumbs__item--current' : ''}`}
+            {...(isLast ? { 'aria-current': 'page' } : {})}
+          >
+            {isLast || !item.href ? (
+              <span class="breadcrumbs__current">{item.label}</span>
+            ) : (
+              <a class="breadcrumbs__link" href={item.href}>
+                {item.label}
+              </a>
+            )}
+          </li>
+        );
+      })
+    }
   </ol>
 </nav>
 
@@ -97,7 +97,9 @@ const schema = jsonLd
   .breadcrumbs__link {
     color: var(--rb-silver-dim, #888);
     text-decoration: none;
-    transition: color 120ms ease, text-decoration-color 120ms ease;
+    transition:
+      color 120ms ease,
+      text-decoration-color 120ms ease;
   }
 
   .breadcrumbs__link:hover,

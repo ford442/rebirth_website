@@ -13,12 +13,12 @@ This is a **static website archive** for the legendary **ReBirth RB-338** softwa
 
 ## Technology Stack
 
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| Framework | Astro | `^6.0.4` |
-| Language | TypeScript | `^5.9.3` |
-| Type checking | `@astrojs/check` | `^0.9.8` |
-| Runtime | Node.js | latest (engine spec) |
+| Layer         | Technology       | Version              |
+| ------------- | ---------------- | -------------------- |
+| Framework     | Astro            | `^6.0.4`             |
+| Language      | TypeScript       | `^5.9.3`             |
+| Type checking | `@astrojs/check` | `^0.9.8`             |
+| Runtime       | Node.js          | latest (engine spec) |
 
 **No testing framework** is currently configured.  
 **No linter or formatter** is currently configured.  
@@ -124,18 +124,18 @@ npm run astro check
 
 Astro uses file-based routing under `src/pages/`:
 
-| File | Route |
-|------|-------|
-| File | Route |
-|------|-------|
-| `src/pages/index.astro` | `/` |
-| `src/pages/rbs-archive.astro` | `/rbs-archive` |
-| `src/pages/archive/songs.astro` | `/archive/songs` |
+| File                                      | Route                                   |
+| ----------------------------------------- | --------------------------------------- |
+| File                                      | Route                                   |
+| ------                                    | -------                                 |
+| `src/pages/index.astro`                   | `/`                                     |
+| `src/pages/rbs-archive.astro`             | `/rbs-archive`                          |
+| `src/pages/archive/songs.astro`           | `/archive/songs`                        |
 | `src/pages/archive/songs/[...slug].astro` | `/archive/songs/<section>/<folder>/...` |
-| `src/pages/archive/mods.astro` | `/archive/mods` |
-| `src/pages/history.astro` | `/history` |
-| `src/pages/docs/index.astro` | `/docs` |
-| `src/pages/docs/[...slug].astro` | `/docs/<slug>` |
+| `src/pages/archive/mods.astro`            | `/archive/mods`                         |
+| `src/pages/history.astro`                 | `/history`                              |
+| `src/pages/docs/index.astro`              | `/docs`                                 |
+| `src/pages/docs/[...slug].astro`          | `/docs/<slug>`                          |
 
 ## Design System & Styling
 
@@ -161,12 +161,12 @@ The site uses a **retro-industrial hardware aesthetic** modeled after the Roland
 
 ```css
 /* From rebirth-theme.css */
---rb-amber:        #ffb000;   /* Primary accent / LCD glow */
---rb-green:        #2d8a4e;   /* Success / pattern indicator */
---rb-red:          #c41e3a;   /* Danger / pattern button */
---rb-silver:       #c0c0c0;   /* Text, labels */
---rb-darkest:      #111111;   /* Background */
---rb-panel:        #262626;   /* Module background */
+--rb-amber: #ffb000; /* Primary accent / LCD glow */
+--rb-green: #2d8a4e; /* Success / pattern indicator */
+--rb-red: #c41e3a; /* Danger / pattern button */
+--rb-silver: #c0c0c0; /* Text, labels */
+--rb-darkest: #111111; /* Background */
+--rb-panel: #262626; /* Module background */
 ```
 
 ### Styling Rules
@@ -203,8 +203,7 @@ The site uses a **retro-industrial hardware aesthetic** modeled after the Roland
 Because the site is deployed under a **base path** (`/rebirth_website`), **always** use `import.meta.env.BASE_URL` (or `normalizeBase(import.meta.env.BASE_URL)`) for internal links:
 
 ```astro
-import { normalizeBase } from '../lib/url';
-const base = normalizeBase(import.meta.env.BASE_URL);
+import {normalizeBase} from '../lib/url'; const base = normalizeBase(import.meta.env.BASE_URL);
 
 <a href={`${base}/`}>Home</a>
 <a href={`${base}/archive/songs/`}>Songs</a>
@@ -259,10 +258,10 @@ export const collections = { docs };
 
 ```markdown
 ---
-title: "ReBirth RB-338 — Your Doc Title"
-version: "X.Y.Z"
-releaseDate: "YYYY-MM-DD"
-description: "One-sentence summary."
+title: 'ReBirth RB-338 — Your Doc Title'
+version: 'X.Y.Z'
+releaseDate: 'YYYY-MM-DD'
+description: 'One-sentence summary.'
 ---
 ```
 
@@ -305,10 +304,10 @@ Static metadata index for the RBS song archive. Describes collections, artists, 
 
 The actual binary files are **not stored in this repository** (kept in `.gitkeep`-only directories). They are hosted externally:
 
-| Asset Type | Host | URL Pattern |
-|-----------|------|-------------|
-| `.rbs` songs | `test.1ink.us` | `http://test.1ink.us/rb338/archive/rbs-songs/{collection}/{folder}` |
-| `.rbm` mods | `storage.1ink.us` | `https://storage.1ink.us/rebirth_mods/{filename}` |
+| Asset Type   | Host              | URL Pattern                                                         |
+| ------------ | ----------------- | ------------------------------------------------------------------- |
+| `.rbs` songs | `test.1ink.us`    | `http://test.1ink.us/rb338/archive/rbs-songs/{collection}/{folder}` |
+| `.rbm` mods  | `storage.1ink.us` | `https://storage.1ink.us/rebirth_mods/{filename}`                   |
 
 The site acts as a catalog/browser that links out to these external hosts.
 
@@ -333,6 +332,33 @@ python scripts/rebirth_mod_upload.py \
   --password $PASSWORD \
   --remote-base /path/to/rebirth_mods
 ```
+
+### `scripts/mirror-archive.py`
+
+Content-addresses `.rbs` / `.rbm` files (SHA-256 blobs under `.mirror/`, gitignored).
+`--scope core` hashes in-repo demos and seeds every indexed path in
+`src/data/archive-integrity.json`. `--scope all` fetches remotes with resume and a
+failure log. See `docs/adr/0001-archive-hosting-split.md`.
+
+### `scripts/check-archive-integrity.py` / `scripts/check-link-rot.py`
+
+CI hash gate for the playable core; scheduled HEAD-sweep of remaining remotes.
+
+### `scripts/enrich-rbs-catalog.py`
+
+Inspects `.rbs` binaries with native `rbs-inspect` and writes
+`src/data/songs-binary-meta.json` (title/author/BPM, per-path errors).
+Phase A (`npm run songs:enrich`) covers demos + `Artists/` + Featured;
+Phase B is the full catalog. Resume-safe; does not rewrite the crawl index.
+
+### `scripts/build-song-discovery.py`
+
+Merges the crawl index, binary sidecar, and `scripts/song-metadata-overrides.json`
+into MiniSearch + artist-page JSON. Run after index and/or enrich.
+
+### `scripts/check-song-discovery.py`
+
+CI schema/count check (`npm run songs:check`).
 
 ### `scripts/index-rbs-archive.py`
 

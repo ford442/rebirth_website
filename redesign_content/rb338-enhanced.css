@@ -115,14 +115,13 @@ body::before {
   inset: 0;
   pointer-events: none;
   z-index: 9999;
-  background:
-    repeating-linear-gradient(
-      0deg,
-      rgba(0, 0, 0, 0.08) 0px,
-      rgba(0, 0, 0, 0.08) 1px,
-      transparent 1px,
-      transparent 2px
-    );
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.08) 0px,
+    rgba(0, 0, 0, 0.08) 1px,
+    transparent 1px,
+    transparent 2px
+  );
   opacity: 0.35;
 }
 
@@ -133,11 +132,7 @@ body::after {
   inset: 0;
   pointer-events: none;
   z-index: 9998;
-  background: radial-gradient(
-    ellipse at center,
-    transparent 50%,
-    rgba(0, 0, 0, 0.5) 100%
-  );
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.5) 100%);
 }
 
 /* Noise texture overlay using gradients */
@@ -147,13 +142,12 @@ body::after {
   pointer-events: none;
   z-index: 9997;
   opacity: 0.04;
-  background-image:
-    repeating-radial-gradient(
-      circle at 50% 50%,
-      rgba(255, 255, 255, 0.06) 0px,
-      rgba(0, 0, 0, 0.06) 1px,
-      transparent 2px
-    );
+  background-image: repeating-radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.06) 0px,
+    rgba(0, 0, 0, 0.06) 1px,
+    transparent 2px
+  );
   background-size: 4px 4px;
 }
 
@@ -163,14 +157,13 @@ body::after {
 
 /* --- Base Panel --- */
 .rb-panel {
-  background:
-    linear-gradient(
-      180deg,
-      var(--rb-panel-highlight) 0%,
-      var(--rb-panel) 10%,
-      var(--rb-panel) 90%,
-      var(--rb-panel-raised) 100%
-    );
+  background: linear-gradient(
+    180deg,
+    var(--rb-panel-highlight) 0%,
+    var(--rb-panel) 10%,
+    var(--rb-panel) 90%,
+    var(--rb-panel-raised) 100%
+  );
   border: 1px solid var(--rb-border);
   border-top-color: var(--rb-border-hi);
   border-radius: var(--rb-radius-lg);
@@ -180,7 +173,9 @@ body::after {
     inset 0 -1px 0 rgba(0, 0, 0, 0.3);
   overflow: hidden;
   position: relative;
-  transition: transform var(--rb-transition-base), box-shadow var(--rb-transition-base);
+  transition:
+    transform var(--rb-transition-base),
+    box-shadow var(--rb-transition-base);
 }
 
 .rb-panel:hover {
@@ -192,14 +187,7 @@ body::after {
 
 /* --- Panel Variants --- */
 .rb-panel--dark {
-  background:
-    linear-gradient(
-      180deg,
-      #222222 0%,
-      #181818 10%,
-      #181818 90%,
-      #1e1e1e 100%
-    );
+  background: linear-gradient(180deg, #222222 0%, #181818 10%, #181818 90%, #1e1e1e 100%);
   border-color: #2a2a2a;
   border-top-color: #404040;
 }
@@ -240,12 +228,7 @@ body::after {
   align-items: center;
   justify-content: space-between;
   padding: var(--rb-space-sm) var(--rb-space-md);
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.03) 0%,
-      rgba(0, 0, 0, 0.1) 100%
-    );
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0.1) 100%);
   border-bottom: 1px solid var(--rb-border);
   position: relative;
 }
@@ -257,19 +240,22 @@ body::after {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background:
-    radial-gradient(
-      circle at 35% 35%,
-      var(--rb-border-hi) 0%,
-      var(--rb-border) 40%,
-      #000 100%
-    );
+  background: radial-gradient(
+    circle at 35% 35%,
+    var(--rb-border-hi) 0%,
+    var(--rb-border) 40%,
+    #000 100%
+  );
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
   flex-shrink: 0;
 }
 
-.rb-panel__header::before { margin-right: var(--rb-space-sm); }
-.rb-panel__header::after  { margin-left: var(--rb-space-sm); }
+.rb-panel__header::before {
+  margin-right: var(--rb-space-sm);
+}
+.rb-panel__header::after {
+  margin-left: var(--rb-space-sm);
+}
 
 /* --- Panel Title --- */
 .rb-panel__title {
@@ -314,13 +300,12 @@ body::after {
   position: relative;
   border: 1px solid var(--rb-border);
   border-radius: var(--rb-radius-lg);
-  background:
-    linear-gradient(
-      180deg,
-      var(--rb-panel-raised) 0%,
-      var(--rb-panel) 50%,
-      var(--rb-panel-raised) 100%
-    );
+  background: linear-gradient(
+    180deg,
+    var(--rb-panel-raised) 0%,
+    var(--rb-panel) 50%,
+    var(--rb-panel-raised) 100%
+  );
   box-shadow:
     var(--rb-shadow-lg),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
@@ -334,18 +319,18 @@ body::after {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background:
-    radial-gradient(
-      circle at 35% 35%,
-      #666 0%,
-      #333 40%,
-      #000 100%
-    );
+  background: radial-gradient(circle at 35% 35%, #666 0%, #333 40%, #000 100%);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
-.rb-chassis::before { top: var(--rb-space-sm); left: var(--rb-space-sm); }
-.rb-chassis::after  { top: var(--rb-space-sm); right: var(--rb-space-sm); }
+.rb-chassis::before {
+  top: var(--rb-space-sm);
+  left: var(--rb-space-sm);
+}
+.rb-chassis::after {
+  top: var(--rb-space-sm);
+  right: var(--rb-space-sm);
+}
 
 /* Bottom screws via extra child requirement - use a dedicated element */
 .rb-chassis__screw {
@@ -353,18 +338,18 @@ body::after {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background:
-    radial-gradient(
-      circle at 35% 35%,
-      #666 0%,
-      #333 40%,
-      #000 100%
-    );
+  background: radial-gradient(circle at 35% 35%, #666 0%, #333 40%, #000 100%);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
-.rb-chassis__screw--bl { bottom: var(--rb-space-sm); left: var(--rb-space-sm); }
-.rb-chassis__screw--br { bottom: var(--rb-space-sm); right: var(--rb-space-sm); }
+.rb-chassis__screw--bl {
+  bottom: var(--rb-space-sm);
+  left: var(--rb-space-sm);
+}
+.rb-chassis__screw--br {
+  bottom: var(--rb-space-sm);
+  right: var(--rb-space-sm);
+}
 
 /* --- Decorative Screw Element --- */
 .rb-screw {
@@ -373,14 +358,7 @@ body::after {
   height: 12px;
   border-radius: 50%;
   position: relative;
-  background:
-    radial-gradient(
-      circle at 35% 35%,
-      #999 0%,
-      #666 30%,
-      #333 70%,
-      #111 100%
-    );
+  background: radial-gradient(circle at 35% 35%, #999 0%, #666 30%, #333 70%, #111 100%);
   box-shadow:
     inset 0 1px 2px rgba(0, 0, 0, 0.8),
     0 1px 0 rgba(255, 255, 255, 0.05);
@@ -419,12 +397,7 @@ body::after {
   align-items: center;
   gap: var(--rb-space-sm);
   padding: var(--rb-space-sm) var(--rb-space-md);
-  background:
-    linear-gradient(
-      180deg,
-      var(--rb-panel-raised) 0%,
-      var(--rb-panel) 100%
-    );
+  background: linear-gradient(180deg, var(--rb-panel-raised) 0%, var(--rb-panel) 100%);
   border-bottom: 1px solid var(--rb-border);
   box-shadow: var(--rb-shadow-sm);
   flex-wrap: wrap;
@@ -444,13 +417,7 @@ body::after {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--rb-silver-dim);
-  background:
-    linear-gradient(
-      180deg,
-      #2a2a2a 0%,
-      #1e1e1e 50%,
-      #181818 100%
-    );
+  background: linear-gradient(180deg, #2a2a2a 0%, #1e1e1e 50%, #181818 100%);
   border: 1px solid var(--rb-border);
   border-top-color: var(--rb-border-hi);
   border-radius: var(--rb-radius-md);
@@ -458,8 +425,7 @@ body::after {
     var(--rb-shadow-sm),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
   cursor: pointer;
-  transition:
-    all var(--rb-transition-base);
+  transition: all var(--rb-transition-base);
   text-decoration: none;
   user-select: none;
 }
@@ -489,13 +455,7 @@ body::after {
 .rb-nav-btn.active {
   color: var(--rb-amber);
   border-color: var(--rb-amber-dim);
-  background:
-    linear-gradient(
-      180deg,
-      #2a2010 0%,
-      #1e1810 50%,
-      #181410 100%
-    );
+  background: linear-gradient(180deg, #2a2010 0%, #1e1810 50%, #181410 100%);
   box-shadow:
     var(--rb-shadow-sm),
     0 0 16px var(--rb-amber-glow),
@@ -515,12 +475,7 @@ body::after {
   flex-direction: column;
   gap: 4px;
   padding: var(--rb-space-sm);
-  background:
-    linear-gradient(
-      180deg,
-      #2a2a2a 0%,
-      #1e1e1e 100%
-    );
+  background: linear-gradient(180deg, #2a2a2a 0%, #1e1e1e 100%);
   border: 1px solid var(--rb-border);
   border-radius: var(--rb-radius-sm);
   cursor: pointer;
@@ -548,12 +503,7 @@ body::after {
   right: 0;
   width: min(280px, 80vw);
   height: 100vh;
-  background:
-    linear-gradient(
-      180deg,
-      var(--rb-panel-raised) 0%,
-      var(--rb-panel) 100%
-    );
+  background: linear-gradient(180deg, var(--rb-panel-raised) 0%, var(--rb-panel) 100%);
   border-left: 1px solid var(--rb-border);
   box-shadow: -8px 0 24px rgba(0, 0, 0, 0.8);
   z-index: 1000;
@@ -687,14 +637,13 @@ body::after {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    repeating-linear-gradient(
-      0deg,
-      rgba(0, 0, 0, 0.15) 0px,
-      rgba(0, 0, 0, 0.15) 1px,
-      transparent 1px,
-      transparent 3px
-    );
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 3px
+  );
   opacity: 0.5;
 }
 
@@ -704,11 +653,7 @@ body::after {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(
-    ellipse at 50% 30%,
-    rgba(255, 176, 0, 0.04) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(ellipse at 50% 30%, rgba(255, 176, 0, 0.04) 0%, transparent 70%);
 }
 
 .rb-lcd__label {
@@ -769,13 +714,7 @@ body::after {
 /* --- Pattern Button (Red) --- */
 .rb-btn-pattern {
   color: #f0d0d5;
-  background:
-    linear-gradient(
-      180deg,
-      #d42a4a 0%,
-      var(--rb-red) 40%,
-      #a01830 100%
-    );
+  background: linear-gradient(180deg, #d42a4a 0%, var(--rb-red) 40%, #a01830 100%);
   border: 1px solid var(--rb-red-dim);
   border-top-color: #e04060;
   box-shadow:
@@ -785,13 +724,7 @@ body::after {
 }
 
 .rb-btn-pattern:hover {
-  background:
-    linear-gradient(
-      180deg,
-      #e04060 0%,
-      #d42a4a 40%,
-      #b02038 100%
-    );
+  background: linear-gradient(180deg, #e04060 0%, #d42a4a 40%, #b02038 100%);
   box-shadow:
     0 4px 12px var(--rb-red-glow),
     0 0 20px var(--rb-red-glow),
@@ -810,13 +743,7 @@ body::after {
 /* --- Mix Button (Green) --- */
 .rb-btn-mix {
   color: #d0f0d8;
-  background:
-    linear-gradient(
-      180deg,
-      #4dd060 0%,
-      var(--rb-green-bright) 40%,
-      #2a9048 100%
-    );
+  background: linear-gradient(180deg, #4dd060 0%, var(--rb-green-bright) 40%, #2a9048 100%);
   border: 1px solid var(--rb-green-dim);
   border-top-color: #6ee080;
   box-shadow:
@@ -826,13 +753,7 @@ body::after {
 }
 
 .rb-btn-mix:hover {
-  background:
-    linear-gradient(
-      180deg,
-      #5ee070 0%,
-      #4dd060 40%,
-      #34a050 100%
-    );
+  background: linear-gradient(180deg, #5ee070 0%, #4dd060 40%, #34a050 100%);
   box-shadow:
     0 4px 12px var(--rb-green-glow),
     0 0 20px var(--rb-green-glow),
@@ -851,13 +772,7 @@ body::after {
 /* --- Transport Button --- */
 .rb-btn-transport {
   color: var(--rb-silver);
-  background:
-    linear-gradient(
-      180deg,
-      #3a3a3a 0%,
-      #2a2a2a 40%,
-      #1e1e1e 100%
-    );
+  background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 40%, #1e1e1e 100%);
   border: 1px solid var(--rb-border);
   border-top-color: var(--rb-border-hi);
   box-shadow:
@@ -869,13 +784,7 @@ body::after {
 }
 
 .rb-btn-transport:hover {
-  background:
-    linear-gradient(
-      180deg,
-      #444 0%,
-      #333 40%,
-      #262626 100%
-    );
+  background: linear-gradient(180deg, #444 0%, #333 40%, #262626 100%);
   border-color: var(--rb-border-hi);
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.5),
@@ -940,13 +849,7 @@ body::after {
   aspect-ratio: 1;
   min-width: 24px;
   min-height: 24px;
-  background:
-    linear-gradient(
-      180deg,
-      #333 0%,
-      #222 50%,
-      #1a1a1a 100%
-    );
+  background: linear-gradient(180deg, #333 0%, #222 50%, #1a1a1a 100%);
   border: 1px solid var(--rb-border);
   border-top-color: #444;
   border-radius: var(--rb-radius-sm);
@@ -959,23 +862,12 @@ body::after {
 }
 
 .rb-step-btn:hover {
-  background:
-    linear-gradient(
-      180deg,
-      #3a3a3a 0%,
-      #2a2a2a 50%,
-      #222 100%
-    );
+  background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 50%, #222 100%);
   border-color: var(--rb-border-hi);
 }
 
 .rb-step-btn.active {
-  background:
-    linear-gradient(
-      180deg,
-      var(--rb-amber) 0%,
-      var(--rb-amber-dim) 100%
-    );
+  background: linear-gradient(180deg, var(--rb-amber) 0%, var(--rb-amber-dim) 100%);
   border-color: var(--rb-amber);
   box-shadow:
     0 0 8px var(--rb-amber-glow),
@@ -984,12 +876,7 @@ body::after {
 }
 
 .rb-step-btn.active--green {
-  background:
-    linear-gradient(
-      180deg,
-      var(--rb-green) 0%,
-      var(--rb-green-bright) 100%
-    );
+  background: linear-gradient(180deg, var(--rb-green) 0%, var(--rb-green-bright) 100%);
   border-color: var(--rb-green);
   box-shadow:
     0 0 8px var(--rb-green-glow),
@@ -1019,12 +906,7 @@ body::after {
 
 .rb-card {
   position: relative;
-  background:
-    linear-gradient(
-      180deg,
-      var(--rb-panel-raised) 0%,
-      var(--rb-panel) 100%
-    );
+  background: linear-gradient(180deg, var(--rb-panel-raised) 0%, var(--rb-panel) 100%);
   border: 1px solid var(--rb-border);
   border-radius: var(--rb-radius-md);
   padding: var(--rb-space-md);
@@ -1139,12 +1021,7 @@ body::after {
   align-items: center;
   gap: var(--rb-space-sm);
   padding: var(--rb-space-sm) var(--rb-space-md);
-  background:
-    linear-gradient(
-      180deg,
-      #1e1e1e 0%,
-      #151515 100%
-    );
+  background: linear-gradient(180deg, #1e1e1e 0%, #151515 100%);
   border-bottom: 1px solid #222;
 }
 
@@ -1319,17 +1196,35 @@ body::after {
   flex-direction: column;
 }
 
-.gap-sm { gap: var(--rb-space-sm); }
-.gap-md { gap: var(--rb-space-md); }
-.gap-lg { gap: var(--rb-space-lg); }
+.gap-sm {
+  gap: var(--rb-space-sm);
+}
+.gap-md {
+  gap: var(--rb-space-md);
+}
+.gap-lg {
+  gap: var(--rb-space-lg);
+}
 
-.mt-sm { margin-top: var(--rb-space-sm); }
-.mt-md { margin-top: var(--rb-space-md); }
-.mt-lg { margin-top: var(--rb-space-lg); }
+.mt-sm {
+  margin-top: var(--rb-space-sm);
+}
+.mt-md {
+  margin-top: var(--rb-space-md);
+}
+.mt-lg {
+  margin-top: var(--rb-space-lg);
+}
 
-.mb-sm { margin-bottom: var(--rb-space-sm); }
-.mb-md { margin-bottom: var(--rb-space-md); }
-.mb-lg { margin-bottom: var(--rb-space-lg); }
+.mb-sm {
+  margin-bottom: var(--rb-space-sm);
+}
+.mb-md {
+  margin-bottom: var(--rb-space-md);
+}
+.mb-lg {
+  margin-bottom: var(--rb-space-lg);
+}
 
 /* ============================================================
    13. RESPONSIVE BREAKPOINTS
@@ -1428,7 +1323,8 @@ body::after {
 
 /* --- LED Pulse - Green --- */
 @keyframes rb-pulse-green {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     box-shadow:
       0 0 4px var(--rb-green),
@@ -1446,7 +1342,8 @@ body::after {
 
 /* --- LED Pulse - Amber --- */
 @keyframes rb-pulse-amber {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     box-shadow:
       0 0 4px var(--rb-amber),
@@ -1464,7 +1361,8 @@ body::after {
 
 /* --- Cursor Blink --- */
 @keyframes rb-cursor-blink {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -1490,7 +1388,8 @@ body::after {
 
 /* --- Glow Pulse (generic) --- */
 @keyframes rb-glow-pulse {
-  0%, 100% {
+  0%,
+  100% {
     filter: brightness(1);
   }
   50% {
@@ -1527,7 +1426,8 @@ body::after {
 
 /* --- Subtle ambient glow for chassis --- */
 @keyframes rb-ambient-glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow:
       var(--rb-shadow-lg),
       inset 0 1px 0 rgba(255, 255, 255, 0.04);

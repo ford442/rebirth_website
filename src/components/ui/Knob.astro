@@ -20,8 +20,12 @@ const { label, rotation = 0 } = Astro.props;
       void knob.offsetWidth;
       knob.classList.add('rb-knob--tweaking');
     });
-    knob.addEventListener('animationend', () => {
-      knob.classList.remove('rb-knob--tweaking');
-    }, { capture: true });
+    knob.addEventListener(
+      'animationend',
+      () => {
+        knob.classList.remove('rb-knob--tweaking');
+      },
+      { capture: true }
+    );
   });
 </script>

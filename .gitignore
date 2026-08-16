@@ -36,3 +36,7 @@ public/wasm/
 
 # Native C++ CMake / Makefile build output
 src/wasm/cpp/build/
+src/wasm/cpp/build-*/
+
+# Content-addressed full-corpus mirror (see docs/adr/0001-archive-hosting-split.md)
+.mirror/

@@ -16,7 +16,8 @@ const terms = [
   },
   {
     term: 'TB-303',
-    meaning: 'Roland bass synthesizer famous for acidic, squelchy patterns used in techno and house.',
+    meaning:
+      'Roland bass synthesizer famous for acidic, squelchy patterns used in techno and house.',
   },
   {
     term: 'TR-808 / TR-909',
@@ -28,7 +29,8 @@ const terms = [
   },
   {
     term: 'Mod-dependent song',
-    meaning: 'A song designed for a specific mod, often sounding or looking best with that mod loaded.',
+    meaning:
+      'A song designed for a specific mod, often sounding or looking best with that mod loaded.',
   },
 ];
 ---
@@ -49,15 +51,19 @@ const terms = [
         New to ReBirth? Use this glossary whenever you see unfamiliar archive terms.
       </p>
       <dl class="glossary-list">
-        {terms.map((entry) => (
-          <>
-            <dt>{entry.term}</dt>
-            <dd>{entry.meaning}</dd>
-          </>
-        ))}
+        {
+          terms.map((entry) => (
+            <>
+              <dt>{entry.term}</dt>
+              <dd>{entry.meaning}</dd>
+            </>
+          ))
+        }
       </dl>
       <p class="glossary-footer">
-        Continue exploring: <a href={`${base}/beginner-guide`}>Beginner Guide</a> · <a href={`${base}/archive/songs`}>Song Archive</a> · <a href={`${base}/archive/mods`}>Mod Archive</a>
+        Continue exploring: <a href={`${base}/beginner-guide`}>Beginner Guide</a> · <a
+          href={`${base}/archive/songs`}>Song Archive</a
+        > · <a href={`${base}/archive/mods`}>Mod Archive</a>
       </p>
     </HardwarePanel>
   </div>

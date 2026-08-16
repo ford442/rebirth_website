@@ -102,15 +102,15 @@ Based on the filenames you provided, here are some examples to start:
 
 Review the filenames and apply appropriate tags:
 
-| Pattern | Suggested Tags |
-|---------|---|
-| Contains "funk" or "groove" | funky, house, groove |
-| Ends in version numbers (v1.2, Beta) | version-controlled |
+| Pattern                               | Suggested Tags              |
+| ------------------------------------- | --------------------------- |
+| Contains "funk" or "groove"           | funky, house, groove        |
+| Ends in version numbers (v1.2, Beta)  | version-controlled          |
 | Named after hardware (TB-303, TR-909) | tribute, hardware-emulation |
-| Word "final", "pro", "ultimate" | professional, refined |
-| Numbered versions | iterative-series |
-| Author names known | author-verified |
-| Experimental filenames | experimental |
+| Word "final", "pro", "ultimate"       | professional, refined       |
+| Numbered versions                     | iterative-series            |
+| Author names known                    | author-verified             |
+| Experimental filenames                | experimental                |
 
 ## Workflow
 
@@ -122,9 +122,10 @@ Review the filenames and apply appropriate tags:
 
 ## File Size Reference
 
-From your list, file sizes range from **130 KB to 8.9 MB**. 
+From your list, file sizes range from **130 KB to 8.9 MB**.
 
 Large mods (7+ MB):
+
 - 030microdot.rbm (8.1M)
 - Prop10_Dev.rbm (8.9M)
 - ice_RB20Mod.rbm (6.6M)

@@ -1,7 +1,7 @@
 ---
-title: "ReBirth RB-338 Resource Roundup"
-version: "2.0.1"
-description: "Comprehensive resource roundup for ReBirth RB-338 website content, including software sources, mod archives, songs, tools, hardware, videos, and history."
+title: 'ReBirth RB-338 Resource Roundup'
+version: '2.0.1'
+description: 'Comprehensive resource roundup for ReBirth RB-338 website content, including software sources, mod archives, songs, tools, hardware, videos, and history.'
 ---
 
 # ReBirth RB-338 Resource Roundup
@@ -14,13 +14,13 @@ description: "Comprehensive resource roundup for ReBirth RB-338 website content,
 
 Since ReBirth was released as freeware in 2005, these are the legitimate download sources:
 
-| Source | What You Get | Link |
-|--------|-------------|------|
-| **archive.org (MNX2010 pack)** | Full ISO + 64-bit installer + WinHelp32 patches for Win 7/8/10/11 | https://archive.org/details/rebirthrb338forwin7810 |
-| **archive.org (ReBirth 2.01 2001 version)** | 2001 version + ~100 mods + songs + install guides | https://archive.org/details/rebirth-2.01-2001-version |
-| **archive.org (ReBirth RB-338 ReFill)** | Official Reason ReFill (451MB) with all original + mod drum samples | https://archive.org/details/REBIRTHREWIRE |
-| **MNX2010 PropellerHead Site** | ISO, 64-bit installer, WinHelp32 patches, ReMaker, video tutorials | https://audiovst.mnx2010.nl/prop |
-| **Macintosh Repository** | Mac OS 9 / Classic version (2.0.1 CD image) | https://www.macintoshrepository.org/2654-rebirth-rb-338-2-0-1-cd |
+| Source                                      | What You Get                                                        | Link                                                             |
+| ------------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| **archive.org (MNX2010 pack)**              | Full ISO + 64-bit installer + WinHelp32 patches for Win 7/8/10/11   | https://archive.org/details/rebirthrb338forwin7810               |
+| **archive.org (ReBirth 2.01 2001 version)** | 2001 version + ~100 mods + songs + install guides                   | https://archive.org/details/rebirth-2.01-2001-version            |
+| **archive.org (ReBirth RB-338 ReFill)**     | Official Reason ReFill (451MB) with all original + mod drum samples | https://archive.org/details/REBIRTHREWIRE                        |
+| **MNX2010 PropellerHead Site**              | ISO, 64-bit installer, WinHelp32 patches, ReMaker, video tutorials  | https://audiovst.mnx2010.nl/prop                                 |
+| **Macintosh Repository**                    | Mac OS 9 / Classic version (2.0.1 CD image)                         | https://www.macintoshrepository.org/2654-rebirth-rb-338-2-0-1-cd |
 
 **Note:** The official ReBirth Museum (rebirthmuseum.com) is long dead. All links above are community-maintained archives of the freely-released software.
 
@@ -30,11 +30,11 @@ Since ReBirth was released as freeware in 2005, these are the legitimate downloa
 
 These are actively maintained mod collections with hundreds of .rbm files:
 
-| Source | Mods Available | Link |
-|--------|---------------|------|
-| **peffre GitHub (THE BIG ONE)** | 300+ mods -- official AND unofficial. The complete archive from the old Hotline server. Uploaded March 2026 by Kurt Kurasaki (Peff). | https://github.com/peffre/ReBirth-RB-338 |
-| **peff.com Mod Archive** | Curated "peff" mod archive -- official and unofficial mods | https://www.peff.com/journal/rebirth-mods/ |
-| **archive.org (2001 version)** | ~100 mods bundled with the 2001 version installer | https://archive.org/details/rebirth-2.01-2001-version |
+| Source                          | Mods Available                                                                                                                       | Link                                                  |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| **peffre GitHub (THE BIG ONE)** | 300+ mods -- official AND unofficial. The complete archive from the old Hotline server. Uploaded March 2026 by Kurt Kurasaki (Peff). | https://github.com/peffre/ReBirth-RB-338              |
+| **peff.com Mod Archive**        | Curated "peff" mod archive -- official and unofficial mods                                                                           | https://www.peff.com/journal/rebirth-mods/            |
+| **archive.org (2001 version)**  | ~100 mods bundled with the 2001 version installer                                                                                    | https://archive.org/details/rebirth-2.01-2001-version |
 
 ### Notable mods mentioned in the ReFill documentation:
 
@@ -66,12 +66,12 @@ These are actively maintained mod collections with hundreds of .rbm files:
 
 ## 3. RBS SONG ARCHIVES
 
-| Source | Description | Link |
-|--------|-------------|------|
-| **peff.com Song Archive** | Kurt Kurasaki's personal ReBirth tracks (requires specific mods) | https://www.peff.com/journal/rebirth-songs/ |
-| **DanceNet Song Archive** | Historic archive from Taco Scargo -- DancePacks 1-17 | http://www.dancenet.com/rebirth/main.html |
-| **GitHub peffre** | Song files in the ReBirth Misc folder | https://github.com/peffre/ReBirth-RB-338 |
-| **archive.org (2001 version)** | Bundled demo tracks and author tracks | https://archive.org/details/rebirth-2.01-2001-version |
+| Source                         | Description                                                      | Link                                                  |
+| ------------------------------ | ---------------------------------------------------------------- | ----------------------------------------------------- |
+| **peff.com Song Archive**      | Kurt Kurasaki's personal ReBirth tracks (requires specific mods) | https://www.peff.com/journal/rebirth-songs/           |
+| **DanceNet Song Archive**      | Historic archive from Taco Scargo -- DancePacks 1-17             | http://www.dancenet.com/rebirth/main.html             |
+| **GitHub peffre**              | Song files in the ReBirth Misc folder                            | https://github.com/peffre/ReBirth-RB-338              |
+| **archive.org (2001 version)** | Bundled demo tracks and author tracks                            | https://archive.org/details/rebirth-2.01-2001-version |
 
 ---
 
@@ -149,8 +149,8 @@ These are actively maintained mod collections with hundreds of .rbm files:
 
 ## 6. MERCHANDISE
 
-| Item | Link |
-|------|------|
+| Item                                    | Link                                                                          |
+| --------------------------------------- | ----------------------------------------------------------------------------- |
 | **"ReBirth RB338" T-Shirt (Redbubble)** | https://www.redbubble.com/i/t-shirt/ReBirth-RB338-by-SoftHack/126192096.NL9AC |
 
 Also available as classic tee, fitted tee, etc. on same store page.
@@ -159,14 +159,14 @@ Also available as classic tee, fitted tee, etc. on same store page.
 
 ## 7. YOUTUBE CHANNELS & VIDEO RESOURCES
 
-| Channel | Description | Link |
-|---------|-------------|------|
-| **World Of RB-338** | THE ReBirth YouTube channel -- dedicated to RB-338 tracks from various artists. 25K+ views on popular videos. Non-stop mod testing videos, "Best Of" playlists. | https://www.youtube.com/@worldofrb-338 |
-| **AudioPilz** | "I built ReBirth FOR REAL" -- $15K hardware recreation | https://www.youtube.com/watch?v=VmXdOLQxqII |
-| **Look Mum No Computer** | Building the hardware MIDI controller | https://www.youtube.com/watch?v=Cs99PS-OXLk |
-| **MNX2010** | Install tutorial videos for Win 10/11 | https://www.youtube.com/watch?v=WMC3ZlD52fo |
-| **Mooglala** | Alternative install tutorial | https://www.youtube.com/watch?v=FGbgg362mfo |
-| **The Sound Test Room** | "ReBirth RB-338 Still Working on iPadOS 13.1" live demo | https://www.youtube.com/watch?v=nan5io8ZhNk |
+| Channel                  | Description                                                                                                                                                     | Link                                        |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| **World Of RB-338**      | THE ReBirth YouTube channel -- dedicated to RB-338 tracks from various artists. 25K+ views on popular videos. Non-stop mod testing videos, "Best Of" playlists. | https://www.youtube.com/@worldofrb-338      |
+| **AudioPilz**            | "I built ReBirth FOR REAL" -- $15K hardware recreation                                                                                                          | https://www.youtube.com/watch?v=VmXdOLQxqII |
+| **Look Mum No Computer** | Building the hardware MIDI controller                                                                                                                           | https://www.youtube.com/watch?v=Cs99PS-OXLk |
+| **MNX2010**              | Install tutorial videos for Win 10/11                                                                                                                           | https://www.youtube.com/watch?v=WMC3ZlD52fo |
+| **Mooglala**             | Alternative install tutorial                                                                                                                                    | https://www.youtube.com/watch?v=FGbgg362mfo |
+| **The Sound Test Room**  | "ReBirth RB-338 Still Working on iPadOS 13.1" live demo                                                                                                         | https://www.youtube.com/watch?v=nan5io8ZhNk |
 
 ---
 
@@ -179,6 +179,7 @@ Also available as classic tee, fitted tee, etc. on same store page.
 - **Links:** Available on the App Store; reviewed at Music App Blog
 
 If you were looking for loop-slicing tools to use WITH ReBirth, this is it. If you were looking for something else called "Reslice" in the ReBirth context, it may be a misremembered name -- the closest actual ReBirth tools are:
+
 - **ReMaker** (RBS to MIDI)
 - **ReCycle** (Propellerhead's loop slicer -- now FREE from Reason Studios as of 2025!)
 - **ReWire** (the audio/MIDI sync protocol between ReBirth and Reason/Cubase)
@@ -188,17 +189,20 @@ If you were looking for loop-slicing tools to use WITH ReBirth, this is it. If y
 ## 9. MODERN DAW INTEGRATION NOTES
 
 ### Running ReBirth Today
+
 - **Windows 10/11:** Use the 64-bit installer from archive.org + WinHelp32 patch (KB917607)
 - **Mac:** Use Classic Mode on older OS X, or emulators like QEMU/SheepShaver
 - **Linux:** There was a Linux remake called "Reborn" (faced legal challenges, hard to find)
 
 ### ReWire Gotchas
+
 - ReBirth is 32-bit only, so it only ReWires with 32-bit host applications
 - For 64-bit DAWs: use a ReWire 32-to-64-bit bridge or loopMIDI + ReWire workaround
 - ReWire X64 bridge can help sync ReBirth with modern Reason
 - **Detailed guide:** https://francisfisher.me.uk/problem/2015/how-to-use-reason-with-rebirth-rb-338-on-64-bit-windows-7-or-8/
 
 ### Alternatives When ReBirth Won't Work
+
 - **TAL BassLine 101** -- excellent 303 emulation
 - **D16 Phoscyon** -- 303 VST
 - **D16 Drumazon** -- 909 VST
@@ -210,18 +214,18 @@ If you were looking for loop-slicing tools to use WITH ReBirth, this is it. If y
 
 ## 10. RELATED HISTORY & READING
 
-| Article | Link |
-|---------|------|
-| ReBirth RB-338 Wikipedia | https://en.wikipedia.org/wiki/ReBirth_RB-338 |
-| ReBirth RB-338: The Iconic 'Acid' DAW That Refuses to Die (DAWZone) | https://dawzone.com/rebirth-rb-338-the-iconic-acid-daw-that-refuses-to-die |
-| Propellerheads open the ReBirth Museum (2005) | https://www.gearjunkies.com/2005/09/propellerheads-open-the-rebirth-museum/ |
-| Kurt Kurasaki on building the ReBirth Museum | https://www.peff.com/journal/2005/09/03/rebirth-museum/ |
-| Sound on Sound ReBirth RB-338 review | https://www.soundonsound.com/reviews/steinbergpropellerhead-rebirth-rb338-techno-micro-composer |
-| Sound on Sound v2 review | https://www.soundonsound.com/reviews/steinbergpropellerhead-rebirth-rb338-v2 |
-| Vintage Synth Explorer entry | https://www.vintagesynth.com/propellerhead-software/rebirth-rb-338 |
-| ReBirth & Reason (Sound on Sound) | https://www.soundonsound.com/techniques/rebirth-reason |
-| NordBeat ReBirth Corner (nostalgia hub) | https://nordbeat.com/rebirth-corner |
-| AudioPilz "I built ReBirth FOR REAL" | https://www.youtube.com/watch?v=VmXdOLQxqII |
+| Article                                                             | Link                                                                                            |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| ReBirth RB-338 Wikipedia                                            | https://en.wikipedia.org/wiki/ReBirth_RB-338                                                    |
+| ReBirth RB-338: The Iconic 'Acid' DAW That Refuses to Die (DAWZone) | https://dawzone.com/rebirth-rb-338-the-iconic-acid-daw-that-refuses-to-die                      |
+| Propellerheads open the ReBirth Museum (2005)                       | https://www.gearjunkies.com/2005/09/propellerheads-open-the-rebirth-museum/                     |
+| Kurt Kurasaki on building the ReBirth Museum                        | https://www.peff.com/journal/2005/09/03/rebirth-museum/                                         |
+| Sound on Sound ReBirth RB-338 review                                | https://www.soundonsound.com/reviews/steinbergpropellerhead-rebirth-rb338-techno-micro-composer |
+| Sound on Sound v2 review                                            | https://www.soundonsound.com/reviews/steinbergpropellerhead-rebirth-rb338-v2                    |
+| Vintage Synth Explorer entry                                        | https://www.vintagesynth.com/propellerhead-software/rebirth-rb-338                              |
+| ReBirth & Reason (Sound on Sound)                                   | https://www.soundonsound.com/techniques/rebirth-reason                                          |
+| NordBeat ReBirth Corner (nostalgia hub)                             | https://nordbeat.com/rebirth-corner                                                             |
+| AudioPilz "I built ReBirth FOR REAL"                                | https://www.youtube.com/watch?v=VmXdOLQxqII                                                     |
 
 ---
 
@@ -240,10 +244,11 @@ If you were looking for loop-slicing tools to use WITH ReBirth, this is it. If y
 ## 12. BONUS: ReCycle is Now FREE
 
 Propellerhead/Reason Studios made **ReCycle FREE** in 2025:
+
 - The original loop slicer that created the REX file format
 - Perfect companion to ReBirth for chopping loops
 - Download from Reason Studios website
 
 ---
 
-*Compiled 2025. All links verified as publicly accessible. The ReBirth community is small but active -- the r/Rebirth338 subreddit and YouTube's "World Of RB-338" channel are the best places to connect with active users.*
+_Compiled 2025. All links verified as publicly accessible. The ReBirth community is small but active -- the r/Rebirth338 subreddit and YouTube's "World Of RB-338" channel are the best places to connect with active users._

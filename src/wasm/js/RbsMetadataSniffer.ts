@@ -77,7 +77,13 @@ interface ParseState {
   globSubFormat: number | null;
 }
 
-function parseChunks(data: Uint8Array, offset: number, end: number, state: ParseState, isRoot: boolean): string | null {
+function parseChunks(
+  data: Uint8Array,
+  offset: number,
+  end: number,
+  state: ParseState,
+  isRoot: boolean
+): string | null {
   let pos = offset;
 
   if (isRoot) {
@@ -92,7 +98,10 @@ function parseChunks(data: Uint8Array, offset: number, end: number, state: Parse
 
   while (pos + 8 <= end) {
     const id = String.fromCharCode(data[pos], data[pos + 1], data[pos + 2], data[pos + 3]);
-    const chunkSize = readU32BE(new DataView(data.buffer, data.byteOffset, data.byteLength), pos + 4);
+    const chunkSize = readU32BE(
+      new DataView(data.buffer, data.byteOffset, data.byteLength),
+      pos + 4
+    );
     pos += 8;
 
     if (chunkSize > end - pos) return 'Chunk size exceeds container bounds';
@@ -122,14 +131,24 @@ function parseChunks(data: Uint8Array, offset: number, end: number, state: Parse
   return null;
 }
 
-function parseHead(data: Uint8Array, start: number, size: number, state: ParseState): string | null {
+function parseHead(
+  data: Uint8Array,
+  start: number,
+  size: number,
+  state: ParseState
+): string | null {
   if (size < 0x1c) return 'HEAD chunk too small';
   if (!matchId(data, start, HEAD_SIGNATURE)) return 'Invalid HEAD signature';
   state.headVersion = data[start + 0x06];
   return null;
 }
 
-function parseGlob(data: Uint8Array, start: number, size: number, state: ParseState): string | null {
+function parseGlob(
+  data: Uint8Array,
+  start: number,
+  size: number,
+  state: ParseState
+): string | null {
   if (size < 0x20) return 'GLOB chunk too small';
   state.globSubFormat = data[start + 0x03];
   const titleOffset = start + 0x0f;
@@ -145,7 +164,12 @@ function parseGlob(data: Uint8Array, start: number, size: number, state: ParseSt
   return null;
 }
 
-function parseUsri(data: Uint8Array, start: number, size: number, state: ParseState): string | null {
+function parseUsri(
+  data: Uint8Array,
+  start: number,
+  size: number,
+  state: ParseState
+): string | null {
   if (size < 2) return 'USRI chunk too small';
   const author = readCString(data, start);
   state.author = trim(author.value);

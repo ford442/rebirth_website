@@ -60,102 +60,119 @@ const {
 } = Astro.props;
 
 const isSong = fileType === '.rbs';
-const isMod  = fileType === '.rbm';
+const isMod = fileType === '.rbm';
 const typeClass = isSong ? 'type--song' : isMod ? 'type--mod' : 'type--other';
 ---
 
-<article class={`mod-card rb-file-card ${typeClass} ${rackmount ? 'rb-rack-variant' : ''}`} aria-label={`${fileType} — ${title}`}>
+<article
+  class={`mod-card rb-file-card ${typeClass} ${rackmount ? 'rb-rack-variant' : ''}`}
+  aria-label={`${fileType} — ${title}`}
+>
   <header class="mod-card__header">
-    <span class={`mod-card__badge rb-badge ${isSong ? 'rb-badge--song' : isMod ? 'rb-badge--mod' : ''}`} aria-hidden="true">{fileType}</span>
+    <span
+      class={`mod-card__badge rb-badge ${isSong ? 'rb-badge--song' : isMod ? 'rb-badge--mod' : ''}`}
+      aria-hidden="true">{fileType}</span
+    >
     <div class="mod-card__title-block">
       <h3 class="mod-card__title">{title}</h3>
     </div>
   </header>
 
-  {(collectionPath || songCount || bpm || compatibility) && (
-    <dl class="mod-card__meta" aria-label="Archive metadata">
-      {collectionPath && (
-        <div class="mod-card__meta-row">
-          <dt>Path</dt>
-          <dd>{collectionPath}</dd>
-        </div>
-      )}
-      {typeof songCount === 'number' && (
-        <div class="mod-card__meta-row">
-          <dt>Files</dt>
-          <dd>{songCount}</dd>
-        </div>
-      )}
-      {typeof bpm === 'number' && (
-        <div class="mod-card__meta-row">
-          <dt>BPM</dt>
-          <dd>{bpm}</dd>
-        </div>
-      )}
-      {compatibility && (
-        <div class="mod-card__meta-row">
-          <dt>Version</dt>
-          <dd>{compatibility}</dd>
-        </div>
-      )}
-    </dl>
-  )}
+  {
+    (collectionPath || songCount || bpm || compatibility) && (
+      <dl class="mod-card__meta" aria-label="Archive metadata">
+        {collectionPath && (
+          <div class="mod-card__meta-row">
+            <dt>Path</dt>
+            <dd>{collectionPath}</dd>
+          </div>
+        )}
+        {typeof songCount === 'number' && (
+          <div class="mod-card__meta-row">
+            <dt>Files</dt>
+            <dd>{songCount}</dd>
+          </div>
+        )}
+        {typeof bpm === 'number' && (
+          <div class="mod-card__meta-row">
+            <dt>BPM</dt>
+            <dd>{bpm}</dd>
+          </div>
+        )}
+        {compatibility && (
+          <div class="mod-card__meta-row">
+            <dt>Version</dt>
+            <dd>{compatibility}</dd>
+          </div>
+        )}
+      </dl>
+    )
+  }
 
-  {description && (
-    <p class="mod-card__desc">{description}</p>
-  )}
+  {description && <p class="mod-card__desc">{description}</p>}
 
   <footer class="mod-card__footer">
-    {author && (
-      <span class="mod-card__author">
-        <span class="sr-only">Author: </span>{author}
-      </span>
-    )}
+    {
+      author && (
+        <span class="mod-card__author">
+          <span class="sr-only">Author: </span>
+          {author}
+        </span>
+      )
+    }
 
-    {tags.length > 0 && (
-      <ul class="mod-card__tags" aria-label="Tags" role="list">
-        {tags.map((tag) => (
-          <li>
-            <a
-              class="mod-card__tag mod-card__tag-link"
-              href={tagHrefBase ? `${tagHrefBase}${encodeURIComponent(tag)}` : '#'}
-            >
-              {tag}
-            </a>
-          </li>
-        ))}
-      </ul>
-    )}
+    {
+      tags.length > 0 && (
+        <ul class="mod-card__tags" aria-label="Tags" role="list">
+          {tags.map((tag) => (
+            <li>
+              <a
+                class="mod-card__tag mod-card__tag-link"
+                href={tagHrefBase ? `${tagHrefBase}${encodeURIComponent(tag)}` : '#'}
+              >
+                {tag}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
 
     <div class="mod-card__actions">
-      {browseHref && (
-        <a class="mod-card__action mod-card__action--secondary" href={browseHref}>
-          Browse Collection
-        </a>
-      )}
+      {
+        browseHref && (
+          <a class="mod-card__action mod-card__action--secondary" href={browseHref}>
+            Browse Collection
+          </a>
+        )
+      }
 
-      {demoSrc && (
-        <button
-          class="mod-card__action mod-card__action--preview"
-          type="button"
-          data-preview-src={demoSrc}
-          data-preview-label={title}
-          data-preview-bpm={bpm ? String(bpm) : ''}
-        >
-          Preview
-        </button>
-      )}
+      {
+        demoSrc && (
+          <button
+            class="mod-card__action mod-card__action--preview"
+            type="button"
+            data-preview-src={demoSrc}
+            data-preview-label={title}
+            data-preview-bpm={bpm ? String(bpm) : ''}
+          >
+            Preview
+          </button>
+        )
+      }
 
-      {href && (
-        <ExternalLink
-          href={href}
-          kind={isSong ? 'browse-folder' : isMod ? 'download-rbm' : 'external'}
-          host={externalHostLabel}
-          target={target}
-          rel={rel}
-          class="mod-card__action mod-card__action--primary"
-        />
-      )}
+      {
+        href && (
+          <ExternalLink
+            href={href}
+            kind={isSong ? 'browse-folder' : isMod ? 'download-rbm' : 'external'}
+            host={externalHostLabel}
+            target={target}
+            rel={rel}
+            class="mod-card__action mod-card__action--primary"
+          />
+        )
+      }
     </div>
   </footer>
 </article>
@@ -211,8 +228,12 @@ const typeClass = isSong ? 'type--song' : isMod ? 'type--mod' : 'type--other';
   }
 
   /* Left accent strip by type */
-  .mod-card.type--song { border-left: 3px solid var(--color-green-dim); }
-  .mod-card.type--mod  { border-left: 3px solid var(--color-amber-dim); }
+  .mod-card.type--song {
+    border-left: 3px solid var(--color-green-dim);
+  }
+  .mod-card.type--mod {
+    border-left: 3px solid var(--color-amber-dim);
+  }
 
   /* ── Header ── */
   .mod-card__header {
@@ -388,7 +409,10 @@ const typeClass = isSong ? 'type--song' : isMod ? 'type--mod' : 'type--other';
     border: 1px solid var(--color-border);
     background: var(--color-surface-alt);
     color: var(--color-text);
-    transition: color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+    transition:
+      color var(--transition-fast),
+      border-color var(--transition-fast),
+      background var(--transition-fast);
   }
 
   .mod-card__action--preview {

@@ -48,10 +48,12 @@ const docsByVersion = sortedDocs.reduce((groups, entry) => {
 >
   <div class="docs-page">
     <div class="container">
-      <Breadcrumbs items={[
-        { label: 'Home', href: '/' },
-        { label: 'Docs', href: '/docs' },
-      ]} />
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Docs', href: '/docs' },
+        ]}
+      />
 
       <HardwarePanel
         variant="rackmount-chassis"
@@ -62,37 +64,40 @@ const docsByVersion = sortedDocs.reduce((groups, entry) => {
         class="rb-panel--center-header rb-panel--padded-body"
       >
         <p class="docs-subtitle">
-          Browse release notes, preservation analysis, and archive-planning references for ReBirth RB-338.
+          Browse release notes, preservation analysis, and archive-planning references for ReBirth
+          RB-338.
         </p>
       </HardwarePanel>
 
       <div class="docs-groups">
-        {Array.from(docsByVersion.entries()).map(([version, entries]) => (
-          <HardwarePanel
-            variant="rackmount-module"
-            animate
-            title={`VERSION ${version}`}
-            ledStatus="online"
-            ledLabel={`${entries.length} ${entries.length === 1 ? 'ENTRY' : 'ENTRIES'}`}
-          >
-            <ul class="docs-list" role="list">
-              {entries.map((entry) => (
-                <li class="docs-list__item">
-                  <a class="docs-list__link" href={`${base}/docs/${docPath(entry)}`}>
-                    <span class="docs-list__title">{entry.data.title}</span>
-                    {entry.data.description && (
-                      <span class="docs-list__description">{entry.data.description}</span>
-                    )}
-                    <span class="docs-list__meta">
-                      <span>{entry.data.version}</span>
-                      {entry.data.releaseDate && <span>{entry.data.releaseDate}</span>}
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </HardwarePanel>
-        ))}
+        {
+          Array.from(docsByVersion.entries()).map(([version, entries]) => (
+            <HardwarePanel
+              variant="rackmount-module"
+              animate
+              title={`VERSION ${version}`}
+              ledStatus="online"
+              ledLabel={`${entries.length} ${entries.length === 1 ? 'ENTRY' : 'ENTRIES'}`}
+            >
+              <ul class="docs-list" role="list">
+                {entries.map((entry) => (
+                  <li class="docs-list__item">
+                    <a class="docs-list__link" href={`${base}/docs/${docPath(entry)}`}>
+                      <span class="docs-list__title">{entry.data.title}</span>
+                      {entry.data.description && (
+                        <span class="docs-list__description">{entry.data.description}</span>
+                      )}
+                      <span class="docs-list__meta">
+                        <span>{entry.data.version}</span>
+                        {entry.data.releaseDate && <span>{entry.data.releaseDate}</span>}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </HardwarePanel>
+          ))
+        }
       </div>
     </div>
   </div>

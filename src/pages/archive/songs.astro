@@ -10,8 +10,14 @@ import { normalizeBase } from '../../lib/url';
 import { songCollections, archiveBaseUrl } from '../../data/song-collections';
 import { normalizeArchiveUrl } from '../../lib/archive-urls';
 import fullIndexRaw from '../../data/songs-full-index.json';
-import { formatStatRange, totalSongsIndexed, mainCollectionCount, monthlyArchiveCount } from '../../data/archive-stats';
+import {
+  formatStatRange,
+  totalSongsIndexed,
+  mainCollectionCount,
+  monthlyArchiveCount,
+} from '../../data/archive-stats';
 import artistsIndexRaw from '../../data/artists-index.json';
+import ArchivePinControl from '../../components/ArchivePinControl.astro';
 
 interface SongEntry {
   filename: string;
@@ -41,14 +47,21 @@ const allSongs = (fullIndex.songs || []).map((song) => ({
 }));
 const totalRaw = allSongs.length;
 const coveragePercent = fullIndex.meta?.coveragePercent ?? null;
-const artistDirectory = (artistsIndexRaw as { artists: Array<{ slug: string; name: string; songCount: number }> }).artists ?? [];
+const artistDirectory =
+  (artistsIndexRaw as { artists: Array<{ slug: string; name: string; songCount: number }> })
+    .artists ?? [];
 const artistCount = artistDirectory.length;
 const baseUrl = normalizeBase(import.meta.env.BASE_URL);
 
 const archiveStats = [
   { label: 'COLLECTIONS', value: mainCollectionCount, ariaLabel: 'Main collections' },
   { label: 'ARTISTS', value: artistCount, ariaLabel: 'Featured artists' },
-  { label: 'SONGS', value: formatStatRange(totalSongsIndexed), ariaLabel: 'Total indexed songs', title: `${totalSongsIndexed.toLocaleString()} files indexed from the remote archive` },
+  {
+    label: 'SONGS',
+    value: formatStatRange(totalSongsIndexed),
+    ariaLabel: 'Total indexed songs',
+    title: `${totalSongsIndexed.toLocaleString()} files indexed from the remote archive`,
+  },
   { label: 'ARCHIVES', value: monthlyArchiveCount, ariaLabel: 'Monthly archives' },
 ];
 ---
@@ -71,8 +84,11 @@ const archiveStats = [
   <Fragment slot="search">
     <div class="sticky-search">
       <p class="search-explainer">
-        New here? Start with <a href={`${baseUrl}/beginner-guide`}>Beginner Guide</a> or open the <a href={`${baseUrl}/glossary`}>Glossary</a> for <abbr title="ReBirth Song file">.rbs</abbr> terms.
+        New here? Start with <a href={`${baseUrl}/beginner-guide`}>Beginner Guide</a> or open the <a
+          href={`${baseUrl}/glossary`}>Glossary</a
+        > for <abbr title="ReBirth Song file">.rbs</abbr> terms.
       </p>
+      <ArchivePinControl />
       <div class="search-bar">
         <input
           type="text"
@@ -84,12 +100,24 @@ const archiveStats = [
         <ActionButton variant="mix" onclick="clearAllFilters()">Clear All</ActionButton>
       </div>
       <div class="filter-bar" role="group" aria-label="Quick filters">
-        <button class="rb-filter-btn active" data-filter="all" type="button" aria-pressed="true">All Song Groups</button>
-        <button class="rb-filter-btn" data-filter="featured" type="button" aria-pressed="false">Recommended</button>
-        <button class="rb-filter-btn" data-filter="bySource" type="button" aria-pressed="false">By Archive Source</button>
-        <button class="rb-filter-btn" data-filter="artists" type="button" aria-pressed="false">Songs by Artist</button>
-        <button class="rb-filter-btn" data-filter="monthly" type="button" aria-pressed="false">Monthly Packs</button>
-        <button class="rb-filter-btn" data-filter="other" type="button" aria-pressed="false">Other Collections</button>
+        <button class="rb-filter-btn active" data-filter="all" type="button" aria-pressed="true"
+          >All Song Groups</button
+        >
+        <button class="rb-filter-btn" data-filter="featured" type="button" aria-pressed="false"
+          >Recommended</button
+        >
+        <button class="rb-filter-btn" data-filter="bySource" type="button" aria-pressed="false"
+          >By Archive Source</button
+        >
+        <button class="rb-filter-btn" data-filter="artists" type="button" aria-pressed="false"
+          >Songs by Artist</button
+        >
+        <button class="rb-filter-btn" data-filter="monthly" type="button" aria-pressed="false"
+          >Monthly Packs</button
+        >
+        <button class="rb-filter-btn" data-filter="other" type="button" aria-pressed="false"
+          >Other Collections</button
+        >
       </div>
       <div class="results-bar" aria-live="polite" aria-atomic="true">
         <span id="resultCount" class="result-count">Showing all song collections</span>
@@ -101,31 +129,69 @@ const archiveStats = [
     <!-- Grid view -->
     <div id="gridView" class="collections-grid" role="main">
       <div data-section-key="featured" class="collection-wrapper">
-        {songCollections.featured && (
-          <CollectionCard section={songCollections.featured} meta={collectionsMeta.featured} archiveUrl={archiveBaseUrl} rackmount={true} />
-        )}
+        {
+          songCollections.featured && (
+            <CollectionCard
+              section={songCollections.featured}
+              meta={collectionsMeta.featured}
+              archiveUrl={archiveBaseUrl}
+              rackmount={true}
+            />
+          )
+        }
       </div>
       <div data-section-key="bySource" class="collection-wrapper">
-        {songCollections.bySource && (
-          <CollectionCard section={songCollections.bySource} meta={collectionsMeta.bySource} archiveUrl={archiveBaseUrl} rackmount={true} />
-        )}
+        {
+          songCollections.bySource && (
+            <CollectionCard
+              section={songCollections.bySource}
+              meta={collectionsMeta.bySource}
+              archiveUrl={archiveBaseUrl}
+              rackmount={true}
+            />
+          )
+        }
       </div>
       <div data-section-key="artists" class="collection-wrapper">
-        {songCollections.artists && (
-          <CollectionCard section={songCollections.artists} meta={collectionsMeta.artists} archiveUrl={archiveBaseUrl} rackmount={true} />
-        )}
+        {
+          songCollections.artists && (
+            <CollectionCard
+              section={songCollections.artists}
+              meta={collectionsMeta.artists}
+              archiveUrl={archiveBaseUrl}
+              rackmount={true}
+            />
+          )
+        }
       </div>
       <div data-section-key="monthly" class="collection-wrapper">
-        {songCollections.monthly && (
-          <CollectionCard section={songCollections.monthly} meta={collectionsMeta.monthly} archiveUrl={archiveBaseUrl} rackmount={true} />
-        )}
+        {
+          songCollections.monthly && (
+            <CollectionCard
+              section={songCollections.monthly}
+              meta={collectionsMeta.monthly}
+              archiveUrl={archiveBaseUrl}
+              rackmount={true}
+            />
+          )
+        }
       </div>
       <div data-section-key="other" class="collection-wrapper">
-        {songCollections.other && (
-          <CollectionCard section={songCollections.other} meta={collectionsMeta.other} archiveUrl={archiveBaseUrl} rackmount={true} />
-        )}
+        {
+          songCollections.other && (
+            <CollectionCard
+              section={songCollections.other}
+              meta={collectionsMeta.other}
+              archiveUrl={archiveBaseUrl}
+              rackmount={true}
+            />
+          )
+        }
       </div>
-      <ArchiveEmptyState id="gridEmptyState" message="No song groups match your search. Try another keyword, or open Recommended for quick picks." />
+      <ArchiveEmptyState
+        id="gridEmptyState"
+        message="No song groups match your search. Try another keyword, or open Recommended for quick picks."
+      />
     </div>
 
     <!-- List view -->
@@ -136,13 +202,23 @@ const archiveStats = [
             <thead>
               <tr>
                 <th scope="col">
-                  <button class="sort-btn" data-sort="name" type="button" aria-label="Sort by collection name">
+                  <button
+                    class="sort-btn"
+                    data-sort="name"
+                    type="button"
+                    aria-label="Sort by collection name"
+                  >
                     Song Group <span class="sort-indicator" aria-hidden="true">↕</span>
                   </button>
                 </th>
                 <th scope="col">Category</th>
                 <th scope="col" class="col-numeric">
-                  <button class="sort-btn" data-sort="count" type="button" aria-label="Sort by file count">
+                  <button
+                    class="sort-btn"
+                    data-sort="count"
+                    type="button"
+                    aria-label="Sort by file count"
+                  >
                     Song Files <span class="sort-indicator" aria-hidden="true">↕</span>
                   </button>
                 </th>
@@ -155,7 +231,10 @@ const archiveStats = [
             <tbody id="listTableBody"></tbody>
           </table>
         </div>
-        <ArchiveEmptyState id="listEmptyState" message="No song groups match your search. Try another keyword, or switch to Recommended." />
+        <ArchiveEmptyState
+          id="listEmptyState"
+          message="No song groups match your search. Try another keyword, or switch to Recommended."
+        />
       </HardwarePanel>
     </div>
   </Fragment>
@@ -163,23 +242,29 @@ const archiveStats = [
   <Fragment slot="raw-label">Search &amp; Artist Directory</Fragment>
 
   <Fragment slot="raw-index">
-    {artistDirectory.length > 0 && (
-      <HardwarePanel variant="rackmount" title="ARTIST DIRECTORY" class="artist-directory-panel">
-        <p class="raw-subtitle">
-          Artist pages merge duplicate folder names (example: Noah Cohn Complete + Extended) into one profile.
-        </p>
-        <ul class="artist-directory" role="list">
-          {artistDirectory.map((artist) => (
-            <li>
-              <a href={`${baseUrl}/archive/artists/${artist.slug}/`} class="artist-directory__link">
-                <span class="artist-directory__name">{artist.name}</span>
-                <span class="artist-directory__count">{artist.songCount} songs</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </HardwarePanel>
-    )}
+    {
+      artistDirectory.length > 0 && (
+        <HardwarePanel variant="rackmount" title="ARTIST DIRECTORY" class="artist-directory-panel">
+          <p class="raw-subtitle">
+            Artist pages merge duplicate folder names (example: Noah Cohn Complete + Extended) into
+            one profile.
+          </p>
+          <ul class="artist-directory" role="list">
+            {artistDirectory.map((artist) => (
+              <li>
+                <a
+                  href={`${baseUrl}/archive/artists/${artist.slug}/`}
+                  class="artist-directory__link"
+                >
+                  <span class="artist-directory__name">{artist.name}</span>
+                  <span class="artist-directory__count">{artist.songCount} songs</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </HardwarePanel>
+      )
+    }
 
     <HardwarePanel
       variant="rackmount"
@@ -190,16 +275,20 @@ const archiveStats = [
       class="song-search-panel"
     >
       <p class="raw-subtitle">
-        {coveragePercent !== null ? (
-          <>
-            Search <strong>{totalRaw.toLocaleString()}</strong> catalogued files ({coveragePercent}% of manifest estimate).
-            Results load instantly via MiniSearch — no 5,000-row DOM dump.
-          </>
-        ) : (
-          <>
-            Search <strong>{totalRaw.toLocaleString()}</strong> catalogued .rbs files with collection, source, and MOD facets.
-          </>
-        )}
+        {
+          coveragePercent !== null ? (
+            <>
+              Search <strong>{totalRaw.toLocaleString()}</strong> catalogued files (
+              {coveragePercent}% of manifest estimate). Results load instantly via MiniSearch — no
+              5,000-row DOM dump.
+            </>
+          ) : (
+            <>
+              Search <strong>{totalRaw.toLocaleString()}</strong> catalogued .rbs files with
+              collection, source, and MOD facets.
+            </>
+          )
+        }
       </p>
 
       <div id="songSearchRoot" class="song-search-root">
@@ -224,16 +313,36 @@ const archiveStats = [
           </label>
           <label class="facet-field">
             <span class="facet-label">Source</span>
-            <select id="facetSource" class="facet-select" aria-label="Filter by ReBirth source version">
+            <select
+              id="facetSource"
+              class="facet-select"
+              aria-label="Filter by ReBirth source version"
+            >
               <option value="">All sources</option>
             </select>
           </label>
           <label class="facet-field facet-field--bpm">
             <span class="facet-label">BPM</span>
             <span class="bpm-range">
-              <input type="number" id="facetBpmMin" class="facet-input" min="60" max="220" placeholder="Min" aria-label="Minimum BPM" />
+              <input
+                type="number"
+                id="facetBpmMin"
+                class="facet-input"
+                min="60"
+                max="220"
+                placeholder="Min"
+                aria-label="Minimum BPM"
+              />
               <span aria-hidden="true">–</span>
-              <input type="number" id="facetBpmMax" class="facet-input" min="60" max="220" placeholder="Max" aria-label="Maximum BPM" />
+              <input
+                type="number"
+                id="facetBpmMax"
+                class="facet-input"
+                min="60"
+                max="220"
+                placeholder="Max"
+                aria-label="Maximum BPM"
+              />
             </span>
           </label>
           <label class="facet-check">
@@ -244,11 +353,15 @@ const archiveStats = [
         </div>
 
         <p id="songSearchHint" class="search-hint">
-          Type to search, or pick a facet. For your first session, try “Songs by Artist” and browse one creator at a time.
+          Type to search, or pick a facet. For your first session, try “Songs by Artist” and browse
+          one creator at a time.
         </p>
 
         <div id="songResults" class="song-results" aria-live="polite"></div>
-        <ArchiveEmptyState id="songEmpty" message="No songs match your search or filters. Clear filters or try a broader artist or collection term." />
+        <ArchiveEmptyState
+          id="songEmpty"
+          message="No songs match your search or filters. Clear filters or try a broader artist or collection term."
+        />
       </div>
     </HardwarePanel>
   </Fragment>
@@ -348,7 +461,7 @@ const archiveStats = [
   }
 
   .archive-table tr:hover td {
-    background: rgba(255,176,0,0.04);
+    background: rgba(255, 176, 0, 0.04);
     color: #c0c0c0;
   }
 
@@ -396,7 +509,7 @@ const archiveStats = [
     outline: none;
     color: #3dba66;
     text-decoration: underline;
-    box-shadow: 0 0 0 2px rgba(57,255,20,0.15);
+    box-shadow: 0 0 0 2px rgba(57, 255, 20, 0.15);
     border-radius: 2px;
   }
 
@@ -495,7 +608,10 @@ const archiveStats = [
     color: #aaa;
     font-family: var(--rb-font-display, 'Courier New', monospace);
     font-size: 0.82rem;
-    transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+    transition:
+      border-color 120ms ease,
+      color 120ms ease,
+      background 120ms ease;
   }
 
   .artist-directory__link:hover {
@@ -724,7 +840,7 @@ const archiveStats = [
   .az-nav__link:hover {
     color: var(--rb-amber);
     border-color: var(--rb-amber-dim);
-    box-shadow: 0 0 8px rgba(255,176,0,0.1);
+    box-shadow: 0 0 8px rgba(255, 176, 0, 0.1);
   }
 
   .raw-index {
@@ -747,7 +863,7 @@ const archiveStats = [
     font-size: 1.2rem;
     font-weight: 700;
     color: var(--rb-amber);
-    text-shadow: 0 0 10px rgba(255,176,0,0.25);
+    text-shadow: 0 0 10px rgba(255, 176, 0, 0.25);
     min-width: 24px;
   }
 
@@ -776,16 +892,18 @@ const archiveStats = [
     grid-template-rows: auto auto auto auto; /* 4 rows: name / size / collection / details */
     gap: 0.05rem 0.45rem;
     padding: 0.4rem 0.5rem;
-    background: rgba(0,0,0,0.15);
+    background: rgba(0, 0, 0, 0.15);
     border: 1px solid transparent;
     border-radius: 3px;
-    transition: background 120ms ease, border-color 120ms ease;
+    transition:
+      background 120ms ease,
+      border-color 120ms ease;
     position: relative;
   }
 
   .raw-item:hover {
-    background: rgba(255,176,0,0.04);
-    border-color: rgba(255,176,0,0.15);
+    background: rgba(255, 176, 0, 0.04);
+    border-color: rgba(255, 176, 0, 0.15);
   }
 
   .raw-item__name {
@@ -854,7 +972,7 @@ const archiveStats = [
     font-size: 0.58rem;
     padding: 1px 5px;
     border-radius: 2px;
-    background: rgba(57,255,20,0.08);
+    background: rgba(57, 255, 20, 0.08);
     color: var(--rb-green-bright);
     border: 1px solid var(--rb-green-dim);
     white-space: nowrap;
@@ -885,7 +1003,7 @@ const archiveStats = [
   .raw-item__link:hover {
     color: var(--rb-amber);
     border-color: var(--rb-amber-dim);
-    box-shadow: 0 0 8px rgba(255,176,0,0.15);
+    box-shadow: 0 0 8px rgba(255, 176, 0, 0.15);
   }
 
   .sticky-search {

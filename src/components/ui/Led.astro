@@ -3,18 +3,37 @@ import type { LedProps } from './types';
 
 interface Props extends LedProps {}
 
-const { status = 'online', label, ariaLabel, ariaHidden = false, class: className = '' } = Astro.props;
+const {
+  status = 'online',
+  label,
+  ariaLabel,
+  ariaHidden = false,
+  class: className = '',
+} = Astro.props;
 
-const statusClass = {
-  online: 'rb-led--online',
-  pending: 'rb-led--pending',
-  offline: 'rb-led--offline',
-  flicker: 'rb-led--flicker',
-  'flicker-green': 'rb-led--flicker-green',
-}[status] ?? 'rb-led--online';
+const statusClass =
+  {
+    online: 'rb-led--online',
+    pending: 'rb-led--pending',
+    offline: 'rb-led--offline',
+    flicker: 'rb-led--flicker',
+    'flicker-green': 'rb-led--flicker-green',
+  }[status] ?? 'rb-led--online';
 ---
 
-<span class={`rb-led ${statusClass} ${className}`.trim()} aria-label={ariaLabel ?? label} aria-hidden={ariaHidden ? 'true' : undefined}>
+<span
+  class={`rb-led ${statusClass} ${className}`.trim()}
+  aria-label={ariaLabel ?? label}
+  aria-hidden={ariaHidden ? 'true' : undefined}
+>
   <span class="rb-led__dot"></span>
-  {ariaHidden ? <span class="rb-led__label" aria-hidden="true">{label}</span> : label}
+  {
+    ariaHidden ? (
+      <span class="rb-led__label" aria-hidden="true">
+        {label}
+      </span>
+    ) : (
+      label
+    )
+  }
 </span>

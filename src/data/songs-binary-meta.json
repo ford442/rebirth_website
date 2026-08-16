@@ -1,0 +1,5623 @@
+{
+  "meta": {
+    "generated": "2026-08-16T13:38:16.145016+00:00",
+    "inspectBinary": "/root/rebirth_website/src/wasm/cpp/build/rbs-inspect",
+    "sourceIndex": "src/data/songs-full-index.json",
+    "phase": "A",
+    "stats": {
+      "ok": 365,
+      "failed": 258,
+      "skippedCache": 183,
+      "pending": 0
+    }
+  },
+  "entries": {
+    "Artists/Cavey/10_dubb.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:46.012715+00:00"
+    },
+    "Artists/Cavey/10_mathe.rbs": {
+      "fileSize": "39K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:46.262050+00:00"
+    },
+    "Artists/Cavey/10_nyght.rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:46.441625+00:00"
+    },
+    "Artists/Cavey/11_durch.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:46.615799+00:00"
+    },
+    "Artists/Cavey/11_my2nd.rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:46.795272+00:00"
+    },
+    "Artists/Cavey/11_pivit.rbs": {
+      "fileSize": "34K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:46.966814+00:00"
+    },
+    "Artists/Cavey/12_form.rbs": {
+      "fileSize": "24K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:47.217257+00:00"
+    },
+    "Artists/Cavey/12_peace.rbs": {
+      "fileSize": "28K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:47.386944+00:00"
+    },
+    "Artists/Cavey/12_plast.rbs": {
+      "fileSize": "20K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:47.554318+00:00"
+    },
+    "Artists/Cavey/13_for.rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:47.728975+00:00"
+    },
+    "Artists/Cavey/13_progr.rbs": {
+      "fileSize": "24K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:47.901844+00:00"
+    },
+    "Artists/Cavey/13_rage.rbs": {
+      "fileSize": "35K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:48.075963+00:00"
+    },
+    "Artists/Cavey/14_fullon.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:48.269372+00:00"
+    },
+    "Artists/Cavey/14_reinf.rbs": {
+      "fileSize": "37K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:48.441936+00:00"
+    },
+    "Artists/Cavey/14_sayno.rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:48.620377+00:00"
+    },
+    "Artists/Cavey/15_gast.rbs": {
+      "fileSize": "26K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:48.802649+00:00"
+    },
+    "Artists/Cavey/15_rode.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:48.993184+00:00"
+    },
+    "Artists/Cavey/15_soggy.rbs": {
+      "fileSize": "27K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:49.160682+00:00"
+    },
+    "Artists/Cavey/16_inte.rbs": {
+      "fileSize": "24K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:49.333068+00:00"
+    },
+    "Artists/Cavey/16_ross.rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:49.518744+00:00"
+    },
+    "Artists/Cavey/16_suphe.rbs": {
+      "fileSize": "20K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:49.687297+00:00"
+    },
+    "Artists/Cavey/17_isot.rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:49.867679+00:00"
+    },
+    "Artists/Cavey/17_shore.rbs": {
+      "fileSize": "40K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:50.046524+00:00"
+    },
+    "Artists/Cavey/17_thera.rbs": {
+      "fileSize": "38K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:50.223403+00:00"
+    },
+    "Artists/Cavey/18_mind.rbs": {
+      "fileSize": "29K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:50.393568+00:00"
+    },
+    "Artists/Cavey/18_space.rbs": {
+      "fileSize": "24K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:50.563211+00:00"
+    },
+    "Artists/Cavey/18_trac3.rbs": {
+      "fileSize": "26K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:50.744213+00:00"
+    },
+    "Artists/Cavey/19_mist.rbs": {
+      "fileSize": "28K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:50.923004+00:00"
+    },
+    "Artists/Cavey/19_sunri.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:51.095483+00:00"
+    },
+    "Artists/Cavey/19_trac4.rbs": {
+      "fileSize": "24K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:51.282987+00:00"
+    },
+    "Artists/Cavey/1_338.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:51.460858+00:00"
+    },
+    "Artists/Cavey/1_adrena.rbs": {
+      "fileSize": "37K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:51.633811+00:00"
+    },
+    "Artists/Cavey/1_bitter.rbs": {
+      "fileSize": "28K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:51.814798+00:00"
+    },
+    "Artists/Cavey/20_morp.rbs": {
+      "fileSize": "30K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:51.990615+00:00"
+    },
+    "Artists/Cavey/20_virus.rbs": {
+      "fileSize": "33K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:52.160209+00:00"
+    },
+    "Artists/Cavey/21_rebi.rbs": {
+      "fileSize": "234",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:52.345972+00:00"
+    },
+    "Artists/Cavey/21_with.rbs": {
+      "fileSize": "19K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:52.515293+00:00"
+    },
+    "Artists/Cavey/22_resp.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:52.689882+00:00"
+    },
+    "Artists/Cavey/22_zara.rbs": {
+      "fileSize": "26K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:52.864566+00:00"
+    },
+    "Artists/Cavey/23_ruby.rbs": {
+      "fileSize": "32K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:53.034246+00:00"
+    },
+    "Artists/Cavey/23_zone.rbs": {
+      "fileSize": "40K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:53.215464+00:00"
+    },
+    "Artists/Cavey/24_thet.rbs": {
+      "fileSize": "30K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:53.394464+00:00"
+    },
+    "Artists/Cavey/25_vect.rbs": {
+      "fileSize": "3.9K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:53.592642+00:00"
+    },
+    "Artists/Cavey/2_47un.rbs": {
+      "fileSize": "20K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:53.766293+00:00"
+    },
+    "Artists/Cavey/2_ancien.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:53.944264+00:00"
+    },
+    "Artists/Cavey/2_celeb.rbs": {
+      "fileSize": "33K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:54.119014+00:00"
+    },
+    "Artists/Cavey/3_acid.rbs": {
+      "fileSize": "27K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:54.131616+00:00"
+    },
+    "Artists/Cavey/3_blankm.rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:54.303353+00:00"
+    },
+    "Artists/Cavey/3_final.rbs": {
+      "fileSize": "36K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:54.474001+00:00"
+    },
+    "Artists/Cavey/4_and.rbs": {
+      "fileSize": "20K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:54.651043+00:00"
+    },
+    "Artists/Cavey/4_cherry.rbs": {
+      "fileSize": "34K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:54.833250+00:00"
+    },
+    "Artists/Cavey/4_happy.rbs": {
+      "fileSize": "20K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:55.020479+00:00"
+    },
+    "Artists/Cavey/5_anti.rbs": {
+      "fileSize": "24K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:55.233861+00:00"
+    },
+    "Artists/Cavey/5_debrei.rbs": {
+      "fileSize": "28K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:55.410458+00:00"
+    },
+    "Artists/Cavey/5_hard.rbs": {
+      "fileSize": "28K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:55.579815+00:00"
+    },
+    "Artists/Cavey/6_atla.rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:55.771493+00:00"
+    },
+    "Artists/Cavey/6_headhu.rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:55.948715+00:00"
+    },
+    "Artists/Cavey/6_lechur.rbs": {
+      "fileSize": "24K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:56.122906+00:00"
+    },
+    "Artists/Cavey/7_caro.rbs": {
+      "fileSize": "32K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:56.290773+00:00"
+    },
+    "Artists/Cavey/7_lsding.rbs": {
+      "fileSize": "20K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:56.464279+00:00"
+    },
+    "Artists/Cavey/7_martin.rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:56.664702+00:00"
+    },
+    "Artists/Cavey/8_keep.rbs": {
+      "fileSize": "45K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:56.841472+00:00"
+    },
+    "Artists/Cavey/8_liveri.rbs": {
+      "fileSize": "28K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:57.013265+00:00"
+    },
+    "Artists/Cavey/8_moscow.rbs": {
+      "fileSize": "20K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:57.182609+00:00"
+    },
+    "Artists/Cavey/9_dream.rbs": {
+      "fileSize": "34K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:57.359340+00:00"
+    },
+    "Artists/Cavey/9_liquid.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:57.543223+00:00"
+    },
+    "Artists/Cavey/9_nudiak.rbs": {
+      "fileSize": "19K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:57.722682+00:00"
+    },
+    "Artists/Cavey/=SPEED=.rbs": {
+      "fileSize": "28K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:57.905206+00:00"
+    },
+    "Artists/Cavey/BATTLEFIELD.rbs": {
+      "fileSize": "28K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:58.109088+00:00"
+    },
+    "Artists/Cavey/CHEM 4-7.rbs": {
+      "fileSize": "26K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "by subgenious (AKA Dennis Schissler)",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:35:58.285061+00:00"
+    },
+    "Artists/Cavey/Intensive.rbs": {
+      "fileSize": "24K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:58.525130+00:00"
+    },
+    "Artists/Cavey/Silver Knight Vs Gold Knight (CK Vs DJK Mix).rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:58.701269+00:00"
+    },
+    "Artists/Cavey/The Raven (Beautifully Macabre).rbs": {
+      "fileSize": "36K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:58.878353+00:00"
+    },
+    "Artists/Cavey/Time Is Eternal (Spiral Decay RMX).rbs": {
+      "fileSize": "59K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "By CK Vs DJ K  [ RB2 \\ Illumitech 2 ]",
+      "metaBpm": 136.0,
+      "inspectedAt": "2026-08-16T13:35:59.048948+00:00"
+    },
+    "Artists/Cavey/aura.rbs": {
+      "fileSize": "27K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:59.234618+00:00"
+    },
+    "Artists/Cavey/evilspeed.rbs": {
+      "fileSize": "26K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:59.408846+00:00"
+    },
+    "Artists/Cavey/getaway.rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:59.595402+00:00"
+    },
+    "Artists/Cavey/stro~1.rbs": {
+      "fileSize": "24K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:35:59.776036+00:00"
+    },
+    "Artists/DJ Caspa/A SwiSS DREAM.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "(c) 99 by    DJ Caspa  / Germany",
+      "metaBpm": 152.0,
+      "inspectedAt": "2026-08-16T13:35:59.991383+00:00"
+    },
+    "Artists/DJ Caspa/EnergY TrAiN.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "dAnCe RMX  by  DJ Caspa  / Germany",
+      "metaBpm": 152.0,
+      "inspectedAt": "2026-08-16T13:36:00.205086+00:00"
+    },
+    "Artists/DJ Caspa/Every BreatH.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "TrAnCe dAnCe  by  ( DJ Caspa / Germany )",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:36:00.392980+00:00"
+    },
+    "Artists/DJ Caspa/MeloW AcciDenT.rbs": {
+      "fileSize": "21K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "DAnCid (c)strictly by DJ-CaspA / GermanY",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:36:00.608311+00:00"
+    },
+    "Artists/DJ Caspa/TrAcidLanD.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "FunKyBAm - DJ-Sakin meets DJ-Caspa",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:36:00.787459+00:00"
+    },
+    "Artists/DJ Knightmare/amnesya.rbs": {
+      "fileSize": "36K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:00.833860+00:00"
+    },
+    "Artists/DJ Knightmare/amoris egere.rbs": {
+      "fileSize": "20K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:01.078162+00:00"
+    },
+    "Artists/DJ Knightmare/area 51 (the truth of-rmx).rbs": {
+      "fileSize": "38K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:01.269182+00:00"
+    },
+    "Artists/DJ Knightmare/at the terrarium.rbs": {
+      "fileSize": "20K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:01.510217+00:00"
+    },
+    "Artists/DJ Knightmare/atom twister 303 - elipsis one.rbs": {
+      "fileSize": "37K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:01.780485+00:00"
+    },
+    "Artists/DJ Knightmare/bad haircut (anti-dist mix).rbs": {
+      "fileSize": "33K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:01.992796+00:00"
+    },
+    "Artists/DJ Knightmare/barbie submarine-elipsis one.rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:02.169489+00:00"
+    },
+    "Artists/DJ Knightmare/bitchblackhasch.rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:02.351171+00:00"
+    },
+    "Artists/DJ Knightmare/bitter~1.rbs": {
+      "fileSize": "28K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:02.519138+00:00"
+    },
+    "Artists/DJ Knightmare/black heart mix 1.rbs": {
+      "fileSize": "19K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:02.722687+00:00"
+    },
+    "Artists/DJ Knightmare/boilin' acid.rbs": {
+      "fileSize": "27K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:02.903855+00:00"
+    },
+    "Artists/DJ Knightmare/buub.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:03.323234+00:00"
+    },
+    "Artists/DJ Knightmare/chasing pong.rbs": {
+      "fileSize": "53K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:03.496770+00:00"
+    },
+    "Artists/DJ Knightmare/chelyabinsk-65.rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:03.722171+00:00"
+    },
+    "Artists/DJ Knightmare/club 02.rbs": {
+      "fileSize": "33K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:03.925389+00:00"
+    },
+    "Artists/DJ Knightmare/conctacto338.rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:04.153180+00:00"
+    },
+    "Artists/DJ Knightmare/creation remix.rbs": {
+      "fileSize": "41K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:04.333077+00:00"
+    },
+    "Artists/DJ Knightmare/cure.rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:04.509361+00:00"
+    },
+    "Artists/DJ Knightmare/dafttroop.rbs": {
+      "fileSize": "20K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:04.713318+00:00"
+    },
+    "Artists/DJ Knightmare/daydreamer.rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:04.994176+00:00"
+    },
+    "Artists/DJ Knightmare/djangels.rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:05.266387+00:00"
+    },
+    "Artists/DJ Knightmare/dkpdimension(omni).rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:05.448194+00:00"
+    },
+    "Artists/DJ Knightmare/dls437it.rbs": {
+      "fileSize": "27K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:05.643183+00:00"
+    },
+    "Artists/DJ Knightmare/dr.who goez 2 hell(135mix).rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:05.846048+00:00"
+    },
+    "Artists/DJ Knightmare/dubbin-doh!tb92cl.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:06.030584+00:00"
+    },
+    "Artists/DJ Knightmare/dubbin-dom!!tb909.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:06.210551+00:00"
+    },
+    "Artists/DJ Knightmare/energybits4.rbs": {
+      "fileSize": "24K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:06.550563+00:00"
+    },
+    "Artists/DJ Knightmare/entering the reptile lounge.rbs": {
+      "fileSize": "27K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:06.732191+00:00"
+    },
+    "Artists/DJ Knightmare/far beyond a groove-elipsis one.rbs": {
+      "fileSize": "24K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:06.924568+00:00"
+    },
+    "Artists/DJ Knightmare/final nightmare!.rbs": {
+      "fileSize": "36K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:07.101609+00:00"
+    },
+    "Artists/DJ Knightmare/flooming.rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:07.274755+00:00"
+    },
+    "Artists/DJ Knightmare/frankey.rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:07.460687+00:00"
+    },
+    "Artists/DJ Knightmare/generationterroristsunderground.rbs": {
+      "fileSize": "19K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:07.656765+00:00"
+    },
+    "Artists/DJ Knightmare/getaway.rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:07.847042+00:00"
+    },
+    "Artists/DJ Knightmare/handbasket.rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:08.026841+00:00"
+    },
+    "Artists/DJ Knightmare/hard times 2.rbs": {
+      "fileSize": "28K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:08.199522+00:00"
+    },
+    "Artists/DJ Knightmare/hf rulez.rbs": {
+      "fileSize": "20K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:08.375170+00:00"
+    },
+    "Artists/DJ Knightmare/i'm gorgeous! (remix).rbs": {
+      "fileSize": "26K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:08.554530+00:00"
+    },
+    "Artists/DJ Knightmare/i'm gorgeous! (who's the fairest - rb dub).rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:08.761172+00:00"
+    },
+    "Artists/DJ Knightmare/imgorgeous427.rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:08.967679+00:00"
+    },
+    "Artists/DJ Knightmare/just groove it up! (shaked reloop mix!).rbs": {
+      "fileSize": "27K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:09.154211+00:00"
+    },
+    "Artists/DJ Knightmare/killer (145bpm mix).rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:09.380184+00:00"
+    },
+    "Artists/DJ Knightmare/killer (pbe mix).rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:09.603079+00:00"
+    },
+    "Artists/DJ Knightmare/lunatic loop.rbs": {
+      "fileSize": "30K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:09.798777+00:00"
+    },
+    "Artists/DJ Knightmare/magnetic clouds.rbs": {
+      "fileSize": "40K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:09.989391+00:00"
+    },
+    "Artists/DJ Knightmare/majilkreb\u2122\u201djth.rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "4.28..majiLkReb\u00d6\u00f6jtH98-Dj..m.a.t.h.e.o.",
+      "metaBpm": 100.0,
+      "inspectedAt": "2026-08-16T13:36:10.181293+00:00"
+    },
+    "Artists/DJ Knightmare/manna.rbs": {
+      "fileSize": "40K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:10.431634+00:00"
+    },
+    "Artists/DJ Knightmare/mind flower - djk mix.rbs": {
+      "fileSize": "29K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:10.660227+00:00"
+    },
+    "Artists/DJ Knightmare/minds.rbs": {
+      "fileSize": "32K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:10.834339+00:00"
+    },
+    "Artists/DJ Knightmare/narayan_tekkno_mix__.rbs": {
+      "fileSize": "19K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:11.012126+00:00"
+    },
+    "Artists/DJ Knightmare/overdrived feelings.rbs": {
+      "fileSize": "73K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:11.187724+00:00"
+    },
+    "Artists/DJ Knightmare/partyon (panic remix).rbs": {
+      "fileSize": "39K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:11.365015+00:00"
+    },
+    "Artists/DJ Knightmare/peaceful harmony (esuom jd mix).rbs": {
+      "fileSize": "31K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:11.534606+00:00"
+    },
+    "Artists/DJ Knightmare/prodispeed.rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:11.708170+00:00"
+    },
+    "Artists/DJ Knightmare/raisethealarm.rbs": {
+      "fileSize": "45K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:11.884913+00:00"
+    },
+    "Artists/DJ Knightmare/scream.rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:12.060164+00:00"
+    },
+    "Artists/DJ Knightmare/screaming_lizards.rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:12.260905+00:00"
+    },
+    "Artists/DJ Knightmare/sunshinesmiles-elipsisone.rbs": {
+      "fileSize": "30K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:12.467227+00:00"
+    },
+    "Artists/DJ Knightmare/the battle belongs to the lord.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "Dj KNiGHTMARe 1998",
+      "metaBpm": 115.0,
+      "inspectedAt": "2026-08-16T13:36:12.663320+00:00"
+    },
+    "Artists/DJ Knightmare/the elephant walks at midnight.rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:12.857285+00:00"
+    },
+    "Artists/DJ Knightmare/the rave of love.rbs": {
+      "fileSize": "38K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:13.031710+00:00"
+    },
+    "Artists/DJ Knightmare/thehellavator.rbs": {
+      "fileSize": "39K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:13.214173+00:00"
+    },
+    "Artists/DJ Knightmare/trumpet.rbs": {
+      "fileSize": "19K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:13.387818+00:00"
+    },
+    "Artists/DJ Knightmare/virgin grounds.rbs": {
+      "fileSize": "31K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:13.580179+00:00"
+    },
+    "Artists/DJ Knightmare/wash clean.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:14.112545+00:00"
+    },
+    "Artists/DJ Knightmare/youbelivimcrankypbe.rbs": {
+      "fileSize": "41K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:14.301037+00:00"
+    },
+    "Artists/DJ Knightmare/yulin-ill mixtb909.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:14.581701+00:00"
+    },
+    "Artists/DJ Knightmare/yulintgvirus.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:14.771649+00:00"
+    },
+    "Artists/Fanatic/ElectroStatica.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:14.978531+00:00"
+    },
+    "Artists/Noah Cohn/Getting There.rbs": {
+      "fileSize": "53K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:15.166807+00:00"
+    },
+    "Artists/Noah Cohn/So Far So Good.rbs": {
+      "fileSize": "26K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "{As used in hospitals}",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:15.354168+00:00"
+    },
+    "Artists/Noah Cohn/Zaiaihr'e.rbs": {
+      "fileSize": "61K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": "***{Must be through MINImod b2!}***",
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:15.533180+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/20.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:15.565901+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/Getting There.rbs": {
+      "fileSize": "53K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:15.926177+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/MINIBOD.rbs": {
+      "fileSize": "33K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:16.129572+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/MINIMODHO.rbs": {
+      "fileSize": "40K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:16.366173+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/MiniMODb3only.rbs": {
+      "fileSize": "61K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:16.559995+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/NEW-x.rbs": {
+      "fileSize": "41K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:16.797568+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/NEW-xr.rbs": {
+      "fileSize": "41K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:17.093172+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/NEW-xy.rbs": {
+      "fileSize": "41K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:17.366568+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/NEWNEWNEW.rbs": {
+      "fileSize": "40K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:17.624605+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/NEWjan27.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:17.835148+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/NEWorig.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 160.0,
+      "inspectedAt": "2026-08-16T13:36:18.083761+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/ORBIT.rbs": {
+      "fileSize": "26K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "{As used in hospitals}",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:18.268706+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/SBMR1.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of SBMR1.mid",
+      "metaBpm": 124.0,
+      "inspectedAt": "2026-08-16T13:36:18.612992+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/SBMr1edit.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:18.786165+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/SNEW.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of SNEW.mid",
+      "metaBpm": 124.0,
+      "inspectedAt": "2026-08-16T13:36:18.968766+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/So Far So Good.rbs": {
+      "fileSize": "26K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "{As used in hospitals}",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:19.166789+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/Untitled song 2.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:19.362536+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/Untitled song 25.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:19.614748+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/Untitled song 3.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:19.814814+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/Untitled song.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:20.042062+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/Untitled song7.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:20.304066+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/WOW.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:20.500958+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/XX-XXX.rbs": {
+      "fileSize": "61K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:20.692399+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/Zaiaihr'e.rbs": {
+      "fileSize": "61K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": "***{Must be through MINImod b2!}***",
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:20.884565+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/anokav.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "AnokhaV2",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:21.081352+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/anom.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Anomaly 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:21.278871+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/argh.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:21.510174+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/ax1.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "AXIOM peace",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:21.748642+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/conan.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "\ufffdoNaNbox 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:44.499908+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/damnit...rbs": {
+      "fileSize": "40K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:44.712669+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/damnit..[PS].rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:44.889577+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/dealwithit...rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:45.129697+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/dontmove.rbs": {
+      "fileSize": "23K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:45.364669+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/fix.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of fix.mid",
+      "metaBpm": 110.0,
+      "inspectedAt": "2026-08-16T13:36:45.584209+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/fixx.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of fixx.mid",
+      "metaBpm": 110.0,
+      "inspectedAt": "2026-08-16T13:36:45.785668+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/g.rbs": {
+      "fileSize": "27K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:45.997076+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/g_1.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "frog of all well established frogs,,,",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:46.194173+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/hahahah.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 130.0,
+      "inspectedAt": "2026-08-16T13:36:46.410673+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/halo.rbs": {
+      "fileSize": "32K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:46.623798+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/heehee.rbs": {
+      "fileSize": "26K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:46.833273+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/heehee_1.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:47.017443+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/heehehehee.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:47.203626+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/heehehehee_1.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 130.0,
+      "inspectedAt": "2026-08-16T13:36:47.381592+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/hello2.rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "AnokhaV2",
+      "metaAuthor": null,
+      "metaBpm": 160.0,
+      "inspectedAt": "2026-08-16T13:36:47.582229+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/jan17.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:47.814375+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/mini.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:48.019527+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/mini2.rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:48.197873+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/minimod.rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:48.417021+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/moron.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of moron.mid",
+      "metaBpm": 104.0,
+      "inspectedAt": "2026-08-16T13:36:48.612983+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/mrblue.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of mrblue.mid",
+      "metaBpm": 178.0,
+      "inspectedAt": "2026-08-16T13:36:48.821310+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/new.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 135.0,
+      "inspectedAt": "2026-08-16T13:36:48.998180+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/newx.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of newx.mid",
+      "metaBpm": 110.0,
+      "inspectedAt": "2026-08-16T13:36:49.184687+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/nrerneh.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:49.378726+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/omega.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "omega",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:49.573019+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/poison.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Poison-Box",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:49.774829+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/rar_1.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:49.964642+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/redit2.rbs": {
+      "fileSize": "33K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:50.140187+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/standbym.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of standbym.mid",
+      "metaBpm": 110.0,
+      "inspectedAt": "2026-08-16T13:36:50.337584+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/testy.rbs": {
+      "fileSize": "59K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:50.578947+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/thebeginning.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:50.771659+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/wheee.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 155.0,
+      "inspectedAt": "2026-08-16T13:36:50.998573+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/wowx.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "ibex mkII",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:51.196982+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/xxx.rbs": {
+      "fileSize": "61K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:51.450953+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/xxxxx.rbs": {
+      "fileSize": "61K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:51.664068+00:00"
+    },
+    "Artists/Noah_Cohn_Complete/yea.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "omega",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:51.901245+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/20.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:52.076647+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/Getting There.rbs": {
+      "fileSize": "53K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:52.269527+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/MINIBOD.rbs": {
+      "fileSize": "33K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:52.475889+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/MINIMODHO.rbs": {
+      "fileSize": "40K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:52.680729+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/MiniMODb3only.rbs": {
+      "fileSize": "61K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:52.862835+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/NEW-x.rbs": {
+      "fileSize": "41K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:53.073440+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/NEW-xr.rbs": {
+      "fileSize": "41K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:53.269999+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/NEW-xy.rbs": {
+      "fileSize": "41K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:53.501412+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/NEWNEWNEW.rbs": {
+      "fileSize": "40K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:53.694873+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/NEWjan27.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:53.881135+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/NEWorig.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 160.0,
+      "inspectedAt": "2026-08-16T13:36:54.101763+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/ORBIT.rbs": {
+      "fileSize": "26K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "{As used in hospitals}",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:54.286093+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/SBMR1.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of SBMR1.mid",
+      "metaBpm": 124.0,
+      "inspectedAt": "2026-08-16T13:36:54.486494+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/SBMr1edit.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:54.674527+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/SNEW.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of SNEW.mid",
+      "metaBpm": 124.0,
+      "inspectedAt": "2026-08-16T13:36:54.886730+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/So Far So Good.rbs": {
+      "fileSize": "26K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "{As used in hospitals}",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:55.063951+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/Untitled song 2.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:55.243023+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/Untitled song 25.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:55.491527+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/Untitled song 3.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:55.763617+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/Untitled song.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:55.963970+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/Untitled song7.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:56.146702+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/WOW.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:56.321000+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/XX-XXX.rbs": {
+      "fileSize": "61K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:56.533518+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/Zaiaihr'e.rbs": {
+      "fileSize": "61K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": "***{Must be through MINImod b2!}***",
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:36:56.748843+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/anokav.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "AnokhaV2",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:56.947816+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/anom.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Anomaly 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:57.125242+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/argh.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:57.308340+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/ax1.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "AXIOM peace",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:57.485732+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/conan.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "\ufffdoNaNbox 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:57.660763+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/damnit...rbs": {
+      "fileSize": "40K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:57.841378+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/damnit..[PS].rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:58.029309+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/dealwithit...rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:58.208769+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/dontmove.rbs": {
+      "fileSize": "23K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:58.397211+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/fix.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of fix.mid",
+      "metaBpm": 110.0,
+      "inspectedAt": "2026-08-16T13:36:58.617457+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/fixx.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of fixx.mid",
+      "metaBpm": 110.0,
+      "inspectedAt": "2026-08-16T13:36:58.826563+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/g.rbs": {
+      "fileSize": "27K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:59.061632+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/g_1.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "frog of all well established frogs,,,",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:36:59.236093+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/hahahah.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 130.0,
+      "inspectedAt": "2026-08-16T13:36:59.442047+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/halo.rbs": {
+      "fileSize": "32K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:59.629367+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/heehee.rbs": {
+      "fileSize": "26K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:36:59.817926+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/heehee_1.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:00.007456+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/heehehehee.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:00.226130+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/heehehehee_1.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 130.0,
+      "inspectedAt": "2026-08-16T13:37:00.495272+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/hello2.rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "AnokhaV2",
+      "metaAuthor": null,
+      "metaBpm": 160.0,
+      "inspectedAt": "2026-08-16T13:37:00.731715+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/jan17.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:00.951365+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/mini.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:01.185517+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/mini2.rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:37:01.550175+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/minimod.rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:37:01.739730+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/moron.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of moron.mid",
+      "metaBpm": 104.0,
+      "inspectedAt": "2026-08-16T13:37:01.941339+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/mrblue.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of mrblue.mid",
+      "metaBpm": 178.0,
+      "inspectedAt": "2026-08-16T13:37:02.247604+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/new.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 135.0,
+      "inspectedAt": "2026-08-16T13:37:02.491231+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/newx.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of newx.mid",
+      "metaBpm": 110.0,
+      "inspectedAt": "2026-08-16T13:37:02.684872+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/nrerneh.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:02.896161+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/omega.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "omega",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:03.077256+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/poison.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Poison-Box",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:03.256513+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/rar_1.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:03.441180+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/redit2.rbs": {
+      "fileSize": "33K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:37:03.668377+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/standbym.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of standbym.mid",
+      "metaBpm": 110.0,
+      "inspectedAt": "2026-08-16T13:37:03.930709+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/testy.rbs": {
+      "fileSize": "59K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:04.347721+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/thebeginning.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:04.589014+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/wheee.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 155.0,
+      "inspectedAt": "2026-08-16T13:37:04.779415+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/wowx.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "ibex mkII",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:05.031390+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/xxx.rbs": {
+      "fileSize": "61K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:37:05.388492+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/xxxxx.rbs": {
+      "fileSize": "61K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "minimod",
+      "metaAuthor": null,
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:37:05.655770+00:00"
+    },
+    "Artists/Noah_Cohn_Extended/yea.rbs": {
+      "fileSize": "16K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "omega",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:05.981261+00:00"
+    },
+    "Artists/Rotorkopf/-------one--track--mind---------.rbs": {
+      "fileSize": "28K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "Dj Rx-7-----------------------MSM 2.0---",
+      "metaBpm": 134.0,
+      "inspectedAt": "2026-08-16T13:37:06.173673+00:00"
+    },
+    "Artists/Rotorkopf/0.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by Teknohazard",
+      "metaBpm": 100.0,
+      "inspectedAt": "2026-08-16T13:37:06.352879+00:00"
+    },
+    "Artists/Rotorkopf/7-tinodanikus.rbs": {
+      "fileSize": "21K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen RedTop 2.0",
+      "metaAuthor": "information teknology - 7 up! 8 down!",
+      "metaBpm": 200.0,
+      "inspectedAt": "2026-08-16T13:37:06.562771+00:00"
+    },
+    "Artists/Rotorkopf/808 bom.rbs": {
+      "fileSize": "20K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:06.744734+00:00"
+    },
+    "Artists/Rotorkopf/Arctic Timbaland.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "(c) Dj KNiGHTMARe",
+      "metaBpm": 131.0,
+      "inspectedAt": "2026-08-16T13:37:06.954525+00:00"
+    },
+    "Artists/Rotorkopf/Artists are always Afraid (Agressive RB2.0 Remix).rbs": {
+      "fileSize": "27K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "paranerd",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:37:07.220290+00:00"
+    },
+    "Artists/Rotorkopf/Creation Remix.rbs": {
+      "fileSize": "41K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:07.506338+00:00"
+    },
+    "Artists/Rotorkopf/Crystal Minefields (Chronovariant Mix).rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "AXIOM peace",
+      "metaAuthor": "(c) Dj KNiGHTMARe 1998",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:37:07.793959+00:00"
+    },
+    "Artists/Rotorkopf/Dark Trip - Copyright 1998 by zero.rbs": {
+      "fileSize": "23K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": null,
+      "metaBpm": 147.0,
+      "inspectedAt": "2026-08-16T13:37:07.985927+00:00"
+    },
+    "Artists/Rotorkopf/Hymn.rbs": {
+      "fileSize": "46K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by DJ Mouse \u00b498",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:08.168351+00:00"
+    },
+    "Artists/Rotorkopf/Meet her at the love parade.rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "Justin M Remix - \u00a91998",
+      "metaBpm": 136.0,
+      "inspectedAt": "2026-08-16T13:37:08.389759+00:00"
+    },
+    "Artists/Rotorkopf/Mise-En-Sc\u00e8ne.rbs": {
+      "fileSize": "36K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: TRAK selected-pattern value exceeds the 32 pattern slots",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:08.569648+00:00"
+    },
+    "Artists/Rotorkopf/Moon Reflection - Copyright 1998 by zero.rbs": {
+      "fileSize": "39K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": null,
+      "metaBpm": 102.0,
+      "inspectedAt": "2026-08-16T13:37:08.741372+00:00"
+    },
+    "Artists/Rotorkopf/Peaceful Harmony (Water Mix).rbs": {
+      "fileSize": "39K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by DJ Mouse \u00b498",
+      "metaBpm": 120.0,
+      "inspectedAt": "2026-08-16T13:37:08.945658+00:00"
+    },
+    "Artists/Rotorkopf/Pyrotechnica.rbs": {
+      "fileSize": "26K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "copyright 1998 by Ms. Muffin",
+      "metaBpm": 125.0,
+      "inspectedAt": "2026-08-16T13:37:09.147680+00:00"
+    },
+    "Artists/Rotorkopf/Railroad Frenzy.rbs": {
+      "fileSize": "43K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "back on track",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:09.332686+00:00"
+    },
+    "Artists/Rotorkopf/Scuba_Diving.rbs": {
+      "fileSize": "44K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "By Elektrisches Descent           MSM2.0",
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:37:09.523996+00:00"
+    },
+    "Artists/Rotorkopf/Tears In The Rain.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by Joe Satriani",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:09.720186+00:00"
+    },
+    "Artists/Rotorkopf/The_Arrival.rbs": {
+      "fileSize": "37K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "(c) \u00b498 TechnoLoOp Productions",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:37:09.929502+00:00"
+    },
+    "Artists/Rotorkopf/Transfusion.rbs": {
+      "fileSize": "27K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "Frank Chotai \u00a91998",
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:37:10.117080+00:00"
+    },
+    "Artists/Rotorkopf/axel f (futuretrance mix).rbs": {
+      "fileSize": "38K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:10.306155+00:00"
+    },
+    "Artists/Rotorkopf/bedtimes.rbs": {
+      "fileSize": "30K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:10.492491+00:00"
+    },
+    "Artists/Rotorkopf/breakin'junkie.rbs": {
+      "fileSize": "29K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "Cavey '98",
+      "metaBpm": 142.0,
+      "inspectedAt": "2026-08-16T13:37:10.658685+00:00"
+    },
+    "Artists/Rotorkopf/bring-da-noise.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:10.866604+00:00"
+    },
+    "Artists/Rotorkopf/c9h13n.rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "vptm@polbox.com",
+      "metaBpm": 304.0,
+      "inspectedAt": "2026-08-16T13:37:11.037590+00:00"
+    },
+    "Artists/Rotorkopf/choad moon.rbs": {
+      "fileSize": "19K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:11.285207+00:00"
+    },
+    "Artists/Rotorkopf/chutes-and-ladders (korn remix!!!!!!!!!!!).rbs": {
+      "fileSize": "24K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Metallicon+",
+      "metaAuthor": "MIxed By ---DjRX-7-METTALLICON2.0",
+      "metaBpm": 181.0,
+      "inspectedAt": "2026-08-16T13:37:11.465569+00:00"
+    },
+    "Artists/Rotorkopf/city shark (x-10-t mix).rbs": {
+      "fileSize": "33K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:11.654671+00:00"
+    },
+    "Artists/Rotorkopf/crystal minefields (ck steam forest rmx).rbs": {
+      "fileSize": "47K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:11.853658+00:00"
+    },
+    "Artists/Rotorkopf/dbm.rbs": {
+      "fileSize": "19K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:12.023046+00:00"
+    },
+    "Artists/Rotorkopf/deep&garage.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "deep&garage by RolL Kah",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:12.197189+00:00"
+    },
+    "Artists/Rotorkopf/deepseaexploration.rbs": {
+      "fileSize": "26K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:12.398616+00:00"
+    },
+    "Artists/Rotorkopf/dmmix.rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "Behind The Wheel...Golden Hill Dance Mix",
+      "metaBpm": 125.0,
+      "inspectedAt": "2026-08-16T13:37:12.600936+00:00"
+    },
+    "Artists/Rotorkopf/drumeba.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "vptm",
+      "metaBpm": 147.0,
+      "inspectedAt": "2026-08-16T13:37:12.795613+00:00"
+    },
+    "Artists/Rotorkopf/emerald mermaid (the sea and me).rbs": {
+      "fileSize": "27K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "Elektrisches Descent",
+      "metaBpm": 100.0,
+      "inspectedAt": "2026-08-16T13:37:13.014538+00:00"
+    },
+    "Artists/Rotorkopf/flash.rbs": {
+      "fileSize": "28K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "(C) by Niclas Lundvist 1998",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:13.191515+00:00"
+    },
+    "Artists/Rotorkopf/foam bee - dance beats - toaster quest.rbs": {
+      "fileSize": "32K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:13.373788+00:00"
+    },
+    "Artists/Rotorkopf/hibiscus_rosehips.rbs": {
+      "fileSize": "43K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:13.598340+00:00"
+    },
+    "Artists/Rotorkopf/highway's end.rbs": {
+      "fileSize": "27K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "when there is no sign...",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:13.811964+00:00"
+    },
+    "Artists/Rotorkopf/honey chase.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "CroW",
+      "metaBpm": 160.0,
+      "inspectedAt": "2026-08-16T13:37:14.031010+00:00"
+    },
+    "Artists/Rotorkopf/hot on the heels of love.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "Justin M Remix - \u00a91998",
+      "metaBpm": 141.0,
+      "inspectedAt": "2026-08-16T13:37:14.219290+00:00"
+    },
+    "Artists/Rotorkopf/i'm gorgeous! (who's the fairest - rb dub).rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:14.423790+00:00"
+    },
+    "Artists/Rotorkopf/indiana jones is alive.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "Rx-7 -------------------PBE 2.0",
+      "metaBpm": 130.0,
+      "inspectedAt": "2026-08-16T13:37:14.641783+00:00"
+    },
+    "Artists/Rotorkopf/jargon.rbs": {
+      "fileSize": "38K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ANREGUNG @ ARGON----*\u00a9",
+      "metaBpm": 142.0,
+      "inspectedAt": "2026-08-16T13:37:14.893302+00:00"
+    },
+    "Artists/Rotorkopf/kaleidoscope.rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "by -=THE TECHNIQUE WIZARD=- - PBE",
+      "metaBpm": 75.0,
+      "inspectedAt": "2026-08-16T13:37:15.129913+00:00"
+    },
+    "Artists/Rotorkopf/le grande arche 12mix.rbs": {
+      "fileSize": "30K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by Grapefruit Moon",
+      "metaBpm": 120.0,
+      "inspectedAt": "2026-08-16T13:37:15.391589+00:00"
+    },
+    "Artists/Rotorkopf/lndler1.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of L\u00e4ndler.mid",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:15.574580+00:00"
+    },
+    "Artists/Rotorkopf/loops of infinity.rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "(C) by Niclas Lundqvist 1998",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:15.754587+00:00"
+    },
+    "Artists/Rotorkopf/luna (professor's nightwork remix).rbs": {
+      "fileSize": "32K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "Remix by The Professor - 6:09",
+      "metaBpm": 142.0,
+      "inspectedAt": "2026-08-16T13:37:15.995207+00:00"
+    },
+    "Artists/Rotorkopf/majilkReb\u00d6\u00f6jth.rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "4.28..majiLkReb\u00d6\u00f6jtH98-Dj..m.a.t.h.e.o.",
+      "metaBpm": 100.0,
+      "inspectedAt": "2026-08-16T13:37:16.182860+00:00"
+    },
+    "Artists/Rotorkopf/massrave.rbs": {
+      "fileSize": "26K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:16.367408+00:00"
+    },
+    "Artists/Rotorkopf/mastard.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "vptm",
+      "metaBpm": 162.0,
+      "inspectedAt": "2026-08-16T13:37:16.541231+00:00"
+    },
+    "Artists/Rotorkopf/mise-en-sc\u0161ne.rbs": {
+      "fileSize": "36K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: TRAK selected-pattern value exceeds the 32 pattern slots",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:16.739081+00:00"
+    },
+    "Artists/Rotorkopf/ms207-strip slider.rbs": {
+      "fileSize": "32K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "(C)1998 MTAK",
+      "metaBpm": 160.0,
+      "inspectedAt": "2026-08-16T13:37:16.927245+00:00"
+    },
+    "Artists/Rotorkopf/no sun.rbs": {
+      "fileSize": "27K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:17.119009+00:00"
+    },
+    "Artists/Rotorkopf/nova.rbs": {
+      "fileSize": "29K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "fala p\u00b3ynnej exxtazzy - by WaRa",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:17.312562+00:00"
+    },
+    "Artists/Rotorkopf/one.rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:17.494209+00:00"
+    },
+    "Artists/Rotorkopf/overload.rbs": {
+      "fileSize": "27K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by Krzysztof Kozio\u00b3",
+      "metaBpm": 143.0,
+      "inspectedAt": "2026-08-16T13:37:17.710430+00:00"
+    },
+    "Artists/Rotorkopf/paranormal.rbs": {
+      "fileSize": "35K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "Paranormal Plastik Blob  - made by WaRa",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:37:17.934611+00:00"
+    },
+    "Artists/Rotorkopf/pbe350-backslide.rbs": {
+      "fileSize": "21K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "(C)1998 MTAK",
+      "metaBpm": 158.0,
+      "inspectedAt": "2026-08-16T13:37:18.294181+00:00"
+    },
+    "Artists/Rotorkopf/phoenix_rising.rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "The Storm Vs Justin M - \u00a91998",
+      "metaBpm": 137.0,
+      "inspectedAt": "2026-08-16T13:37:18.643067+00:00"
+    },
+    "Artists/Rotorkopf/property_of_the_matter.rbs": {
+      "fileSize": "35K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:18.901998+00:00"
+    },
+    "Artists/Rotorkopf/psychetamina(rb20ver).rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "vptm@polbox.com - 100% answer",
+      "metaBpm": 132.0,
+      "inspectedAt": "2026-08-16T13:37:19.129224+00:00"
+    },
+    "Artists/Rotorkopf/psylofinder.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "pure T-music from vptm",
+      "metaBpm": 312.0,
+      "inspectedAt": "2026-08-16T13:37:19.310178+00:00"
+    },
+    "Artists/Rotorkopf/rb371-sakro.rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "(C)1998 MTAK",
+      "metaBpm": 148.0,
+      "inspectedAt": "2026-08-16T13:37:19.506040+00:00"
+    },
+    "Artists/Rotorkopf/rebirthoza2.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "vptm",
+      "metaBpm": 146.0,
+      "inspectedAt": "2026-08-16T13:37:19.685583+00:00"
+    },
+    "Artists/Rotorkopf/reborn twice.rbs": {
+      "fileSize": "24K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "\u00a9 by Miltoroto",
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:37:19.882603+00:00"
+    },
+    "Artists/Rotorkopf/rejuvenation.rbs": {
+      "fileSize": "36K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "(c) 1998 by DJ X-CeSS",
+      "metaBpm": 125.0,
+      "inspectedAt": "2026-08-16T13:37:20.062010+00:00"
+    },
+    "Artists/Rotorkopf/scary circus.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "Remix by Elysium",
+      "metaBpm": 88.0,
+      "inspectedAt": "2026-08-16T13:37:20.250031+00:00"
+    },
+    "Artists/Rotorkopf/scuba diving.rbs": {
+      "fileSize": "44K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "By Elektrisches Descent           MSM2.0",
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:37:20.447710+00:00"
+    },
+    "Artists/Rotorkopf/sick deamons bekoning ov saltz.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "By-23",
+      "metaBpm": 155.0,
+      "inspectedAt": "2026-08-16T13:37:20.647187+00:00"
+    },
+    "Artists/Rotorkopf/silver knight vs gold knight (ck vs djk mix).rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:20.824698+00:00"
+    },
+    "Artists/Rotorkopf/snow boarding.rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:21.009091+00:00"
+    },
+    "Artists/Rotorkopf/spectrum_bad.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "vptm",
+      "metaBpm": 147.0,
+      "inspectedAt": "2026-08-16T13:37:21.200275+00:00"
+    },
+    "Artists/Rotorkopf/swampdance.rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:21.378202+00:00"
+    },
+    "Artists/Rotorkopf/the raven (beautifully macabre).rbs": {
+      "fileSize": "36K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:21.549821+00:00"
+    },
+    "Artists/Rotorkopf/think.rbs": {
+      "fileSize": "27K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by Krzysztof Kozio\u00b3",
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:37:21.721800+00:00"
+    },
+    "Artists/Rotorkopf/time is eternal (spiral decay rmx).rbs": {
+      "fileSize": "59K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "By CK Vs DJ K  [ RB2 \\ Illumitech 2 ]",
+      "metaBpm": 136.0,
+      "inspectedAt": "2026-08-16T13:37:21.922199+00:00"
+    },
+    "Artists/Rotorkopf/timeiseternaltrancebeat.rbs": {
+      "fileSize": "19K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:22.293057+00:00"
+    },
+    "Artists/Rotorkopf/urban daydreams.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:22.470363+00:00"
+    },
+    "Artists/Rotorkopf/welcome to orbit.rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:22.637963+00:00"
+    },
+    "By_Source/Rebirth_2.0/Complete/#008.rbs": {
+      "fileSize": "24K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "> ARh+",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:37:22.642703+00:00"
+    },
+    "By_Source/Rebirth_2.0/Complete/A Taste of Haste.rbs": {
+      "fileSize": "27K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by Action Jackson",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:22.656526+00:00"
+    },
+    "By_Source/Rebirth_2.0/Complete/Metallicon City.rbs": {
+      "fileSize": "26K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Metallicon+",
+      "metaAuthor": "\u00a9 by T.G.ViRUS '98",
+      "metaBpm": 120.0,
+      "inspectedAt": "2026-08-16T13:37:22.672006+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest 2/brainstorming_manaus.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:22.856770+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest 2/cherrys_away.rbs": {
+      "fileSize": "34K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:23.028370+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest 2/debreif_out.rbs": {
+      "fileSize": "28K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:23.205634+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest 2/dream-injection.rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:23.383181+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest 2/fruity_pong.rbs": {
+      "fileSize": "19K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:23.603233+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest 2/red_love.rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:23.840945+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest 2/shores of happiness.rbs": {
+      "fileSize": "39K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:24.077666+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/01_wax and rain.rbs": {
+      "fileSize": "234",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:24.254584+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/02_stock_cars.rbs": {
+      "fileSize": "36K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:24.430869+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/03_suddenmoves.rbs": {
+      "fileSize": "44K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:24.602194+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/04_golden book.rbs": {
+      "fileSize": "37K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:24.776647+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/05_8-track_state.rbs": {
+      "fileSize": "26K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:24.946972+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/06_harmony2.rbs": {
+      "fileSize": "46K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:25.117562+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/07_cumulous.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:25.384260+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/08_ghettocore.rbs": {
+      "fileSize": "20K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:25.571156+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/09_vomit monster.rbs": {
+      "fileSize": "234",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:25.740202+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/10_isotherms.rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:25.908940+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/11_feelit.rbs": {
+      "fileSize": "234",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:26.076422+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/12_approach.rbs": {
+      "fileSize": "29K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:26.253945+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/13_verry cherry 2.rbs": {
+      "fileSize": "234",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:26.570573+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/14_hithop.rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:26.741872+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/15_fatuus.rbs": {
+      "fileSize": "29K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:27.215395+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/16_rippling tremors.rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:27.392850+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/17_cronotrip.rbs": {
+      "fileSize": "31K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:27.592565+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/180 clockwise.rbs": {
+      "fileSize": "234",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:27.842639+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/18_cherrybomb.rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:28.061476+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/19_rebirth of dub.rbs": {
+      "fileSize": "30K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:28.232529+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/20_caped crusader.rbs": {
+      "fileSize": "37K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:28.415592+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/21_cherry-amor.rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:28.614935+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/22_transo_2.rbs": {
+      "fileSize": "234",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:28.790252+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/23_onthego.rbs": {
+      "fileSize": "28K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:28.979633+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/24_diced.rbs": {
+      "fileSize": "32K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:29.257607+00:00"
+    },
+    "Featured_Collections/Contests/Cherry Coke Contest/25_cherry bottles.rbs": {
+      "fileSize": "20K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:29.429390+00:00"
+    },
+    "Featured_Collections/Contests/Drum & Bass Contest/a dream.rbs": {
+      "fileSize": "24K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:29.598272+00:00"
+    },
+    "Featured_Collections/Contests/Drum & Bass Contest/alaskamoon.rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:29.775657+00:00"
+    },
+    "Featured_Collections/Contests/Drum & Bass Contest/aqunic plasma.rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:29.953144+00:00"
+    },
+    "Featured_Collections/Contests/Drum & Bass Contest/bassoholic.rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:30.123005+00:00"
+    },
+    "Featured_Collections/Contests/Drum & Bass Contest/bedtimes.rbs": {
+      "fileSize": "30K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:30.296625+00:00"
+    },
+    "Featured_Collections/Contests/Drum & Bass Contest/chocolate chew (snack mix).rbs": {
+      "fileSize": "24K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:30.470015+00:00"
+    },
+    "Featured_Collections/Contests/Drum & Bass Contest/deliciound - 1st encounter in drum'n'bass (wobble).rbs": {
+      "fileSize": "48K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:30.645196+00:00"
+    },
+    "Featured_Collections/Contests/Drum & Bass Contest/deliciound - sbass-ship (wobble).rbs": {
+      "fileSize": "43K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:30.824910+00:00"
+    },
+    "Featured_Collections/Contests/Drum & Bass Contest/evil aspirations pbe.rbs": {
+      "fileSize": "26K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:31.012414+00:00"
+    },
+    "Featured_Collections/Contests/Drum & Bass Contest/gamma player (drum and bass mix).rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:31.182402+00:00"
+    },
+    "Featured_Collections/Contests/Drum & Bass Contest/just cruz'n'.rbs": {
+      "fileSize": "38K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:31.442658+00:00"
+    },
+    "Featured_Collections/Contests/Drum & Bass Contest/losttime.rbs": {
+      "fileSize": "37K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:31.703195+00:00"
+    },
+    "Featured_Collections/Contests/Drum & Bass Contest/massrave.rbs": {
+      "fileSize": "26K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:31.879991+00:00"
+    },
+    "Featured_Collections/Contests/Drum & Bass Contest/move.rbs": {
+      "fileSize": "28K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:32.056151+00:00"
+    },
+    "Featured_Collections/Contests/Drum & Bass Contest/trap of zen.rbs": {
+      "fileSize": "29K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:32.229988+00:00"
+    },
+    "Featured_Collections/Contests/Drum & Bass Contest/walk with me.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "((( expansion mix )))",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:37:32.405308+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/AlteredStatesOfConsciousnes.rbs": {
+      "fileSize": "26K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by The Silenced Seraphim",
+      "metaBpm": 144.0,
+      "inspectedAt": "2026-08-16T13:37:32.582631+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/Da Underground (Club Edit).rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "Song by The Professor - 7:49",
+      "metaBpm": 128.0,
+      "inspectedAt": "2026-08-16T13:37:32.758454+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/Da Underground (Progressive Edit).rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "Song by The Professor - 2:54",
+      "metaBpm": 144.0,
+      "inspectedAt": "2026-08-16T13:37:32.961537+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/Da Underground (Short Edit).rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "Song by The Professor - 4:58",
+      "metaBpm": 128.0,
+      "inspectedAt": "2026-08-16T13:37:33.188349+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/Der Lokf\u00fchrer.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "1998 (c) by Pico the Kuiziu",
+      "metaBpm": 500.0,
+      "inspectedAt": "2026-08-16T13:37:33.419334+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/Little steps of House.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "1998 (c) by Pico the Kuiziu",
+      "metaBpm": 130.0,
+      "inspectedAt": "2026-08-16T13:37:33.629759+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/O Come, O Come Emmanuel.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "- Blast Shield",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:37:33.821575+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/Orator.rbs": {
+      "fileSize": "24K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "\u00a9 Cybernetique - 98",
+      "metaBpm": 130.0,
+      "inspectedAt": "2026-08-16T13:37:34.083507+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/RedruM.rbs": {
+      "fileSize": "41K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen RedTop 2.0",
+      "metaAuthor": null,
+      "metaBpm": 137.0,
+      "inspectedAt": "2026-08-16T13:37:34.280357+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/SLaP HaPPy.rbs": {
+      "fileSize": "33K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "SLaP HaPPy",
+      "metaBpm": 142.0,
+      "inspectedAt": "2026-08-16T13:37:34.465753+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/Simply ACID.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "Sascha Fox - FREAX   SIMPLY ACID",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:34.651829+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/Trance.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Trancer",
+      "metaAuthor": "Trance: the MindEraser (11/98)",
+      "metaBpm": 132.0,
+      "inspectedAt": "2026-08-16T13:37:34.854922+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/VirtualTurnTable.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Metallicon+",
+      "metaAuthor": "by The Silenced Seraphim",
+      "metaBpm": 116.0,
+      "inspectedAt": "2026-08-16T13:37:35.105225+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/cyberwar.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by Alex M    ... for ReBirth 2.0.1 only!",
+      "metaBpm": 136.0,
+      "inspectedAt": "2026-08-16T13:37:35.296574+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/dasein.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Trancer",
+      "metaAuthor": "\u00a9 Cybernetique '98",
+      "metaBpm": 114.0,
+      "inspectedAt": "2026-08-16T13:37:35.504586+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/ehring-drop.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "M.Ehring vs. Drop (Transvison edit)",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:35.692921+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/fR@cTal~D3l@Y.rbs": {
+      "fileSize": "21K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "fR@<Ta|~|]3|@Y ~*by*~ (`^~Scr\u00dcf-)",
+      "metaBpm": 138.0,
+      "inspectedAt": "2026-08-16T13:37:35.892168+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/five o'clock.rbs": {
+      "fileSize": "21K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "iCE",
+      "metaAuthor": "Stephane",
+      "metaBpm": 162.0,
+      "inspectedAt": "2026-08-16T13:37:36.073068+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/i feel love.rbs": {
+      "fileSize": "28K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:36.373362+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/lnpnew.rbs": {
+      "fileSize": "28K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "--->By Phool <-----l",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:37:36.556730+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/orbit201.rbs": {
+      "fileSize": "24K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "by \u00ae \u0083)rop",
+      "metaBpm": 135.0,
+      "inspectedAt": "2026-08-16T13:37:36.732630+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/rb360.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "MTAK",
+      "metaBpm": 138.0,
+      "inspectedAt": "2026-08-16T13:37:36.907402+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/set you free 2.0.rbs": {
+      "fileSize": "33K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReCreated by High Society",
+      "metaBpm": 136.0,
+      "inspectedAt": "2026-08-16T13:37:37.091695+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/stuck.rbs": {
+      "fileSize": "38K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "High Society",
+      "metaBpm": 100.0,
+      "inspectedAt": "2026-08-16T13:37:37.286020+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/surf on the wave - standard.rbs": {
+      "fileSize": "23K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "Surf on the WaVe!",
+      "metaBpm": 155.0,
+      "inspectedAt": "2026-08-16T13:37:37.470093+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest 2/the vibe.rbs": {
+      "fileSize": "34K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:37.661094+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/-------one--track--mind---------.rbs": {
+      "fileSize": "28K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "Dj Rx-7-----------------------MSM 2.0---",
+      "metaBpm": 134.0,
+      "inspectedAt": "2026-08-16T13:37:37.842745+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/0.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by Teknohazard",
+      "metaBpm": 100.0,
+      "inspectedAt": "2026-08-16T13:37:38.028929+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/7-tinodanikus.rbs": {
+      "fileSize": "21K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen RedTop 2.0",
+      "metaAuthor": "information teknology - 7 up! 8 down!",
+      "metaBpm": 200.0,
+      "inspectedAt": "2026-08-16T13:37:38.210672+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/808 bom.rbs": {
+      "fileSize": "20K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:38.399719+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/Arctic Timbaland.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "(c) Dj KNiGHTMARe",
+      "metaBpm": 131.0,
+      "inspectedAt": "2026-08-16T13:37:38.578629+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/Artists are always Afraid (Agressive RB2.0 Remix).rbs": {
+      "fileSize": "27K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "paranerd",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:37:38.760078+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/Creation Remix.rbs": {
+      "fileSize": "41K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:38.942726+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/Crystal Minefields (Chronovariant Mix).rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "AXIOM peace",
+      "metaAuthor": "(c) Dj KNiGHTMARe 1998",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:37:39.112601+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/Dark Trip - Copyright 1998 by zero.rbs": {
+      "fileSize": "23K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": null,
+      "metaBpm": 147.0,
+      "inspectedAt": "2026-08-16T13:37:39.316363+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/Hymn.rbs": {
+      "fileSize": "46K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by DJ Mouse \u00b498",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:39.520390+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/Meet her at the love parade.rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "Justin M Remix - \u00a91998",
+      "metaBpm": 136.0,
+      "inspectedAt": "2026-08-16T13:37:39.702813+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/Mise-En-Sc\u00e8ne.rbs": {
+      "fileSize": "36K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: TRAK selected-pattern value exceeds the 32 pattern slots",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:39.915268+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/Moon Reflection - Copyright 1998 by zero.rbs": {
+      "fileSize": "39K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": null,
+      "metaBpm": 102.0,
+      "inspectedAt": "2026-08-16T13:37:40.285464+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/Peaceful Harmony (Water Mix).rbs": {
+      "fileSize": "39K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by DJ Mouse \u00b498",
+      "metaBpm": 120.0,
+      "inspectedAt": "2026-08-16T13:37:40.481611+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/Pyrotechnica.rbs": {
+      "fileSize": "26K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "copyright 1998 by Ms. Muffin",
+      "metaBpm": 125.0,
+      "inspectedAt": "2026-08-16T13:37:40.689415+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/Railroad Frenzy.rbs": {
+      "fileSize": "43K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "back on track",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:40.876164+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/Scuba_Diving.rbs": {
+      "fileSize": "44K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "By Elektrisches Descent           MSM2.0",
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:37:41.084196+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/Tears In The Rain.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by Joe Satriani",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:41.325558+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/The_Arrival.rbs": {
+      "fileSize": "37K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "(c) \u00b498 TechnoLoOp Productions",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:37:41.550126+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/Transfusion.rbs": {
+      "fileSize": "27K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "Frank Chotai \u00a91998",
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:37:41.775576+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/axel f (futuretrance mix).rbs": {
+      "fileSize": "38K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:41.951640+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/bedtimes.rbs": {
+      "fileSize": "30K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:42.174845+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/breakin'junkie.rbs": {
+      "fileSize": "29K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "Cavey '98",
+      "metaBpm": 142.0,
+      "inspectedAt": "2026-08-16T13:37:42.348851+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/bring-da-noise.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:42.552003+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/c9h13n.rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "vptm@polbox.com",
+      "metaBpm": 304.0,
+      "inspectedAt": "2026-08-16T13:37:42.725473+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/choad moon.rbs": {
+      "fileSize": "19K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:42.920678+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/chutes-and-ladders (korn remix!!!!!!!!!!!).rbs": {
+      "fileSize": "24K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Metallicon+",
+      "metaAuthor": "MIxed By ---DjRX-7-METTALLICON2.0",
+      "metaBpm": 181.0,
+      "inspectedAt": "2026-08-16T13:37:43.121177+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/city shark (x-10-t mix).rbs": {
+      "fileSize": "33K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:43.358412+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/crystal minefields (ck steam forest rmx).rbs": {
+      "fileSize": "47K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:43.539196+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/dbm.rbs": {
+      "fileSize": "19K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:43.735167+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/deep&garage.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "deep&garage by RolL Kah",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:43.915240+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/deepseaexploration.rbs": {
+      "fileSize": "26K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:44.100252+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/dmmix.rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "Behind The Wheel...Golden Hill Dance Mix",
+      "metaBpm": 125.0,
+      "inspectedAt": "2026-08-16T13:37:44.343763+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/drumeba.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "vptm",
+      "metaBpm": 147.0,
+      "inspectedAt": "2026-08-16T13:37:44.532719+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/emerald mermaid (the sea and me).rbs": {
+      "fileSize": "27K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "Elektrisches Descent",
+      "metaBpm": 100.0,
+      "inspectedAt": "2026-08-16T13:37:44.724023+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/flash.rbs": {
+      "fileSize": "28K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "(C) by Niclas Lundvist 1998",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:44.911612+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/foam bee - dance beats - toaster quest.rbs": {
+      "fileSize": "32K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:45.122929+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/hibiscus_rosehips.rbs": {
+      "fileSize": "43K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:45.316768+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/highway's end.rbs": {
+      "fileSize": "27K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "when there is no sign...",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:45.500142+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/honey chase.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "CroW",
+      "metaBpm": 160.0,
+      "inspectedAt": "2026-08-16T13:37:45.707183+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/hot on the heels of love.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "Justin M Remix - \u00a91998",
+      "metaBpm": 141.0,
+      "inspectedAt": "2026-08-16T13:37:45.927083+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/i'm gorgeous! (who's the fairest - rb dub).rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:46.117067+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/indiana jones is alive.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "Rx-7 -------------------PBE 2.0",
+      "metaBpm": 130.0,
+      "inspectedAt": "2026-08-16T13:37:46.303551+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/jargon.rbs": {
+      "fileSize": "38K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ANREGUNG @ ARGON----*\u00a9",
+      "metaBpm": 142.0,
+      "inspectedAt": "2026-08-16T13:37:46.522588+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/kaleidoscope.rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "by -=THE TECHNIQUE WIZARD=- - PBE",
+      "metaBpm": 75.0,
+      "inspectedAt": "2026-08-16T13:37:46.709169+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/le grande arche 12mix.rbs": {
+      "fileSize": "30K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by Grapefruit Moon",
+      "metaBpm": 120.0,
+      "inspectedAt": "2026-08-16T13:37:47.233011+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/lndler1.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "ReMake of L\u00e4ndler.mid",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:47.493843+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/loops of infinity.rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "(C) by Niclas Lundqvist 1998",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:48.246056+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/luna (professor's nightwork remix).rbs": {
+      "fileSize": "32K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "Remix by The Professor - 6:09",
+      "metaBpm": 142.0,
+      "inspectedAt": "2026-08-16T13:37:48.526811+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/majilkReb\u00d6\u00f6jth.rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "4.28..majiLkReb\u00d6\u00f6jtH98-Dj..m.a.t.h.e.o.",
+      "metaBpm": 100.0,
+      "inspectedAt": "2026-08-16T13:37:48.747631+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/massrave.rbs": {
+      "fileSize": "26K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:49.056173+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/mastard.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "vptm",
+      "metaBpm": 162.0,
+      "inspectedAt": "2026-08-16T13:37:49.315315+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/mise-en-sc\u0161ne.rbs": {
+      "fileSize": "36K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: TRAK selected-pattern value exceeds the 32 pattern slots",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:49.493691+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/ms207-strip slider.rbs": {
+      "fileSize": "32K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "(C)1998 MTAK",
+      "metaBpm": 160.0,
+      "inspectedAt": "2026-08-16T13:37:49.677196+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/no sun.rbs": {
+      "fileSize": "27K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:49.924561+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/nova.rbs": {
+      "fileSize": "29K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "fala p\u00b3ynnej exxtazzy - by WaRa",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:50.299948+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/one.rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:50.476462+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/overload.rbs": {
+      "fileSize": "27K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by Krzysztof Kozio\u00b3",
+      "metaBpm": 143.0,
+      "inspectedAt": "2026-08-16T13:37:50.642134+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/paranormal.rbs": {
+      "fileSize": "35K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "Paranormal Plastik Blob  - made by WaRa",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:37:50.900744+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/pbe350-backslide.rbs": {
+      "fileSize": "21K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "(C)1998 MTAK",
+      "metaBpm": 158.0,
+      "inspectedAt": "2026-08-16T13:37:51.101751+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/phoenix_rising.rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "The Storm Vs Justin M - \u00a91998",
+      "metaBpm": 137.0,
+      "inspectedAt": "2026-08-16T13:37:51.399641+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/property_of_the_matter.rbs": {
+      "fileSize": "35K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:51.593682+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/psychetamina(rb20ver).rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "vptm@polbox.com - 100% answer",
+      "metaBpm": 132.0,
+      "inspectedAt": "2026-08-16T13:37:51.802698+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/psylofinder.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "pure T-music from vptm",
+      "metaBpm": 312.0,
+      "inspectedAt": "2026-08-16T13:37:52.106441+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/rb371-sakro.rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "(C)1998 MTAK",
+      "metaBpm": 148.0,
+      "inspectedAt": "2026-08-16T13:37:52.295841+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/rebirthoza2.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "vptm",
+      "metaBpm": 146.0,
+      "inspectedAt": "2026-08-16T13:37:52.489183+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/reborn twice.rbs": {
+      "fileSize": "24K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "\u00a9 by Miltoroto",
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:37:53.102633+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/rejuvenation.rbs": {
+      "fileSize": "36K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "(c) 1998 by DJ X-CeSS",
+      "metaBpm": 125.0,
+      "inspectedAt": "2026-08-16T13:37:53.351187+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/scary circus.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "Remix by Elysium",
+      "metaBpm": 88.0,
+      "inspectedAt": "2026-08-16T13:37:53.543196+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/scuba diving.rbs": {
+      "fileSize": "44K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Massen's MSM 2.0",
+      "metaAuthor": "By Elektrisches Descent           MSM2.0",
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:37:53.745802+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/sick deamons bekoning ov saltz.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "By-23",
+      "metaBpm": 155.0,
+      "inspectedAt": "2026-08-16T13:37:53.952689+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/silver knight vs gold knight (ck vs djk mix).rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:54.132647+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/snow boarding.rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:54.309210+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/spectrum_bad.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "vptm",
+      "metaBpm": 147.0,
+      "inspectedAt": "2026-08-16T13:37:54.478452+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/swampdance.rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:54.676143+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/the raven (beautifully macabre).rbs": {
+      "fileSize": "36K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:54.856697+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/think.rbs": {
+      "fileSize": "27K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by Krzysztof Kozio\u00b3",
+      "metaBpm": 145.0,
+      "inspectedAt": "2026-08-16T13:37:55.111384+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/time is eternal (spiral decay rmx).rbs": {
+      "fileSize": "59K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "By CK Vs DJ K  [ RB2 \\ Illumitech 2 ]",
+      "metaBpm": 136.0,
+      "inspectedAt": "2026-08-16T13:37:55.360679+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/timeiseternaltrancebeat.rbs": {
+      "fileSize": "19K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:55.564873+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/urban daydreams.rbs": {
+      "fileSize": "23K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:55.763642+00:00"
+    },
+    "Featured_Collections/Contests/Rotorkopf Contest/welcome to orbit.rbs": {
+      "fileSize": "21K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:37:55.937453+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/BEATS 'R' US!.rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "\u00a9 by T.G.VIRUS '98",
+      "metaBpm": 128.0,
+      "inspectedAt": "2026-08-16T13:37:56.125674+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/Binary Finary.rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "Justin M Remix - \u00a91999  (nordbeat 2.0.1)",
+      "metaBpm": 138.0,
+      "inspectedAt": "2026-08-16T13:37:56.327674+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/Coolnorth.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "created by Bollich\u00a911/98",
+      "metaBpm": 90.0,
+      "inspectedAt": "2026-08-16T13:37:56.509244+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/ENERGY.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "New Energy99",
+      "metaBpm": 160.0,
+      "inspectedAt": "2026-08-16T13:37:56.688611+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/Electro bass~.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "\u00a9 by \u00c1rna Gj for Equal muzic '99",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:56.873906+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/Electronic Euphoric Vibes (Radio Edit).rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "Hidrah Recordings\u00ae",
+      "metaBpm": 125.0,
+      "inspectedAt": "2026-08-16T13:37:57.074926+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/Fredom in a Natural World-(by Dj D).rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "Only Nord Beat Mod",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:57.254928+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/Funny Bone.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "by  AHTSI",
+      "metaBpm": 138.0,
+      "inspectedAt": "2026-08-16T13:37:57.429606+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/ILTNBM.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "(C)(by Dj D)I love THE NORD BEAT MOD !!!",
+      "metaBpm": 146.0,
+      "inspectedAt": "2026-08-16T13:37:57.779133+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/NordBeatCity.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "by Drop",
+      "metaBpm": 137.0,
+      "inspectedAt": "2026-08-16T13:37:58.018482+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/Rainbow twinkie.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "\u00a9Syrusate",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:58.201766+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/The Purest Ecstasy (Tribal mix).rbs": {
+      "fileSize": "33K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "High Society",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:58.381621+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/Typhoon Power (DefJam Mix).rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "\u00a9 by T.G.ViRUS '99",
+      "metaBpm": 120.0,
+      "inspectedAt": "2026-08-16T13:37:58.603271+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/Way To Heaven (X-tasy Mix).rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "\u00a9 by T.G.ViRUS '99",
+      "metaBpm": 155.0,
+      "inspectedAt": "2026-08-16T13:37:58.832737+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/astro-pop.rbs": {
+      "fileSize": "47K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "by the groovpushr",
+      "metaBpm": 125.0,
+      "inspectedAt": "2026-08-16T13:37:59.040184+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/don't leave (tg's cut).rbs": {
+      "fileSize": "24K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "by Faithless - Remix by T.G.ViRUS '98",
+      "metaBpm": 135.0,
+      "inspectedAt": "2026-08-16T13:37:59.229651+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/emotions.rbs": {
+      "fileSize": "26K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "(C) by Niclas Lundqvist 1998",
+      "metaBpm": 149.0,
+      "inspectedAt": "2026-08-16T13:37:59.558938+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/green light.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "by AHTSI",
+      "metaBpm": 153.0,
+      "inspectedAt": "2026-08-16T13:37:59.740887+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/lateni.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "by  Lucky Luciano '98",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:37:59.965968+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/nasty.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "(C) by Niclas Lundqvist 1998",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:38:00.180170+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/nord beat.rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "\u00a9 by T.G.ViRUS '98",
+      "metaBpm": 126.0,
+      "inspectedAt": "2026-08-16T13:38:00.360721+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/nordic tribe.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "(C) by Niclas Lundqvist 1998",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:38:00.553828+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/nordik trak fu.rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "TaterTOt '98",
+      "metaBpm": 128.0,
+      "inspectedAt": "2026-08-16T13:38:00.953609+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/only house music.rbs": {
+      "fileSize": "30K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "By Rebirther A.E.",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:38:01.178274+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/outmyhead.rbs": {
+      "fileSize": "33K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "by The Groovpushr",
+      "metaBpm": 115.0,
+      "inspectedAt": "2026-08-16T13:38:01.432997+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/the artic storm.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "(c) 1999 by Venality",
+      "metaBpm": 148.0,
+      "inspectedAt": "2026-08-16T13:38:01.732766+00:00"
+    },
+    "Featured_Collections/MODs/NordBeat MOD/the enochian skyway.rbs": {
+      "fileSize": "27K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Nord Beat",
+      "metaAuthor": "by The Silenced Seraphim",
+      "metaBpm": 154.0,
+      "inspectedAt": "2026-08-16T13:38:01.942805+00:00"
+    },
+    "Featured_Collections/MODs/Orbit 2.0 Mod/ReBirth Orbit 2.0.rbs": {
+      "fileSize": "21K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "SLiCE",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:38:02.118237+00:00"
+    },
+    "Featured_Collections/MODs/Orbit 2.0 Mod/face of determination.rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:38:02.497846+00:00"
+    },
+    "Featured_Collections/MODs/Orbit 2.0 Mod/great one.rbs": {
+      "fileSize": "34K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "Joao Ventura",
+      "metaBpm": 144.0,
+      "inspectedAt": "2026-08-16T13:38:02.679004+00:00"
+    },
+    "Featured_Collections/MODs/Orbit 2.0 Mod/hallucination.rbs": {
+      "fileSize": "38K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "\u00a91998 MS",
+      "metaBpm": 162.0,
+      "inspectedAt": "2026-08-16T13:38:02.857837+00:00"
+    },
+    "Featured_Collections/MODs/Orbit 2.0 Mod/hcl.rbs": {
+      "fileSize": "23K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "Entropy/SiNGULARiTY",
+      "metaBpm": 152.0,
+      "inspectedAt": "2026-08-16T13:38:03.055269+00:00"
+    },
+    "Featured_Collections/MODs/Orbit 2.0 Mod/in the mouth of maddness.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "RX-7------------Rebirth 2.0 MOD",
+      "metaBpm": 138.0,
+      "inspectedAt": "2026-08-16T13:38:03.253573+00:00"
+    },
+    "Featured_Collections/MODs/Orbit 2.0 Mod/lateagain....rbs": {
+      "fileSize": "21K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 120.0,
+      "inspectedAt": "2026-08-16T13:38:03.440838+00:00"
+    },
+    "Featured_Collections/MODs/Orbit 2.0 Mod/massive power.rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "by Subliminal",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:38:03.621180+00:00"
+    },
+    "Featured_Collections/MODs/Orbit 2.0 Mod/narcoleptic (pop mix).rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "\u00a9 Cybernetique - 98",
+      "metaBpm": 124.0,
+      "inspectedAt": "2026-08-16T13:38:03.804730+00:00"
+    },
+    "Featured_Collections/MODs/Orbit 2.0 Mod/ravemission.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:38:03.995733+00:00"
+    },
+    "Featured_Collections/MODs/Orbit 2.0 Mod/strippedRMX98.rbs": {
+      "fileSize": "26K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "s:Tripped'98FlooW:e..Dj..m.atheo",
+      "metaBpm": 100.0,
+      "inspectedAt": "2026-08-16T13:38:04.191738+00:00"
+    },
+    "Featured_Collections/MODs/Orbit 2.0 Mod/terraspace.rbs": {
+      "fileSize": "27K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "by M.H.TeC",
+      "metaBpm": 137.0,
+      "inspectedAt": "2026-08-16T13:38:04.396219+00:00"
+    },
+    "Featured_Collections/MODs/Orbit 2.0 Mod/trancio2.0.rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by Frank Chotai \u00a91997/98",
+      "metaBpm": 160.0,
+      "inspectedAt": "2026-08-16T13:38:04.612281+00:00"
+    },
+    "Featured_Collections/MODs/Orbit 2.0 Mod/websysteme.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "Erstschlag V.1.0 (c) Dr.Mega 4 ORBIT 2.0",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:38:04.840479+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD 1.5/forever.rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:38:05.018162+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD 1.5/mindriver.rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:38:05.186378+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD 1.5/orbit rock the sky.rbs": {
+      "fileSize": "25K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:38:05.357800+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD 1.5/orbitm~1.rbs": {
+      "fileSize": "19K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:38:05.537881+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD 1.5/wicked girl.rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:38:05.723733+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD/ReBirth Orbit 2.0.rbs": {
+      "fileSize": "21K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "SLiCE",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:38:05.897336+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD/face of determination.rbs": {
+      "fileSize": "22K",
+      "parseOk": false,
+      "parseError": "inspect_nonzero:Parse error: Missing root 'CAT ' container magic",
+      "metaTitle": null,
+      "metaAuthor": null,
+      "metaBpm": null,
+      "inspectedAt": "2026-08-16T13:38:06.093762+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD/great one.rbs": {
+      "fileSize": "34K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "Joao Ventura",
+      "metaBpm": 144.0,
+      "inspectedAt": "2026-08-16T13:38:06.279051+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD/hallucination.rbs": {
+      "fileSize": "38K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "\u00a91998 MS",
+      "metaBpm": 162.0,
+      "inspectedAt": "2026-08-16T13:38:06.474656+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD/hcl.rbs": {
+      "fileSize": "23K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "Entropy/SiNGULARiTY",
+      "metaBpm": 152.0,
+      "inspectedAt": "2026-08-16T13:38:06.691831+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD/in the mouth of maddness.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "RX-7------------Rebirth 2.0 MOD",
+      "metaBpm": 138.0,
+      "inspectedAt": "2026-08-16T13:38:06.870599+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD/lateagain....rbs": {
+      "fileSize": "21K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 120.0,
+      "inspectedAt": "2026-08-16T13:38:07.059663+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD/massive power.rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "by Subliminal",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:38:07.249928+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD/narcoleptic (pop mix).rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "\u00a9 Cybernetique - 98",
+      "metaBpm": 124.0,
+      "inspectedAt": "2026-08-16T13:38:07.434633+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD/ravemission.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": null,
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:38:07.620663+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD/strippedRMX98.rbs": {
+      "fileSize": "26K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "s:Tripped'98FlooW:e..Dj..m.atheo",
+      "metaBpm": 100.0,
+      "inspectedAt": "2026-08-16T13:38:07.797443+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD/terraspace.rbs": {
+      "fileSize": "27K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "by M.H.TeC",
+      "metaBpm": 137.0,
+      "inspectedAt": "2026-08-16T13:38:07.974777+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD/trancio2.0.rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Standard ReBirth",
+      "metaAuthor": "by Frank Chotai \u00a91997/98",
+      "metaBpm": 160.0,
+      "inspectedAt": "2026-08-16T13:38:08.173259+00:00"
+    },
+    "Featured_Collections/MODs/Orbit MOD/websysteme.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "Erstschlag V.1.0 (c) Dr.Mega 4 ORBIT 2.0",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:38:08.368544+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/Infection (7-52Mix).fat.rbs": {
+      "fileSize": "23K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "Jordan",
+      "metaBpm": 160.0,
+      "inspectedAt": "2026-08-16T13:38:08.571079+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/Jump up.fat.rbs": {
+      "fileSize": "23K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "Jordan/Dub Virus",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:38:08.761231+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/L u c-Autostrada(REG).rbs": {
+      "fileSize": "24K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "by L u c",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:38:08.942712+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/L u c-Far away(REG).rbs": {
+      "fileSize": "21K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "by L u c",
+      "metaBpm": 138.0,
+      "inspectedAt": "2026-08-16T13:38:09.145610+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/L u c-Formula Brain(REG).rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "by L u c",
+      "metaBpm": 128.0,
+      "inspectedAt": "2026-08-16T13:38:09.378851+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/L u c-Hole in the bullet(REG).rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "by L u c",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:38:09.693905+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/L u c-Kronk(REG).rbs": {
+      "fileSize": "31K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "by L u c",
+      "metaBpm": 114.0,
+      "inspectedAt": "2026-08-16T13:38:09.915976+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/Speed_Delay.rbs": {
+      "fileSize": "24K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "by Hami and JanJan",
+      "metaBpm": 116.0,
+      "inspectedAt": "2026-08-16T13:38:10.106639+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/chaos vs control-Heavy Artilery.rbs": {
+      "fileSize": "23K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "s p a s t i k -vs-  c i p h e r",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:38:10.308080+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/chaos-control.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "c i p h e r",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:38:10.493358+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/djk af.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "(c) dj.k '99",
+      "metaBpm": 128.0,
+      "inspectedAt": "2026-08-16T13:38:10.676993+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/dup dup.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "c i p h e r",
+      "metaBpm": 166.0,
+      "inspectedAt": "2026-08-16T13:38:10.890702+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/fatdub.fat.rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "Jordan/Dub Virus",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:38:11.110328+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/gravitywarp [hvlp remix].rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "c i p h e r",
+      "metaBpm": 166.0,
+      "inspectedAt": "2026-08-16T13:38:11.291975+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/gravitywarp.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "c i p h e r",
+      "metaBpm": 166.0,
+      "inspectedAt": "2026-08-16T13:38:11.480502+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/kut-up.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "cipher's [schitzo/klepto] mix",
+      "metaBpm": 136.0,
+      "inspectedAt": "2026-08-16T13:38:11.708846+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/shifting horizon.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "c i p h e r",
+      "metaBpm": 120.0,
+      "inspectedAt": "2026-08-16T13:38:11.886122+00:00"
+    },
+    "Featured_Collections/MODs/Regulation Issue Mod/speedy lay.rbs": {
+      "fileSize": "34K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "cipher's [sighlowsighbihn take-away] mix",
+      "metaBpm": 120.0,
+      "inspectedAt": "2026-08-16T13:38:12.064284+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/Infection (7-52Mix).fat.rbs": {
+      "fileSize": "23K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "Jordan",
+      "metaBpm": 160.0,
+      "inspectedAt": "2026-08-16T13:38:12.270253+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/Jump up.fat.rbs": {
+      "fileSize": "23K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "Jordan/Dub Virus",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:38:12.515203+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/L u c-Autostrada(REG).rbs": {
+      "fileSize": "24K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "by L u c",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:38:12.754651+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/L u c-Far away(REG).rbs": {
+      "fileSize": "21K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "by L u c",
+      "metaBpm": 138.0,
+      "inspectedAt": "2026-08-16T13:38:12.957916+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/L u c-Formula Brain(REG).rbs": {
+      "fileSize": "22K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "by L u c",
+      "metaBpm": 128.0,
+      "inspectedAt": "2026-08-16T13:38:13.175008+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/L u c-Hole in the bullet(REG).rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "by L u c",
+      "metaBpm": 150.0,
+      "inspectedAt": "2026-08-16T13:38:13.357981+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/L u c-Kronk(REG).rbs": {
+      "fileSize": "31K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "by L u c",
+      "metaBpm": 114.0,
+      "inspectedAt": "2026-08-16T13:38:13.553099+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/Speed_Delay.rbs": {
+      "fileSize": "24K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "by Hami and JanJan",
+      "metaBpm": 116.0,
+      "inspectedAt": "2026-08-16T13:38:13.732325+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/chaos vs control-Heavy Artilery.rbs": {
+      "fileSize": "23K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "s p a s t i k -vs-  c i p h e r",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:38:13.936681+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/chaos-control.rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "c i p h e r",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:38:14.188225+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/djk af.rbs": {
+      "fileSize": "19K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "(c) dj.k '99",
+      "metaBpm": 128.0,
+      "inspectedAt": "2026-08-16T13:38:14.591869+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/dup dup.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "c i p h e r",
+      "metaBpm": 166.0,
+      "inspectedAt": "2026-08-16T13:38:14.784060+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/fatdub.fat.rbs": {
+      "fileSize": "25K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "Jordan/Dub Virus",
+      "metaBpm": 140.0,
+      "inspectedAt": "2026-08-16T13:38:15.007153+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/gravitywarp [hvlp remix].rbs": {
+      "fileSize": "18K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "c i p h e r",
+      "metaBpm": 166.0,
+      "inspectedAt": "2026-08-16T13:38:15.213730+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/gravitywarp.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "c i p h e r",
+      "metaBpm": 166.0,
+      "inspectedAt": "2026-08-16T13:38:15.436239+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/kut-up.rbs": {
+      "fileSize": "17K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "cipher's [schitzo/klepto] mix",
+      "metaBpm": 136.0,
+      "inspectedAt": "2026-08-16T13:38:15.647946+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/shifting horizon.rbs": {
+      "fileSize": "20K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "c i p h e r",
+      "metaBpm": 120.0,
+      "inspectedAt": "2026-08-16T13:38:15.832057+00:00"
+    },
+    "Featured_Collections/MODs/Regulator MOD/speedy lay.rbs": {
+      "fileSize": "34K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Regulation Issue",
+      "metaAuthor": "cipher's [sighlowsighbihn take-away] mix",
+      "metaBpm": 120.0,
+      "inspectedAt": "2026-08-16T13:38:16.015233+00:00"
+    },
+    "Monthly_Archive/FEBRUARY/Orbiting your Heart.rbs": {
+      "fileSize": "26K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Orbit 2.0",
+      "metaAuthor": "(C) Elektrisches Descent 1998",
+      "metaBpm": 136.0,
+      "inspectedAt": "2026-08-16T13:38:16.076614+00:00"
+    },
+    "Monthly_Archive/SEPTEMBER/Troublemakers.rbs": {
+      "fileSize": "24K",
+      "parseOk": true,
+      "parseError": null,
+      "metaTitle": "Pitch Black Edition 2.0",
+      "metaAuthor": "The Merrymaker",
+      "metaBpm": 185.0,
+      "inspectedAt": "2026-08-16T13:38:16.117306+00:00"
+    }
+  }
+}

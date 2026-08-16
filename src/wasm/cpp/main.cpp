@@ -178,6 +178,7 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .function("setTempo",  &RbsAudioEngine::setTempo)
     .function("getTempo",  &RbsAudioEngine::getTempo)
     .function("setTempoMultiplier", &RbsAudioEngine::setTempoMultiplier)
+    .function("setDeviceParam", &RbsAudioEngine::setDeviceParam)
     .function("isPlaying", &RbsAudioEngine::isPlaying)
     .function("getProcessedBlockCount", &RbsAudioEngine::getProcessedBlockCount)
     .function("renderTestBlock", &RbsAudioEngine::renderTestBlock)

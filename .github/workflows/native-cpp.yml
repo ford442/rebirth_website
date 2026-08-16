@@ -19,24 +19,47 @@ concurrency:
 
 jobs:
   native-tests:
-    name: CMake build and ctest
+    name: CMake ${{ matrix.sanitizer }}
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - sanitizer: none
+            cmake_flags: ''
+          - sanitizer: asan-ubsan
+            cmake_flags: '-DRB338_ASAN=ON -DRB338_UBSAN=ON'
+          - sanitizer: tsan
+            cmake_flags: '-DRB338_TSAN=ON'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Lower ASLR entropy for TSan
+        if: matrix.sanitizer == 'tsan'
+        run: echo 28 | sudo tee /proc/sys/vm/mmap_rnd_bits || true
+
       - name: Configure CMake
-        run: cmake -S src/wasm/cpp -B src/wasm/cpp/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++
+        run: cmake -S src/wasm/cpp -B src/wasm/cpp/build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_COMPILER=g++ ${{ matrix.cmake_flags }}
 
       - name: Build
         run: cmake --build src/wasm/cpp/build --parallel
 
       - name: Run tests
         run: ctest --test-dir src/wasm/cpp/build --output-on-failure
+        env:
+          TSAN_OPTIONS: halt_on_error=1
 
       - name: Smoke-test rbs-inspect JSON output
+        if: matrix.sanitizer == 'none'
         run: |
           ./src/wasm/cpp/build/rbs-inspect src/wasm/test-fixtures/standard-rebirth.rbs \
             | node -e "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); if(j.title!=='Standard ReBirth') process.exit(1)"
+
+      - name: Smoke-test rbm-inspect JSON output
+        if: matrix.sanitizer == 'none'
+        run: |
+          ./src/wasm/cpp/build/rbm-inspect src/wasm/test-fixtures/mods/minimal.rbm \
+            | node -e "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); if(j.resources[0].slot!=='tr808-kick') process.exit(1)"

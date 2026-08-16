@@ -71,14 +71,28 @@ export function createPwaOptions() {
         },
         {
           urlPattern: ({ url }) =>
-            url.pathname.startsWith('/rebirth_website/archive/rbs-songs/demo/') &&
+            url.pathname.startsWith('/rebirth_website/archive/rbs-songs/') &&
             url.pathname.endsWith('.rbs'),
           handler: 'CacheFirst',
           options: {
             cacheName: 'rb338-demo-songs',
             expiration: {
-              maxEntries: 32,
+              maxEntries: 64,
               maxAgeSeconds: 60 * 60 * 24 * 365,
+            },
+            cacheableResponse: {
+              statuses: [0, 200],
+            },
+          },
+        },
+        {
+          urlPattern: ({ url }) => url.pathname === '/rebirth_website/data/archive-core.json',
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'rb338-data-json',
+            expiration: {
+              maxEntries: 8,
+              maxAgeSeconds: 60 * 60 * 24 * 7,
             },
             cacheableResponse: {
               statuses: [0, 200],
@@ -101,8 +115,7 @@ export function createPwaOptions() {
         },
         {
           urlPattern: ({ url }) =>
-            url.hostname === 'test.1ink.us' ||
-            url.hostname === 'storage.1ink.us',
+            url.hostname === 'test.1ink.us' || url.hostname === 'storage.1ink.us',
           handler: 'NetworkOnly',
         },
         {

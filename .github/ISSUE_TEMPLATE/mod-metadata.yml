@@ -1,7 +1,7 @@
 name: Mod Metadata Submission
 Description: Submit metadata for an undocumented ReBirth RB-338 .rbm mod file.
-title: "Add metadata for: <mod-filename>"
-labels: ["mods", "metadata", "community"]
+title: 'Add metadata for: <mod-filename>'
+labels: ['mods', 'metadata', 'community']
 body:
   - type: markdown
     attributes:
@@ -36,7 +36,7 @@ body:
     attributes:
       label: Year
       description: Release year, if known.
-      placeholder: "1998"
+      placeholder: '1998'
   - type: textarea
     id: description
     attributes:

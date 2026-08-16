@@ -73,9 +73,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: isCI
-      ? 'npm run preview -- --host 127.0.0.1'
-      : 'npm run dev -- --host 127.0.0.1',
+    command: isCI ? 'npm run preview -- --host 127.0.0.1' : 'npm run dev -- --host 127.0.0.1',
     url: 'http://127.0.0.1:4321/rebirth_website/',
     reuseExistingServer: !isCI,
     timeout: 120 * 1000,

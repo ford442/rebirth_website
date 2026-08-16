@@ -46,7 +46,6 @@ const {
 <BaseLayout title={title} description={description}>
   <div class="archive-page">
     <div class="container">
-
       <Breadcrumbs items={breadcrumbs} />
 
       <div class={`rb-heading ${headingClass}`}>{pageHeading}</div>
@@ -67,41 +66,45 @@ const {
 
       <!-- Stats bar -->
       <div class="archive-stats">
-        {stats.map((stat) => (
-          <Lcd
-            label={stat.label}
-            value={stat.value}
-            ariaLabel={stat.ariaLabel}
-            title={stat.title}
-          />
-        ))}
+        {
+          stats.map((stat) => (
+            <Lcd
+              label={stat.label}
+              value={stat.value}
+              ariaLabel={stat.ariaLabel}
+              title={stat.title}
+            />
+          ))
+        }
       </div>
 
       <!-- Optional grid/list view toggle -->
-      {showViewToggle && (
-        <div class="view-toggle" role="group" aria-label="View mode">
-          <button
-            class="rb-pattern-btn view-btn active"
-            id="btnGrid"
-            onclick="switchView('grid')"
-            type="button"
-            aria-pressed="true"
-            aria-controls="gridView listView"
-          >
-            Grid View
-          </button>
-          <button
-            class="rb-mix-btn view-btn"
-            id="btnList"
-            onclick="switchView('list')"
-            type="button"
-            aria-pressed="false"
-            aria-controls="gridView listView"
-          >
-            List View
-          </button>
-        </div>
-      )}
+      {
+        showViewToggle && (
+          <div class="view-toggle" role="group" aria-label="View mode">
+            <button
+              class="rb-pattern-btn view-btn active"
+              id="btnGrid"
+              onclick="switchView('grid')"
+              type="button"
+              aria-pressed="true"
+              aria-controls="gridView listView"
+            >
+              Grid View
+            </button>
+            <button
+              class="rb-mix-btn view-btn"
+              id="btnList"
+              onclick="switchView('list')"
+              type="button"
+              aria-pressed="false"
+              aria-controls="gridView listView"
+            >
+              List View
+            </button>
+          </div>
+        )
+      }
 
       <!-- Curated / primary content tier -->
       <slot name="curated" />
@@ -112,7 +115,6 @@ const {
       </div>
 
       <slot name="raw-index" />
-
     </div>
   </div>
 </BaseLayout>

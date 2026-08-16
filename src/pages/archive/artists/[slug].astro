@@ -59,13 +59,14 @@ const folderLinks = artist.folders.map((folderPath) => {
 >
   <div class="artist-page">
     <div class="container">
-
-      <Breadcrumbs items={[
-        { label: 'Home', href: '/' },
-        { label: 'Songs', href: '/archive/songs/' },
-        { label: 'Artists', href: '/archive/songs/' },
-        { label: artist.name },
-      ]} />
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Songs', href: '/archive/songs/' },
+          { label: 'Artists', href: '/archive/songs/' },
+          { label: artist.name },
+        ]}
+      />
 
       <div class="rb-heading rb-heading-green">Artists</div>
 
@@ -76,24 +77,34 @@ const folderLinks = artist.folders.map((folderPath) => {
         ledStatus={songs.length > 0 ? 'online' : 'offline'}
         ledLabel={`${songs.length} SONG${songs.length === 1 ? '' : 'S'}`}
       >
-        {artist.aliases.length > 1 && (
-          <p class="artist-aliases">
-            Also archived as: {artist.aliases.filter((a) => a !== artist.name).join(', ')}
-          </p>
-        )}
-        {folderLinks.length > 0 && (
-          <p class="artist-folders">
-            Source folders:
-            {folderLinks.map((link) => (
-              <a href={link.href} class="folder-chip">{link.label}</a>
-            ))}
-          </p>
-        )}
+        {
+          artist.aliases.length > 1 && (
+            <p class="artist-aliases">
+              Also archived as: {artist.aliases.filter((a) => a !== artist.name).join(', ')}
+            </p>
+          )
+        }
+        {
+          folderLinks.length > 0 && (
+            <p class="artist-folders">
+              Source folders:
+              {folderLinks.map((link) => (
+                <a href={link.href} class="folder-chip">
+                  {link.label}
+                </a>
+              ))}
+            </p>
+          )
+        }
       </HardwarePanel>
 
       <div class="artist-stats">
         <Lcd label="SONGS" value={songs.length.toLocaleString()} ariaLabel="Songs by artist" />
-        <Lcd label="FOLDERS" value={artist.folders.length.toLocaleString()} ariaLabel="Archive folders" />
+        <Lcd
+          label="FOLDERS"
+          value={artist.folders.length.toLocaleString()}
+          ariaLabel="Archive folders"
+        />
         <Lcd label="CANONICAL" value={artist.name} ariaLabel="Canonical artist name" />
       </div>
 
@@ -120,53 +131,57 @@ const folderLinks = artist.folders.map((folderPath) => {
               </tr>
             </thead>
             <tbody id="artistSongBody">
-              {songs.map((song) => (
-                <tr
-                  class="file-row"
-                  data-search={`${song.title} ${song.filename} ${song.collection} ${song.subcollectionDisplay ?? ''}`.toLowerCase()}
-                >
-                  <td class="cell-name">
-                    <span class="file-title" title={song.filename}>{song.title}</span>
-                    {song.bpm && <span class="file-bpm">{song.bpm} BPM</span>}
-                    {song.hasModDependency && <span class="file-mod">MOD</span>}
-                  </td>
-                  <td class="cell-collection">
-                    {song.collection}
-                    {song.subcollectionDisplay && song.subcollectionDisplay !== song.collection && (
-                      <span class="cell-sub"> / {song.subcollectionDisplay}</span>
-                    )}
-                  </td>
-                  <td class="cell-size">{song.fileSize}</td>
-                  <td class="cell-actions">
-                    <button
-                      type="button"
-                      class="preview-btn"
-                      data-preview-src={song.url}
-                      data-preview-label={song.title}
-                      data-preview-bpm={song.bpm ?? ''}
-                      aria-label={`Preview ${song.filename}`}
-                    >
-                      <span aria-hidden="true">▶</span>
-                    </button>
-                    <a
-                      href={song.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="download-btn"
-                      aria-label={`Download ${song.filename}`}
-                    >
-                      <span aria-hidden="true">↓</span>
-                    </a>
-                  </td>
-                </tr>
-              ))}
+              {
+                songs.map((song) => (
+                  <tr
+                    class="file-row"
+                    data-search={`${song.title} ${song.filename} ${song.collection} ${song.subcollectionDisplay ?? ''}`.toLowerCase()}
+                  >
+                    <td class="cell-name">
+                      <span class="file-title" title={song.filename}>
+                        {song.title}
+                      </span>
+                      {song.bpm && <span class="file-bpm">{song.bpm} BPM</span>}
+                      {song.hasModDependency && <span class="file-mod">MOD</span>}
+                    </td>
+                    <td class="cell-collection">
+                      {song.collection}
+                      {song.subcollectionDisplay &&
+                        song.subcollectionDisplay !== song.collection && (
+                          <span class="cell-sub"> / {song.subcollectionDisplay}</span>
+                        )}
+                    </td>
+                    <td class="cell-size">{song.fileSize}</td>
+                    <td class="cell-actions">
+                      <button
+                        type="button"
+                        class="preview-btn"
+                        data-preview-src={song.url}
+                        data-preview-label={song.title}
+                        data-preview-bpm={song.bpm ?? ''}
+                        aria-label={`Preview ${song.filename}`}
+                      >
+                        <span aria-hidden="true">▶</span>
+                      </button>
+                      <a
+                        href={song.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="download-btn"
+                        aria-label={`Download ${song.filename}`}
+                      >
+                        <span aria-hidden="true">↓</span>
+                      </a>
+                    </td>
+                  </tr>
+                ))
+              }
             </tbody>
           </table>
         </div>
 
         <ArchiveEmptyState id="artistSongEmpty" message="No songs match your search." />
       </HardwarePanel>
-
     </div>
   </div>
 </BaseLayout>
@@ -262,10 +277,20 @@ const folderLinks = artist.folders.map((folderPath) => {
     background: rgba(255, 176, 0, 0.04);
   }
 
-  .cell-name { color: #c0c0c0; }
-  .cell-collection { color: #888; font-size: 0.78rem; }
-  .cell-sub { color: #666; }
-  .cell-size { color: #666; white-space: nowrap; }
+  .cell-name {
+    color: #c0c0c0;
+  }
+  .cell-collection {
+    color: #888;
+    font-size: 0.78rem;
+  }
+  .cell-sub {
+    color: #666;
+  }
+  .cell-size {
+    color: #666;
+    white-space: nowrap;
+  }
 
   .col-actions,
   .cell-actions {
@@ -314,8 +339,15 @@ const folderLinks = artist.folders.map((folderPath) => {
     cursor: pointer;
   }
 
-  .preview-btn { color: var(--rb-green-bright); border-color: var(--rb-green-dim); }
-  .preview-btn:hover, .download-btn:hover { color: var(--rb-amber); border-color: var(--rb-amber-dim); }
+  .preview-btn {
+    color: var(--rb-green-bright);
+    border-color: var(--rb-green-dim);
+  }
+  .preview-btn:hover,
+  .download-btn:hover {
+    color: var(--rb-amber);
+    border-color: var(--rb-amber-dim);
+  }
 </style>
 
 <script>

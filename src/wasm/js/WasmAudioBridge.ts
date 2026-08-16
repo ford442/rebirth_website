@@ -32,10 +32,7 @@ import type {
 } from '../types/wasm-audio';
 
 import { wasmAudioConfig } from '../audio-module.config';
-import {
-  WasmInitError,
-  INIT_FAILURE_MESSAGES,
-} from './rbs-init-errors';
+import { WasmInitError, INIT_FAILURE_MESSAGES } from './rbs-init-errors';
 import { waitForCrossOriginIsolation } from '../../scripts/coi-bootstrap';
 
 /** Callback invoked when playback position changes (bar, step). */
@@ -62,6 +59,7 @@ export class WasmAudioBridge {
   private onPosition: PositionCallback | null = null;
   private onStatus: StatusCallback | null = null;
   private volume = 0.8;
+  private positionPollId: number | null = null;
 
   /** Is the bridge initialised and ready to load files? */
   get isReady(): boolean {
@@ -171,10 +169,7 @@ export class WasmAudioBridge {
           if (path.endsWith('.wasm')) return wasmAudioConfig.wasmPath;
           // Map both the legacy .aw.js sidecar and Emscripten 6's rewritten
           // module request to the stable worklet path produced by build.sh.
-          if (
-            path.endsWith('rbsWorklet.js') ||
-            (path.endsWith('.js') && path.includes('.aw.'))
-          ) {
+          if (path.endsWith('rbsWorklet.js') || (path.endsWith('.js') && path.includes('.aw.'))) {
             return wasmAudioConfig.workletPath;
           }
           return path;
@@ -207,23 +202,20 @@ export class WasmAudioBridge {
       const contextHandle = this.module.emscriptenRegisterAudioObject(this.audioContext);
 
       await new Promise<void>((resolve, reject) => {
-        this.module?.initAudioWorklet(
-          contextHandle,
-          this.enginePtr!,
-          (nodeHandle) => {
-            if (nodeHandle == null || nodeHandle === 0) {
-              reject(
-                new WasmInitError({
-                  reason: 'worklet-init-failed',
-                  message: INIT_FAILURE_MESSAGES['worklet-init-failed'],
-                })
-              );
-              return;
-            }
-            this.workletNode = this.module?.emscriptenGetAudioObject<AudioWorkletNode>(nodeHandle) ?? null;
-            resolve();
+        this.module?.initAudioWorklet(contextHandle, this.enginePtr!, (nodeHandle) => {
+          if (nodeHandle == null || nodeHandle === 0) {
+            reject(
+              new WasmInitError({
+                reason: 'worklet-init-failed',
+                message: INIT_FAILURE_MESSAGES['worklet-init-failed'],
+              })
+            );
+            return;
           }
-        );
+          this.workletNode =
+            this.module?.emscriptenGetAudioObject<AudioWorkletNode>(nodeHandle) ?? null;
+          resolve();
+        });
       });
 
       // 6. Connect worklet node to audio graph
@@ -370,9 +362,25 @@ export class WasmAudioBridge {
    * Set a tempo multiplier (e.g. 0.5 = half speed, 2.0 = double speed).
    * Returns false when the engine is not available.
    */
+  /**
+   * Live device/mixer parameter (0–1). Session-only; no file write.
+   * deviceId: 0=303A 1=303B 2=808 3=909
+   */
+  setDeviceParam(deviceId: number, paramId: number, value: number): boolean {
+    if (!this.enginePtr || typeof this.enginePtr.setDeviceParam !== 'function') return false;
+    const id = Math.max(0, Math.min(3, Math.floor(deviceId)));
+    const param = Math.max(0, Math.min(9, Math.floor(paramId)));
+    const clamped = Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
+    this.enginePtr.setDeviceParam(id, param, clamped);
+    return true;
+  }
+
   setTempoMultiplier(multiplier: number): boolean {
     if (!this.enginePtr) return false;
-    const safeMultiplier = Math.max(0.25, Math.min(4, Number.isFinite(multiplier) ? multiplier : 1));
+    const safeMultiplier = Math.max(
+      0.25,
+      Math.min(4, Number.isFinite(multiplier) ? multiplier : 1)
+    );
     this.enginePtr.setTempoMultiplier(safeMultiplier);
     return true;
   }
@@ -380,10 +388,15 @@ export class WasmAudioBridge {
   /** Clean up resources. */
   dispose(): void {
     this.stop();
+    if (this.positionPollId != null) {
+      cancelAnimationFrame(this.positionPollId);
+      this.positionPollId = null;
+    }
     this.workletNode?.disconnect();
     this.gainNode?.disconnect();
     void this.audioContext?.close();
     this.enginePtr?.delete();
+    this.enginePtr = null;
     this.module = null;
     this._setStatus('idle');
   }
@@ -396,16 +409,22 @@ export class WasmAudioBridge {
   }
 
   private _startPositionPolling() {
+    if (this.positionPollId != null) {
+      cancelAnimationFrame(this.positionPollId);
+      this.positionPollId = null;
+    }
     const poll = () => {
-      if (!this.enginePtr || this.status !== 'playing') {
-        requestAnimationFrame(poll);
+      this.positionPollId = null;
+      if (!this.enginePtr) {
         return;
       }
-      const pos: PlaybackPosition = this.enginePtr.getPlaybackPosition();
-      this.onPosition?.(pos.bar, pos.step);
-      requestAnimationFrame(poll);
+      if (this.status === 'playing') {
+        const pos: PlaybackPosition = this.enginePtr.getPlaybackPosition();
+        this.onPosition?.(pos.bar, pos.step);
+      }
+      this.positionPollId = requestAnimationFrame(poll);
     };
-    requestAnimationFrame(poll);
+    this.positionPollId = requestAnimationFrame(poll);
   }
 
   private _toUiParsedSong(wasmSong: WasmParsedSong): ParsedSong {
@@ -445,6 +464,11 @@ export class WasmAudioBridge {
         accent: wasmDevice.accent,
       },
       muted: wasmDevice.muted,
+      level: wasmDevice.level,
+      pan: wasmDevice.pan,
+      waveform: wasmDevice.waveform,
+      initialPatternBank: wasmDevice.initialPatternBank,
+      initialPatternIndex: wasmDevice.initialPatternIndex,
     };
   }
 
@@ -458,11 +482,14 @@ export class WasmAudioBridge {
         note: s.note === 0 ? undefined : s.note,
         accent: s.accent,
         slide: s.slide,
+        drumExtra: s.drumExtra,
       })),
     };
   }
 
-  private _toUiArrangementStep(wasmBar: WasmArrangementBar): import('../types/wasm-audio').ArrangementStep {
+  private _toUiArrangementStep(
+    wasmBar: WasmArrangementBar
+  ): import('../types/wasm-audio').ArrangementStep {
     const patternRefs: Record<string, import('../types/wasm-audio').PatternRef> = {};
     wasmBar.devicePatterns.forEach((ref, index) => {
       const label = DEVICE_LABELS[index as WasmDeviceId];

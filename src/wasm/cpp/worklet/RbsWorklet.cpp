@@ -59,6 +59,11 @@ bool rbsProcessCallback(int numInputs,
                         int numParams,
                         const AudioParamFrame* params,
                         void* userData) {
+  (void)numInputs;
+  (void)inputs;
+  (void)numParams;
+  (void)params;
+
   RbsAudioEngine* engine = static_cast<RbsAudioEngine*>(userData);
 
   if (!engine || numOutputs < 1) {
@@ -103,11 +108,10 @@ void rbsWorkletProcessorCreated(EMSCRIPTEN_WEBAUDIO_T context,
   }
 
   int outputChannelCounts[1] = { 2 };
-  EmscriptenAudioWorkletNodeCreateOptions options = {
-    .numberOfInputs = 0,
-    .numberOfOutputs = 1,
-    .outputChannelCounts = outputChannelCounts,
-  };
+  EmscriptenAudioWorkletNodeCreateOptions options{};
+  options.numberOfInputs = 0;
+  options.numberOfOutputs = 1;
+  options.outputChannelCounts = outputChannelCounts;
 
   // Pass the engine pointer as userData so the audio callback can use it
   // without relying on a global.
@@ -137,9 +141,8 @@ void rbsWorkletThreadInitialized(EMSCRIPTEN_WEBAUDIO_T context,
     return;
   }
 
-  WebAudioWorkletProcessorCreateOptions opts = {
-    .name = PROCESSOR_NAME,
-  };
+  WebAudioWorkletProcessorCreateOptions opts{};
+  opts.name = PROCESSOR_NAME;
 
   emscripten_create_wasm_audio_worklet_processor_async(
     context,

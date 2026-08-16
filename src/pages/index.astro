@@ -13,7 +13,12 @@ import { songCollections } from '../data/song-collections';
 import { normalizeBase } from '../lib/url';
 import { getWasmBuildStatus } from '../lib/wasm-build-status';
 import { DEMO_BY_ID, demoSongUrl, toPlayerDemos } from '../data/demo-songs';
-import { formatStatRange, totalSongsIndexed, totalMods, latestVersion } from '../data/archive-stats';
+import {
+  formatStatRange,
+  totalSongsIndexed,
+  totalMods,
+  latestVersion,
+} from '../data/archive-stats';
 
 /* ── Types ─────────────────────────────────────────────────────── */
 
@@ -64,7 +69,8 @@ const featuredSongs: FeaturedItem[] = [
   {
     title: 'Cavey — Acid Lockdown',
     fileType: '.rbs',
-    description: 'Razor-sharp 303 lines locked into a hypnotic groove. From the legendary Cavey artist collection.',
+    description:
+      'Razor-sharp 303 lines locked into a hypnotic groove. From the legendary Cavey artist collection.',
     author: 'Cavey',
     tags: ['acid', '303', 'lockgroove'],
     browseHref: `${base}/archive/songs/Artists/Cavey/`,
@@ -78,12 +84,14 @@ const featuredSongs: FeaturedItem[] = [
   {
     title: 'DJ Knightmare — Factory Sequence',
     fileType: '.rbs',
-    description: 'Dark industrial percussion and distorted synth stabs built for warehouse playback.',
+    description:
+      'Dark industrial percussion and distorted synth stabs built for warehouse playback.',
     author: 'DJ Knightmare',
     tags: ['industrial', 'techno', 'dark'],
     browseHref: `${base}/archive/songs/Artists/DJ%20Knightmare/`,
     collectionPath: 'Artists/DJ Knightmare',
-    songCount: songCollections.artists.folders.find((folder) => folder.name === 'DJ Knightmare')?.count,
+    songCount: songCollections.artists.folders.find((folder) => folder.name === 'DJ Knightmare')
+      ?.count,
     bpm: 134,
     compatibility: 'ReBirth 2.0',
     demoSrc: demoSongUrl(base, DEMO_BY_ID['dj-knightmare-amnesya']),
@@ -92,12 +100,15 @@ const featuredSongs: FeaturedItem[] = [
   {
     title: 'Noah Cohn — Euro Acid Line',
     fileType: '.rbs',
-    description: 'Extended acid journey through European rave aesthetics. One of the most complete artist archives on the site.',
+    description:
+      'Extended acid journey through European rave aesthetics. One of the most complete artist archives on the site.',
     author: 'Noah Cohn',
     tags: ['acid', 'euro', 'classic'],
     browseHref: `${base}/archive/songs/Artists/Noah_Cohn_Complete/`,
     collectionPath: 'Artists/Noah_Cohn_Complete',
-    songCount: songCollections.artists.folders.find((folder) => folder.name === 'Noah Cohn Complete')?.count,
+    songCount: songCollections.artists.folders.find(
+      (folder) => folder.name === 'Noah Cohn Complete'
+    )?.count,
     bpm: 132,
     compatibility: 'ReBirth 2.0',
     demoSrc: demoSongUrl(base, DEMO_BY_ID['noah-cohn-20']),
@@ -106,7 +117,8 @@ const featuredSongs: FeaturedItem[] = [
   {
     title: 'Fanatic — Saturday Morning Sessions',
     fileType: '.rbs',
-    description: 'Eclectic breaks and melodic hooks that channel retro cartoon energy into ReBirth patterns.',
+    description:
+      'Eclectic breaks and melodic hooks that channel retro cartoon energy into ReBirth patterns.',
     author: 'Fanatic',
     tags: ['breaks', 'eclectic', 'melodic'],
     browseHref: `${base}/archive/songs/Artists/Fanatic/`,
@@ -169,7 +181,8 @@ const featuredMods: FeaturedItem[] = [
   {
     title: 'Metallicon',
     fileType: '.rbm',
-    description: 'One of the four official default mods from the original ReBirth 2.0.1 CD-ROM. Classic metal drums and aggressive bass.',
+    description:
+      'One of the four official default mods from the original ReBirth 2.0.1 CD-ROM. Classic metal drums and aggressive bass.',
     author: 'Propellerhead',
     tags: ['official', 'classic', 'metal'],
     href: 'https://storage.1ink.us/rebirth_mods/Metallicon.rbm',
@@ -181,7 +194,8 @@ const featuredMods: FeaturedItem[] = [
   {
     title: 'Red Stripe',
     fileType: '.rbm',
-    description: 'Official UK campaign mod built for a branding push. Run it at 338 BPM for full drum-roll chaos.',
+    description:
+      'Official UK campaign mod built for a branding push. Run it at 338 BPM for full drum-roll chaos.',
     author: 'Thomas & Wolfgang Merkle',
     tags: ['official', 'dnb', 'fast'],
     href: 'https://storage.1ink.us/rebirth_mods/Red_Stripe_a6.rbm',
@@ -193,7 +207,8 @@ const featuredMods: FeaturedItem[] = [
   {
     title: 'Infernalizer',
     fileType: '.rbm',
-    description: 'Hailed historically as "The Most Beautiful Mod Ever." Church organ, sharp drums, and dark synths.',
+    description:
+      'Hailed historically as "The Most Beautiful Mod Ever." Church organ, sharp drums, and dark synths.',
     author: 'Jesuspark',
     tags: ['dark', 'organ', 'award-winning'],
     href: 'https://storage.1ink.us/rebirth_mods/INFERNALIZER.rbm',
@@ -205,7 +220,8 @@ const featuredMods: FeaturedItem[] = [
   {
     title: 'AnokhaV2',
     fileType: '.rbm',
-    description: 'Sitar loops, tabla samples, and Indian deity artwork. A world-music mod unlike anything else in the archive.',
+    description:
+      'Sitar loops, tabla samples, and Indian deity artwork. A world-music mod unlike anything else in the archive.',
     author: 'Sam Laleo Singh',
     tags: ['ethnic', 'world', 'sitar'],
     href: 'https://storage.1ink.us/rebirth_mods/AnokhaV2.rbm',
@@ -220,45 +236,51 @@ const skinGalleryItems: SkinGalleryItem[] = [
   {
     src: `${base}/images/rebirth/default-skin.jpg`,
     alt: 'ReBirth RB-338 default interface showing the stock silver TB-303, TR-808, and TR-909 panels with classic Roland-style knobs and step sequencer.',
-    caption: 'Stock skin — the original Propellerhead interface shipped with ReBirth 1.0 through 2.0.1 before any mod is loaded.',
+    caption:
+      'Stock skin — the original Propellerhead interface shipped with ReBirth 1.0 through 2.0.1 before any mod is loaded.',
     label: 'DEFAULT SKIN',
   },
   {
     src: `${base}/images/rebirth/metallicon.jpg`,
     alt: 'Metallicon mod screenshot with brushed-metal panels, aggressive red accents, and heavy industrial drum machine graphics.',
-    caption: 'Metallicon — one of the four official default mods included with ReBirth 2.0.1, featuring classic metal drums and aggressive bass.',
+    caption:
+      'Metallicon — one of the four official default mods included with ReBirth 2.0.1, featuring classic metal drums and aggressive bass.',
     label: 'METALLICON',
   },
   {
     src: `${base}/images/rebirth/red-stripe.jpg`,
     alt: 'Red Stripe mod interface with bold red branding panels, high-contrast drum controls, and campaign-style graphic design.',
-    caption: 'Red Stripe — official UK branding campaign mod by Thomas & Wolfgang Merkle; run transport at 338 BPM for full drum-roll chaos.',
+    caption:
+      'Red Stripe — official UK branding campaign mod by Thomas & Wolfgang Merkle; run transport at 338 BPM for full drum-roll chaos.',
     label: 'RED STRIPE',
   },
   {
     src: `${base}/images/rebirth/orbit2.jpg`,
     alt: 'Orbit 2 mod screenshot with deep-space graphics, cosmic color palette, and futuristic ambient-style panel artwork.',
-    caption: 'Orbit / Orbit 2 — a beloved space-themed mod lineage from the 1.5 era, remastered for ReBirth 2.0 with ambient, futuristic visuals.',
+    caption:
+      'Orbit / Orbit 2 — a beloved space-themed mod lineage from the 1.5 era, remastered for ReBirth 2.0 with ambient, futuristic visuals.',
     label: 'ORBIT 2',
   },
   {
     src: `${base}/images/rebirth/infernalizer.jpg`,
     alt: 'Infernalizer mod showing ornate gothic panel art, church-organ motifs, and dark red and black interface styling.',
-    caption: 'Infernalizer — hailed historically as “The Most Beautiful Mod Ever,” with sharp drums, synths, and a church organ for dark styles.',
+    caption:
+      'Infernalizer — hailed historically as “The Most Beautiful Mod Ever,” with sharp drums, synths, and a church organ for dark styles.',
     label: 'INFERNALIZER',
   },
   {
     src: `${base}/images/rebirth/anokhav2.jpg`,
     alt: 'AnokhaV2 mod interface decorated with Indian deity artwork, sitar motifs, and warm earth-tone panel graphics.',
-    caption: 'AnokhaV2 — sitar loops, tabla samples, and deity artwork create a world-music mod unlike anything else in the archive.',
+    caption:
+      'AnokhaV2 — sitar loops, tabla samples, and deity artwork create a world-music mod unlike anything else in the archive.',
     label: 'ANOKHAV2',
   },
 ];
 
 // 16-step pattern for the hero sequencer (visual decoration)
-const songPattern  = [1,0,0,0, 1,0,1,0, 0,0,1,0, 1,0,0,1];
-const bassPattern  = [1,0,1,0, 0,1,0,0, 1,0,0,1, 0,1,0,0];
-const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
+const songPattern = [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1];
+const bassPattern = [1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0];
+const kickPattern = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0];
 ---
 
 <BaseLayout
@@ -279,16 +301,23 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
           <span class="master-title__tagline">Songs, mods, and history preserved for download</span>
         </h1>
         <p class="hero-summary">
-          Browse community song folders, download rare mods, and trace the history of Propellerhead&apos;s classic software groovebox.
+          Browse community song folders, download rare mods, and trace the history of
+          Propellerhead&apos;s classic software groovebox.
         </p>
       </div>
       <div class="homepage-hero__meta">
         <div class="master-leds">
           <Led status="online" label="ARCHIVE ONLINE" />
-          <Led status={wasmBuild.ready ? 'online' : 'pending'} label={wasmBuild.ready ? 'WASM READY' : 'WASM PENDING'} />
+          <Led
+            status={wasmBuild.ready ? 'online' : 'pending'}
+            label={wasmBuild.ready ? 'WASM READY' : 'WASM PENDING'}
+          />
         </div>
         <div class="master-stats" aria-label="Archive stats">
-          <div class="master-stat" title={`${totalSongsIndexed.toLocaleString()} indexed .rbs files`}>
+          <div
+            class="master-stat"
+            title={`${totalSongsIndexed.toLocaleString()} indexed .rbs files`}
+          >
             <span class="master-stat__value">{formatStatRange(totalSongsIndexed)}</span>
             <span class="master-stat__label">Songs</span>
           </div>
@@ -316,9 +345,12 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
   >
     <div class="start-here">
       <p class="start-here__summary">
-        ReBirth RB-338 is a software groovebox that recreates the <abbr title="Roland TB-303 Bass Line">TB-303</abbr>,
-        <abbr title="Roland TR-808 drum machine">TR-808</abbr>, and <abbr title="Roland TR-909 drum machine">TR-909</abbr>.
-        This archive preserves songs and mods so new listeners can discover the sound.
+        ReBirth RB-338 is a software groovebox that recreates the <abbr
+          title="Roland TB-303 Bass Line">TB-303</abbr
+        >,
+        <abbr title="Roland TR-808 drum machine">TR-808</abbr>, and <abbr
+          title="Roland TR-909 drum machine">TR-909</abbr
+        >. This archive preserves songs and mods so new listeners can discover the sound.
       </p>
       <div class="start-here__links" role="navigation" aria-label="New visitor quick links">
         <a class="start-here__link" href={`${base}/archive/songs`}>Listen to Songs</a>
@@ -329,20 +361,28 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
       <div class="start-here__picks">
         <h2>If you&apos;re new, start with these 5 picks</h2>
         <ol>
-          {beginnerPicks.map((pick) => (
-            <li>
-              <a href={pick.href}>{pick.title}</a>
-              <span>{pick.note}</span>
-            </li>
-          ))}
+          {
+            beginnerPicks.map((pick) => (
+              <li>
+                <a href={pick.href}>{pick.title}</a>
+                <span>{pick.note}</span>
+              </li>
+            ))
+          }
         </ol>
       </div>
     </div>
   </HardwarePanel>
 
   <div class="archive-entry-strip" role="navigation" aria-label="Quick archive links">
-    <a class="archive-entry-strip__link archive-entry-strip__link--songs" href={`${base}/archive/songs`}>Browse Songs</a>
-    <a class="archive-entry-strip__link archive-entry-strip__link--mods" href={`${base}/archive/mods`}>Browse Mods</a>
+    <a
+      class="archive-entry-strip__link archive-entry-strip__link--songs"
+      href={`${base}/archive/songs`}>Browse Songs</a
+    >
+    <a
+      class="archive-entry-strip__link archive-entry-strip__link--mods"
+      href={`${base}/archive/mods`}>Browse Mods</a
+    >
     <a class="archive-entry-strip__link" href={`${base}/history`}>History</a>
     <a class="archive-entry-strip__link" href={`${base}/beginner-guide`}>Start Here</a>
   </div>
@@ -362,13 +402,13 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
       class="featured-deck__panel"
     >
       <div class="featured-header">
-        <p class="featured-summary">Representative artist folders for a fast start into the song archive.</p>
+        <p class="featured-summary">
+          Representative artist folders for a fast start into the song archive.
+        </p>
         <ActionButton variant="pattern" href={`${base}/archive/songs`}>All Songs →</ActionButton>
       </div>
       <div class="card-grid card-grid--compact">
-        {featuredSongs.map((song) => (
-          <ModCard {...song} rackmount={true} />
-        ))}
+        {featuredSongs.map((song) => <ModCard {...song} rackmount={true} />)}
       </div>
     </HardwarePanel>
 
@@ -386,9 +426,7 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
         <ActionButton variant="mix" href={`${base}/archive/mods`}>All Mods →</ActionButton>
       </div>
       <div class="card-grid card-grid--compact">
-        {featuredMods.map((mod) => (
-          <ModCard {...mod} rackmount={true} />
-        ))}
+        {featuredMods.map((mod) => <ModCard {...mod} rackmount={true} />)}
       </div>
     </HardwarePanel>
   </section>
@@ -403,31 +441,37 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
       ledLabel="6 SKINS"
       class="skin-gallery__panel"
     >
-      <h2 class="sr-only" id="skin-gallery-heading">ReBirth RB-338 default skin and 2.0-era mods</h2>
+      <h2 class="sr-only" id="skin-gallery-heading">
+        ReBirth RB-338 default skin and 2.0-era mods
+      </h2>
       <p class="skin-gallery__intro">
-        Mods arrived in ReBirth v1.5 and could completely replace the on-screen graphics and sample sets —
-        turning the same TB-303 / TR-808 / TR-909 engine into an entirely new instrument.
+        Mods arrived in ReBirth v1.5 and could completely replace the on-screen graphics and sample
+        sets — turning the same TB-303 / TR-808 / TR-909 engine into an entirely new instrument.
       </p>
 
       <!-- TODO: Replace with final hosted image URLs once uploaded to storage.1ink.us or public/images/ -->
       <div class="gallery-grid" role="list" aria-label="ReBirth default skin and mod screenshots">
-        {skinGalleryItems.map((item) => (
-          <figure class="gallery-grid__item" role="listitem">
-            <div class="gallery-grid__frame">
-              <span class="gallery-grid__label" aria-hidden="true">{item.label}</span>
-              <img
-                class="gallery-grid__image"
-                src={item.src}
-                alt={item.alt}
-                loading="lazy"
-                width="640"
-                height="480"
-                decoding="async"
-              />
-            </div>
-            <figcaption class="gallery-grid__caption">{item.caption}</figcaption>
-          </figure>
-        ))}
+        {
+          skinGalleryItems.map((item) => (
+            <figure class="gallery-grid__item" role="listitem">
+              <div class="gallery-grid__frame">
+                <span class="gallery-grid__label" aria-hidden="true">
+                  {item.label}
+                </span>
+                <img
+                  class="gallery-grid__image"
+                  src={item.src}
+                  alt={item.alt}
+                  loading="lazy"
+                  width="640"
+                  height="480"
+                  decoding="async"
+                />
+              </div>
+              <figcaption class="gallery-grid__caption">{item.caption}</figcaption>
+            </figure>
+          ))
+        }
       </div>
 
       <p class="skin-gallery__footer">
@@ -470,7 +514,9 @@ const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
                   <span aria-hidden="true" class="dot dot--green"></span>
                   <span class="rb-terminal__title">rb338_archive.sh</span>
                 </div>
-                <pre aria-label="System status terminal" class="rb-terminal__body"><code>$ rb338 --status
+                <pre
+                  aria-label="System status terminal"
+                  class="rb-terminal__body"><code>$ rb338 --status
 <span class="t-green">▶ ARCHIVE ONLINE</span>
   est    : <span class="t-amber">1997</span>
   songs  : <span class="t-green">{formatStatRange(totalSongsIndexed)}</span>
@@ -496,49 +542,57 @@ $ _<span class="cursor-blink">█</span></code></pre>
                 <div aria-label="Song pattern" class="seq-row" role="group">
                   <span class="seq-row__label">SONG</span>
                   <div aria-hidden="true" class="rb-step-grid">
-                    {songPattern.map((active, i) => (
-                      <StepButton
-                        active={active === 1}
-                        beat={i % 4 === 0}
-                        ariaLabel={`Step ${i+1} ${active ? 'on' : 'off'}`}
-                        title={`Step ${i+1}`}
-                      />
-                    ))}
+                    {
+                      songPattern.map((active, i) => (
+                        <StepButton
+                          active={active === 1}
+                          beat={i % 4 === 0}
+                          ariaLabel={`Step ${i + 1} ${active ? 'on' : 'off'}`}
+                          title={`Step ${i + 1}`}
+                        />
+                      ))
+                    }
                   </div>
                 </div>
                 <div aria-label="Bass pattern" class="seq-row" role="group">
                   <span class="seq-row__label">BASS</span>
                   <div aria-hidden="true" class="rb-step-grid">
-                    {bassPattern.map((active, i) => (
-                      <StepButton
-                        active={active === 1}
-                        beat={i % 4 === 0}
-                        ariaLabel={`Step ${i+1} ${active ? 'on' : 'off'}`}
-                        title={`Step ${i+1}`}
-                      />
-                    ))}
+                    {
+                      bassPattern.map((active, i) => (
+                        <StepButton
+                          active={active === 1}
+                          beat={i % 4 === 0}
+                          ariaLabel={`Step ${i + 1} ${active ? 'on' : 'off'}`}
+                          title={`Step ${i + 1}`}
+                        />
+                      ))
+                    }
                   </div>
                 </div>
                 <div aria-label="Kick pattern" class="seq-row seq-row--kick" role="group">
                   <span class="seq-row__label">KICK</span>
                   <div aria-hidden="true" class="rb-step-grid">
-                    {kickPattern.map((active, i) => (
-                      <StepButton
-                        active={active === 1}
-                        beat={i % 4 === 0}
-                        ariaLabel={`Step ${i+1} ${active ? 'on' : 'off'}`}
-                        title={`Step ${i+1}`}
-                      />
-                    ))}
+                    {
+                      kickPattern.map((active, i) => (
+                        <StepButton
+                          active={active === 1}
+                          beat={i % 4 === 0}
+                          ariaLabel={`Step ${i + 1} ${active ? 'on' : 'off'}`}
+                          title={`Step ${i + 1}`}
+                        />
+                      ))
+                    }
                   </div>
                 </div>
               </div>
               <div aria-hidden="true" class="seq-numbers">
                 <span class="seq-row__label"></span>
                 <div class="seq-num-row">
-                  {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].map(n => (
-                    <span class="seq-num">{n}</span>
-                  ))}
+                  {
+                    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map((n) => (
+                      <span class="seq-num">{n}</span>
+                    ))
+                  }
                 </div>
               </div>
             </div>
@@ -566,21 +620,44 @@ $ _<span class="cursor-blink">█</span></code></pre>
                 <span class="rb-panel__title">WHAT IS REBIRTH?</span>
                 <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
               </div>
-              <p>Released by Propellerhead Software in <strong>1997</strong>, <strong>ReBirth RB-338</strong> was one of the first software synthesizers to faithfully emulate the <strong>Roland TB-303</strong> Bass Line and the Roland TR-808 / TR-909 drum machines. It became a cornerstone of electronic music production and is now freely available as abandonware.</p>
+              <p>
+                Released by Propellerhead Software in <strong>1997</strong>, <strong
+                  >ReBirth RB-338</strong
+                > was one of the first software synthesizers to faithfully emulate the <strong
+                  >Roland TB-303</strong
+                > Bass Line and the Roland TR-808 / TR-909 drum machines. It became a cornerstone of electronic
+                music production and is now freely available as abandonware.
+              </p>
             </article>
             <article class="rb-file-card rb-card-rack">
               <div class="rb-panel__header rb-panel--clean-header">
                 <span class="rb-panel__title">WHAT IS THIS SITE?</span>
                 <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
               </div>
-              <p>This community archive preserves <code>.rbs</code> song files and <code>.rbm</code> mod files contributed by enthusiasts worldwide. It also hosts historical documentation spanning versions <code>1.0</code> through <code>2.0.1</code> and lays the groundwork for in-browser <code>.rbs</code> preview via WebAssembly. Need term help? Open the <a href={`${base}/glossary`}>glossary</a>.</p>
+              <p>
+                This community archive preserves <code>.rbs</code> song files and <code>.rbm</code> mod
+                files contributed by enthusiasts worldwide. It also hosts historical documentation spanning
+                versions <code>1.0</code> through <code>2.0.1</code> and lays the groundwork for in-browser
+                <code>.rbs</code> preview via WebAssembly. Need term help? Open the <a
+                  href={`${base}/glossary`}>glossary</a
+                >.
+              </p>
             </article>
             <article class="rb-file-card rb-card-rack">
               <div class="rb-panel__header rb-panel--clean-header">
                 <span class="rb-panel__title">HOW TO CONTRIBUTE?</span>
                 <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
               </div>
-              <p>Open a pull request on the <a href="https://github.com/ford442/rebirth_website" rel="noopener noreferrer" target="_blank">GitHub repository</a>. Place song files in <code>public/archive/rbs-songs/</code> and mod files in <code>public/archive/rbm-mods/</code>. See the <a href={`${base}/docs`}>documentation</a> for naming conventions and metadata requirements.</p>
+              <p>
+                Open a pull request on the <a
+                  href="https://github.com/ford442/rebirth_website"
+                  rel="noopener noreferrer"
+                  target="_blank">GitHub repository</a
+                >. Place song files in <code>public/archive/rbs-songs/</code> and mod files in <code
+                  >public/archive/rbm-mods/</code
+                >. See the <a href={`${base}/docs`}>documentation</a> for naming conventions and metadata
+                requirements.
+              </p>
             </article>
           </div>
         </div>
@@ -605,21 +682,34 @@ $ _<span class="cursor-blink">█</span></code></pre>
               <span class="rb-panel__title">WHY THIS ARCHIVE EXISTS</span>
               <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
             </div>
-            <p>This is a preservation project for ReBirth-era community music, visuals, and documentation. The goal is long-term public access for newcomers and original fans.</p>
+            <p>
+              This is a preservation project for ReBirth-era community music, visuals, and
+              documentation. The goal is long-term public access for newcomers and original fans.
+            </p>
           </article>
           <article class="rb-file-card rb-card-rack">
             <div class="rb-panel__header rb-panel--clean-header">
               <span class="rb-panel__title">CONTRIBUTE</span>
               <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
             </div>
-            <p>Help document mods, add archive metadata, or submit fixes through the <a href="https://github.com/ford442/rebirth_website" target="_blank" rel="noopener noreferrer">GitHub repository</a>.</p>
+            <p>
+              Help document mods, add archive metadata, or submit fixes through the <a
+                href="https://github.com/ford442/rebirth_website"
+                target="_blank"
+                rel="noopener noreferrer">GitHub repository</a
+              >.
+            </p>
           </article>
           <article class="rb-file-card rb-card-rack">
             <div class="rb-panel__header rb-panel--clean-header">
               <span class="rb-panel__title">NEW TO THE FORMAT?</span>
               <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
             </div>
-            <p>Use the <a href={`${base}/glossary`}>Glossary</a> for terms like <code>.rbs</code>, <code>.rbm</code>, and pattern sequencing before diving into the full archive.</p>
+            <p>
+              Use the <a href={`${base}/glossary`}>Glossary</a> for terms like <code>.rbs</code>, <code
+                >.rbm</code
+              >, and pattern sequencing before diving into the full archive.
+            </p>
           </article>
         </div>
       </HardwarePanel>
@@ -641,12 +731,16 @@ $ _<span class="cursor-blink">█</span></code></pre>
           We benchmark newcomer-friendly discovery patterns against established music archive sites:
         </p>
         <ul class="inspiration-list">
-          {inspirationLinks.map((link) => (
-            <li>
-              <a href={link.href} target="_blank" rel="noopener noreferrer">{link.name}</a>
-              <p>{link.takeaway}</p>
-            </li>
-          ))}
+          {
+            inspirationLinks.map((link) => (
+              <li>
+                <a href={link.href} target="_blank" rel="noopener noreferrer">
+                  {link.name}
+                </a>
+                <p>{link.takeaway}</p>
+              </li>
+            ))
+          }
         </ul>
       </HardwarePanel>
     </div>
@@ -686,28 +780,28 @@ $ _<span class="cursor-blink">█</span></code></pre>
       window.addEventListener('resize', updateMobileAccordions);
     })();
   </script>
-
 </BaseLayout>
 
 <style>
-/* Container constraint for main content panels */
-main > .rb-panel,
-main > .rb-rack,
-main > .archive-entry-strip,
-main > .featured-deck,
-main > .skin-gallery,
-main > hr.etched,
-main > .section-zone-label {   /* Added from main branch */
+  /* Container constraint for main content panels */
+  main > .rb-panel,
+  main > .rb-rack,
+  main > .archive-entry-strip,
+  main > .featured-deck,
+  main > .skin-gallery,
+  main > hr.etched,
+  main > .section-zone-label {
+    /* Added from main branch */
     max-width: 1100px;
     margin-inline: auto;
-}
+  }
 
-main > .archive-entry-strip,
-main > .quick-browse,
-main > .featured-deck,
-main > .skin-gallery {
+  main > .archive-entry-strip,
+  main > .quick-browse,
+  main > .featured-deck,
+  main > .skin-gallery {
     margin-bottom: 1.5rem;
-}
+  }
 
   .homepage-hero {
     display: grid;
@@ -1102,7 +1196,7 @@ main > .skin-gallery {
       display: none;
     }
 
-    .featured-deck :global(.mod-card__meta-row:nth-last-child(-n+2)) {
+    .featured-deck :global(.mod-card__meta-row:nth-last-child(-n + 2)) {
       display: flex;
       align-items: center;
       gap: 0.25em;

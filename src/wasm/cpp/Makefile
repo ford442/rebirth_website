@@ -1,32 +1,17 @@
-# ReBirth RB-338 WASM / native C++ build helpers
-# Run from src/wasm/cpp/
+# Thin wrappers around CMake / emcmake. Source lists live in sources.cmake.
 
 CXX      ?= g++
-CXXFLAGS  = -std=c++17 -Wall -Wextra -O2 -I.
 ROOT      = ../../..
 BUILD_DIR = build
 
-PARSER_SRC = parser/RbsParser.cpp parser/ParsedSongJson.cpp
-ENGINE_SRCS = engine/RbsAudioEngine.cpp engine/Sequencer.cpp engine/Mixer.cpp \
-              synth/Voice.cpp synth/DrumSynth.cpp synth/Tb303Voice.cpp \
-              synth/Tr808Voice.cpp synth/Tr909Voice.cpp
-TEST_SRCS  = tests/test_main.cpp tests/test_parser.cpp tests/test_sequencer.cpp \
-             tests/test_engine.cpp tests/test_drums.cpp tests/test_tb303.cpp \
-             tests/test_mixer.cpp
-TEST_BIN   = $(BUILD_DIR)/test_rbs_parser
-
-.PHONY: all test wasm clean inspect
+.PHONY: all test wasm wasm-debug inspect clean
 
 all: test
 
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
-
-$(TEST_BIN): $(PARSER_SRC) $(ENGINE_SRCS) $(TEST_SRCS) | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) $(PARSER_SRC) $(ENGINE_SRCS) $(TEST_SRCS) -o $@
-
-test: $(TEST_BIN)
-	cd $(ROOT) && ./src/wasm/cpp/$(TEST_BIN)
+test:
+	cmake -S . -B $(BUILD_DIR) -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=$(CXX)
+	cmake --build $(BUILD_DIR) --parallel
+	ctest --test-dir $(BUILD_DIR) --output-on-failure
 
 wasm:
 	bash build.sh release
@@ -34,11 +19,11 @@ wasm:
 wasm-debug:
 	bash build.sh debug
 
-# Optional CLI dump tool (built only on demand)
 inspect: $(BUILD_DIR)/rbs-inspect
 
-$(BUILD_DIR)/rbs-inspect: tools/rbs-inspect.cpp $(PARSER_SRC) | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) $(PARSER_SRC) tools/rbs-inspect.cpp -o $@
+$(BUILD_DIR)/rbs-inspect:
+	cmake -S . -B $(BUILD_DIR) -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=$(CXX)
+	cmake --build $(BUILD_DIR) --target rbs-inspect --parallel
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR) build-wasm

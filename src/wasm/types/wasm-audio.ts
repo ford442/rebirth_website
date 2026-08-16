@@ -33,12 +33,19 @@ export interface ParsedSong {
 }
 
 /** State snapshot for one of the four ReBirth devices (UI-facing) */
+export type DeviceId = 'tb303-a' | 'tb303-b' | 'tr808' | 'tr909';
+
 export interface DeviceState {
-  deviceId: 'tb303-a' | 'tb303-b' | 'tr808' | 'tr909';
+  deviceId: DeviceId;
   /** Current knob values (key = knob name, value = 0.0–1.0 normalized) */
   knobs: Record<string, number>;
   /** Whether this device is muted in the mixer */
   muted: boolean;
+  level: number;
+  pan: number;
+  waveform: number;
+  initialPatternBank: number;
+  initialPatternIndex: number;
 }
 
 /** A single pattern (up to 16 steps) for one device (UI-facing) */
@@ -63,6 +70,8 @@ export interface StepData {
   accent: boolean;
   /** Is this step slided? (TB-303 only) */
   slide: boolean;
+  /** Packed drum bits for 808/909 (`note` + extra hits). */
+  drumExtra?: number;
 }
 
 /** One bar in the song arrangement (UI-facing) */
@@ -247,6 +256,7 @@ export interface RbsAudioEngineInstance {
   setTempo(bpm: number): void;
   getTempo(): number;
   setTempoMultiplier(multiplier: number): void;
+  setDeviceParam(deviceId: number, paramId: number, value: number): void;
   isPlaying(): boolean;
   getProcessedBlockCount(): number;
   renderTestBlock(numFrames: number): number;
