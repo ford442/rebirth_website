@@ -935,6 +935,7 @@ const hasSrc = !!src;
 
 <script>
   import { WasmAudioBridge } from '../wasm/js/WasmAudioBridge';
+  import { createProductionAudioContext } from '../wasm/js/create-audio-context';
   import { DegradedRbsPlayer } from '../wasm/js/DegradedRbsPlayer';
   import { initPlayerUI } from '../wasm/js/player-ui';
   import type { DemoSong } from '../wasm/js/player-ui';
@@ -946,14 +947,21 @@ const hasSrc = !!src;
     window as Window & {
       WasmAudioBridge?: typeof WasmAudioBridge;
       DegradedRbsPlayer?: typeof DegradedRbsPlayer;
+      createProductionAudioContext?: typeof createProductionAudioContext;
     }
   ).WasmAudioBridge = WasmAudioBridge;
   (
     window as Window & {
       WasmAudioBridge?: typeof WasmAudioBridge;
       DegradedRbsPlayer?: typeof DegradedRbsPlayer;
+      createProductionAudioContext?: typeof createProductionAudioContext;
     }
   ).DegradedRbsPlayer = DegradedRbsPlayer;
+  (
+    window as Window & {
+      createProductionAudioContext?: typeof createProductionAudioContext;
+    }
+  ).createProductionAudioContext = createProductionAudioContext;
 
   document.querySelectorAll<HTMLElement>('.rbs-player').forEach((playerEl) => {
     let demos: DemoSong[] = [];

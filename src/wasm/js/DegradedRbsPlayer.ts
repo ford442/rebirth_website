@@ -7,6 +7,7 @@
  */
 
 import type { ParsedSong, PlayerStatus } from '../types/wasm-audio';
+import { wasmAudioConfig } from '../audio-module.config';
 import type { InitFailureReason } from './rbs-init-errors';
 import { sniffRbsMetadata } from './RbsMetadataSniffer';
 
@@ -68,7 +69,7 @@ export class DegradedRbsPlayer {
 
     if (this.mode === 'sketch') {
       try {
-        this.audioContext = new AudioContext();
+        this.audioContext = new AudioContext({ latencyHint: wasmAudioConfig.latencyHint });
         this.gainNode = this.audioContext.createGain();
         this.gainNode.gain.value = this.volume;
         this.gainNode.connect(this.audioContext.destination);

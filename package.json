@@ -19,7 +19,7 @@
     "format:write": "prettier --write .",
     "wasm:build": "bash src/wasm/cpp/build.sh",
     "wasm:build:debug": "bash src/wasm/cpp/build.sh debug",
-    "wasm:native:configure": "cmake -S src/wasm/cpp -B src/wasm/cpp/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++",
+    "wasm:native:configure": "cmake -S src/wasm/cpp -B src/wasm/cpp/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
     "wasm:native:build": "cmake --build src/wasm/cpp/build --parallel",
     "wasm:native:test": "ctest --test-dir src/wasm/cpp/build --output-on-failure",
     "wasm:test": "npm run wasm:native:configure && npm run wasm:native:build && npm run wasm:native:test",

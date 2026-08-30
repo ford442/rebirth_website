@@ -4,6 +4,7 @@
 #include <cctype>
 #include <cstring>
 #include <limits>
+#include <span>
 
 namespace rb338 {
 
@@ -32,17 +33,20 @@ std::string latin1ToUtf8(const std::string& s) {
 // ── Bounds-checked byte stream ───────────────────────────────────────
 class ByteStream {
 public:
+  explicit ByteStream(std::span<const uint8_t> data)
+    : m_data(data), m_pos(0) {}
+
   ByteStream(const uint8_t* data, size_t size)
-    : m_data(data), m_size(size), m_pos(0) {}
+    : ByteStream(std::span<const uint8_t>(data, size)) {}
 
   size_t pos() const { return m_pos; }
-  size_t size() const { return m_size; }
-  size_t remaining() const { return m_size - m_pos; }
-  const uint8_t* data() const { return m_data; }
+  size_t size() const { return m_data.size(); }
+  size_t remaining() const { return m_data.size() - m_pos; }
+  const uint8_t* data() const { return m_data.data(); }
 
-  bool atEnd() const { return m_pos >= m_size; }
+  bool atEnd() const { return m_pos >= m_data.size(); }
 
-  bool canRead(size_t n) const { return n <= m_size - m_pos; }
+  bool canRead(size_t n) const { return n <= m_data.size() - m_pos; }
 
   bool skip(size_t n) {
     if (!canRead(n)) return false;
@@ -76,14 +80,14 @@ public:
 
   bool readBytes(size_t n, const uint8_t*& out) {
     if (!canRead(n)) return false;
-    out = m_data + m_pos;
+    out = m_data.data() + m_pos;
     m_pos += n;
     return true;
   }
 
   bool readCString(std::string& out) {
     out.clear();
-    while (m_pos < m_size) {
+    while (m_pos < m_data.size()) {
       uint8_t c = m_data[m_pos++];
       if (c == 0) return true;
       out.push_back(static_cast<char>(c));
@@ -93,8 +97,7 @@ public:
   }
 
 private:
-  const uint8_t* m_data;
-  size_t m_size;
+  std::span<const uint8_t> m_data;
   size_t m_pos;
 };
 
@@ -198,19 +201,26 @@ std::string trim(const std::string& s) {
 // ═════════════════════════════════════════════════════════════════════
 
 std::optional<ParsedSong> RbsParser::parse(const uint8_t* data, size_t size) {
+  if (!data && size != 0) {
+    return std::nullopt;
+  }
+  return parse(std::span<const uint8_t>(data, size));
+}
+
+std::optional<ParsedSong> RbsParser::parse(std::span<const uint8_t> buffer) {
   clearError();
   m_seenTb303A = false;
   m_trakIndex = 0;
   m_maxTrakPosition = 0;
   for (auto& changes : m_patternChanges) changes.clear();
 
-  if (!data || size < 16) {
+  if (buffer.size() < 16) {
     m_error = "File too small to contain a valid ReBirth container";
     return std::nullopt;
   }
 
   ParsedSong song;
-  if (!parseContainer(data, size, song, true)) {
+  if (!parseContainer(buffer.data(), buffer.size(), song, true)) {
     return std::nullopt;
   }
 

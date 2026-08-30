@@ -108,6 +108,9 @@ void rbsWorkletProcessorCreated(EMSCRIPTEN_WEBAUDIO_T context,
   }
 
   int outputChannelCounts[1] = { 2 };
+  // AudioWorkletNode: no inputs, one stereo output bus.
+  // JS must not register a second "rbs-player" processor via addModule().
+  // Parameter ramps belong in EngineCommandQueue, not AudioParam.
   EmscriptenAudioWorkletNodeCreateOptions options{};
   options.numberOfInputs = 0;
   options.numberOfOutputs = 1;

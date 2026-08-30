@@ -161,6 +161,32 @@ The build script (`src/wasm/cpp/build.sh`) supports two modes:
 
 Release uses a fixed heap so the audio callback never triggers a memory resize. Debug enables `ASSERTIONS`, `SAFE_HEAP`, `STACK_OVERFLOW_CHECK`, and `WEBAUDIO_DEBUG` to catch memory and worklet issues early.
 
+### Linker flags (CMake SSOT)
+
+All Emscripten compile and link flags live in
+[`cpp/CMakeLists.txt`](cpp/CMakeLists.txt). `build.sh` is an `emcmake` wrapper
+only.
+
+| Flag / setting | Release | Debug |
+| -------------- | ------- | ----- |
+| Optimisation | `-O3 -flto` | `-O0 -g3` |
+| `-sASSERTIONS` | `0` | `1` |
+| `-sINITIAL_MEMORY` | 64 MiB | 32 MiB |
+| `-sALLOW_MEMORY_GROWTH` | `0` | `1` (max 128 MiB) |
+| `-sSTACK_SIZE` | 128 KiB (module linear stack) | 128 KiB |
+| AudioWorklet pthread stack | 64 KiB (`AUDIO_THREAD_STACK_SIZE`) | 64 KiB |
+| `-pthread -sAUDIO_WORKLET=1 -sWASM_WORKERS=1` | yes | yes |
+
+Heap and dual-build policy: [`docs/adr/0002-wasm-build-variants-and-heap.md`](../../docs/adr/0002-wasm-build-variants-and-heap.md).
+
+### Native tooling
+
+```bash
+npm run wasm:native:configure   # writes src/wasm/cpp/build/compile_commands.json
+```
+
+Root [`.clangd`](../../.clangd) points clangd at that compilation database.
+
 ### Emitted files
 
 Emscripten produces `rbsParser.js` and `rbsParser.wasm`. Older releases also
@@ -182,9 +208,13 @@ Assets live in `public/wasm/` and are served from the site's base path. With `ba
 
 `src/wasm/audio-module.config.ts` reads `import.meta.env.BASE_URL` (via `normalizeBase`) so these paths stay correct for the configured deployment base. The generated files remain ignored and are produced by CI rather than committed.
 
-### AudioWorklet processor name
+### AudioWorklet processor and node
 
-The processor name (`"rbs-player"`) is **not** a linker flag. It is set at runtime in C++ via `WebAudioWorkletProcessorCreateOptions.name` when calling `emscripten_create_wasm_audio_worklet_processor_async()`. See [`cpp/worklet/RbsWorklet.cpp`](cpp/worklet/RbsWorklet.cpp) for the registration code.
+The processor name (`"rbs-player"`) is set at runtime in C++ via
+`WebAudioWorkletProcessorCreateOptions.name`. The node is created with zero
+inputs and one stereo output (`outputChannelCounts = {2}`). JavaScript must not
+register a second processor with the same name via `audioWorklet.addModule()`.
+See [`cpp/worklet/RbsWorklet.cpp`](cpp/worklet/RbsWorklet.cpp).
 
 ### CI note
 

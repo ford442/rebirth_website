@@ -28,6 +28,8 @@ jobs:
         include:
           - sanitizer: none
             cmake_flags: ''
+          - sanitizer: no-exceptions
+            cmake_flags: '-DRB338_NO_EXCEPTIONS=ON'
           - sanitizer: asan-ubsan
             cmake_flags: '-DRB338_ASAN=ON -DRB338_UBSAN=ON'
           - sanitizer: tsan
@@ -42,7 +44,7 @@ jobs:
         run: echo 28 | sudo tee /proc/sys/vm/mmap_rnd_bits || true
 
       - name: Configure CMake
-        run: cmake -S src/wasm/cpp -B src/wasm/cpp/build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_COMPILER=g++ ${{ matrix.cmake_flags }}
+        run: cmake -S src/wasm/cpp -B src/wasm/cpp/build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_COMPILER=g++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ${{ matrix.cmake_flags }}
 
       - name: Build
         run: cmake --build src/wasm/cpp/build --parallel

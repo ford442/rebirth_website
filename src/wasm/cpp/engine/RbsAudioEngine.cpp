@@ -1,5 +1,6 @@
 #include "RbsAudioEngine.h"
 #include <algorithm>
+#include <bit>
 #include <cmath>
 #include <cstring>
 #ifdef __wasm_simd128__
@@ -13,17 +14,11 @@ namespace {
 constexpr uint32_t MAX_PROCESS_BLOCK_FRAMES = MAX_RENDER_TEST_FRAMES;
 
 uint32_t floatBits(float f) {
-  uint32_t bits;
-  static_assert(sizeof(bits) == sizeof(f), "float size mismatch");
-  std::memcpy(&bits, &f, sizeof(f));
-  return bits;
+  return std::bit_cast<uint32_t>(f);
 }
 
 float bitsToFloat(uint32_t bits) {
-  float f;
-  static_assert(sizeof(f) == sizeof(bits), "float size mismatch");
-  std::memcpy(&f, &bits, sizeof(f));
-  return f;
+  return std::bit_cast<float>(bits);
 }
 
 void applyMasterVolume(float* left, float* right, uint32_t numFrames, float volume) {
@@ -213,7 +208,7 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
   // Clear planar output channels.
   for (uint32_t ch = 0; ch < numChannels; ++ch) {
     if (outputBuffers[ch]) {
-      std::memset(outputBuffers[ch], 0, numFrames * sizeof(float));
+      ::memset(outputBuffers[ch], 0, numFrames * sizeof(float));
     }
   }
 
@@ -229,7 +224,7 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
   // Scratch mono buffers live in engine members (not on the audio-thread stack).
   for (int i = 0; i < NUM_DEVICES; ++i) {
     m_voiceBuffers[i] = m_scratchBuffers[i];
-    std::memset(m_scratchBuffers[i], 0, numFrames * sizeof(float));
+    ::memset(m_scratchBuffers[i], 0, numFrames * sizeof(float));
   }
 
   alignas(16) Sequencer::Event events[128];
@@ -316,7 +311,7 @@ void RbsAudioEngine::renderSpan(EngineSnapshot& snap, uint32_t start, uint32_t c
   for (int i = 0; i < NUM_DEVICES; ++i) {
     spanVoices[i] = m_voiceBuffers[i] + start;
     if (!deviceEnabled(i) || !snap.voices[static_cast<size_t>(i)]) {
-      std::memset(spanVoices[i], 0, count * sizeof(float));
+      ::memset(spanVoices[i], 0, count * sizeof(float));
       continue;
     }
     snap.voices[static_cast<size_t>(i)]->render(spanVoices[i], count);

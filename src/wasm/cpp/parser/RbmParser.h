@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
 
 namespace rb338 {
@@ -15,6 +16,7 @@ namespace rb338 {
  */
 class RbmParser {
 public:
+  std::optional<ParsedMod> parse(std::span<const uint8_t> data);
   std::optional<ParsedMod> parse(const uint8_t* data, size_t size);
   const std::string& lastError() const { return m_error; }
   void clearError() { m_error.clear(); }

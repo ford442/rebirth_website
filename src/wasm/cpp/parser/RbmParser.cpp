@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cstring>
+#include <span>
 
 namespace rb338 {
 
@@ -208,11 +209,20 @@ bool RbmParser::parseList(const uint8_t* data, size_t size, ParsedMod& mod) {
 }
 
 std::optional<ParsedMod> RbmParser::parse(const uint8_t* data, size_t size) {
+  if (!data && size != 0) {
+    return std::nullopt;
+  }
+  return parse(std::span<const uint8_t>(data, size));
+}
+
+std::optional<ParsedMod> RbmParser::parse(std::span<const uint8_t> buffer) {
   m_error.clear();
-  if (!data || size < 12) {
+  if (buffer.size() < 12) {
     m_error = "Buffer too small for PRBM container";
     return std::nullopt;
   }
+  const uint8_t* data = buffer.data();
+  const size_t size = buffer.size();
   if (!matchId(data, kCatMagic)) {
     m_error = "Missing root 'CAT ' container magic";
     return std::nullopt;

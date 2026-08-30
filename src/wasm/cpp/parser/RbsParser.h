@@ -1,10 +1,11 @@
 #pragma once
 
 #include "RbsTypes.h"
-#include <cstddef>
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
@@ -38,11 +39,13 @@ public:
   /**
    * Parse an .rbs file from a raw byte buffer.
    *
-   * @param data  Pointer to the beginning of the file bytes.
-   * @param size  Total size of the buffer in bytes.
+   * @param data  File bytes.
    * @return      ParsedSong on success, std::nullopt on failure.
    *              Call lastError() for details when nullopt is returned.
    */
+  std::optional<ParsedSong> parse(std::span<const uint8_t> data);
+
+  /** Pointer/size overload retained for Embind and legacy call sites. */
   std::optional<ParsedSong> parse(const uint8_t* data, size_t size);
 
   /** Return the last error message (empty if no error occurred). */

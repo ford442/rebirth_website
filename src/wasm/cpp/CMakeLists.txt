@@ -11,9 +11,12 @@ endif()
 
 project(rb338_native LANGUAGES CXX)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 option(RB338_ASAN "Build native tests with AddressSanitizer" OFF)
 option(RB338_UBSAN "Build native tests with UndefinedBehaviorSanitizer" OFF)
 option(RB338_TSAN "Build native tests with ThreadSanitizer" OFF)
+option(RB338_NO_EXCEPTIONS "Compile rb338_engine with -fno-exceptions (spike only)" OFF)
 
 if(RB338_TSAN AND (RB338_ASAN OR RB338_UBSAN))
   message(FATAL_ERROR "RB338_TSAN cannot be combined with ASan/UBSan")
@@ -32,7 +35,7 @@ if(RB338_TSAN)
   add_link_options(-fsanitize=thread)
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -55,6 +58,9 @@ target_include_directories(rb338_parser PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 add_library(rb338_engine STATIC ${RB338_ENGINE_SOURCES})
 target_link_libraries(rb338_engine PUBLIC rb338_parser)
 target_include_directories(rb338_engine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+if(RB338_NO_EXCEPTIONS)
+  target_compile_options(rb338_engine PRIVATE -fno-exceptions)
+endif()
 
 # Type-check the worklet translation unit on every CMake build.
 # Native builds use header stubs; emcmake uses the real Emscripten SDK.
@@ -104,6 +110,8 @@ if(EMSCRIPTEN)
     "-sEXPORTED_RUNTIME_METHODS=['ccall','cwrap','getValue','setValue','HEAPU8','emscriptenRegisterAudioObject','emscriptenGetAudioObject']"
     -sENVIRONMENT=web,worker
     -sALLOW_TABLE_GROWTH=1
+    # WASM module linear stack (main thread + synchronous WASM calls).
+    # Not the AudioWorklet pthread stack — see engine/AudioThreadLimits.h.
     -sSTACK_SIZE=131072
     --no-entry
     -lembind
@@ -124,6 +132,7 @@ if(EMSCRIPTEN)
     target_link_options(rbsParser PRIVATE
       -O3
       -flto
+      -sASSERTIONS=0
       -sALLOW_MEMORY_GROWTH=0
       -sINITIAL_MEMORY=67108864
     )

@@ -32,7 +32,9 @@ import type {
 } from '../types/wasm-audio';
 
 import { wasmAudioConfig } from '../audio-module.config';
+import type { AudioContextDiagnostics } from '../types/wasm-audio';
 import { WasmInitError, INIT_FAILURE_MESSAGES } from './rbs-init-errors';
+import { createProductionAudioContext } from './create-audio-context';
 import { waitForCrossOriginIsolation } from '../../scripts/coi-bootstrap';
 
 /** Callback invoked when playback position changes (bar, step). */
@@ -60,6 +62,7 @@ export class WasmAudioBridge {
   private onStatus: StatusCallback | null = null;
   private volume = 0.8;
   private positionPollId: number | null = null;
+  private _audioDiagnostics: AudioContextDiagnostics | null = null;
 
   /** Is the bridge initialised and ready to load files? */
   get isReady(): boolean {
@@ -81,6 +84,11 @@ export class WasmAudioBridge {
     return this.audioContext;
   }
 
+  /** Audio device metrics collected during init (null before init completes). */
+  get audioDiagnostics(): AudioContextDiagnostics | null {
+    return this._audioDiagnostics;
+  }
+
   /** The master gain node (exposed for integration tests). */
   get masterGain(): GainNode | null {
     return this.gainNode;
@@ -100,8 +108,9 @@ export class WasmAudioBridge {
    * Initialise the bridge:
    *   1. Load Emscripten glue script
    *   2. Instantiate WASM module
-   *   3. Create AudioContext
-   *   4. Add AudioWorklet module
+   *   3. Create AudioContext (may start suspended until play() resumes it)
+   *   4. Register the Emscripten "rbs-player" worklet via C++ — do not call
+   *      audioWorklet.addModule() with a second processor of the same name
    *   5. Create RbsAudioEngine instance in WASM
    */
   async init(): Promise<void> {
@@ -176,10 +185,13 @@ export class WasmAudioBridge {
         },
       });
 
-      // 3. Create AudioContext
-      this.audioContext = new AudioContext({
-        sampleRate: wasmAudioConfig.sampleRate,
-      });
+      // 3. Create AudioContext (retry without sampleRate on NotSupportedError)
+      const { context, diagnostics } = createProductionAudioContext(
+        wasmAudioConfig.preferredSampleRate,
+        wasmAudioConfig.latencyHint
+      );
+      this.audioContext = context;
+      this._audioDiagnostics = diagnostics;
 
       // 4. Create WASM engine instance via Embind
       const config: EngineConfig = {
@@ -240,9 +252,12 @@ export class WasmAudioBridge {
       console.error('[WasmAudioBridge] init failed:', err);
       this._setStatus('error');
       if (err instanceof WasmInitError) throw err;
+      const diag = this._audioDiagnostics
+        ? ` [${this._audioDiagnostics.sampleRate} Hz, hint=${this._audioDiagnostics.latencyHint}]`
+        : '';
       throw new WasmInitError({
         reason: 'engine-init-failed',
-        message: INIT_FAILURE_MESSAGES['engine-init-failed'],
+        message: INIT_FAILURE_MESSAGES['engine-init-failed'] + diag,
         cause: err,
       });
     }

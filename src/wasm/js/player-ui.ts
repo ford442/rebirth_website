@@ -4,6 +4,7 @@
  */
 
 import { WasmAudioBridge } from './WasmAudioBridge';
+import { formatAudioContextDiagnostics } from './create-audio-context';
 import { DegradedRbsPlayer } from './DegradedRbsPlayer';
 import {
   classifyInitError,
@@ -68,6 +69,7 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
   const fallbackMode = playerEl.querySelector('#rbsFallbackMode') as HTMLElement | null;
   const toastStack = playerEl.querySelector('#rbsToastStack') as HTMLElement | null;
   const lcdStatus = playerEl.querySelector('.player-lcd-status .lcd-value') as HTMLElement | null;
+  const lcdStatusPanel = playerEl.querySelector('.player-lcd-status') as HTMLElement | null;
   const lcdBpm = playerEl.querySelector('.player-lcd-bpm .lcd-value') as HTMLElement | null;
   const lcdBar = playerEl.querySelector('.player-lcd-bar .lcd-value') as HTMLElement | null;
   const ledLabel = playerEl.querySelector('.player-led') as HTMLElement | null;
@@ -655,10 +657,19 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
     if (!demos.length) setMessage('Degraded mode — drop an .rbs file to inspect metadata.');
   }
 
+  function applyAudioDiagnostics(wasmBridge: WasmAudioBridge) {
+    const diagnostics = wasmBridge.audioDiagnostics;
+    if (!diagnostics || !lcdStatusPanel) return;
+    lcdStatusPanel.title = formatAudioContextDiagnostics(diagnostics);
+  }
+
   async function bootstrap() {
     try {
       setMessage('Initialising audio engine…');
       await bridge.init();
+      if (bridge instanceof WasmAudioBridge) {
+        applyAudioDiagnostics(bridge);
+      }
       setPlayerMode('wasm');
       setStudioLive(true);
       bridge.setVolume(Number(volumeSlider?.value ?? bridge.outputVolume));

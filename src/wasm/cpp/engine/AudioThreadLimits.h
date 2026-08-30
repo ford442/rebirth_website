@@ -13,9 +13,11 @@ constexpr uint32_t AUDIO_WORKLET_FRAMES = 128;
 constexpr uint32_t MAX_RENDER_TEST_FRAMES = 2048;
 
 /**
- * Stack allocated for the Emscripten Wasm Audio Worklet pthread.
- * Must exceed worst-case processBlock() stack usage (scratch buffers live in
- * RbsAudioEngine members; remaining locals are events + spills).
+ * Stack allocated for the Emscripten Wasm Audio Worklet pthread
+ * (`g_audioThreadStack` in worklet/RbsWorklet.cpp).
+ *
+ * This is separate from the WASM module linear stack configured via
+ * `-sSTACK_SIZE` in CMakeLists.txt (128 KiB for the main thread).
  */
 constexpr size_t AUDIO_THREAD_STACK_SIZE = 65536;
 

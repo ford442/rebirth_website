@@ -2,9 +2,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
-#ifdef __wasm_simd128__
-#include <wasm_simd128.h>
-#endif
 
 namespace rb338 {
 
@@ -133,8 +130,8 @@ void Mixer::process(const float* const* deviceBuffers, float* leftOut, float* ri
   if (!leftOut || !rightOut || numFrames == 0) return;
 
   updateDelayTap(bpm);
-  std::memset(leftOut, 0, numFrames * sizeof(float));
-  std::memset(rightOut, 0, numFrames * sizeof(float));
+  ::memset(leftOut, 0, numFrames * sizeof(float));
+  ::memset(rightOut, 0, numFrames * sizeof(float));
 
   const float limiterReleaseCoeff =
       std::exp(-1.0f / (kLimiterRelease * m_sampleRate));
@@ -161,19 +158,6 @@ void Mixer::process(const float* const* deviceBuffers, float* leftOut, float* ri
         sample *= level;
       }
 
-#ifdef __wasm_simd128__
-      const v128_t gains = wasm_f32x4_make(
-          constantPowerPanLeft(pan), constantPowerPanRight(pan),
-          (m_distortionOn && m_devices[d].dist) ? 1.0f : 0.0f,
-          m_delayOn ? std::clamp(m_devices[d].delaySend, 0.0f, 1.0f) : 0.0f);
-      const v128_t scaled = wasm_f32x4_mul(wasm_f32x4_splat(sample), gains);
-      alignas(16) float lanes[4];
-      wasm_v128_store(lanes, scaled);
-      dryL += lanes[0];
-      dryR += lanes[1];
-      distBus += lanes[2];
-      delayBus += lanes[3];
-#else
       const float leftGain = constantPowerPanLeft(pan);
       const float rightGain = constantPowerPanRight(pan);
       dryL += sample * leftGain;
@@ -189,7 +173,6 @@ void Mixer::process(const float* const* deviceBuffers, float* leftOut, float* ri
           delayBus += sample * send;
         }
       }
-#endif
     }
 
     float wetL = 0.0f;

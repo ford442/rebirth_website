@@ -21,6 +21,7 @@ import type {
   RbsAudioEngineInstance,
   RbsParserInstance,
   EngineModule,
+  AudioContextDiagnostics,
 } from '../types/wasm-audio';
 
 import { wasmAudioConfig } from '../audio-module.config';
@@ -28,7 +29,7 @@ import { wasmAudioConfig } from '../audio-module.config';
 // ── EngineConfig shape ───────────────────────────────────────────
 
 const engineConfig: EngineConfig = {
-  sampleRate: wasmAudioConfig.sampleRate,
+  sampleRate: wasmAudioConfig.preferredSampleRate,
   bufferSize: wasmAudioConfig.bufferSize,
   enableTb303A: wasmAudioConfig.features.tb303_a,
   enableTb303B: wasmAudioConfig.features.tb303_b,
@@ -54,6 +55,20 @@ const configCheck: EngineConfig = {
 
 void engineConfig;
 void configCheck;
+
+// ── WasmAudioModuleConfig shape ──────────────────────────────────
+
+const latencyHintCheck: typeof wasmAudioConfig.latencyHint = 'interactive';
+void latencyHintCheck;
+
+const diagnosticsCheck: AudioContextDiagnostics = {
+  sampleRate: 48000,
+  latencyHint: 'interactive',
+  baseLatency: 0.01,
+  outputLatency: 0.02,
+  requestedSampleRate: 44100,
+};
+void diagnosticsCheck;
 
 // ── PlaybackPosition shape ───────────────────────────────────────
 

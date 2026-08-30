@@ -338,9 +338,25 @@ The Wasm Audio Worklet callback derives per-channel pointers as
 `outputs[0].data + channelIndex * samplesPerChannel`.
 
 Scratch buffers for per-device mono renders live in `RbsAudioEngine` members
-(not on the audio-thread stack). `AUDIO_THREAD_STACK_SIZE` (64 KiB) is enforced
-in `engine/AudioThreadLimits.h` with a `static_assert` against remaining
-`processBlock()` stack locals.
+(not on the audio-thread stack). `AUDIO_THREAD_STACK_SIZE` (64 KiB) is the
+**AudioWorklet pthread stack** (`g_audioThreadStack` in `worklet/RbsWorklet.cpp`).
+The **module linear stack** is `-sSTACK_SIZE=131072` (128 KiB) in
+`src/wasm/cpp/CMakeLists.txt` — do not confuse the two.
+
+## AudioWorklet node options (C++)
+
+`rbsWorkletProcessorCreated` in `worklet/RbsWorklet.cpp` creates the node with:
+
+- `numberOfInputs = 0`
+- `numberOfOutputs = 1`
+- `outputChannelCounts = { 2 }` (stereo)
+
+The processor name `"rbs-player"` is registered on the worklet thread via
+`emscripten_create_wasm_audio_worklet_processor_async`. **JavaScript must not**
+call `audioWorklet.addModule()` with a second processor of the same name.
+
+For click-free parameter ramps, prefer the lock-free `EngineCommandQueue` over
+`AudioParam` — mixing both is error-prone.
 
 ## Cross-origin isolation and remote `.rbs` fetches
 
@@ -359,7 +375,26 @@ allowed without same-origin mirroring. If a host omits CORP, enable
 `credentialless` COEP via the COI service worker message path or mirror assets
 same-origin.
 
-These are configured in `src/wasm/cpp/build.sh` via `-sEXPORTED_FUNCTIONS="['_malloc','_free']"` and `-sEXPORTED_RUNTIME_METHODS="['ccall','cwrap','getValue','setValue','HEAPU8','emscriptenRegisterAudioObject','emscriptenGetAudioObject']"`.
+Linker and export flags are defined in
+[`src/wasm/cpp/CMakeLists.txt`](cpp/CMakeLists.txt) (single source of truth).
+`build.sh` invokes `emcmake cmake` and does not pass linker flags directly.
+
+Key release linker settings:
+
+| Flag | Value |
+| ---- | ----- |
+| `-pthread` | Enabled |
+| `-sAUDIO_WORKLET=1` | Enabled |
+| `-sWASM_WORKERS=1` | Enabled |
+| `-sSTACK_SIZE` | 131072 (128 KiB module linear stack) |
+| `-sINITIAL_MEMORY` | 67108864 (64 MiB) |
+| `-sALLOW_MEMORY_GROWTH` | 0 |
+| `-sASSERTIONS` | 0 |
+| `-sEXPORTED_FUNCTIONS` | `_malloc`, `_free` |
+| `-sEXPORTED_RUNTIME_METHODS` | `ccall`, `cwrap`, `getValue`, `setValue`, `HEAPU8`, `emscriptenRegisterAudioObject`, `emscriptenGetAudioObject` |
+
+See ADR [`docs/adr/0002-wasm-build-variants-and-heap.md`](../../docs/adr/0002-wasm-build-variants-and-heap.md)
+for dual-build and heap policy decisions.
 
 ## Change protocol
 

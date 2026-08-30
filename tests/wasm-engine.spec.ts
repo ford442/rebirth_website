@@ -9,6 +9,84 @@ const WASM_FIXTURE_URL = '/rebirth_website/archive/rbs-songs/demo/propellerhead-
  *   npm run wasm:build
  */
 test.describe('WASM audio engine', () => {
+  test.use({ serviceWorkers: 'allow' });
+  test('AudioContext uses interactive latency and reports diagnostics', async ({ page }) => {
+    await page.goto('/rebirth_website/');
+    await page.waitForFunction(() => !!(window as any).WasmAudioBridge, null, {
+      timeout: 5000,
+    });
+
+    const audioInfo = await page.evaluate(async () => {
+      const WasmAudioBridge = (window as any).WasmAudioBridge;
+      const bridge = new WasmAudioBridge();
+      await bridge.init();
+      const ctx = bridge.ctx;
+      const diagnostics = bridge.audioDiagnostics;
+      bridge.dispose();
+      return {
+        latencyHint: ctx?.latencyHint ?? null,
+        sampleRate: ctx?.sampleRate ?? null,
+        diagnosticsSampleRate: diagnostics?.sampleRate ?? null,
+        diagnosticsHint: diagnostics?.latencyHint ?? null,
+        requestedSampleRate: diagnostics?.requestedSampleRate ?? null,
+      };
+    });
+
+    expect(audioInfo.diagnosticsHint).toBe('interactive');
+    if (audioInfo.latencyHint != null) {
+      expect(audioInfo.latencyHint).toBe('interactive');
+    }
+    expect(audioInfo.sampleRate).toBeGreaterThan(0);
+    expect(audioInfo.diagnosticsSampleRate).toBe(audioInfo.sampleRate);
+    expect(
+      audioInfo.requestedSampleRate === 44100 || audioInfo.requestedSampleRate === null
+    ).toBe(true);
+  });
+
+  test('retries AudioContext without sampleRate when preferred rate is rejected', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      const NativeAudioContext = window.AudioContext;
+      (window as any).__audioContextAttempts = 0;
+      const MockAudioContext = function (
+        this: AudioContext,
+        options?: AudioContextOptions
+      ): AudioContext {
+        (window as any).__audioContextAttempts += 1;
+        const attempts = (window as any).__audioContextAttempts as number;
+        if (attempts === 1 && options?.sampleRate != null) {
+          throw new DOMException('sampleRate not supported', 'NotSupportedError');
+        }
+        return new NativeAudioContext(
+          attempts === 1 ? options : { latencyHint: options?.latencyHint }
+        );
+      } as unknown as typeof AudioContext;
+      MockAudioContext.prototype = NativeAudioContext.prototype;
+      (window as any).AudioContext = MockAudioContext;
+    });
+
+    await page.goto('/rebirth_website/');
+    await page.waitForFunction(() => !!(window as any).createProductionAudioContext, null, {
+      timeout: 5000,
+    });
+
+    const audioInfo = await page.evaluate(() => {
+      (window as any).__audioContextAttempts = 0;
+      const createProductionAudioContext = (window as any).createProductionAudioContext;
+      const { context, diagnostics } = createProductionAudioContext(44100, 'interactive');
+      return {
+        sampleRate: context.sampleRate,
+        diagnosticsSampleRate: diagnostics.sampleRate,
+        requestedSampleRate: diagnostics.requestedSampleRate,
+      };
+    });
+
+    expect(audioInfo.requestedSampleRate).toBeNull();
+    expect(audioInfo.sampleRate).toBeGreaterThan(0);
+    expect(audioInfo.diagnosticsSampleRate).toBe(audioInfo.sampleRate);
+  });
+
   test('initialises, loads a fixture, and advances playback position', async ({ page }) => {
     await page.goto('/rebirth_website/');
     await page.waitForSelector('.rbs-player');

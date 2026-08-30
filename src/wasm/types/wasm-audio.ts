@@ -108,10 +108,27 @@ export interface WasmAudioModuleConfig {
   wasmPath: string;
   glueScriptPath: string;
   workletPath: string;
+  /** Preferred AudioContext sample rate (Hz); browser may use a different rate. */
+  preferredSampleRate: number;
+  /** @deprecated Use preferredSampleRate */
   sampleRate: number;
+  /** AudioContext latency hint for archive preview */
+  latencyHint: AudioContextLatencyCategory;
   bufferSize: number;
   maxVoices: number;
   features: EngineFeatures;
+}
+
+/** Runtime AudioContext metrics collected after init. */
+export interface AudioContextDiagnostics {
+  sampleRate: number;
+  latencyHint: AudioContextLatencyCategory;
+  /** Seconds; null when the property is unsupported. */
+  baseLatency: number | null;
+  /** Seconds; null when the property is unsupported. */
+  outputLatency: number | null;
+  /** Preferred rate passed to the constructor, or null when retry omitted it. */
+  requestedSampleRate: number | null;
 }
 
 /** Runtime engine configuration passed from JS to WASM on init.

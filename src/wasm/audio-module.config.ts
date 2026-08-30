@@ -21,7 +21,11 @@ export const wasmAudioConfig: WasmAudioModuleConfig = {
   workletPath: `${prefix}wasm/rbsWorklet.js`,
 
   /** Preferred AudioContext sample rate (Hz) */
+  preferredSampleRate: 44100,
   sampleRate: 44100,
+
+  /** Request low output latency for interactive archive preview */
+  latencyHint: 'interactive',
 
   /** Render quantum size in frames (standard Web Audio = 128) */
   bufferSize: 128,
