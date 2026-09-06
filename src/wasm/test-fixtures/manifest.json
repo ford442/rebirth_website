@@ -1,0 +1,50 @@
+[
+  {
+    "path": "src/wasm/test-fixtures/v1/just-15.rbs",
+    "source_name": "Just 15.RBS",
+    "bytes": 19705,
+    "sha256": "ea0512b66c7dabd2b99164d69196a4f56bac8139ffd5613cdcb54692a318b078",
+    "magic": "MThd",
+    "file_version": "3.1.0"
+  },
+  {
+    "path": "src/wasm/test-fixtures/v1/retrograde.rbs",
+    "source_name": "Retrograde.RBS",
+    "bytes": 20029,
+    "sha256": "d01fdb33b311f2ff072ff520208a075d0eddf193f6cbb86c3e9ba6209a755f38",
+    "magic": "MThd",
+    "file_version": "3.1.0"
+  },
+  {
+    "path": "src/wasm/test-fixtures/v15/gurkensalat.rbs",
+    "source_name": "Gurkensalat.RBS",
+    "bytes": 19349,
+    "sha256": "35b6ab6eaf9f627c122dbb6fd38e17f6e8ff56605fdea90ae2e62012bd63e749",
+    "magic": "MThd",
+    "file_version": "3.2.0"
+  },
+  {
+    "path": "src/wasm/test-fixtures/v15/hermetico-absoluto.rbs",
+    "source_name": "Hermetico Absoluto.RBS",
+    "bytes": 20082,
+    "sha256": "c600201525451f4bcc18c1689b7e1e5a4b195231204209737155aa86a30fd0cb",
+    "magic": "MThd",
+    "file_version": "3.2.0"
+  },
+  {
+    "path": "src/wasm/test-fixtures/v15/cavey-3-acid.rbs",
+    "source_name": "cavey-3-acid.rbs",
+    "bytes": 27163,
+    "sha256": "f1ccf745d66b02725c4ebb45609b80178f4a7974a4891ab284cd6d02a7f63e3b",
+    "magic": "MThd",
+    "file_version": "3.2.0"
+  },
+  {
+    "path": "src/wasm/test-fixtures/reject/generic-smf.mid",
+    "source_name": "synthetic",
+    "bytes": 26,
+    "sha256": "2b8d773fd6cfd44d0c62d5c8f679408e47916598534d90461f5646dcb184ea1c",
+    "magic": "MThd",
+    "file_version": null
+  }
+]
