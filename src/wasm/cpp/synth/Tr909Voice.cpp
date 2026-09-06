@@ -14,6 +14,11 @@ size_t channelIndex(DrumVoiceId id) {
     case DrumVoiceId::OpenHat: return 3;
     case DrumVoiceId::Clap: return 4;
     case DrumVoiceId::Rimshot: return 5;
+    case DrumVoiceId::Crash: return 6;
+    case DrumVoiceId::Ride: return 7;
+    case DrumVoiceId::LowTom: return 8;
+    case DrumVoiceId::MidTom: return 9;
+    case DrumVoiceId::HighTom: return 10;
     default: return 0;
   }
 }
@@ -61,11 +66,14 @@ void Tr909Voice::triggerStep(uint8_t stepIndex, const StepData& step) {
 
   if (hits & DrumHit::BD) fire(DrumVoiceId::Kick, accent);
   if (hits & DrumHit::SD) fire(DrumVoiceId::Snare, accent);
+  if (hits & DrumHit::LT) fire(DrumVoiceId::LowTom, accent);
+  if (hits & DrumHit::MT) fire(DrumVoiceId::MidTom, accent);
+  if (hits & DrumHit::HT) fire(DrumVoiceId::HighTom, accent);
   if (hits & DrumHit::CH) fire(DrumVoiceId::ClosedHat, accent);
   if (hits & DrumHit::OH) fire(DrumVoiceId::OpenHat, accent);
-  if ((hits & DrumHit::CL) || (extra & DrumExtra::CP)) {
-    fire(DrumVoiceId::Clap, accent);
-  }
+  if (extra & DrumExtra::RS) fire(DrumVoiceId::Rimshot, accent);
+  if (extra & DrumExtra::CP) fire(DrumVoiceId::Crash, accent);
+  if (extra & DrumExtra::MA) fire(DrumVoiceId::Ride, accent);
 }
 
 void Tr909Voice::setParameter(const char* name, float value) {

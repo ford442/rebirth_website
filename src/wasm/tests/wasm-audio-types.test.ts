@@ -17,6 +17,7 @@ import type {
   EngineConfig,
   PlaybackPosition,
   WasmParsedSong,
+  WasmSongFxSettings,
   WasmDeviceId,
   RbsAudioEngineInstance,
   RbsParserInstance,
@@ -78,6 +79,15 @@ const position: PlaybackPosition = {
 };
 
 void position;
+
+const fxDefaults: WasmSongFxSettings = {
+  masterLevel: 127,
+  delay: { enabled: false, time: 0, feedback: 0, wet: 0 },
+  pcf: { enabled: false, cutoff: 64, resonance: 0, envAmount: 0 },
+  dist: { enabled: false, drive: 32, mix: 29 },
+  comp: { enabled: false, threshold: 32, ratio: 127, attack: 127 },
+};
+void fxDefaults;
 
 // ── Mock WASM module type check ──────────────────────────────────
 

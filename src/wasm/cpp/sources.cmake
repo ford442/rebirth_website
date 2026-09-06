@@ -3,6 +3,7 @@
 
 set(RB338_PARSER_SOURCES
   parser/RbsParser.cpp
+  parser/RbsMidiContainer.cpp
   parser/ParsedSongJson.cpp
   parser/RbmParser.cpp
   parser/ParsedModJson.cpp
@@ -13,6 +14,7 @@ set(RB338_ENGINE_SOURCES
   engine/EngineCommands.cpp
   engine/EngineSnapshot.cpp
   engine/Sequencer.cpp
+  engine/AutomationScheduler.cpp
   engine/Mixer.cpp
   synth/Voice.cpp
   synth/DrumSynth.cpp

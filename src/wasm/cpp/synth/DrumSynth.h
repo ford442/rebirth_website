@@ -11,6 +11,10 @@ enum class DrumVoiceId : uint8_t {
   OpenHat,
   Rimshot,
   Clap,
+  Clave,
+  Maracas,
+  Crash,
+  Ride,
   LowTom,
   MidTom,
   HighTom,
@@ -65,6 +69,10 @@ private:
   float renderHat(bool open);
   float renderRimshot();
   float renderClap();
+  float renderClave();
+  float renderMaracas();
+  float renderCrash();
+  float renderRide();
   float renderTom(float baseHz);
 };
 

@@ -32,6 +32,11 @@ private:
     OpenHat,
     Rimshot,
     Clap,
+    Clave,
+    Maracas,
+    LowTom,
+    MidTom,
+    HighTom,
     Count
   };
 

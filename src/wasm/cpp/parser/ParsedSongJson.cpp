@@ -92,6 +92,35 @@ void appendArrangementBar(std::ostringstream& out, const ArrangementBar& bar) {
   out << "]}";
 }
 
+void appendFxSettings(std::ostringstream& out, const SongFxSettings& fx) {
+  out << '{'
+      << "\"masterLevel\":" << static_cast<int>(fx.masterLevel) << ','
+      << "\"delay\":{"
+      << "\"enabled\":" << (fx.delay.enabled ? "true" : "false") << ','
+      << "\"time\":" << static_cast<int>(fx.delay.time) << ','
+      << "\"feedback\":" << static_cast<int>(fx.delay.feedback) << ','
+      << "\"wet\":" << static_cast<int>(fx.delay.wet)
+      << "},"
+      << "\"pcf\":{"
+      << "\"enabled\":" << (fx.pcf.enabled ? "true" : "false") << ','
+      << "\"cutoff\":" << static_cast<int>(fx.pcf.cutoff) << ','
+      << "\"resonance\":" << static_cast<int>(fx.pcf.resonance) << ','
+      << "\"envAmount\":" << static_cast<int>(fx.pcf.envAmount)
+      << "},"
+      << "\"dist\":{"
+      << "\"enabled\":" << (fx.dist.enabled ? "true" : "false") << ','
+      << "\"drive\":" << static_cast<int>(fx.dist.drive) << ','
+      << "\"mix\":" << static_cast<int>(fx.dist.mix)
+      << "},"
+      << "\"comp\":{"
+      << "\"enabled\":" << (fx.comp.enabled ? "true" : "false") << ','
+      << "\"threshold\":" << static_cast<int>(fx.comp.threshold) << ','
+      << "\"ratio\":" << static_cast<int>(fx.comp.ratio) << ','
+      << "\"attack\":" << static_cast<int>(fx.comp.attack)
+      << "}"
+      << '}';
+}
+
 } // anonymous namespace
 
 std::string parsedSongToJson(const ParsedSong& song) {
@@ -131,7 +160,9 @@ std::string parsedSongToJson(const ParsedSong& song) {
     appendArrangementBar(out, song.arrangement[i]);
   }
 
-  out << "]}";
+  out << "],\"fx\":";
+  appendFxSettings(out, song.fx);
+  out << "}";
   return out.str();
 }
 

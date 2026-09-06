@@ -240,6 +240,7 @@ struct ParsedSong {
   std::array<DeviceState, NUM_DEVICES> devices;
   std::vector<Pattern> patterns;
   std::vector<ArrangementBar> arrangement;
+  SongFxSettings fx;
 };
 ```
 
@@ -259,8 +260,57 @@ export interface WasmParsedSong {
   devices: WasmDeviceState[];
   patterns: WasmPattern[];
   arrangement: WasmArrangementBar[];
+  fx: WasmSongFxSettings;
 }
 ```
+
+`AutomationEvent` / `ParsedSong.automation` remain C++-only and are **not**
+exported through Embind.
+
+### `SongFxSettings`
+
+C++ (`src/wasm/cpp/parser/RbsTypes.h`):
+
+```cpp
+struct DelaySettings {
+  bool enabled = false;
+  uint8_t time = 0;
+  uint8_t feedback = 0;
+  uint8_t wet = 0;
+};
+
+struct PcfSettings {
+  bool enabled = false;
+  uint8_t cutoff = 64;
+  uint8_t resonance = 0;
+  uint8_t envAmount = 0;
+};
+
+struct DistSettings {
+  bool enabled = false;
+  uint8_t drive = 32;
+  uint8_t mix = 29;
+};
+
+struct CompSettings {
+  bool enabled = false;
+  uint8_t threshold = 32;
+  uint8_t ratio = 127;
+  uint8_t attack = 127;
+};
+
+struct SongFxSettings {
+  uint8_t masterLevel = 127;
+  DelaySettings delay;
+  PcfSettings pcf;
+  DistSettings dist;
+  CompSettings comp;
+};
+```
+
+TypeScript (`WasmSongFxSettings` in `src/wasm/types/wasm-audio.ts`) mirrors the
+nested structs field-for-field. `RbsVersion` adds `V1_0 = 0x10` for MIDI-container
+v1.0 songs.
 
 The bridge converts `WasmParsedSong` to the UI-facing `ParsedSong`, mapping numeric `WasmDeviceId` values to string labels and flattening knob fields into `DeviceState.knobs`.
 

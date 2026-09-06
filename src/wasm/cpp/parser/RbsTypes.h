@@ -37,6 +37,7 @@ enum class DeviceId : uint8_t {
 };
 
 enum class RbsVersion : uint8_t {
+  V1_0   = 0x10,
   V1_5   = 0x15,
   V2_0   = 0x20,
   V2_0_1 = 0x21
@@ -109,6 +110,58 @@ struct ArrangementBar {
 };
 
 // ─────────────────────────────────────────────────────────────────
+// Song FX (DEVL chunks: DELY, PCF, DIST, COMP + MIXR master)
+// ─────────────────────────────────────────────────────────────────
+
+struct DelaySettings {
+  bool enabled = false;
+  uint8_t time = 0;       // 0–127
+  uint8_t feedback = 0;   // 0–127
+  uint8_t wet = 0;        // 0–127
+};
+
+struct PcfSettings {
+  bool enabled = false;
+  uint8_t cutoff = 64;    // 0–127
+  uint8_t resonance = 0;  // 0–127
+  uint8_t envAmount = 0;  // 0–127
+};
+
+struct DistSettings {
+  bool enabled = false;
+  uint8_t drive = 32;     // 0–127
+  uint8_t mix = 29;       // 0–127
+};
+
+struct CompSettings {
+  bool enabled = false;
+  uint8_t threshold = 32; // 0–127
+  uint8_t ratio = 127;    // 0–127
+  uint8_t attack = 127;   // 0–127
+};
+
+struct SongFxSettings {
+  uint8_t masterLevel = 127; // MIXR byte 0, 0–127
+  DelaySettings delay;
+  PcfSettings pcf;
+  DistSettings dist;
+  CompSettings comp;
+};
+
+// ─────────────────────────────────────────────────────────────────
+// TRAK automation (C++ playback only; not exported to JS yet)
+// ─────────────────────────────────────────────────────────────────
+
+struct AutomationEvent {
+  uint8_t trackIndex = 0;   // 0=mixer, 1–4=devices, 5–8=FX
+  uint32_t tickPosition = 0;
+  uint8_t controller = 0;
+  uint8_t value = 0;
+};
+
+constexpr int NUM_TRAK_TRACKS = 9;
+
+// ─────────────────────────────────────────────────────────────────
 // Parsed Song (top-level result)
 // ─────────────────────────────────────────────────────────────────
 
@@ -128,6 +181,8 @@ struct ParsedSong {
   std::array<DeviceState, NUM_DEVICES> devices;
   std::vector<Pattern> patterns;
   std::vector<ArrangementBar> arrangement;
+  SongFxSettings fx;
+  std::vector<AutomationEvent> automation;
 };
 
 } // namespace rb338

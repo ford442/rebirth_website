@@ -24,7 +24,7 @@ public:
   void reset() override;
 
 private:
-  static constexpr size_t NUM_CHANNELS = 6;
+  static constexpr size_t NUM_CHANNELS = 11;
 
   float m_sampleRate = 44100.0f;
   DrumParams m_params{};

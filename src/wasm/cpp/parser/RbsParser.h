@@ -66,14 +66,23 @@ private:
   bool parseContainer(const uint8_t* data, size_t size, ParsedSong& song,
                       bool isRoot);
   bool parseNestedCat(const uint8_t* data, size_t size, ParsedSong& song);
+  bool parseMidiContainer(const uint8_t* data, size_t size, ParsedSong& song);
 
   // ── Chunk parsers ──
   bool parseHead(const uint8_t* data, size_t size, ParsedSong& song);
   bool parseGlob(const uint8_t* data, size_t size, ParsedSong& song);
   bool parseUsri(const uint8_t* data, size_t size, ParsedSong& song);
   bool parseMixr(const uint8_t* data, size_t size, ParsedSong& song);
+  bool parseDely(const uint8_t* data, size_t size, ParsedSong& song);
+  bool parsePcf(const uint8_t* data, size_t size, ParsedSong& song);
+  bool parseDist(const uint8_t* data, size_t size, ParsedSong& song);
+  bool parseComp(const uint8_t* data, size_t size, ParsedSong& song);
   bool parseDeviceChunk(DeviceId primaryId, DeviceId secondaryId,
                         const uint8_t* data, size_t size, ParsedSong& song);
+  bool parseV1DeviceChunk(DeviceId primaryId, DeviceId secondaryId,
+                          const uint8_t* data, size_t size, ParsedSong& song,
+                          size_t labelSkip, size_t slotSize, size_t headerSize,
+                          bool is303, bool lengthAtZero = false);
   bool parseTrak(const uint8_t* data, size_t size, ParsedSong& song);
   bool buildArrangement(ParsedSong& song);
 

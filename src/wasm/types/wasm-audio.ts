@@ -236,6 +236,42 @@ export interface EmbindVector<T> {
 }
 
 /** Parsed song as encoded in C++ `ParsedSong` */
+export interface WasmDelaySettings {
+  enabled: boolean;
+  time: number;
+  feedback: number;
+  wet: number;
+}
+
+export interface WasmPcfSettings {
+  enabled: boolean;
+  cutoff: number;
+  resonance: number;
+  envAmount: number;
+}
+
+export interface WasmDistSettings {
+  enabled: boolean;
+  drive: number;
+  mix: number;
+}
+
+export interface WasmCompSettings {
+  enabled: boolean;
+  threshold: number;
+  ratio: number;
+  attack: number;
+}
+
+export interface WasmSongFxSettings {
+  masterLevel: number;
+  delay: WasmDelaySettings;
+  pcf: WasmPcfSettings;
+  dist: WasmDistSettings;
+  comp: WasmCompSettings;
+}
+
+/** Parsed song as encoded in C++ `ParsedSong` */
 export interface WasmParsedSong {
   title: string;
   author: string;
@@ -249,6 +285,7 @@ export interface WasmParsedSong {
   devices: WasmDeviceState[];
   patterns: EmbindVector<WasmPattern>;
   arrangement: EmbindVector<WasmArrangementBar>;
+  fx: WasmSongFxSettings;
 }
 
 // ═══════════════════════════════════════════════════════════════════

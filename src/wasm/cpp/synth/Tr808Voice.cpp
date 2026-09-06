@@ -45,12 +45,15 @@ void Tr808Voice::triggerStep(uint8_t stepIndex, const StepData& step) {
 
   if (hits & DrumHit::BD) fire(Channel::Kick, DrumVoiceId::Kick, accent);
   if (hits & DrumHit::SD) fire(Channel::Snare, DrumVoiceId::Snare, accent);
+  if (hits & DrumHit::LT) fire(Channel::LowTom, DrumVoiceId::LowTom, accent);
+  if (hits & DrumHit::MT) fire(Channel::MidTom, DrumVoiceId::MidTom, accent);
+  if (hits & DrumHit::HT) fire(Channel::HighTom, DrumVoiceId::HighTom, accent);
   if (hits & DrumHit::CH) fire(Channel::ClosedHat, DrumVoiceId::ClosedHat, accent);
   if (hits & DrumHit::OH) fire(Channel::OpenHat, DrumVoiceId::OpenHat, accent);
   if (extra & DrumExtra::RS) fire(Channel::Rimshot, DrumVoiceId::Rimshot, accent);
-  if ((hits & DrumHit::CL) || (extra & DrumExtra::CP)) {
-    fire(Channel::Clap, DrumVoiceId::Clap, accent);
-  }
+  if (hits & DrumHit::CL) fire(Channel::Clave, DrumVoiceId::Clave, accent);
+  if (extra & DrumExtra::CP) fire(Channel::Clap, DrumVoiceId::Clap, accent);
+  if (extra & DrumExtra::MA) fire(Channel::Maracas, DrumVoiceId::Maracas, accent);
 }
 
 void Tr808Voice::setParameter(const char* name, float value) {

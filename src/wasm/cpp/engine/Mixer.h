@@ -28,6 +28,7 @@ public:
 
   /** Copy mixer routing from the loaded song (main thread). */
   void setDeviceStates(const std::array<DeviceState, NUM_DEVICES>& devices);
+  void setSongFx(const SongFxSettings& fx);
 
   /**
    * Mix device outputs into planar stereo buffers.
@@ -45,6 +46,14 @@ public:
   void setChannelPan(int deviceIndex, float pan);
   void setChannelMuted(int deviceIndex, bool muted);
 
+  void setDelayFeedback(float feedback);
+  void setDelayWet(float wet);
+  void setDistortionDrive(float drive);
+  void setDistortionMix(float mix);
+  void setCompressorThreshold(float threshold);
+  void setPcfCutoff(float cutoff);
+  void setPcfResonance(float resonance);
+
   void setDistortionEnabled(bool on) { m_distortionOn = on; }
   void setCompressorEnabled(bool on) { m_compressorOn = on; }
   void setDelayEnabled(bool on) { m_delayOn = on; }
@@ -53,16 +62,25 @@ private:
   static float flushDenormal(float x);
   static float constantPowerPanLeft(float pan);
   static float constantPowerPanRight(float pan);
-  static float diodeDistort(float x);
+  static float diodeDistort(float x, float drive);
   float compressSample(float x, float& envelope) const;
   void updateDelayTap(float bpm);
   void processDelaySample(float input, float& outL, float& outR);
+  float processPcfSample(int deviceIndex, float input);
 
   float m_sampleRate = 44100.0f;
   bool m_distortionOn = true;
   bool m_compressorOn = true;
   bool m_delayOn = true;
+  bool m_pcfOn = false;
   std::array<DeviceState, NUM_DEVICES> m_devices{};
+
+  float m_masterLevel = 1.0f;
+  float m_distortionDrive = 5.0f;
+  float m_distortionMix = 0.65f;
+  float m_compressorThreshold = 0.55f;
+  float m_pcfCutoff = 0.5f;
+  float m_pcfResonance = 0.2f;
 
   // Tempo-sync delay (fixed allocation in init, no heap in process).
   std::array<float, MAX_DELAY_SAMPLES> m_delayLine{};
@@ -76,6 +94,7 @@ private:
 
   // Per-device compressor envelope followers (compressor-send path).
   std::array<float, NUM_DEVICES> m_compressorEnvelopes{};
+  std::array<float, NUM_DEVICES> m_pcfState{};
 };
 
 } // namespace rb338

@@ -78,6 +78,18 @@ void DrumVoiceChannel::trigger(DrumVoiceId id, float velocity, bool accent,
       m_length = m_clapBurstLen * m_clapBurstsLeft +
                  m_clapGap * (m_clapBurstsLeft - 1);
       break;
+    case DrumVoiceId::Clave:
+      m_length = static_cast<uint32_t>(sr * 0.025f);
+      break;
+    case DrumVoiceId::Maracas:
+      m_length = static_cast<uint32_t>(sr * lerp(0.08f, 0.16f, params.decay));
+      break;
+    case DrumVoiceId::Crash:
+      m_length = static_cast<uint32_t>(sr * lerp(0.35f, 0.75f, params.decay));
+      break;
+    case DrumVoiceId::Ride:
+      m_length = static_cast<uint32_t>(sr * lerp(0.25f, 0.55f, params.decay));
+      break;
     case DrumVoiceId::LowTom:
       m_length = static_cast<uint32_t>(sr * lerp(0.18f, 0.32f, params.decay));
       break;
@@ -150,6 +162,39 @@ float DrumVoiceChannel::renderClap() {
   return sample;
 }
 
+float DrumVoiceChannel::renderClave() {
+  const float env = expDecay(m_age, m_length);
+  m_phase += 2.0f * kPi * 2400.0f / m_sampleRate;
+  const float click = std::sin(m_phase) * 0.45f;
+  const float noise = nextNoise() * 0.15f;
+  return (click + noise) * env * m_velocity * 0.5f;
+}
+
+float DrumVoiceChannel::renderMaracas() {
+  const float env = expDecay(m_age, m_length);
+  const float n0 = nextNoise();
+  const float n1 = nextNoise();
+  return (n0 - n1) * env * m_velocity * 0.28f;
+}
+
+float DrumVoiceChannel::renderCrash() {
+  const float env = expDecay(m_age, m_length);
+  const float n0 = nextNoise();
+  const float n1 = nextNoise();
+  m_phase += 2.0f * kPi * 4200.0f / m_sampleRate;
+  const float ring = std::sin(m_phase) * 0.08f;
+  return ((n0 - n1) * 0.55f + ring) * env * m_velocity * 0.62f;
+}
+
+float DrumVoiceChannel::renderRide() {
+  const float env = expDecay(m_age, m_length);
+  m_phase += 2.0f * kPi * 6800.0f / m_sampleRate;
+  const float tone = std::sin(m_phase) * 0.35f;
+  const float n0 = nextNoise();
+  const float n1 = nextNoise();
+  return (tone + (n0 - n1) * 0.25f) * env * m_velocity * 0.42f;
+}
+
 float DrumVoiceChannel::renderTom(float baseHz) {
   const float t = static_cast<float>(m_age) / static_cast<float>(std::max(1u, m_length));
   const float freq = baseHz * m_pitchMul * lerp(1.0f, 0.65f, t);
@@ -180,6 +225,18 @@ float DrumVoiceChannel::render() {
       break;
     case DrumVoiceId::Clap:
       sample = renderClap();
+      break;
+    case DrumVoiceId::Clave:
+      sample = renderClave();
+      break;
+    case DrumVoiceId::Maracas:
+      sample = renderMaracas();
+      break;
+    case DrumVoiceId::Crash:
+      sample = renderCrash();
+      break;
+    case DrumVoiceId::Ride:
+      sample = renderRide();
       break;
     case DrumVoiceId::LowTom:
       sample = renderTom(95.0f);

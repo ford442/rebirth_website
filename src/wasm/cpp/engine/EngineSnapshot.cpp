@@ -22,6 +22,7 @@ std::unique_ptr<EngineSnapshot> buildEngineSnapshot(const ParsedSong& song,
   snap->mixer->setCompressorEnabled(config.enableCompressor);
   snap->mixer->setDelayEnabled(config.enableDelay);
   snap->mixer->setDeviceStates(song.devices);
+  snap->mixer->setSongFx(song.fx);
 
   for (size_t i = 0; i < snap->voices.size(); ++i) {
     if (!snap->voices[i]) continue;

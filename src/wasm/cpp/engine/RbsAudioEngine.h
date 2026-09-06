@@ -5,6 +5,7 @@
 #include "EngineCommands.h"
 #include "EngineSnapshot.h"
 #include "Sequencer.h"
+#include "AutomationScheduler.h"
 #include <array>
 #include <atomic>
 #include <cstdint>
@@ -149,6 +150,7 @@ private:
 
   // Sequencer transport lives on the engine (audio-thread owned after init).
   std::unique_ptr<Sequencer> m_sequencer;
+  AutomationScheduler m_automation;
 
   // Per-device mono scratch buffers (member storage — not on the audio-thread stack).
   alignas(16) float m_scratchBuffers[NUM_DEVICES][MAX_RENDER_TEST_FRAMES];

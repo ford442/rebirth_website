@@ -34,9 +34,8 @@ float Mixer::constantPowerPanRight(float pan) {
   return std::sin(angle);
 }
 
-float Mixer::diodeDistort(float x) {
-  // Asymmetric soft clip — ReBirth-style diode distortion character.
-  const float driven = x * kDistortionDrive;
+float Mixer::diodeDistort(float x, float drive) {
+  const float driven = x * drive;
   if (driven >= 0.0f) {
     return 1.0f - std::exp(-driven);
   }
@@ -50,12 +49,12 @@ float Mixer::compressSample(float x, float& envelope) const {
   const float coeff = (absX > envelope) ? attackCoeff : releaseCoeff;
   envelope = absX + coeff * (envelope - absX);
 
-  if (envelope <= kCompressorThreshold) {
+  if (envelope <= m_compressorThreshold) {
     return x;
   }
 
-  const float over = envelope - kCompressorThreshold;
-  const float gainReduction = kCompressorThreshold + over / kCompressorRatio;
+  const float over = envelope - m_compressorThreshold;
+  const float gainReduction = m_compressorThreshold + over / kCompressorRatio;
   const float gain = (envelope > 1e-8f) ? gainReduction / envelope : 1.0f;
   return x * gain;
 }
@@ -67,6 +66,7 @@ void Mixer::init(float sampleRate) {
   m_delayTapSamples = 0;
   m_limiterEnvelope = 0.0f;
   m_compressorEnvelopes.fill(0.0f);
+  m_pcfState.fill(0.0f);
 
   for (auto& dev : m_devices) {
     dev.level = 0.8f;
@@ -80,6 +80,62 @@ void Mixer::init(float sampleRate) {
 
 void Mixer::setDeviceStates(const std::array<DeviceState, NUM_DEVICES>& devices) {
   m_devices = devices;
+}
+
+void Mixer::setSongFx(const SongFxSettings& fx) {
+  m_masterLevel = std::clamp(fx.masterLevel / 127.0f, 0.0f, 1.0f);
+  m_delayOn = fx.delay.enabled;
+  m_delayFeedback = std::clamp(fx.delay.feedback / 127.0f, 0.0f, 1.0f);
+  m_delayWet = std::clamp(fx.delay.wet / 127.0f, 0.0f, 1.0f);
+  m_distortionOn = fx.dist.enabled;
+  m_distortionDrive = 1.0f + (fx.dist.drive / 127.0f) * 9.0f;
+  m_distortionMix = std::clamp(fx.dist.mix / 127.0f, 0.0f, 1.0f);
+  m_compressorOn = fx.comp.enabled;
+  m_compressorThreshold = std::clamp(fx.comp.threshold / 127.0f, 0.0f, 1.0f);
+  m_pcfOn = fx.pcf.enabled;
+  m_pcfCutoff = std::clamp(fx.pcf.cutoff / 127.0f, 0.01f, 1.0f);
+  m_pcfResonance = std::clamp(fx.pcf.resonance / 127.0f, 0.0f, 1.0f);
+}
+
+void Mixer::setDelayFeedback(float feedback) {
+  m_delayFeedback = std::clamp(feedback, 0.0f, 1.0f);
+}
+
+void Mixer::setDelayWet(float wet) {
+  m_delayWet = std::clamp(wet, 0.0f, 1.0f);
+}
+
+void Mixer::setDistortionDrive(float drive) {
+  m_distortionDrive = std::clamp(1.0f + drive * 9.0f, 1.0f, 10.0f);
+}
+
+void Mixer::setDistortionMix(float mix) {
+  m_distortionMix = std::clamp(mix, 0.0f, 1.0f);
+}
+
+void Mixer::setCompressorThreshold(float threshold) {
+  m_compressorThreshold = std::clamp(threshold, 0.0f, 1.0f);
+}
+
+void Mixer::setPcfCutoff(float cutoff) {
+  m_pcfCutoff = std::clamp(cutoff, 0.01f, 1.0f);
+}
+
+void Mixer::setPcfResonance(float resonance) {
+  m_pcfResonance = std::clamp(resonance, 0.0f, 1.0f);
+}
+
+float Mixer::processPcfSample(int deviceIndex, float input) {
+  if (!m_pcfOn || !m_devices[static_cast<size_t>(deviceIndex)].pcf) {
+    return input;
+  }
+  const float cutoffHz = 200.0f + m_pcfCutoff * 7800.0f;
+  const float rc = 1.0f / (2.0f * 3.14159265358979323846f * cutoffHz);
+  const float alpha = 1.0f / (1.0f + rc * m_sampleRate);
+  float& state = m_pcfState[static_cast<size_t>(deviceIndex)];
+  state = state + alpha * (input - state);
+  const float resonant = input + (input - state) * m_pcfResonance * 2.0f;
+  return resonant * (1.0f - m_pcfResonance * 0.35f) + state * (m_pcfResonance * 0.35f);
 }
 
 void Mixer::setChannelLevel(int deviceIndex, float level) {
@@ -148,6 +204,7 @@ void Mixer::process(const float* const* deviceBuffers, float* leftOut, float* ri
       if (m_devices[d].muted) continue;
 
       float sample = flushDenormal(src[frame]);
+      sample = processPcfSample(d, sample);
       const float level = std::clamp(m_devices[d].level, 0.0f, 1.0f);
       const float pan = std::clamp(m_devices[d].pan, 0.0f, 1.0f);
 
@@ -179,8 +236,8 @@ void Mixer::process(const float* const* deviceBuffers, float* leftOut, float* ri
     float wetR = 0.0f;
 
     if (m_distortionOn && std::fabs(distBus) > kDenormalThreshold) {
-      const float distorted = diodeDistort(distBus);
-      const float wet = distorted * kDistortionMix;
+      const float distorted = diodeDistort(distBus, m_distortionDrive);
+      const float wet = distorted * m_distortionMix;
       wetL += wet;
       wetR += wet;
     }
@@ -193,8 +250,8 @@ void Mixer::process(const float* const* deviceBuffers, float* leftOut, float* ri
       wetR += delayR;
     }
 
-    float outL = flushDenormal(dryL + wetL);
-    float outR = flushDenormal(dryR + wetR);
+    float outL = flushDenormal((dryL + wetL) * m_masterLevel);
+    float outR = flushDenormal((dryR + wetR) * m_masterLevel);
 
     if (m_compressorOn) {
       // Master peak limiter — prevents hard digital clips on the summed bus.

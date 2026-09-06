@@ -75,9 +75,40 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .value("TR909",   DeviceId::TR909);
 
   enum_<RbsVersion>("RbsVersion", enum_value_type::number)
+    .value("V1_0",   RbsVersion::V1_0)
     .value("V1_5",   RbsVersion::V1_5)
     .value("V2_0",   RbsVersion::V2_0)
     .value("V2_0_1", RbsVersion::V2_0_1);
+
+  value_object<DelaySettings>("DelaySettings")
+    .field("enabled", &DelaySettings::enabled)
+    .field("time", &DelaySettings::time)
+    .field("feedback", &DelaySettings::feedback)
+    .field("wet", &DelaySettings::wet);
+
+  value_object<PcfSettings>("PcfSettings")
+    .field("enabled", &PcfSettings::enabled)
+    .field("cutoff", &PcfSettings::cutoff)
+    .field("resonance", &PcfSettings::resonance)
+    .field("envAmount", &PcfSettings::envAmount);
+
+  value_object<DistSettings>("DistSettings")
+    .field("enabled", &DistSettings::enabled)
+    .field("drive", &DistSettings::drive)
+    .field("mix", &DistSettings::mix);
+
+  value_object<CompSettings>("CompSettings")
+    .field("enabled", &CompSettings::enabled)
+    .field("threshold", &CompSettings::threshold)
+    .field("ratio", &CompSettings::ratio)
+    .field("attack", &CompSettings::attack);
+
+  value_object<SongFxSettings>("SongFxSettings")
+    .field("masterLevel", &SongFxSettings::masterLevel)
+    .field("delay", &SongFxSettings::delay)
+    .field("pcf", &SongFxSettings::pcf)
+    .field("dist", &SongFxSettings::dist)
+    .field("comp", &SongFxSettings::comp);
 
   // PlaybackPosition
   value_object<PlaybackPosition>("PlaybackPosition")
@@ -143,7 +174,8 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .field("showInfoOnOpen", &ParsedSong::showInfoOnOpen)
     .field("devices",      &ParsedSong::devices)
     .field("patterns",     &ParsedSong::patterns)
-    .field("arrangement",  &ParsedSong::arrangement);
+    .field("arrangement",  &ParsedSong::arrangement)
+    .field("fx",           &ParsedSong::fx);
 
   register_optional<ParsedSong>();
 

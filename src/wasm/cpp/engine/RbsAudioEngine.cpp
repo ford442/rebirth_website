@@ -56,6 +56,7 @@ RbsAudioEngine::~RbsAudioEngine() {
 bool RbsAudioEngine::init(const EngineConfig& config) {
   m_config = config;
   m_sequencer->reset();
+  m_automation.reset();
   m_currentBar.store(1, std::memory_order_relaxed);
   m_currentStep.store(0, std::memory_order_relaxed);
   m_playing.store(false, std::memory_order_relaxed);
@@ -142,16 +143,23 @@ void RbsAudioEngine::handleCommand(const EngineCommand& cmd) {
     case EngineCommandType::Stop:
       m_playing.store(false, std::memory_order_relaxed);
       m_sequencer->setPosition(1, 0);
+      m_automation.reset();
       m_currentBar.store(1, std::memory_order_relaxed);
       m_currentStep.store(0, std::memory_order_relaxed);
       resetVoices(pinSnapshot());
       break;
-    case EngineCommandType::Seek:
-      m_sequencer->setPosition(static_cast<uint16_t>(cmd.param1), 0);
-      m_currentBar.store(static_cast<uint16_t>(cmd.param1), std::memory_order_relaxed);
+    case EngineCommandType::Seek: {
+      const uint16_t seekBar = static_cast<uint16_t>(cmd.param1);
+      m_sequencer->setPosition(seekBar, 0);
+      EngineSnapshot* seekSnap = pinSnapshot();
+      if (seekSnap) {
+        m_automation.setPosition(&seekSnap->song, seekBar, 0);
+      }
+      m_currentBar.store(seekBar, std::memory_order_relaxed);
       m_currentStep.store(0, std::memory_order_relaxed);
-      resetVoices(pinSnapshot());
+      resetVoices(seekSnap);
       break;
+    }
     case EngineCommandType::SetVolume:
       m_volume.store(bitsToFloat(cmd.param1), std::memory_order_relaxed);
       break;
@@ -228,22 +236,42 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
   }
 
   alignas(16) Sequencer::Event events[128];
+  alignas(16) AutomationScheduler::Event autoEvents[128];
   const float effectiveBpm =
       m_bpm.load(std::memory_order_relaxed) * m_tempoMultiplier.load(std::memory_order_relaxed);
+
+  uint16_t bar = 0;
+  uint8_t step = 0;
+  m_sequencer->getPosition(bar, step);
+  const double stepPhase = m_sequencer->getStepPhase();
+
   uint32_t eventCount = m_sequencer->generateEvents(
       &snap->song, effectiveBpm, m_config.sampleRate, numFrames, events, 128);
+  uint32_t autoCount = m_automation.generateEvents(
+      &snap->song, effectiveBpm, m_config.sampleRate, bar, step, stepPhase,
+      numFrames, autoEvents, 128);
 
   const float vol = m_volume.load(std::memory_order_relaxed);
   float* left = (numChannels >= 2) ? outputBuffers[0] : nullptr;
   float* right = (numChannels >= 2) ? outputBuffers[1] : nullptr;
 
+  Voice* voicePtrs[NUM_DEVICES];
+  for (int i = 0; i < NUM_DEVICES; ++i) {
+    voicePtrs[i] = snap->voices[static_cast<size_t>(i)].get();
+  }
+
   uint32_t cursor = 0;
   uint32_t evIdx = 0;
-  while (evIdx < eventCount) {
-    uint32_t offset = events[evIdx].sampleOffset;
-    if (offset > numFrames) offset = numFrames;
+  uint32_t autoIdx = 0;
+  while (cursor < numFrames) {
+    uint32_t nextStep = (evIdx < eventCount) ? events[evIdx].sampleOffset : numFrames;
+    uint32_t nextAuto = (autoIdx < autoCount) ? autoEvents[autoIdx].sampleOffset : numFrames;
+    uint32_t offset = std::min({nextStep, nextAuto, numFrames});
     if (offset > cursor) {
       renderSpan(*snap, cursor, offset - cursor, left, right, numChannels, effectiveBpm, vol);
+    }
+    while (autoIdx < autoCount && autoEvents[autoIdx].sampleOffset <= offset) {
+      m_automation.applyEvent(voicePtrs, snap->mixer.get(), autoEvents[autoIdx++]);
     }
     while (evIdx < eventCount && events[evIdx].sampleOffset <= offset) {
       const auto& ev = events[evIdx++];
@@ -254,12 +282,7 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
     }
     cursor = offset;
   }
-  if (cursor < numFrames) {
-    renderSpan(*snap, cursor, numFrames - cursor, left, right, numChannels, effectiveBpm, vol);
-  }
 
-  uint16_t bar = 0;
-  uint8_t step = 0;
   m_sequencer->getPosition(bar, step);
   m_currentBar.store(bar, std::memory_order_relaxed);
   m_currentStep.store(step, std::memory_order_relaxed);

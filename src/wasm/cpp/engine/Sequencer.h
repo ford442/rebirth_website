@@ -64,6 +64,9 @@ public:
   /** Query current position (1-based bar, 0-based master step). */
   void getPosition(uint16_t& bar, uint8_t& step) const;
 
+  /** Fractional samples elapsed inside the current master step. */
+  double getStepPhase() const { return m_stepPhase; }
+
   /** Set position (seek). Resets the intra-step sample accumulator. */
   void setPosition(uint16_t bar, uint8_t step);
 
