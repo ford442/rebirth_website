@@ -322,21 +322,21 @@ block; it does not create a JavaScript `rb338` namespace.
 
 ### `RbsAudioEngine`
 
-| C++ API                                   | Embind name           | TS signature                        |
-| ----------------------------------------- | --------------------- | ----------------------------------- |
-| `bool init(const EngineConfig&)`          | `init`                | `(config: EngineConfig) => boolean` |
-| `bool loadSong(const ParsedSong&)`        | `loadSong`            | `(song: WasmParsedSong) => boolean` |
-| `void play()`                             | `play`                | `() => void`                        |
-| `void pause()`                            | `pause`               | `() => void`                        |
-| `void stop()`                             | `stop`                | `() => void`                        |
-| `void seek(uint16_t)`                     | `seek`                | `(bar: number) => void`             |
-| `void setVolume(float)`                   | `setVolume`           | `(volume: number) => void`          |
-| `void setTempo(float)`                    | `setTempo`            | `(bpm: number) => void`             |
-| `float getTempo() const`                  | `getTempo`            | `() => number`                      |
-| `void setTempoMultiplier(float)`          | `setTempoMultiplier`  | `(multiplier: number) => void`      |
-| `void setDeviceParam(uint8_t,uint8_t,float)` | `setDeviceParam`   | `(deviceId, paramId, value) => void` |
-| `bool isPlaying() const`                  | `isPlaying`           | `() => boolean`                     |
-| `void getPlaybackPosition(...)` (wrapped) | `getPlaybackPosition` | `() => PlaybackPosition`            |
+| C++ API                                      | Embind name           | TS signature                         |
+| -------------------------------------------- | --------------------- | ------------------------------------ |
+| `bool init(const EngineConfig&)`             | `init`                | `(config: EngineConfig) => boolean`  |
+| `bool loadSong(const ParsedSong&)`           | `loadSong`            | `(song: WasmParsedSong) => boolean`  |
+| `void play()`                                | `play`                | `() => void`                         |
+| `void pause()`                               | `pause`               | `() => void`                         |
+| `void stop()`                                | `stop`                | `() => void`                         |
+| `void seek(uint16_t)`                        | `seek`                | `(bar: number) => void`              |
+| `void setVolume(float)`                      | `setVolume`           | `(volume: number) => void`           |
+| `void setTempo(float)`                       | `setTempo`            | `(bpm: number) => void`              |
+| `float getTempo() const`                     | `getTempo`            | `() => number`                       |
+| `void setTempoMultiplier(float)`             | `setTempoMultiplier`  | `(multiplier: number) => void`       |
+| `void setDeviceParam(uint8_t,uint8_t,float)` | `setDeviceParam`      | `(deviceId, paramId, value) => void` |
+| `bool isPlaying() const`                     | `isPlaying`           | `() => boolean`                      |
+| `void getPlaybackPosition(...)` (wrapped)    | `getPlaybackPosition` | `() => PlaybackPosition`             |
 
 ### `RbsParser`
 
@@ -344,6 +344,37 @@ block; it does not create a JavaScript `rb338` namespace.
 | --------------------------------------------------------- | ----------- | ------------------------------------------------------- |
 | `std::optional<ParsedSong> parse(const uint8_t*, size_t)` | `parse`     | `(ptr: number, size: number) => WasmParsedSong \| null` |
 | `const std::string& lastError() const`                    | `lastError` | `() => string`                                          |
+
+## Live device parameters (`DeviceParamId`)
+
+`RbsAudioEngine::setDeviceParam(uint8_t deviceId, uint8_t paramId, float value)` is the
+only path for live knob/mixer changes (UI knobs, automation events). `paramId` is the
+numeric value of `DeviceParamId` (`src/wasm/cpp/engine/EngineCommands.h`):
+
+| Value | C++ (`DeviceParamId`) | TS (`DeviceParam` in `player-studio.ts`) | Applied to |
+| ----- | --------------------- | ---------------------------------------- | ---------- |
+| 0     | `Tune`                | `Tune`                                   | `Voice`    |
+| 1     | `Cutoff`              | `Cutoff`                                 | `Voice`    |
+| 2     | `Resonance`           | `Resonance`                              | `Voice`    |
+| 3     | `EnvMod`              | `EnvMod`                                 | `Voice`    |
+| 4     | `Decay`               | `Decay`                                  | `Voice`    |
+| 5     | `Accent`              | `Accent`                                 | `Voice`    |
+| 6     | `Waveform`            | `Waveform`                               | `Voice`    |
+| 7     | `Level`               | `Level`                                  | `Mixer`    |
+| 8     | `Pan`                 | `Pan`                                    | `Mixer`    |
+| 9     | `Mute`                | `Mute`                                   | `Mixer`    |
+
+`RbsAudioEngine::applyDeviceParam` (audio thread) forwards `Tune`/`Cutoff`/`Resonance`/
+`EnvMod`/`Decay`/`Accent`/`Waveform` straight to `Voice::setParameter(DeviceParamId, float)`
+and handles `Level`/`Pan`/`Mute` on the `Mixer` — there is **no string lookup** on the audio
+thread. Each `Voice` subclass (`Tb303Voice`, `Tr808Voice`, `Tr909Voice`) switches on the
+enum directly and ignores params it doesn't own (a TB-303-only param reaching a drum voice
+is a no-op, not an error).
+
+`scripts/check-wasm-contract.mjs` (run via `npm run contract:check`) fails CI if the
+`DeviceParamId` enumerators in `EngineCommands.h`, the `DeviceParam` object in
+`player-studio.ts`, and this table drift apart — see that script for exactly what it
+compares.
 
 ## Container registrations
 
@@ -431,16 +462,16 @@ Linker and export flags are defined in
 
 Key release linker settings:
 
-| Flag | Value |
-| ---- | ----- |
-| `-pthread` | Enabled |
-| `-sAUDIO_WORKLET=1` | Enabled |
-| `-sWASM_WORKERS=1` | Enabled |
-| `-sSTACK_SIZE` | 131072 (128 KiB module linear stack) |
-| `-sINITIAL_MEMORY` | 67108864 (64 MiB) |
-| `-sALLOW_MEMORY_GROWTH` | 0 |
-| `-sASSERTIONS` | 0 |
-| `-sEXPORTED_FUNCTIONS` | `_malloc`, `_free` |
+| Flag                         | Value                                                                                                           |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `-pthread`                   | Enabled                                                                                                         |
+| `-sAUDIO_WORKLET=1`          | Enabled                                                                                                         |
+| `-sWASM_WORKERS=1`           | Enabled                                                                                                         |
+| `-sSTACK_SIZE`               | 131072 (128 KiB module linear stack)                                                                            |
+| `-sINITIAL_MEMORY`           | 67108864 (64 MiB)                                                                                               |
+| `-sALLOW_MEMORY_GROWTH`      | 0                                                                                                               |
+| `-sASSERTIONS`               | 0                                                                                                               |
+| `-sEXPORTED_FUNCTIONS`       | `_malloc`, `_free`                                                                                              |
 | `-sEXPORTED_RUNTIME_METHODS` | `ccall`, `cwrap`, `getValue`, `setValue`, `HEAPU8`, `emscriptenRegisterAudioObject`, `emscriptenGetAudioObject` |
 
 See ADR [`docs/adr/0002-wasm-build-variants-and-heap.md`](../../docs/adr/0002-wasm-build-variants-and-heap.md)
@@ -451,4 +482,5 @@ for dual-build and heap policy decisions.
 1. If you change a C++ struct, update the matching TypeScript interface in `src/wasm/types/wasm-audio.ts` and this contract.
 2. If you change an Embind registration, update the `EngineModule` / instance interfaces in `src/wasm/types/wasm-audio.ts`.
 3. If you add a new field, ensure it is present in both the C++ `value_object<>` registration and the TypeScript interface with the same name and compatible type.
-4. Run `npx astro check` after any TypeScript change and `npm run wasm:build` after any C++ change.
+4. If you change `DeviceParamId`, update the table above, `player-studio.ts`'s `DeviceParam`, and every `Voice::setParameter` switch that should react to the new value.
+5. Run `npm run contract:check` (structural drift between C++ and TS), `npx astro check` (type-checks `src/wasm/tests/wasm-audio-types.typecheck.ts`, the compile-time contract test) after any TypeScript change, and `npm run wasm:build` after any C++ change.

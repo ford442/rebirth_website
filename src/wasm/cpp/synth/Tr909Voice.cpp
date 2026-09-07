@@ -1,6 +1,5 @@
 #include "Tr909Voice.h"
 #include "DrumBitfield.h"
-#include <cstring>
 
 namespace rb338 {
 
@@ -76,11 +75,13 @@ void Tr909Voice::triggerStep(uint8_t stepIndex, const StepData& step) {
   if (extra & DrumExtra::MA) fire(DrumVoiceId::Ride, accent);
 }
 
-void Tr909Voice::setParameter(const char* name, float value) {
-  if (!name) return;
-  if (std::strcmp(name, "tune") == 0) m_params.tune = value;
-  else if (std::strcmp(name, "decay") == 0) m_params.decay = value;
-  else if (std::strcmp(name, "accent") == 0) m_params.accent = value;
+void Tr909Voice::setParameter(DeviceParamId param, float value) {
+  switch (param) {
+    case DeviceParamId::Tune: m_params.tune = value; break;
+    case DeviceParamId::Decay: m_params.decay = value; break;
+    case DeviceParamId::Accent: m_params.accent = value; break;
+    default: break;
+  }
 }
 
 void Tr909Voice::reset() {

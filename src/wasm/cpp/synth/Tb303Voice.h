@@ -23,7 +23,7 @@ public:
   void load(const DeviceState& state, const std::vector<Pattern>& patterns) override;
   void render(float* output, uint32_t numFrames) override;
   void triggerStep(uint8_t stepIndex, const StepData& step) override;
-  void setParameter(const char* name, float value) override;
+  void setParameter(DeviceParamId param, float value) override;
   void reset() override;
 
 private:

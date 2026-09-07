@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../engine/EngineCommands.h"
 #include "../parser/RbsTypes.h"
 #include <cstdint>
 
@@ -32,7 +33,7 @@ public:
   virtual void triggerStep(uint8_t stepIndex, const StepData& step) = 0;
 
   /** Set device state knobs (for real-time automation). */
-  virtual void setParameter(const char* name, float value) = 0;
+  virtual void setParameter(DeviceParamId param, float value) = 0;
 
   /** Reset all state. */
   virtual void reset() = 0;

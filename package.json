@@ -14,6 +14,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
+    "contract:check": "node scripts/check-wasm-contract.mjs",
     "lint": "eslint .",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
@@ -32,7 +33,7 @@
     "archive:check": "python3 scripts/check-archive-integrity.py",
     "archive:linkrot": "python3 scripts/check-link-rot.py",
     "test": "playwright test",
-    "ci": "npm run check && npm run build && npm test",
+    "ci": "npm run check && npm run contract:check && npm run build && npm test",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
     "test:responsive": "playwright test tests/responsive.spec.ts"

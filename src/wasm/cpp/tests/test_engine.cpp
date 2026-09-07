@@ -266,3 +266,20 @@ TEST_CASE("Engine: two-thread command/process stress") {
   audio.join();
   CHECK(blocks.load() > 0);
 }
+
+TEST_CASE("DeviceParamId: numeric values are 0..9, matching player-studio.ts DeviceParam") {
+  // src/wasm/js/player-studio.ts hardcodes these as plain numbers (Embind
+  // exposes enums as numbers, not named constants). If this enum is
+  // reordered or extended, that TS object literal — and CONTRACT.md — must
+  // be updated to match.
+  CHECK(static_cast<uint8_t>(DeviceParamId::Tune) == 0);
+  CHECK(static_cast<uint8_t>(DeviceParamId::Cutoff) == 1);
+  CHECK(static_cast<uint8_t>(DeviceParamId::Resonance) == 2);
+  CHECK(static_cast<uint8_t>(DeviceParamId::EnvMod) == 3);
+  CHECK(static_cast<uint8_t>(DeviceParamId::Decay) == 4);
+  CHECK(static_cast<uint8_t>(DeviceParamId::Accent) == 5);
+  CHECK(static_cast<uint8_t>(DeviceParamId::Waveform) == 6);
+  CHECK(static_cast<uint8_t>(DeviceParamId::Level) == 7);
+  CHECK(static_cast<uint8_t>(DeviceParamId::Pan) == 8);
+  CHECK(static_cast<uint8_t>(DeviceParamId::Mute) == 9);
+}

@@ -36,8 +36,12 @@ src/
 │   └── docs/                 # Historical markdown documentation
 ├── styles/
 │   └── (legacy, consolidated into public/styles/rebirth-theme.css)
-└── wasm/
-    └── README.md             # Planned browser playback engine (not implemented)
+└── wasm/                     # In-browser .rbs playback engine (C++ compiled to WASM)
+    ├── CONTRACT.md           # C++ ↔ TypeScript field-for-field contract (SSOT)
+    ├── README.md             # Architecture, build, status (PARTIAL ENGINE, SHIPPING PIPELINE)
+    ├── cpp/                  # Parser, sequencer, mixer, TB-303/TR-808/TR-909 voices
+    ├── js/                   # WasmAudioBridge + player UI (dom/transport/studio-view split)
+    └── types/                # Shared TS types + WASM→UI mapping
 
 public/
 ├── archive/
@@ -120,6 +124,15 @@ Contributors add:
 
 Full guidelines in `README.md`.
 
-## Future: WebAssembly Audio Module
+## WebAssembly Audio Module
 
-`src/wasm/` is reserved for an in-browser `.rbs` playback engine (not yet implemented). See `src/wasm/README.md` for planned architecture. Contributions from audio DSP or `.rbs` binary format experts welcome.
+`src/wasm/` is a **partially implemented** in-browser `.rbs` playback engine (C++ compiled to WASM via Emscripten, CI-built and shipped). The parser, sequencer, transport, and Phase-1 procedural TB-303/TR-808/TR-909 voices are implemented; `.rbm` sample playback is not wired up yet. See `src/wasm/README.md` for the full architecture, build instructions, and status matrix.
+
+Key points for anyone touching this code:
+
+- **`src/wasm/CONTRACT.md` is the single source of truth** for the C++ ↔ TypeScript data contract (`main.cpp` Embind registrations ↔ `src/wasm/types/wasm-audio.ts`). Run `npm run contract:check` after changing either side — it fails CI on drift (struct fields, `DeviceParamId` values).
+- Live device/mixer parameters flow through `RbsAudioEngine::setDeviceParam(deviceId, paramId, value)`, where `paramId` is the numeric `DeviceParamId` enum (`src/wasm/cpp/engine/EngineCommands.h`) — not a string. `Voice::setParameter(DeviceParamId, float)` has zero string comparisons on the audio thread.
+- The player UI is split into `src/wasm/js/player-dom.ts` (DOM lookup), `player-transport.ts` (status/toasts/play-stop/volume/tempo), `player-studio-view.ts` (pattern grid + device knobs), composed by `player-ui.ts`.
+- `npm run wasm:test` runs the native (non-Emscripten) C++ unit tests; `npm run wasm:build` builds the actual WASM binaries (requires Emscripten).
+
+Contributions from audio DSP or `.rbs`/`.rbm` binary format experts welcome — see `src/wasm/README.md`'s roadmap for what's left.

@@ -1,14 +1,19 @@
 /**
- * Compile-time bridge contract test.
+ * Compile-time bridge contract check — NOT a runtime test.
  *
- * This file is type-checked by `npx astro check`. It does not run at runtime
- * and does not require a compiled WASM binary. It proves that:
+ * The `.typecheck.ts` extension (rather than `.test.ts`) is deliberate: this
+ * file never executes and has no assertions that run — it is only
+ * type-checked by `npx astro check` (part of `npm run check` / `npm run
+ * ci`). It proves that:
  *
  *   - EngineConfig matches the C++ struct shape (flat feature booleans).
  *   - PlaybackPosition matches the Embind value object.
  *   - The bridge can construct an EngineConfig from audio-module.config.ts.
  *   - The bridge's expected EngineModule / RbsAudioEngineInstance signatures
  *     are consistent with the types exported from wasm-audio.ts.
+ *
+ * `scripts/check-wasm-contract.mjs` (`npm run contract:check`) covers the
+ * C++-side half of the same contract (struct fields, DeviceParamId values).
  */
 
 import { buildStepCells, pickPattern } from '../js/player-studio';
