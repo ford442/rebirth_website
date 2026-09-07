@@ -31,6 +31,9 @@ jobs:
       - name: Astro type check
         run: npm run check
 
+      - name: WASM engine <-> TypeScript contract check
+        run: npm run contract:check
+
       - name: ESLint
         run: npm run lint
 

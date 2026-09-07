@@ -354,27 +354,6 @@ void RbsAudioEngine::applyDeviceParam(EngineSnapshot* snap, uint8_t deviceId,
   Mixer* mixer = snap->mixer.get();
 
   switch (param) {
-    case DeviceParamId::Tune:
-      if (voice) voice->setParameter("tune", clamped);
-      break;
-    case DeviceParamId::Cutoff:
-      if (voice) voice->setParameter("cutoff", clamped);
-      break;
-    case DeviceParamId::Resonance:
-      if (voice) voice->setParameter("resonance", clamped);
-      break;
-    case DeviceParamId::EnvMod:
-      if (voice) voice->setParameter("envMod", clamped);
-      break;
-    case DeviceParamId::Decay:
-      if (voice) voice->setParameter("decay", clamped);
-      break;
-    case DeviceParamId::Accent:
-      if (voice) voice->setParameter("accent", clamped);
-      break;
-    case DeviceParamId::Waveform:
-      if (voice) voice->setParameter("waveform", clamped);
-      break;
     case DeviceParamId::Level:
       if (mixer) mixer->setChannelLevel(static_cast<int>(deviceId), clamped);
       break;
@@ -383,6 +362,11 @@ void RbsAudioEngine::applyDeviceParam(EngineSnapshot* snap, uint8_t deviceId,
       break;
     case DeviceParamId::Mute:
       if (mixer) mixer->setChannelMuted(static_cast<int>(deviceId), value >= 0.5f);
+      break;
+    default:
+      // Tune / Cutoff / Resonance / EnvMod / Decay / Accent / Waveform go
+      // straight to the voice — no string lookup on the audio thread.
+      if (voice) voice->setParameter(param, clamped);
       break;
   }
 }

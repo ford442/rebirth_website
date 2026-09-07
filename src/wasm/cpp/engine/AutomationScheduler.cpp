@@ -1,4 +1,5 @@
 #include "AutomationScheduler.h"
+#include "EngineCommands.h"
 #include "Mixer.h"
 #include "../synth/Voice.h"
 #include <algorithm>
@@ -85,12 +86,12 @@ void AutomationScheduler::applyEvent(Voice* const* voices, Mixer* mixer,
   const int deviceIdx = deviceIndexFromTrack(ev.trackIndex);
   if (deviceIdx >= 0 && deviceIdx < NUM_DEVICES && voices[deviceIdx]) {
     switch (ev.controller) {
-      case 0x02: voices[deviceIdx]->setParameter("tune", ev.value / 127.0f); break;
-      case 0x03: voices[deviceIdx]->setParameter("cutoff", ev.value / 127.0f); break;
-      case 0x04: voices[deviceIdx]->setParameter("resonance", ev.value / 127.0f); break;
-      case 0x05: voices[deviceIdx]->setParameter("envMod", ev.value / 127.0f); break;
-      case 0x06: voices[deviceIdx]->setParameter("decay", ev.value / 127.0f); break;
-      case 0x07: voices[deviceIdx]->setParameter("accent", ev.value / 127.0f); break;
+      case 0x02: voices[deviceIdx]->setParameter(DeviceParamId::Tune, ev.value / 127.0f); break;
+      case 0x03: voices[deviceIdx]->setParameter(DeviceParamId::Cutoff, ev.value / 127.0f); break;
+      case 0x04: voices[deviceIdx]->setParameter(DeviceParamId::Resonance, ev.value / 127.0f); break;
+      case 0x05: voices[deviceIdx]->setParameter(DeviceParamId::EnvMod, ev.value / 127.0f); break;
+      case 0x06: voices[deviceIdx]->setParameter(DeviceParamId::Decay, ev.value / 127.0f); break;
+      case 0x07: voices[deviceIdx]->setParameter(DeviceParamId::Accent, ev.value / 127.0f); break;
       default: break;
     }
   }

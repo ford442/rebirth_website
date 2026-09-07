@@ -172,25 +172,34 @@ void Tb303Voice::triggerStep(uint8_t stepIndex, const StepData& step) {
   m_prevStepSlide = step.slide;
 }
 
-void Tb303Voice::setParameter(const char* name, float value) {
-  if (!name) return;
+void Tb303Voice::setParameter(DeviceParamId param, float value) {
   const float v = clamp01(value);
 
-  if (std::strcmp(name, "tune") == 0) {
-    m_tune = v;
-  } else if (std::strcmp(name, "cutoff") == 0) {
-    m_cutoffKnob = v;
-  } else if (std::strcmp(name, "resonance") == 0) {
-    m_resonanceKnob = v;
-  } else if (std::strcmp(name, "envMod") == 0 || std::strcmp(name, "env_mod") == 0) {
-    m_envModKnob = v;
-  } else if (std::strcmp(name, "decay") == 0) {
-    m_decayKnob = v;
-    updateDecayCoeffs();
-  } else if (std::strcmp(name, "accent") == 0) {
-    m_accentKnob = v;
-  } else if (std::strcmp(name, "waveform") == 0) {
-    m_waveformSaw = (v < 0.5f);
+  switch (param) {
+    case DeviceParamId::Tune:
+      m_tune = v;
+      break;
+    case DeviceParamId::Cutoff:
+      m_cutoffKnob = v;
+      break;
+    case DeviceParamId::Resonance:
+      m_resonanceKnob = v;
+      break;
+    case DeviceParamId::EnvMod:
+      m_envModKnob = v;
+      break;
+    case DeviceParamId::Decay:
+      m_decayKnob = v;
+      updateDecayCoeffs();
+      break;
+    case DeviceParamId::Accent:
+      m_accentKnob = v;
+      break;
+    case DeviceParamId::Waveform:
+      m_waveformSaw = (v < 0.5f);
+      break;
+    default:
+      break;
   }
 }
 

@@ -22,17 +22,13 @@ import type {
   PlayerStatus,
   EngineError,
   PlaybackPosition,
-  WasmParsedSong,
-  WasmDeviceState,
-  WasmPattern,
-  WasmArrangementBar,
-  WasmDeviceId,
   EngineModule,
   RbsAudioEngineInstance,
 } from '../types/wasm-audio';
 
 import { wasmAudioConfig } from '../audio-module.config';
 import type { AudioContextDiagnostics } from '../types/wasm-audio';
+import { toUiParsedSong } from '../types/wasm-audio-mapping';
 import { WasmInitError, INIT_FAILURE_MESSAGES } from './rbs-init-errors';
 import { createProductionAudioContext } from './create-audio-context';
 import { waitForCrossOriginIsolation } from '../../scripts/coi-bootstrap';
@@ -42,13 +38,6 @@ export type PositionCallback = (bar: number, step: number) => void;
 
 /** Callback invoked when player status changes. */
 export type StatusCallback = (status: PlayerStatus) => void;
-
-const DEVICE_LABELS: Record<WasmDeviceId, string> = {
-  0: 'tb303-a',
-  1: 'tb303-b',
-  2: 'tr808',
-  3: 'tr909',
-};
 
 export class WasmAudioBridge {
   private module: EngineModule | null = null;
@@ -296,7 +285,7 @@ export class WasmAudioBridge {
 
         // Load into engine before consuming the Embind vector handles.
         this.enginePtr.loadSong(parsed);
-        const song = this._toUiParsedSong(parsed);
+        const song = toUiParsedSong(parsed);
 
         this._setStatus('ready');
         return song;
@@ -440,81 +429,5 @@ export class WasmAudioBridge {
       this.positionPollId = requestAnimationFrame(poll);
     };
     this.positionPollId = requestAnimationFrame(poll);
-  }
-
-  private _toUiParsedSong(wasmSong: WasmParsedSong): ParsedSong {
-    const patterns = this._consumeVector(wasmSong.patterns);
-    const arrangement = this._consumeVector(wasmSong.arrangement);
-    return {
-      title: wasmSong.title,
-      author: wasmSong.author,
-      bpm: wasmSong.bpm,
-      devices: wasmSong.devices.map((d) => this._toUiDeviceState(d)),
-      patterns: patterns.map((p) => this._toUiPattern(p)),
-      arrangement: arrangement.map((b) => this._toUiArrangementStep(b)),
-    };
-  }
-
-  private _consumeVector<T>(vector: import('../types/wasm-audio').EmbindVector<T>): T[] {
-    const values: T[] = [];
-    try {
-      for (let index = 0; index < vector.size(); index += 1) {
-        values.push(vector.get(index));
-      }
-      return values;
-    } finally {
-      vector.delete();
-    }
-  }
-
-  private _toUiDeviceState(wasmDevice: WasmDeviceState): import('../types/wasm-audio').DeviceState {
-    return {
-      deviceId: DEVICE_LABELS[wasmDevice.id] as 'tb303-a' | 'tb303-b' | 'tr808' | 'tr909',
-      knobs: {
-        tune: wasmDevice.tune,
-        cutoff: wasmDevice.cutoff,
-        resonance: wasmDevice.resonance,
-        envMod: wasmDevice.envMod,
-        decay: wasmDevice.decay,
-        accent: wasmDevice.accent,
-      },
-      muted: wasmDevice.muted,
-      level: wasmDevice.level,
-      pan: wasmDevice.pan,
-      waveform: wasmDevice.waveform,
-      initialPatternBank: wasmDevice.initialPatternBank,
-      initialPatternIndex: wasmDevice.initialPatternIndex,
-    };
-  }
-
-  private _toUiPattern(wasmPattern: WasmPattern): import('../types/wasm-audio').Pattern {
-    return {
-      deviceId: DEVICE_LABELS[wasmPattern.deviceId],
-      bank: wasmPattern.bank,
-      patternIndex: wasmPattern.patternIndex,
-      steps: wasmPattern.steps.map((s) => ({
-        active: s.active,
-        note: s.note === 0 ? undefined : s.note,
-        accent: s.accent,
-        slide: s.slide,
-        drumExtra: s.drumExtra,
-      })),
-    };
-  }
-
-  private _toUiArrangementStep(
-    wasmBar: WasmArrangementBar
-  ): import('../types/wasm-audio').ArrangementStep {
-    const patternRefs: Record<string, import('../types/wasm-audio').PatternRef> = {};
-    wasmBar.devicePatterns.forEach((ref, index) => {
-      const label = DEVICE_LABELS[index as WasmDeviceId];
-      if (label) {
-        patternRefs[label] = { bank: ref.bank, index: ref.index };
-      }
-    });
-    return {
-      bar: wasmBar.barNumber,
-      patternRefs,
-    };
   }
 }

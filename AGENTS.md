@@ -20,9 +20,9 @@ This is a **static website archive** for the legendary **ReBirth RB-338** softwa
 | Type checking | `@astrojs/check` | `^0.9.8`             |
 | Runtime       | Node.js          | latest (engine spec) |
 
-**No testing framework** is currently configured.  
-**No linter or formatter** is currently configured.  
-Type safety is enforced solely by TypeScript strict mode (`astro/tsconfigs/strict` + `strictNullChecks`).
+**Playwright** (`npm test`) covers browser/E2E behavior; **doctest** (`npm run wasm:test`) covers the native C++ engine.  
+**ESLint** (`npm run lint`) and **Prettier** (`npm run format`) are configured.  
+Type safety is additionally enforced by TypeScript strict mode (`astro/tsconfigs/strict` + `strictNullChecks`).
 
 ## Build & Development Commands
 
@@ -84,7 +84,7 @@ npm run astro check
 │   ├── content/
 │   │   └── docs/               ← Historical markdown docs (v1.0, v1.5, v2.0, v2.0.1, etc.)
 │   ├── data/
-│   │   ├── mods-metadata.json  ← Documented mod metadata (26 of 367)
+│   │   ├── mods-metadata.json  ← Documented mod metadata (101 of 367)
 │   │   ├── mods-full-index.json← All 367 .rbm files with sizes
 │   │   ├── songs-full-index.json← All catalogued .rbs files with metadata
 │   │   ├── song-collections.ts ← Shared collection section definitions
@@ -97,20 +97,27 @@ npm run astro check
 │   │   │   ├── build.sh                 # Emscripten compile script
 │   │   │   ├── parser/                  # .rbs binary parser
 │   │   │   ├── engine/                  # Audio engine (sequencer, mixer, voices)
-│   │   │   ├── synth/                   # TB-303 / TR-808 / TR-909 voice stubs
+│   │   │   ├── synth/                   # TB-303 / TR-808 / TR-909 voices (Phase 1: procedural, no PCM)
 │   │   │   └── worklet/                 # AudioWorklet processor callback
 │   │   ├── js/
-│   │   │   └── WasmAudioBridge.ts       # Typed JS wrapper around Emscripten Module
+│   │   │   ├── WasmAudioBridge.ts       # I/O + Embind calls (AudioContext, worklet, parse)
+│   │   │   ├── player-ui.ts             # Composer: wires DOM to the bridge
+│   │   │   ├── player-dom.ts            # DOM lookup (query + null checks)
+│   │   │   ├── player-transport.ts      # Status/toasts/position/play-stop/volume/tempo
+│   │   │   ├── player-studio-view.ts    # Pattern grid + device knob panel
+│   │   │   └── player-studio.ts         # Pure mapping helpers (pattern/knob math, no DOM)
 │   │   ├── types/
-│   │   │   └── wasm-audio.ts            # Shared TypeScript interfaces
+│   │   │   ├── wasm-audio.ts            # Shared TypeScript interfaces
+│   │   │   └── wasm-audio-mapping.ts    # WASM → UI ParsedSong mapping
 │   │   ├── tests/
-│   │   │   └── wasm-audio-types.test.ts # Compile-time bridge contract test
-│   │   ├── CONTRACT.md                  # C++ ↔ TypeScript field-for-field contract
-│   │   ├── README.md                    # Planned WASM audio engine architecture
+│   │   │   └── wasm-audio-types.typecheck.ts # Compile-time bridge contract check (astro check only, not a runtime test)
+│   │   ├── CONTRACT.md                  # C++ ↔ TypeScript field-for-field contract (SSOT)
+│   │   ├── README.md                    # WASM audio engine architecture, build, status
 │   │   └── audio-module.config.ts       # WASM runtime config
 │   ├── content.config.ts       ← Astro content collection schema (docs)
 │   └── env.d.ts                ← Astro client types reference
-├── scripts/                    ← Python helper scripts
+├── scripts/                    ← Python + Node helper scripts
+│   ├── check-wasm-contract.mjs ← Fails CI if the C++ ↔ TypeScript WASM contract drifts (`npm run contract:check`)
 │   ├── download_peff_rbm_wayback.py  ← Download .rbm files from Wayback Machine
 │   ├── rebirth_mod_upload.py   ← Download .rbm files and upload via SFTP
 │   └── peff_rbm_filenames.txt  ← Filename list for wayback downloader
@@ -294,7 +301,7 @@ Structured metadata for documented `.rbm` mod files:
 - `year` is nullable
 - `tags` is an array of lowercase kebab-case strings
 
-Currently **26 mods** are documented out of **367** available (17 with full metadata, 9 with minimal metadata).
+Currently **101 mods** are documented out of **367** available. See `docs/CONTRIBUTING-MODS.md` for the up-to-date breakdown and how to add more.
 
 ### `public/rbs-manifest.json`
 
@@ -453,11 +460,10 @@ For manual verification:
 ## Known Gaps & TODOs
 
 1. **External link clarity**: Archive downloads and folder browse links now use the `ExternalLink` component with host labels and `(opens in new tab)` cues.
-2. **Incomplete mod metadata**: 26 of 367 mods are documented in `mods-metadata.json`. A GitHub issue template (`.github/ISSUE_TEMPLATE/mod-metadata.yml`) and helper scripts (`check-mod-metadata.py`, `sync-mod-metadata.py`) now exist to close this gap.
+2. **Incomplete mod metadata**: 101 of 367 mods are documented in `mods-metadata.json`. A GitHub issue template (`.github/ISSUE_TEMPLATE/mod-metadata.yml`) and helper scripts (`check-mod-metadata.py`, `sync-mod-metadata.py`) now exist to close this gap.
 3. **Empty archive directories**: `public/archive/rbs-songs/` and `public/archive/rbm-mods/` contain only `.gitkeep` files; actual assets are hosted externally.
-4. **WASM module**: Not yet implemented — purely architectural stubs.
-5. **No tests**: No unit, integration, or E2E tests exist.
-6. **No linting**: No ESLint, Prettier, or Stylelint configuration.
+4. **WASM module**: Partially implemented — parser, sequencer, transport, and Phase-1 procedural TB-303/TR-808/TR-909 voices work; `.rbm` sample playback is not wired up yet. See `src/wasm/README.md`.
+5. **Test coverage**: Playwright (`tests/`) covers browser/E2E behavior and doctest (`src/wasm/cpp/tests/`) covers the native C++ engine; there is no unit-test layer for the Astro/TS UI code itself.
 
 ## Contributing Files
 
