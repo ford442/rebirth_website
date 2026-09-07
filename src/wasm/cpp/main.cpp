@@ -15,7 +15,10 @@
 #include <utility>
 #include "parser/RbsTypes.h"
 #include "parser/RbsParser.h"
+#include "parser/RbmParser.h"
+#include "parser/RbmTypes.h"
 #include "engine/RbsAudioEngine.h"
+#include "synth/SamplePool.h"
 #include "worklet/RbsWorklet.h"
 
 using namespace emscripten;
@@ -41,6 +44,44 @@ std::optional<ParsedSong> parseSongWrapper(RbsParser& self,
   return self.parse(reinterpret_cast<const uint8_t*>(dataPtr), size);
 }
 
+/**
+ * Summarise a .rbm without decoding it.
+ *
+ * Deliberately returns ModLoadReport rather than ParsedMod: the report has
+ * no byte field at all, so embedded sample and skin payloads structurally
+ * cannot be copied onto the JS heap. Megabytes of PCM and JPEG stay in WASM
+ * memory where the engine can use them directly.
+ */
+std::optional<ModLoadReport> parseModWrapper(RbmParser& self,
+                                             uintptr_t dataPtr,
+                                             size_t size) {
+  auto mod = self.parse(reinterpret_cast<const uint8_t*>(dataPtr), size);
+  if (!mod) return std::nullopt;
+  return summariseMod(*mod);
+}
+
+/** Decode a .rbm straight from the WASM heap into the engine's sample pool. */
+ModLoadStatus loadModWrapper(RbsAudioEngine& self, uintptr_t dataPtr, size_t size) {
+  return self.loadMod(reinterpret_cast<const uint8_t*>(dataPtr), size);
+}
+
+ModLoadReport getModReportWrapper(const RbsAudioEngine& self) {
+  return self.lastModReport();
+}
+
+/**
+ * Bounce to a WAV and hand JavaScript a Uint8Array it owns.
+ *
+ * `new Uint8Array(view)` copies out of the WASM heap, so the returned array
+ * stays valid after the C++ vector goes out of scope — a bare
+ * typed_memory_view would dangle the moment this function returns.
+ */
+val renderOfflineWavWrapper(RbsAudioEngine& self, uint32_t frames, uint8_t deviceIndex) {
+  const std::vector<uint8_t> wav = self.renderOfflineWav(frames, deviceIndex);
+  return val::global("Uint8Array")
+      .new_(val(typed_memory_view(wav.size(), wav.data())));
+}
+
 // Helpers to register fixed-size std::array types with value_array.
 // Embind requires every index to be declared explicitly, so we use
 // index_sequence to generate the .element(index<I>()) chain.
@@ -63,6 +104,7 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
   // Container registrations must appear before any value_object that uses them.
   register_vector<Pattern>("PatternVector");
   register_vector<ArrangementBar>("ArrangementBarVector");
+  register_vector<ModSampleReportEntry>("ModSampleReportEntryVector");
   registerFixedArray<StepData, MAX_STEPS>("StepDataArray");
   registerFixedArray<DeviceState, NUM_DEVICES>("DeviceStateArray");
   registerFixedArray<PatternRef, NUM_DEVICES>("PatternRefArray");
@@ -79,6 +121,84 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .value("V1_5",   RbsVersion::V1_5)
     .value("V2_0",   RbsVersion::V2_0)
     .value("V2_0_1", RbsVersion::V2_0_1);
+
+  // ── .rbm mod loading ──────────────────────────────────────────────
+
+  enum_<ModResourceKind>("ModResourceKind", enum_value_type::number)
+    .value("Sample", ModResourceKind::Sample)
+    .value("Skin",   ModResourceKind::Skin)
+    .value("Song",   ModResourceKind::Song)
+    .value("Other",  ModResourceKind::Other);
+
+  enum_<ModLoadStatus>("ModLoadStatus", enum_value_type::number)
+    .value("Ok",             ModLoadStatus::Ok)
+    .value("NotInitialised", ModLoadStatus::NotInitialised)
+    .value("NoSamples",      ModLoadStatus::NoSamples)
+    .value("ArenaExhausted", ModLoadStatus::ArenaExhausted)
+    .value("Partial",        ModLoadStatus::Partial);
+
+  enum_<SampleDecodeStatus>("SampleDecodeStatus", enum_value_type::number)
+    .value("Ok",                  SampleDecodeStatus::Ok)
+    .value("UnknownFormat",       SampleDecodeStatus::UnknownFormat)
+    .value("Malformed",           SampleDecodeStatus::Malformed)
+    .value("UnsupportedEncoding", SampleDecodeStatus::UnsupportedEncoding)
+    .value("Empty",               SampleDecodeStatus::Empty)
+    .value("DestinationTooSmall", SampleDecodeStatus::DestinationTooSmall);
+
+  // Slot is exposed as a plain number; JS maps it to a label via the
+  // ModSampleSlot table in types/wasm-audio.ts.
+  enum_<ModSampleSlot>("ModSampleSlot", enum_value_type::number)
+    .value("Unknown",        ModSampleSlot::Unknown)
+    .value("Tr808Kick",      ModSampleSlot::Tr808Kick)
+    .value("Tr808Snare",     ModSampleSlot::Tr808Snare)
+    .value("Tr808LowTom",    ModSampleSlot::Tr808LowTom)
+    .value("Tr808MidTom",    ModSampleSlot::Tr808MidTom)
+    .value("Tr808HighTom",   ModSampleSlot::Tr808HighTom)
+    .value("Tr808ClosedHat", ModSampleSlot::Tr808ClosedHat)
+    .value("Tr808OpenHat",   ModSampleSlot::Tr808OpenHat)
+    .value("Tr808Rimshot",   ModSampleSlot::Tr808Rimshot)
+    .value("Tr808Clap",      ModSampleSlot::Tr808Clap)
+    .value("Tr808Clave",     ModSampleSlot::Tr808Clave)
+    .value("Tr808Cymbal",    ModSampleSlot::Tr808Cymbal)
+    .value("Tr808Maracas",   ModSampleSlot::Tr808Maracas)
+    .value("Tr909Kick",      ModSampleSlot::Tr909Kick)
+    .value("Tr909Snare",     ModSampleSlot::Tr909Snare)
+    .value("Tr909LowTom",    ModSampleSlot::Tr909LowTom)
+    .value("Tr909MidTom",    ModSampleSlot::Tr909MidTom)
+    .value("Tr909HighTom",   ModSampleSlot::Tr909HighTom)
+    .value("Tr909ClosedHat", ModSampleSlot::Tr909ClosedHat)
+    .value("Tr909OpenHat",   ModSampleSlot::Tr909OpenHat)
+    .value("Tr909Rimshot",   ModSampleSlot::Tr909Rimshot)
+    .value("Tr909Clap",      ModSampleSlot::Tr909Clap)
+    .value("Tr909Crash",     ModSampleSlot::Tr909Crash)
+    .value("Tr909Ride",      ModSampleSlot::Tr909Ride)
+    .value("Tb303Saw",       ModSampleSlot::Tb303Saw)
+    .value("Tb303Square",    ModSampleSlot::Tb303Square);
+
+  value_object<ModSampleReportEntry>("ModSampleReportEntry")
+    .field("name",         &ModSampleReportEntry::name)
+    .field("kind",         &ModSampleReportEntry::kind)
+    .field("slot",         &ModSampleReportEntry::slot)
+    .field("byteSize",     &ModSampleReportEntry::byteSize)
+    .field("frameCount",   &ModSampleReportEntry::frameCount)
+    .field("sampleRate",   &ModSampleReportEntry::sampleRate)
+    .field("channels",     &ModSampleReportEntry::channels)
+    .field("bitDepth",     &ModSampleReportEntry::bitDepth)
+    .field("decodeStatus", &ModSampleReportEntry::decodeStatus)
+    .field("loaded",       &ModSampleReportEntry::loaded);
+
+  value_object<ModLoadReport>("ModLoadReport")
+    .field("title",          &ModLoadReport::title)
+    .field("description",    &ModLoadReport::description)
+    .field("copyright",      &ModLoadReport::copyright)
+    .field("resources",      &ModLoadReport::resources)
+    .field("status",         &ModLoadReport::status)
+    .field("loadedSlots",    &ModLoadReport::loadedSlots)
+    .field("skinCount",      &ModLoadReport::skinCount)
+    .field("usedFrames",     &ModLoadReport::usedFrames)
+    .field("capacityFrames", &ModLoadReport::capacityFrames);
+
+  register_optional<ModLoadReport>();
 
   value_object<DelaySettings>("DelaySettings")
     .field("enabled", &DelaySettings::enabled)
@@ -185,6 +305,13 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .function("parse",     &parseSongWrapper)
     .function("lastError", &RbsParser::lastError);
 
+  // RbmParser — metadata only. Returns a ModLoadReport (no byte payloads);
+  // use RbsAudioEngine.loadMod() to actually put samples into the engine.
+  class_<RbmParser>("RbmParser")
+    .constructor()
+    .function("parse",     &parseModWrapper)
+    .function("lastError", &RbmParser::lastError);
+
   // EngineConfig
   value_object<EngineConfig>("EngineConfig")
     .field("sampleRate",        &EngineConfig::sampleRate)
@@ -202,6 +329,10 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .constructor()
     .function("init",      &RbsAudioEngine::init)
     .function("loadSong",  &RbsAudioEngine::loadSong)
+    .function("loadMod",   &loadModWrapper)
+    .function("clearMod",  &RbsAudioEngine::clearMod)
+    .function("hasMod",    &RbsAudioEngine::hasMod)
+    .function("getModReport", &getModReportWrapper)
     .function("play",      &RbsAudioEngine::play)
     .function("pause",     &RbsAudioEngine::pause)
     .function("stop",      &RbsAudioEngine::stop)
@@ -214,6 +345,8 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .function("isPlaying", &RbsAudioEngine::isPlaying)
     .function("getProcessedBlockCount", &RbsAudioEngine::getProcessedBlockCount)
     .function("renderTestBlock", &RbsAudioEngine::renderTestBlock)
+    .function("renderOfflineToWav", &renderOfflineWavWrapper)
+    .function("songLengthFrames", &RbsAudioEngine::songLengthFrames)
     .function("getPlaybackPosition", &getPlaybackPositionWrapper);
 
   // AudioWorklet wiring

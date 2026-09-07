@@ -69,6 +69,15 @@ const hasSrc = !!src;
       />
     </div>
 
+    <!-- Hidden input for .rbm mods; opened by the MOD button below. -->
+    <input
+      type="file"
+      accept=".rbm"
+      id="rbsModFileInput"
+      class="dropzone-input is-hidden"
+      aria-label="Select .rbm mod file"
+    />
+
     <!-- Song metadata display -->
     <div class="player-meta is-hidden" id="rbsMeta" aria-label="Loaded song metadata">
       <div class="player-meta__primary">
@@ -92,6 +101,46 @@ const hasSrc = !!src;
         <option value="">Select demo…</option>
       </select>
       <button class="rb-pattern-btn" id="rbsBtnDemoLoad" type="button">Load Demo</button>
+    </div>
+
+    <!-- .rbm mod loading: swaps drum samples and 303 waveforms -->
+    <div class="player-mod-controls">
+      <label class="player-control-label" for="rbsBtnModLoad">MOD</label>
+      <button class="rb-pattern-btn" id="rbsBtnModLoad" type="button">Load Mod…</button>
+      <button class="rb-pattern-btn" id="rbsBtnModClear" type="button" hidden>Clear</button>
+      <span class="player-mod-status" id="rbsModStatus" data-mod-loaded="false" aria-live="polite">
+        No mod loaded
+      </span>
+    </div>
+
+    <!-- Export: render the loaded song out of the browser -->
+    <div class="player-export-controls">
+      <span class="player-control-label">EXPORT</span>
+      <button
+        class="rb-pattern-btn"
+        id="rbsBtnBounce"
+        type="button"
+        title="Render the song to a WAV file"
+      >
+        BOUNCE
+      </button>
+      <button
+        class="rb-pattern-btn"
+        id="rbsBtnStems"
+        type="button"
+        title="Render one WAV per device"
+      >
+        STEMS
+      </button>
+      <button
+        class="rb-pattern-btn"
+        id="rbsBtnMidi"
+        type="button"
+        title="Export patterns as a Standard MIDI File"
+      >
+        MIDI
+      </button>
+      <span class="player-export-status" id="rbsExportStatus" aria-live="polite"></span>
     </div>
 
     <section
@@ -596,6 +645,70 @@ const hasSrc = !!src;
     align-items: center;
   }
 
+  .player-mod-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.5rem;
+  }
+
+  /* .rb-pattern-btn sets a display value, which beats the UA's
+     [hidden] { display: none }. Restore it so the attribute works. */
+  .player-mod-controls button[hidden],
+  .player-export-controls button[hidden] {
+    display: none;
+  }
+
+  .player-export-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.5rem;
+  }
+
+  .player-export-status {
+    flex: 1 1 12ch;
+    min-width: 0;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.7rem;
+    color: var(--rb-silver-dim, #888);
+    letter-spacing: 0.03em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .player-export-status[data-state='working'] {
+    color: var(--rb-amber, #ffb347);
+  }
+
+  .player-export-status[data-state='done'] {
+    color: var(--rb-green, #7fdc55);
+  }
+
+  .player-export-status[data-state='error'] {
+    color: var(--rb-red, #ff5c5c);
+  }
+
+  .player-mod-status {
+    flex: 1 1 12ch;
+    min-width: 0;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.7rem;
+    color: var(--rb-silver-dim, #888);
+    letter-spacing: 0.03em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* An active mod is a real change to what you are hearing — say so. */
+  .player-mod-status[data-mod-loaded='true'] {
+    color: var(--rb-green, #7fdc55);
+  }
+
   .player-select {
     width: 100%;
     min-height: 36px;
@@ -938,6 +1051,7 @@ const hasSrc = !!src;
   import { createProductionAudioContext } from '../wasm/js/create-audio-context';
   import { DegradedRbsPlayer } from '../wasm/js/DegradedRbsPlayer';
   import { initPlayerUI } from '../wasm/js/player-ui';
+  import { songToMidi } from '../lib/midi-smf';
   import type { DemoSong } from '../wasm/js/player-ui';
 
   // Public integration hook used by the shipping-engine browser checks. These
@@ -962,6 +1076,11 @@ const hasSrc = !!src;
       createProductionAudioContext?: typeof createProductionAudioContext;
     }
   ).createProductionAudioContext = createProductionAudioContext;
+  (
+    window as Window & {
+      songToMidi?: typeof songToMidi;
+    }
+  ).songToMidi = songToMidi;
 
   document.querySelectorAll<HTMLElement>('.rbs-player').forEach((playerEl) => {
     let demos: DemoSong[] = [];

@@ -15,6 +15,8 @@ import { classifyInitError, type InitFailureReason } from './rbs-init-errors';
 import type { LoadDemoDetail } from '../../lib/player-events';
 import { parsePlayerQuery, scrollToPlayer } from '../../lib/player-events';
 import type { ParsedSong } from '../types/wasm-audio';
+import { songToMidi } from '../../lib/midi-smf';
+import { canDownload, downloadBytes } from '../../lib/download-file';
 import { queryPlayerDom } from './player-dom';
 import { createTransportView, type PlayerBridge } from './player-transport';
 import { createStudioView } from './player-studio-view';
@@ -83,6 +85,147 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
   bridge.setStatusCallback(transport.setStatus);
   bridge.setPositionCallback(transport.updatePositionVisuals);
 
+  function setExportStatus(text: string, state: '' | 'working' | 'done' | 'error') {
+    if (!dom.exportStatus) return;
+    dom.exportStatus.textContent = text;
+    if (state) dom.exportStatus.dataset.state = state;
+    else delete dom.exportStatus.dataset.state;
+  }
+
+  function bounceSupported(): boolean {
+    return bridge.canBounce();
+  }
+
+  /**
+   * Audio export blocks the main thread while WASM renders. Disable the
+   * controls and yield a frame first so the "rendering…" text actually
+   * paints before the freeze, rather than after it.
+   */
+  async function withExportBusy(label: string, run: () => void) {
+    if (!songLoaded) {
+      setExportStatus('Load a song first', 'error');
+      return;
+    }
+    if (!canDownload()) {
+      setExportStatus('Downloads blocked in this frame', 'error');
+      transport.showToast('Downloads are blocked here — open the page directly.', 'error');
+      return;
+    }
+
+    const buttons = [dom.btnBounce, dom.btnStems, dom.btnMidi];
+    buttons.forEach((b) => b && (b.disabled = true));
+    setExportStatus(label, 'working');
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    try {
+      run();
+    } catch (err) {
+      console.error('Export failed:', err);
+      const message = err instanceof Error ? err.message : 'Export failed';
+      setExportStatus(message, 'error');
+      transport.showToast(`Export failed: ${message}`, 'error');
+    } finally {
+      updateExportAvailability();
+    }
+  }
+
+  function updateExportAvailability() {
+    const audioOk = songLoaded && bounceSupported();
+    // MIDI needs only the parsed patterns, so it survives degraded mode.
+    const midiOk = songLoaded && loadedSong !== null;
+
+    if (dom.btnBounce) {
+      dom.btnBounce.disabled = !audioOk;
+      dom.btnBounce.title = audioOk
+        ? 'Render the song to a WAV file'
+        : 'Bouncing needs the full WASM audio engine';
+    }
+    if (dom.btnStems) {
+      dom.btnStems.disabled = !audioOk;
+      dom.btnStems.title = audioOk
+        ? 'Render one WAV per device'
+        : 'Stems need the full WASM audio engine';
+    }
+    if (dom.btnMidi) {
+      dom.btnMidi.disabled = !midiOk;
+      dom.btnMidi.title = midiOk
+        ? 'Export patterns as a Standard MIDI File'
+        : 'Load a song to export MIDI';
+    }
+  }
+
+  /** True when the active bridge can actually play mod samples. */
+  function modsSupported(): boolean {
+    return bridge.canLoadMod();
+  }
+
+  function setModStatus(text: string, loaded: boolean) {
+    if (dom.modStatus) {
+      dom.modStatus.textContent = text;
+      dom.modStatus.dataset.modLoaded = loaded ? 'true' : 'false';
+    }
+    if (dom.btnModClear) dom.btnModClear.hidden = !loaded;
+    playerEl.dataset.modLoaded = loaded ? 'true' : 'false';
+  }
+
+  /**
+   * Mods are a WASM-engine feature. In degraded mode the controls stay
+   * visible but disabled with an explanation, rather than vanishing or
+   * silently doing nothing.
+   */
+  function setModControlsAvailable(available: boolean) {
+    const reason = available ? '' : 'Mods require the full WASM audio engine.';
+    if (dom.btnModLoad) {
+      dom.btnModLoad.disabled = !available;
+      dom.btnModLoad.title = reason;
+    }
+    if (dom.btnModClear) dom.btnModClear.disabled = !available;
+    if (!available && dom.modStatus) dom.modStatus.textContent = 'Unavailable in preview mode';
+  }
+
+  async function loadModFile(buffer: ArrayBuffer, sourceLabel?: string) {
+    if (!modsSupported() || !(bridge instanceof WasmAudioBridge)) {
+      const msg = 'Mods need the full WASM engine — not available in preview mode.';
+      transport.setMessage(msg);
+      transport.showToast(msg, 'error');
+      return;
+    }
+
+    const label = sourceLabel || 'mod file';
+    transport.showToast(`Loading mod: ${label}…`, 'loading', 0);
+    try {
+      const mod = await bridge.loadRbmFile(buffer);
+      transport.dismissLoadingToasts();
+
+      const slots = mod.resources.filter((r) => r.loaded).map((r) => r.slot);
+      const name = mod.title || label;
+      setModStatus(`${name} — ${mod.loadedSlots} slot${mod.loadedSlots === 1 ? '' : 's'}`, true);
+
+      let msg = `Mod loaded: ${name} (${slots.join(', ')})`;
+      if (mod.status === 'partial' || mod.status === 'arena-exhausted') {
+        const skipped = mod.resources.filter(
+          (r) => !r.loaded && r.kind === 'sample' && r.slot !== 'unknown'
+        ).length;
+        msg += ` — ${skipped} sample${skipped === 1 ? '' : 's'} skipped`;
+      }
+      transport.setMessage(msg);
+      transport.showToast(msg, mod.status === 'ok' ? 'success' : 'error');
+    } catch (err) {
+      transport.dismissLoadingToasts();
+      console.error('Failed to load .rbm:', err);
+      const detail =
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message: unknown }).message)
+          : '';
+      const msg = `Failed to load mod${sourceLabel ? ` (${sourceLabel})` : ''}${
+        detail ? `: ${detail}` : ''
+      }`;
+      setModStatus('No mod loaded', false);
+      transport.setMessage(msg);
+      transport.showToast(msg, 'error');
+    }
+  }
+
   async function loadFile(buffer: ArrayBuffer, sourceLabel?: string) {
     try {
       transport.setMessage(degradedMode ? 'Sniffing .rbs header…' : 'Parsing .rbs payload…');
@@ -103,11 +246,13 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
       transport.setMessage(msg);
       transport.showToast(msg, 'success');
       transport.updatePlayAvailability();
+      updateExportAvailability();
     } catch (err) {
       console.error('Failed to load .rbs:', err);
       songLoaded = false;
       loadedSong = null;
       transport.updatePlayAvailability();
+      updateExportAvailability();
       const errMsg = `Failed to parse .rbs${sourceLabel ? ` (${sourceLabel})` : ''}`;
       transport.setMessage(errMsg);
       transport.showToast(errMsg, 'error');
@@ -202,11 +347,83 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
       markUserGesture();
       dom.dropZone!.classList.remove('drag-over');
       const file = e.dataTransfer?.files[0];
-      if (file && file.name.endsWith('.rbs')) {
+      if (!file) return;
+      if (file.name.endsWith('.rbs')) {
         file.arrayBuffer().then((buffer) => loadFile(buffer, file.name));
+      } else if (file.name.endsWith('.rbm')) {
+        file.arrayBuffer().then((buffer) => loadModFile(buffer, file.name));
       }
     });
   }
+
+  dom.modFileInput?.addEventListener('change', (e) => {
+    markUserGesture();
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    file.arrayBuffer().then((buffer) => loadModFile(buffer, file.name));
+  });
+
+  dom.btnModLoad?.addEventListener('click', () => {
+    markUserGesture();
+    dom.modFileInput?.click();
+  });
+
+  dom.btnBounce?.addEventListener('click', () => {
+    markUserGesture();
+    void withExportBusy('Rendering WAV…', () => {
+      if (!(bridge instanceof WasmAudioBridge)) throw new Error('Nothing to render');
+      const file = bridge.bounceToWav();
+      if (!file) throw new Error('Nothing to render');
+      const result = downloadBytes(file.filename, file.bytes, file.mimeType);
+      if (!result.ok) throw new Error(result.reason ?? 'Download failed');
+      const kb = Math.round(file.bytes.byteLength / 1024);
+      setExportStatus(`${file.filename} (${kb} KB)`, 'done');
+      transport.showToast(`Bounced ${file.filename}`, 'success');
+    });
+  });
+
+  dom.btnStems?.addEventListener('click', () => {
+    markUserGesture();
+    void withExportBusy('Rendering stems…', () => {
+      if (!(bridge instanceof WasmAudioBridge)) throw new Error('Nothing to render');
+      const files = bridge.bounceStems();
+      if (files.length === 0) throw new Error('Nothing to render');
+      for (const file of files) {
+        const result = downloadBytes(file.filename, file.bytes, file.mimeType);
+        if (!result.ok) throw new Error(result.reason ?? 'Download failed');
+      }
+      setExportStatus(`${files.length} stems downloaded`, 'done');
+      transport.showToast(`Bounced ${files.length} stems`, 'success');
+    });
+  });
+
+  dom.btnMidi?.addEventListener('click', () => {
+    markUserGesture();
+    void withExportBusy('Writing MIDI…', () => {
+      if (!loadedSong) throw new Error('No song loaded');
+      const bytes = songToMidi(loadedSong, { bars: 4 });
+      const name = `${
+        (loadedSong.title || 'rebirth-song')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .slice(0, 48) || 'rebirth-song'
+      }.mid`;
+      const result = downloadBytes(name, bytes, 'audio/midi');
+      if (!result.ok) throw new Error(result.reason ?? 'Download failed');
+      setExportStatus(`${name} (${bytes.byteLength} bytes)`, 'done');
+      transport.showToast(`Exported ${name}`, 'success');
+    });
+  });
+
+  dom.btnModClear?.addEventListener('click', () => {
+    markUserGesture();
+    bridge.clearMod();
+    setModStatus('No mod loaded', false);
+    const msg = 'Mod cleared — back to procedural drums';
+    transport.setMessage(msg);
+    transport.showToast(msg, 'success');
+  });
 
   dom.btnDemoLoad?.addEventListener('click', async () => {
     markUserGesture();
@@ -234,6 +451,8 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
     transport.showDegradedFallback(reason);
     setPlayerMode(canSketch ? 'degraded-sketch' : 'degraded-metadata');
     studio.setStudioLive(false);
+    setModControlsAvailable(false);
+    updateExportAvailability();
     transport.setMessage('Initialising degraded preview…');
     await bridge.init();
     bridge.setVolume(Number(dom.volumeSlider?.value ?? bridge.outputVolume));
@@ -255,6 +474,9 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
       }
       setPlayerMode('wasm');
       studio.setStudioLive(true);
+      setModControlsAvailable(modsSupported());
+      setModStatus('No mod loaded', false);
+      updateExportAvailability();
       bridge.setVolume(Number(dom.volumeSlider?.value ?? bridge.outputVolume));
 
       const tempoSupported = bridge.canSetTempo();

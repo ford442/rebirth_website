@@ -34,6 +34,12 @@ void DrumVoiceChannel::reset() {
   m_clapBurstAge = 0;
   m_clapBurstLen = 0;
   m_clapGap = 0;
+  // The noise generator is a chaotic map carried in m_noiseState. Leaving it
+  // alone made every replay of a snare or hat draw a different noise
+  // sequence, so the same song bounced twice produced two different files.
+  // 0.0f is the value a freshly constructed channel starts from, so a reset
+  // channel now sounds exactly like a new one.
+  m_noiseState = 0.0f;
 }
 
 void DrumVoiceChannel::trigger(DrumVoiceId id, float velocity, bool accent,
@@ -45,12 +51,11 @@ void DrumVoiceChannel::trigger(DrumVoiceId id, float velocity, bool accent,
   m_phase = 0.0f;
   m_velocity = velocity;
 
-  // Device knobs → per-hit scaling.
-  m_pitchMul = lerp(0.88f, 1.12f, params.tune);
+  // Device knobs → per-hit scaling (shared with the mod sample player).
+  m_pitchMul = drumPitchMul(params);
   m_decayMul = lerp(0.55f, 1.85f, params.decay);
 
-  const float accentBoost = accent ? lerp(1.1f, 1.55f, params.accent) : 1.0f;
-  m_velocity *= accentBoost;
+  m_velocity *= drumAccentGain(params, accent);
 
   const float sr = m_sampleRate;
 

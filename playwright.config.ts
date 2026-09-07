@@ -3,12 +3,25 @@ import { defineConfig, devices } from '@playwright/test';
 const isCI = !!process.env.CI;
 const wasmBuilt = !!process.env.WASM_BUILT;
 
+/**
+ * Specs that need the real production preview server: cross-origin isolation
+ * (SharedArrayBuffer) plus the built WASM artifacts and a live AudioWorklet.
+ * They run only in the `wasm-preview` project, never against the dev server.
+ */
+const preferPreviewSpecs = [
+  '**/wasm-engine-preview.spec.ts',
+  '**/wasm-rbm-mod.spec.ts',
+  '**/wasm-export.spec.ts',
+];
+
 const wasmTestIgnore =
   isCI && !wasmBuilt
     ? [
         'tests/wasm-assets.spec.ts',
         'tests/wasm-engine.spec.ts',
         'tests/wasm-engine-preview.spec.ts',
+        'tests/wasm-rbm-mod.spec.ts',
+        'tests/wasm-export.spec.ts',
       ]
     : [];
 
@@ -33,12 +46,12 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: ['**/wasm-engine-preview.spec.ts', ...wasmTestIgnore],
+      testIgnore: [...preferPreviewSpecs, ...wasmTestIgnore],
       use: { ...devices['Desktop Chrome'] },
     },
     {
       name: 'wasm-preview',
-      testMatch: '**/wasm-engine-preview.spec.ts',
+      testMatch: preferPreviewSpecs,
       testIgnore: wasmTestIgnore,
       use: {
         ...devices['Desktop Chrome'],
@@ -56,17 +69,17 @@ export default defineConfig({
       : [
           {
             name: 'mobile-chrome',
-            testIgnore: ['**/wasm-engine-preview.spec.ts', ...wasmTestIgnore],
+            testIgnore: [...preferPreviewSpecs, ...wasmTestIgnore],
             use: { ...devices['Pixel 5'] },
           },
           {
             name: 'mobile-safari',
-            testIgnore: ['**/wasm-engine-preview.spec.ts', ...wasmTestIgnore],
+            testIgnore: [...preferPreviewSpecs, ...wasmTestIgnore],
             use: { ...devices['iPhone 12'] },
           },
           {
             name: 'tablet',
-            testIgnore: ['**/wasm-engine-preview.spec.ts', ...wasmTestIgnore],
+            testIgnore: [...preferPreviewSpecs, ...wasmTestIgnore],
             use: { ...devices['iPad Pro'] },
           },
         ]),

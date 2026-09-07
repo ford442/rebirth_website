@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -41,6 +42,18 @@ enum class ModSampleSlot : uint8_t {
   Tb303Saw,
   Tb303Square,
 };
+
+/**
+ * Number of distinct ModSampleSlot values, including Unknown at index 0.
+ *
+ * Kept as a standalone constant rather than a `Count` enumerator so the
+ * exhaustive switch in modSampleSlotName() stays -Wswitch clean. Update
+ * both together when a slot is added.
+ */
+constexpr size_t NUM_MOD_SAMPLE_SLOTS = 26;
+
+static_assert(static_cast<size_t>(ModSampleSlot::Tb303Square) + 1 == NUM_MOD_SAMPLE_SLOTS,
+              "NUM_MOD_SAMPLE_SLOTS must cover every ModSampleSlot value");
 
 struct EmbeddedResource {
   std::string name;

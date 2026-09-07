@@ -46,5 +46,13 @@
     "sha256": "2b8d773fd6cfd44d0c62d5c8f679408e47916598534d90461f5646dcb184ea1c",
     "magic": "MThd",
     "file_version": null
+  },
+  {
+    "path": "src/wasm/test-fixtures/mods/sample-kit.rbm",
+    "source_name": "synthetic (scripts/make-rbm-sample-fixture.py)",
+    "bytes": 9264,
+    "sha256": "c5d2eac25c49a1446e27816456ea65189edecc7277eb56f2899d6e667c4cc058",
+    "magic": "CAT ",
+    "file_version": null
   }
 ]

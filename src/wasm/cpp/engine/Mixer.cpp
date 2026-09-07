@@ -8,9 +8,11 @@ namespace rb338 {
 namespace {
 
 constexpr float kDenormalThreshold = 1e-15f;
-constexpr float kDistortionDrive = 5.0f;
-constexpr float kDistortionMix = 0.65f;
-constexpr float kCompressorThreshold = 0.55f;
+// Distortion drive/mix and the compressor threshold became runtime-settable
+// (song FX + TRAK automation); their defaults now live on the Mixer members
+// in Mixer.h. The stale copies that used to sit here were unreferenced, and
+// tripped -Wunused-const-variable under Clang, which broke the Emscripten
+// build while GCC's native build stayed green.
 constexpr float kCompressorRatio = 4.0f;
 constexpr float kCompressorAttack = 0.003f;   // seconds
 constexpr float kCompressorRelease = 0.08f;   // seconds
@@ -59,14 +61,18 @@ float Mixer::compressSample(float x, float& envelope) const {
   return x * gain;
 }
 
-void Mixer::init(float sampleRate) {
-  m_sampleRate = std::max(sampleRate, 1000.0f);
+void Mixer::resetDspState() {
   m_delayLine.fill(0.0f);
   m_delayWritePos = 0;
   m_delayTapSamples = 0;
   m_limiterEnvelope = 0.0f;
   m_compressorEnvelopes.fill(0.0f);
   m_pcfState.fill(0.0f);
+}
+
+void Mixer::init(float sampleRate) {
+  m_sampleRate = std::max(sampleRate, 1000.0f);
+  resetDspState();
 
   for (auto& dev : m_devices) {
     dev.level = 0.8f;
@@ -146,6 +152,11 @@ void Mixer::setChannelLevel(int deviceIndex, float level) {
 void Mixer::setChannelPan(int deviceIndex, float pan) {
   if (deviceIndex < 0 || deviceIndex >= NUM_DEVICES) return;
   m_devices[static_cast<size_t>(deviceIndex)].pan = std::clamp(pan, 0.0f, 1.0f);
+}
+
+bool Mixer::channelMuted(int deviceIndex) const {
+  if (deviceIndex < 0 || deviceIndex >= NUM_DEVICES) return false;
+  return m_devices[static_cast<size_t>(deviceIndex)].muted;
 }
 
 void Mixer::setChannelMuted(int deviceIndex, bool muted) {

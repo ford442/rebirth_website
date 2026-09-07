@@ -376,12 +376,96 @@ is a no-op, not an error).
 `player-studio.ts`, and this table drift apart — see that script for exactly what it
 compares.
 
+### `RbmParser` — `.rbm` mods
+
+| C++ API                                                     | Embind name | TS signature                                                    |
+| ----------------------------------------------------------- | ----------- | --------------------------------------------------------------- |
+| `parseModWrapper(RbmParser&, uintptr_t, size_t)` (main.cpp) | `parse`     | `(ptr: number, size: number) => WasmModLoadReport \| undefined` |
+| `const std::string& lastError() const`                      | `lastError` | `() => string`                                                  |
+
+**Rule — payload bytes never cross the boundary.** `parse` deliberately
+returns a `ModLoadReport`, _not_ the C++ `ParsedMod`. `ParsedMod` owns a
+`std::vector<uint8_t> bytes` per resource; registering it as a value object
+would copy every embedded sample and JPEG skin onto the JS heap. The report
+type has no byte field at all, so this is enforced structurally rather than by
+convention. `byteSize` is a number for display only.
+
+`RbmParser.parse` reads sample headers but decodes no PCM and touches no
+arena — cheap enough for a catalogue view. In a report it produces, `loaded`
+means "would load" and `usedFrames` is what a load _would_ consume, so a UI
+can warn about an oversized mod before committing. To actually load samples,
+use `RbsAudioEngine.loadMod()`.
+
+### `RbsAudioEngine` — offline bounce
+
+| C++ API                                                       | Embind name          | TS signature                          |
+| ------------------------------------------------------------- | -------------------- | ------------------------------------- |
+| `renderOfflineWavWrapper(RbsAudioEngine&, uint32_t, uint8_t)` | `renderOfflineToWav` | `(frames, deviceIndex) => Uint8Array` |
+| `uint32_t songLengthFrames() const`                           | `songLengthFrames`   | `() => number`                        |
+
+`deviceIndex` is a stem index 0-3, or `MASTER_BUS` (255) for the full mix.
+The returned array is a **copy** (`new Uint8Array(view)`), not a view into the
+WASM heap — a bare `typed_memory_view` would dangle as soon as the C++ vector
+went out of scope.
+
+**Rule — never bounce on the live engine.** `renderOffline*` advances the
+sequencer on the calling thread. The AudioWorklet advances the same sequencer
+from its own thread, so calling these on the engine the worklet is driving is
+a data race. `WasmAudioBridge` builds a second, throwaway engine for every
+bounce (`_createOfflineEngine`), which also means the listener hears no gap
+while a file is written.
+
+Offline output is bit-identical to the worklet's, and
+`cpp/tests/test_offline.cpp` pins the properties that make that true:
+`processBlock()` is deterministic, is invariant to the render quantum, and
+needs no AudioContext.
+
+**Rule — live knob moves are sticky.** `setDeviceParam()` is session-only and
+never writes back into the loaded song, but the engine now remembers each
+value and replays it whenever the graph is rebuilt (loading a mod, or
+rewinding for a bounce). Without that, a bounce would render the song's
+untouched knobs rather than what the user is hearing.
+
+### `RbsAudioEngine` — mod methods
+
+| C++ API                                                | Embind name    | TS signature                            |
+| ------------------------------------------------------ | -------------- | --------------------------------------- |
+| `loadModWrapper(RbsAudioEngine&, uintptr_t, size_t)`   | `loadMod`      | `(ptr: number, size: number) => number` |
+| `void clearMod()`                                      | `clearMod`     | `() => void`                            |
+| `bool hasMod() const`                                  | `hasMod`       | `() => boolean`                         |
+| `const ModLoadReport& lastModReport() const` (wrapped) | `getModReport` | `() => WasmModLoadReport`               |
+
+`loadMod` returns a numeric `ModLoadStatus`. It decodes the whole mod in C++
+and republishes the engine snapshot atomically; the audio thread never
+allocates, decodes, or sees a half-loaded pool. Slots the mod does not supply
+keep their procedural voices.
+
+### Mod enum tables
+
+`ModResourceKind`, `ModSampleSlot`, `ModLoadStatus` and `SampleDecodeStatus`
+cross as plain numbers. `src/wasm/types/wasm-audio.ts` holds label arrays
+indexed by the raw enum value:
+
+| C++ enum             | TS label table           |
+| -------------------- | ------------------------ |
+| `ModResourceKind`    | `MOD_RESOURCE_KINDS`     |
+| `ModSampleSlot`      | `MOD_SAMPLE_SLOTS`       |
+| `ModLoadStatus`      | `MOD_LOAD_STATUSES`      |
+| `SampleDecodeStatus` | `SAMPLE_DECODE_STATUSES` |
+
+**Rule:** these arrays are indexed by enum value, so their _order_ is part of
+the contract. Adding a slot to `ModSampleSlot` in `cpp/parser/RbmTypes.h`
+requires appending to `MOD_SAMPLE_SLOTS`, bumping `NUM_MOD_SAMPLE_SLOTS` (a
+`static_assert` guards the C++ half), and updating the length assertions in
+`src/wasm/tests/wasm-audio-types.typecheck.ts` (the TypeScript half).
+
 ## Container registrations
 
 Embind must register these container types before `ParsedSong` can cross the boundary:
 
 - `register_vector<Pattern>("PatternVector")`
 - `register_vector<ArrangementBar>("ArrangementBarVector")`
+- `register_vector<ModSampleReportEntry>("ModSampleReportEntryVector")`
 - `register_array<StepData, MAX_STEPS>("StepDataArray")`
 - `register_array<DeviceState, NUM_DEVICES>("DeviceStateArray")`
 - `register_array<PatternRef, NUM_DEVICES>("PatternRefArray")`
@@ -401,6 +485,7 @@ The Emscripten module must export:
 - `emscriptenGetAudioObject(handle: number): AudioObject`
 - `RbsAudioEngine` (class constructor)
 - `RbsParser` (class constructor)
+- `RbmParser` (class constructor)
 - `initAudioWorklet` (function)
 
 `initAudioWorklet` receives the Embind-managed `RbsAudioEngine` object itself;

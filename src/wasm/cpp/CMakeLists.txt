@@ -55,9 +55,22 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/sources.cmake")
 add_library(rb338_parser STATIC ${RB338_PARSER_SOURCES})
 target_include_directories(rb338_parser PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
+# Vendored third-party audio decoders. Built separately from rb338_engine so
+# the project's -Wall -Wextra -Wpedantic -Werror does not apply to code we do
+# not maintain.
+add_library(rb338_vendor STATIC ${RB338_VENDOR_SOURCES})
+target_include_directories(rb338_vendor PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+if(NOT MSVC)
+  target_compile_options(rb338_vendor PRIVATE -w)
+endif()
+
 add_library(rb338_engine STATIC ${RB338_ENGINE_SOURCES})
-target_link_libraries(rb338_engine PUBLIC rb338_parser)
+target_link_libraries(rb338_engine PUBLIC rb338_parser rb338_vendor)
 target_include_directories(rb338_engine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+# dr_wav's declarations are pulled into WavDecoder.cpp; treat the vendored
+# header as SYSTEM so its own warnings never fail our build.
+target_include_directories(rb338_engine SYSTEM PRIVATE
+  "${CMAKE_CURRENT_SOURCE_DIR}/third_party")
 if(RB338_NO_EXCEPTIONS)
   target_compile_options(rb338_engine PRIVATE -fno-exceptions)
 endif()
@@ -82,8 +95,10 @@ if(NOT EMSCRIPTEN)
   add_executable(rbs-inspect ${RB338_INSPECT_SOURCES})
   target_link_libraries(rbs-inspect PRIVATE rb338_parser)
 
-  add_executable(rbm-inspect tools/rbm-inspect.cpp)
-  target_link_libraries(rbm-inspect PRIVATE rb338_parser)
+  # Links the engine, not just the parser: --samples decodes through the same
+  # SamplePool the audio engine uses.
+  add_executable(rbm-inspect ${RB338_RBM_INSPECT_SOURCES})
+  target_link_libraries(rbm-inspect PRIVATE rb338_engine)
 
   enable_testing()
   add_test(

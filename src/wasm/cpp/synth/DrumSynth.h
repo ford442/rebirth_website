@@ -28,6 +28,18 @@ struct DrumParams {
 };
 
 /**
+ * Knob → per-hit scaling, shared by the procedural voices and the mod
+ * sample player so TUNE/ACCENT behave identically either way.
+ */
+inline float drumPitchMul(const DrumParams& params) {
+  return 0.88f + (1.12f - 0.88f) * params.tune;
+}
+
+inline float drumAccentGain(const DrumParams& params, bool accent) {
+  return accent ? (1.1f + (1.55f - 1.1f) * params.accent) : 1.0f;
+}
+
+/**
  * DrumVoiceChannel — single monophonic analogue-style drum voice.
  *
  * Models are procedural (no PCM) for small WASM size and clear licensing.

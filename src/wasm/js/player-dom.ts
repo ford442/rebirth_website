@@ -22,6 +22,14 @@ export interface PlayerDom {
   messageEl: HTMLElement | null;
   demoSelect: HTMLSelectElement | null;
   btnDemoLoad: HTMLButtonElement | null;
+  modFileInput: HTMLInputElement | null;
+  btnModLoad: HTMLButtonElement | null;
+  btnModClear: HTMLButtonElement | null;
+  modStatus: HTMLElement | null;
+  btnBounce: HTMLButtonElement | null;
+  btnStems: HTMLButtonElement | null;
+  btnMidi: HTMLButtonElement | null;
+  exportStatus: HTMLElement | null;
   volumeSlider: HTMLInputElement | null;
   volumeValue: HTMLElement | null;
   tempoSlider: HTMLInputElement | null;
@@ -62,6 +70,14 @@ export function queryPlayerDom(playerEl: HTMLElement): PlayerDom {
     messageEl: playerEl.querySelector('#rbsMessage'),
     demoSelect: playerEl.querySelector('#rbsDemoSelect'),
     btnDemoLoad: playerEl.querySelector('#rbsBtnDemoLoad'),
+    modFileInput: playerEl.querySelector('#rbsModFileInput'),
+    btnModLoad: playerEl.querySelector('#rbsBtnModLoad'),
+    btnModClear: playerEl.querySelector('#rbsBtnModClear'),
+    modStatus: playerEl.querySelector('#rbsModStatus'),
+    btnBounce: playerEl.querySelector('#rbsBtnBounce'),
+    btnStems: playerEl.querySelector('#rbsBtnStems'),
+    btnMidi: playerEl.querySelector('#rbsBtnMidi'),
+    exportStatus: playerEl.querySelector('#rbsExportStatus'),
     volumeSlider: playerEl.querySelector('#rbsVolume'),
     volumeValue: playerEl.querySelector('#rbsVolumeValue'),
     tempoSlider: playerEl.querySelector('#rbsTempo'),

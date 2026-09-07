@@ -22,6 +22,24 @@ size_t channelIndex(DrumVoiceId id) {
   }
 }
 
+/** Channel → mod slot, matching channelIndex() above. */
+ModSampleSlot slotForChannel(size_t channel) {
+  switch (channel) {
+    case 0: return ModSampleSlot::Tr909Kick;
+    case 1: return ModSampleSlot::Tr909Snare;
+    case 2: return ModSampleSlot::Tr909ClosedHat;
+    case 3: return ModSampleSlot::Tr909OpenHat;
+    case 4: return ModSampleSlot::Tr909Clap;
+    case 5: return ModSampleSlot::Tr909Rimshot;
+    case 6: return ModSampleSlot::Tr909Crash;
+    case 7: return ModSampleSlot::Tr909Ride;
+    case 8: return ModSampleSlot::Tr909LowTom;
+    case 9: return ModSampleSlot::Tr909MidTom;
+    case 10: return ModSampleSlot::Tr909HighTom;
+    default: return ModSampleSlot::Unknown;
+  }
+}
+
 } // anonymous namespace
 
 void Tr909Voice::init(float sampleRate) {
@@ -29,7 +47,17 @@ void Tr909Voice::init(float sampleRate) {
   for (auto& ch : m_channels) {
     ch.init(sampleRate);
   }
+  for (auto& sv : m_sampleVoices) {
+    sv.init(sampleRate);
+  }
   reset();
+}
+
+void Tr909Voice::setSamplePool(const SamplePool* pool) {
+  m_pool = pool;
+  for (auto& sv : m_sampleVoices) {
+    sv.reset();
+  }
 }
 
 void Tr909Voice::load(const DeviceState& state, const std::vector<Pattern>& patterns) {
@@ -40,7 +68,17 @@ void Tr909Voice::load(const DeviceState& state, const std::vector<Pattern>& patt
 }
 
 void Tr909Voice::fire(DrumVoiceId id, bool accent) {
-  m_channels[channelIndex(id)].trigger(id, 1.0f, accent, m_params, true);
+  const size_t index = channelIndex(id);
+
+  // Mod sample wins for this slot; otherwise fall back to the analogue model.
+  if (m_pool) {
+    if (const SamplePool::SlotData* slot = m_pool->slotData(slotForChannel(index))) {
+      m_sampleVoices[index].trigger(*slot, drumPitchMul(m_params), m_params.decay,
+                                    drumAccentGain(m_params, accent));
+      return;
+    }
+  }
+  m_channels[index].trigger(id, 1.0f, accent, m_params, true);
 }
 
 void Tr909Voice::render(float* output, uint32_t numFrames) {
@@ -50,6 +88,9 @@ void Tr909Voice::render(float* output, uint32_t numFrames) {
     float sample = 0.0f;
     for (auto& ch : m_channels) {
       sample += ch.render();
+    }
+    for (auto& sv : m_sampleVoices) {
+      sample += sv.render();
     }
     output[i] = sample;
   }
@@ -87,6 +128,9 @@ void Tr909Voice::setParameter(DeviceParamId param, float value) {
 void Tr909Voice::reset() {
   for (auto& ch : m_channels) {
     ch.reset();
+  }
+  for (auto& sv : m_sampleVoices) {
+    sv.reset();
   }
 }
 

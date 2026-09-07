@@ -11,14 +11,24 @@ import type {
   ArrangementStep,
   DeviceState,
   EmbindVector,
+  ModResourceInfo,
   Pattern,
+  ParsedMod,
   ParsedSong,
   PatternRef,
   WasmArrangementBar,
   WasmDeviceId,
   WasmDeviceState,
+  WasmModLoadReport,
+  WasmModSampleReportEntry,
   WasmParsedSong,
   WasmPattern,
+} from './wasm-audio';
+import {
+  MOD_LOAD_STATUSES,
+  MOD_RESOURCE_KINDS,
+  MOD_SAMPLE_SLOTS,
+  SAMPLE_DECODE_STATUSES,
 } from './wasm-audio';
 
 /** Numeric `WasmDeviceId` -> UI-facing device id string. Must match `DeviceId` in C++ `main.cpp`. */
@@ -107,5 +117,40 @@ export function toUiParsedSong(wasmSong: WasmParsedSong): ParsedSong {
     devices: wasmSong.devices.map(toUiDeviceState),
     patterns: patterns.map(toUiPattern),
     arrangement: arrangement.map(toUiArrangementStep),
+  };
+}
+
+function toUiModResource(entry: WasmModSampleReportEntry): ModResourceInfo {
+  return {
+    name: entry.name,
+    kind: MOD_RESOURCE_KINDS[entry.kind] ?? 'other',
+    slot: MOD_SAMPLE_SLOTS[entry.slot] ?? 'unknown',
+    byteSize: entry.byteSize,
+    frameCount: entry.frameCount,
+    sampleRate: entry.sampleRate,
+    channels: entry.channels,
+    bitDepth: entry.bitDepth,
+    decodeStatus: SAMPLE_DECODE_STATUSES[entry.decodeStatus] ?? 'unknown-format',
+    loaded: entry.loaded,
+  };
+}
+
+/**
+ * Converts the raw Embind `WasmModLoadReport` into the UI-facing `ParsedMod`
+ * shape. Consumes (and deletes) the `resources` Embind vector handle as a
+ * side effect — call this exactly once per report.
+ */
+export function toUiParsedMod(report: WasmModLoadReport): ParsedMod {
+  const resources = consumeVector(report.resources);
+  return {
+    title: report.title,
+    description: report.description,
+    copyright: report.copyright,
+    resources: resources.map(toUiModResource),
+    status: MOD_LOAD_STATUSES[report.status] ?? 'no-samples',
+    loadedSlots: report.loadedSlots,
+    skinCount: report.skinCount,
+    usedFrames: report.usedFrames,
+    capacityFrames: report.capacityFrames,
   };
 }

@@ -289,6 +289,151 @@ export interface WasmParsedSong {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// Offline bounce
+// ═══════════════════════════════════════════════════════════════════
+
+/** `deviceIndex` value that renders the full mix rather than a stem. */
+export const MASTER_BUS = 255;
+
+/** Device order used by stem exports, matching C++ `DeviceId`. */
+export const STEM_DEVICES: ReadonlyArray<{ index: number; id: DeviceId; slug: string }> = [
+  { index: 0, id: 'tb303-a', slug: '303a' },
+  { index: 1, id: 'tb303-b', slug: '303b' },
+  { index: 2, id: 'tr808', slug: '808' },
+  { index: 3, id: 'tr909', slug: '909' },
+];
+
+/** One rendered file ready to hand to the browser as a download. */
+export interface RenderedFile {
+  filename: string;
+  bytes: Uint8Array;
+  mimeType: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// .rbm mod loading
+// ═══════════════════════════════════════════════════════════════════
+
+/** Mirrors C++ `ModResourceKind`. */
+export const MOD_RESOURCE_KINDS = ['sample', 'skin', 'song', 'other'] as const;
+export type ModResourceKindLabel = (typeof MOD_RESOURCE_KINDS)[number];
+
+/** Mirrors C++ `ModLoadStatus`, in declaration order. */
+export const MOD_LOAD_STATUSES = [
+  'ok',
+  'not-initialised',
+  'no-samples',
+  'arena-exhausted',
+  'partial',
+] as const;
+export type ModLoadStatusLabel = (typeof MOD_LOAD_STATUSES)[number];
+
+/** Mirrors C++ `SampleDecodeStatus`, in declaration order. */
+export const SAMPLE_DECODE_STATUSES = [
+  'ok',
+  'unknown-format',
+  'malformed',
+  'unsupported-encoding',
+  'empty',
+  'destination-too-small',
+] as const;
+export type SampleDecodeStatusLabel = (typeof SAMPLE_DECODE_STATUSES)[number];
+
+/**
+ * Mirrors C++ `ModSampleSlot`, in declaration order — index === enum value.
+ * Keep in sync with `modSampleSlotName()` in cpp/parser/RbmTypes.h.
+ */
+export const MOD_SAMPLE_SLOTS = [
+  'unknown',
+  'tr808-kick',
+  'tr808-snare',
+  'tr808-low-tom',
+  'tr808-mid-tom',
+  'tr808-high-tom',
+  'tr808-closed-hat',
+  'tr808-open-hat',
+  'tr808-rimshot',
+  'tr808-clap',
+  'tr808-clave',
+  'tr808-cymbal',
+  'tr808-maracas',
+  'tr909-kick',
+  'tr909-snare',
+  'tr909-low-tom',
+  'tr909-mid-tom',
+  'tr909-high-tom',
+  'tr909-closed-hat',
+  'tr909-open-hat',
+  'tr909-rimshot',
+  'tr909-clap',
+  'tr909-crash',
+  'tr909-ride',
+  'tb303-saw',
+  'tb303-square',
+] as const;
+export type ModSampleSlotLabel = (typeof MOD_SAMPLE_SLOTS)[number];
+
+/**
+ * One resource inside a `.rbm`, as reported by C++ `ModSampleReportEntry`.
+ *
+ * Note there is deliberately no `bytes` field: sample and skin payloads never
+ * cross into JS. They stay in WASM memory, where the engine reads them
+ * directly. `byteSize` is the source payload's size for display only.
+ */
+export interface WasmModSampleReportEntry {
+  name: string;
+  kind: number;
+  slot: number;
+  byteSize: number;
+  frameCount: number;
+  sampleRate: number;
+  channels: number;
+  bitDepth: number;
+  decodeStatus: number;
+  loaded: boolean;
+}
+
+/** Mirrors C++ `ModLoadReport`. */
+export interface WasmModLoadReport {
+  title: string;
+  description: string;
+  copyright: string;
+  resources: EmbindVector<WasmModSampleReportEntry>;
+  status: number;
+  loadedSlots: number;
+  skinCount: number;
+  usedFrames: number;
+  capacityFrames: number;
+}
+
+/** UI-facing resource entry, with enums resolved to labels. */
+export interface ModResourceInfo {
+  name: string;
+  kind: ModResourceKindLabel;
+  slot: ModSampleSlotLabel;
+  byteSize: number;
+  frameCount: number;
+  sampleRate: number;
+  channels: number;
+  bitDepth: number;
+  decodeStatus: SampleDecodeStatusLabel;
+  loaded: boolean;
+}
+
+/** UI-facing mod summary, produced by the bridge from `WasmModLoadReport`. */
+export interface ParsedMod {
+  title: string;
+  description: string;
+  copyright: string;
+  resources: ModResourceInfo[];
+  status: ModLoadStatusLabel;
+  loadedSlots: number;
+  skinCount: number;
+  usedFrames: number;
+  capacityFrames: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // Emscripten module interfaces
 // ═══════════════════════════════════════════════════════════════════
 
@@ -302,6 +447,11 @@ export type WorkletNodeHandle = number;
 export interface RbsAudioEngineInstance {
   init(config: EngineConfig): boolean;
   loadSong(song: WasmParsedSong): boolean;
+  /** Decode a `.rbm` already copied into the WASM heap. Returns ModLoadStatus. */
+  loadMod(ptr: number, size: number): number;
+  clearMod(): void;
+  hasMod(): boolean;
+  getModReport(): WasmModLoadReport;
   play(): void;
   pause(): void;
   stop(): void;
@@ -314,6 +464,13 @@ export interface RbsAudioEngineInstance {
   isPlaying(): boolean;
   getProcessedBlockCount(): number;
   renderTestBlock(numFrames: number): number;
+  /**
+   * Bounce offline to a 16-bit PCM WAV. `deviceIndex` 0-3 renders a stem;
+   * MASTER_BUS (255) renders the full mix. Returns a JS-owned Uint8Array.
+   */
+  renderOfflineToWav(frames: number, deviceIndex: number): Uint8Array;
+  /** Frames covering the loaded arrangement at the current tempo. */
+  songLengthFrames(): number;
   getPlaybackPosition(): PlaybackPosition;
   delete(): void;
 }
@@ -322,6 +479,19 @@ export interface RbsAudioEngineInstance {
 export interface RbsParserInstance {
   /** Returns the parsed song, or `undefined` when parsing fails. */
   parse(ptr: number, size: number): WasmParsedSong | undefined;
+  lastError(): string;
+  delete(): void;
+}
+
+/**
+ * Class constructor shape exposed by Embind for `RbmParser`.
+ *
+ * Metadata only — it reads sample headers but decodes no PCM and returns no
+ * payload bytes. Use `RbsAudioEngine.loadMod()` to actually load samples.
+ */
+export interface RbmParserInstance {
+  /** Returns a mod summary, or `undefined` when parsing fails. */
+  parse(ptr: number, size: number): WasmModLoadReport | undefined;
   lastError(): string;
   delete(): void;
 }
@@ -335,6 +505,7 @@ export interface EngineModule {
   DeviceId: Record<string, WasmDeviceId>;
   RbsAudioEngine: EmbindClassConstructor<RbsAudioEngineInstance>;
   RbsParser: EmbindClassConstructor<RbsParserInstance>;
+  RbmParser: EmbindClassConstructor<RbmParserInstance>;
   initAudioWorklet(
     contextHandle: AudioObjectHandle,
     engine: RbsAudioEngineInstance,

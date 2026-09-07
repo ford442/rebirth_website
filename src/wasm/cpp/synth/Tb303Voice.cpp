@@ -1,4 +1,6 @@
 #include "Tb303Voice.h"
+#include "Resample.h"
+#include "dsp/PolyBlep.h"
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -7,9 +9,23 @@ namespace rb338 {
 
 namespace {
 
-constexpr float kPi = 3.141592653589793f;
-constexpr float kTwoPi = 2.0f * kPi;
-constexpr float kOutputGain = 0.22f;
+constexpr float kOutputGain = 0.3f;
+
+// Coarse-transposition tune range (see Tb303Voice.h for rationale).
+constexpr float kTuneRangeSemitones = 12.0f;
+
+// TB-303 portamento is a fixed hardware time constant, not a knob; the
+// current DeviceState / TRAK schema has no per-device slide-time field to
+// read instead, so we use the commonly documented ~60 ms figure.
+constexpr float kSlideTimeSeconds = 0.06f;
+
+// Accent circuit: short, fixed decay independent of the DECAY knob.
+constexpr float kAccentDecaySeconds = 0.18f;
+constexpr float kAccentCutoffBump = 0.55f;   // extra normalised cutoff sweep
+constexpr float kAccentVcaBoost = 1.1f;      // extra VCA gain at full accent
+
+constexpr float kMinCutoffHz = 120.0f;
+constexpr float kMaxCutoffHz = 8000.0f;
 
 float clamp01(float v) { return std::clamp(v, 0.0f, 1.0f); }
 
@@ -20,16 +36,16 @@ float smoothCoeff(float sampleRate) {
   return 1.0f - std::exp(-1.0f / (0.005f * sampleRate));
 }
 
-float softClip(float x) {
-  const float drive = 1.4f;
-  return std::tanh(x * drive) / std::tanh(drive);
+float cutoffNormToHz(float norm) {
+  return kMinCutoffHz * std::pow(kMaxCutoffHz / kMinCutoffHz, clamp01(norm));
 }
 
 } // anonymous namespace
 
 void Tb303Voice::init(float sampleRate) {
   m_sampleRate = sampleRate;
-  m_pitchGlideCoeff = 1.0f / (0.12f * sampleRate); // ~120 ms slide
+  m_glideCoeff = 1.0f - std::exp(-1.0f / (kSlideTimeSeconds * sampleRate));
+  m_accentDecayCoeff = std::exp(-1.0f / (kAccentDecaySeconds * sampleRate));
   reset();
 }
 
@@ -44,7 +60,7 @@ void Tb303Voice::applyDeviceState(const DeviceState& state) {
   m_smoothedCutoff = m_cutoffKnob;
   m_smoothedResonance = m_resonanceKnob;
   updateDecayCoeffs();
-  processFilterCoeffs(m_smoothedCutoff, m_smoothedResonance);
+  m_filter.setCoeffs(cutoffNormToHz(m_smoothedCutoff), m_smoothedResonance, m_sampleRate);
 }
 
 void Tb303Voice::load(const DeviceState& state, const std::vector<Pattern>& patterns) {
@@ -60,21 +76,9 @@ void Tb303Voice::updateDecayCoeffs() {
 }
 
 float Tb303Voice::midiToHz(uint8_t midiNote) const {
-  // Tune knob: ±1 semitone over the knob range.
-  const float tuneSemis = lerp(-1.0f, 1.0f, m_tune);
+  const float tuneSemis = lerp(-kTuneRangeSemitones, kTuneRangeSemitones, m_tune);
   const float note = static_cast<float>(midiNote) + tuneSemis;
   return 440.0f * std::pow(2.0f, (note - 69.0f) / 12.0f);
-}
-
-void Tb303Voice::processFilterCoeffs(float cutoffNorm, float resonanceNorm) {
-  // Cutoff maps logarithmically from ~120 Hz to ~8 kHz (below Nyquist/4).
-  const float minHz = 120.0f;
-  const float maxHz = 8000.0f;
-  const float hz = minHz * std::pow(maxHz / minHz, clamp01(cutoffNorm));
-  const float wc = kTwoPi * hz / m_sampleRate;
-  // One-pole smoothing coefficient — always < 1 for stability.
-  m_filterG = 1.0f - std::exp(-std::clamp(wc, 0.0f, 3.0f));
-  (void)resonanceNorm;
 }
 
 float Tb303Voice::renderSample() {
@@ -82,57 +86,53 @@ float Tb303Voice::renderSample() {
   m_smoothedCutoff += (m_cutoffKnob - m_smoothedCutoff) * smoothK;
   m_smoothedResonance += (m_resonanceKnob - m_smoothedResonance) * smoothK;
 
-  // Portamento toward target pitch.
-  if (std::fabs(m_targetPitch - m_currentPitch) > 0.01f) {
-    const float delta = m_targetPitch - m_currentPitch;
-    m_currentPitch += delta * std::min(1.0f, m_pitchGlideCoeff);
-  } else {
-    m_currentPitch = m_targetPitch;
-  }
+  // Portamento in the log-frequency domain (semitone-linear), matching a
+  // CV slew circuit rather than a linear ramp in Hz.
+  m_currentLogPitch += (m_targetLogPitch - m_currentLogPitch) * m_glideCoeff;
+  const float currentHz = std::exp2(m_currentLogPitch);
 
   // Oscillator — phase is not reset on note changes.
-  const float phaseInc = m_currentPitch / m_sampleRate;
+  const float phaseInc = currentHz / m_sampleRate;
   m_phase += phaseInc;
   if (m_phase >= 1.0f) m_phase -= 1.0f;
 
-  float osc = 0.0f;
-  if (m_waveformSaw) {
-    osc = 2.0f * m_phase - 1.0f;
+  // A mod can replace the oscillator with a single-cycle wavetable, which
+  // the phase sweeps end-to-end. Unlike the PolyBLEP path these are not
+  // band-limited — the same tradeoff the original hardware/software made —
+  // so they alias at high notes by design rather than by oversight.
+  const SamplePool::SlotData* wavetable = m_waveformSaw ? m_sawWave : m_squareWave;
+  float osc;
+  if (wavetable) {
+    const float position = m_phase * static_cast<float>(wavetable->frameCount);
+    const auto index = static_cast<uint32_t>(position);
+    osc = dsp::sampleAtWrapped(wavetable->pcm, wavetable->frameCount, index,
+                               position - static_cast<float>(index));
   } else {
-    osc = (m_phase < 0.5f) ? 1.0f : -1.0f;
+    osc = m_waveformSaw ? dsp::polyBlepSaw(m_phase, phaseInc)
+                        : dsp::polyBlepSquare(m_phase, phaseInc);
   }
 
-  // Envelope: instant attack while gate is open, exponential decay.
+  // Main envelope: instant attack while gate is open, exponential decay.
   if (m_gateOpen) {
     m_envelope = std::max(m_envelope * m_decayCoeff, 0.0001f);
   } else {
     m_envelope *= m_releaseCoeff;
   }
 
-  // Filter cutoff: base knob + envelope modulation + accent boost.
+  // Accent one-shot: fixed short decay, independent of the main envelope.
+  m_accentEnvelope *= m_accentDecayCoeff;
+
+  // Filter cutoff: base knob + envelope modulation + accent cutoff bump.
   const float envCutoff = m_envModKnob * m_envelope;
-  const float accentCutoff = m_stepAccent * 0.35f;
-  const float modCutoff = clamp01(m_smoothedCutoff + envCutoff + accentCutoff);
-  processFilterCoeffs(modCutoff, m_smoothedResonance);
+  const float accentCutoff = m_accentEnvelope * m_accentKnob * kAccentCutoffBump;
+  const float modCutoffNorm = clamp01(m_smoothedCutoff + envCutoff + accentCutoff);
+  m_filter.setCoeffs(cutoffNormToHz(modCutoffNorm), m_smoothedResonance, m_sampleRate);
 
-  // 4-pole ladder with resonance feedback (stable coefficient range).
-  const float res = lerp(0.0f, 3.2f, m_smoothedResonance);
-  float input = osc * m_envelope;
-  const float accentLevel = 1.0f + m_stepAccent * lerp(0.2f, 0.9f, m_accentKnob);
-  input *= accentLevel;
+  // VCA: main envelope with an accent-driven extra transient on top.
+  const float vcaGain = m_envelope * (1.0f + m_accentEnvelope * m_accentKnob * kAccentVcaBoost);
+  const float input = osc * vcaGain;
 
-  input -= m_filterStage[3] * res;
-
-  float stage = input;
-  const float g = m_filterG;
-  for (int i = 0; i < 4; ++i) {
-    m_filterStage[i] += g * (stage - m_filterStage[i]);
-    stage = m_filterStage[i];
-  }
-
-  float out = m_filterStage[3];
-  out = softClip(out);
-
+  const float out = m_filter.process(input);
   return out * kOutputGain;
 }
 
@@ -149,21 +149,23 @@ void Tb303Voice::triggerStep(uint8_t stepIndex, const StepData& step) {
 
   if (!step.active) {
     m_gateOpen = false;
-    m_stepAccent = 0.0f;
     m_prevStepActive = false;
     m_prevStepSlide = false;
     return;
   }
 
   const bool slideFromPrev = m_prevStepActive && m_prevStepSlide;
-  m_targetPitch = midiToHz(step.note);
-  m_stepAccent = step.accent ? lerp(0.25f, 1.0f, m_accentKnob) : 0.0f;
+  m_targetLogPitch = std::log2(midiToHz(step.note));
+
+  if (step.accent) {
+    m_accentEnvelope = 1.0f;
+  }
 
   if (slideFromPrev) {
     // Portamento without retriggering the envelope.
     m_gateOpen = true;
   } else {
-    m_currentPitch = m_targetPitch;
+    m_currentLogPitch = m_targetLogPitch;
     m_envelope = 1.0f;
     m_gateOpen = true;
   }
@@ -203,19 +205,25 @@ void Tb303Voice::setParameter(DeviceParamId param, float value) {
   }
 }
 
+void Tb303Voice::setSamplePool(const SamplePool* pool) {
+  // Resolve once here rather than per-sample in render().
+  m_sawWave = pool ? pool->slotData(ModSampleSlot::Tb303Saw) : nullptr;
+  m_squareWave = pool ? pool->slotData(ModSampleSlot::Tb303Square) : nullptr;
+}
+
 void Tb303Voice::reset() {
   m_phase = 0.0f;
   m_envelope = 0.0f;
+  m_accentEnvelope = 0.0f;
   m_gateOpen = false;
-  m_currentPitch = 440.0f;
-  m_targetPitch = 440.0f;
-  m_stepAccent = 0.0f;
+  m_currentLogPitch = std::log2(440.0f);
+  m_targetLogPitch = m_currentLogPitch;
   m_prevStepActive = false;
   m_prevStepSlide = false;
-  std::memset(m_filterStage, 0, sizeof(m_filterStage));
+  m_filter.reset();
   m_smoothedCutoff = m_cutoffKnob;
   m_smoothedResonance = m_resonanceKnob;
-  processFilterCoeffs(m_smoothedCutoff, m_smoothedResonance);
+  m_filter.setCoeffs(cutoffNormToHz(m_smoothedCutoff), m_smoothedResonance, m_sampleRate);
 }
 
 } // namespace rb338

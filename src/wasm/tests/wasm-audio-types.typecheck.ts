@@ -26,11 +26,46 @@ import type {
   WasmDeviceId,
   RbsAudioEngineInstance,
   RbsParserInstance,
+  RbmParserInstance,
+  WasmModLoadReport,
+  WasmModSampleReportEntry,
+  EmbindVector,
+  ParsedMod,
   EngineModule,
   AudioContextDiagnostics,
 } from '../types/wasm-audio';
 
+import {
+  MOD_LOAD_STATUSES,
+  MOD_SAMPLE_SLOTS,
+  MOD_RESOURCE_KINDS,
+  SAMPLE_DECODE_STATUSES,
+} from '../types/wasm-audio';
+
 import { wasmAudioConfig } from '../audio-module.config';
+
+/** An Embind vector handle backed by a plain array, for type-checking only. */
+function mockVector<T>(items: T[]): EmbindVector<T> {
+  return {
+    size: () => items.length,
+    get: (index: number) => items[index],
+    delete: () => {},
+  };
+}
+
+function emptyModReport(): WasmModLoadReport {
+  return {
+    title: '',
+    description: '',
+    copyright: '',
+    resources: mockVector<WasmModSampleReportEntry>([]),
+    status: 0,
+    loadedSlots: 0,
+    skinCount: 0,
+    usedFrames: 0,
+    capacityFrames: 0,
+  };
+}
 
 // ── EngineConfig shape ───────────────────────────────────────────
 
@@ -133,11 +168,45 @@ class MockRbsAudioEngine implements RbsAudioEngineInstance {
     return { bar: 1, step: 0 };
   }
 
+  loadMod(_ptr: number, _size: number): number {
+    return 0;
+  }
+
+  clearMod(): void {}
+
+  hasMod(): boolean {
+    return false;
+  }
+
+  getModReport(): WasmModLoadReport {
+    return emptyModReport();
+  }
+
+  renderOfflineToWav(_frames: number, _deviceIndex: number): Uint8Array {
+    return new Uint8Array(0);
+  }
+
+  songLengthFrames(): number {
+    return 0;
+  }
+
   delete(): void {}
 }
 
 class MockRbsParser implements RbsParserInstance {
   parse(_ptr: number, _size: number): WasmParsedSong | undefined {
+    return undefined;
+  }
+
+  lastError(): string {
+    return '';
+  }
+
+  delete(): void {}
+}
+
+class MockRbmParser implements RbmParserInstance {
+  parse(_ptr: number, _size: number): WasmModLoadReport | undefined {
     return undefined;
   }
 
@@ -157,6 +226,7 @@ const mockModule: EngineModule = {
   },
   RbsAudioEngine: MockRbsAudioEngine,
   RbsParser: MockRbsParser,
+  RbmParser: MockRbmParser,
   initAudioWorklet(_contextHandle, _engine, callback) {
     callback(1);
   },
@@ -246,3 +316,68 @@ const _assertDrumGrid: true = drumCells[0].label.includes('BD') ? true : (undefi
 
 void _assertAcidGrid;
 void _assertDrumGrid;
+
+// ── .rbm enum label tables ───────────────────────────────────────
+//
+// These arrays are indexed by the raw C++ enum value, so their order and
+// length are part of the bridge contract. A slot added to ModSampleSlot in
+// cpp/parser/RbmTypes.h without a matching entry here would silently
+// mislabel every later slot, so pin both ends.
+//
+// NUM_MOD_SAMPLE_SLOTS in RbmTypes.h has a static_assert covering the C++
+// side; this is the TypeScript half of the same guarantee.
+
+const _assertSlotCount: 26 = MOD_SAMPLE_SLOTS.length;
+const _assertSlotZero: 'unknown' = MOD_SAMPLE_SLOTS[0];
+const _assertSlotKick: 'tr808-kick' = MOD_SAMPLE_SLOTS[1];
+const _assertSlotLast: 'tb303-square' = MOD_SAMPLE_SLOTS[25];
+
+const _assertKindCount: 4 = MOD_RESOURCE_KINDS.length;
+const _assertKindZero: 'sample' = MOD_RESOURCE_KINDS[0];
+
+const _assertLoadStatusCount: 5 = MOD_LOAD_STATUSES.length;
+const _assertLoadStatusZero: 'ok' = MOD_LOAD_STATUSES[0];
+
+const _assertDecodeStatusCount: 6 = SAMPLE_DECODE_STATUSES.length;
+const _assertDecodeStatusZero: 'ok' = SAMPLE_DECODE_STATUSES[0];
+
+void _assertSlotCount;
+void _assertSlotZero;
+void _assertSlotKick;
+void _assertSlotLast;
+void _assertKindCount;
+void _assertKindZero;
+void _assertLoadStatusCount;
+void _assertLoadStatusZero;
+void _assertDecodeStatusCount;
+void _assertDecodeStatusZero;
+
+// The UI-facing mod summary the bridge produces from a WasmModLoadReport.
+const uiMod: ParsedMod = {
+  title: 'Metallicon',
+  description: '',
+  copyright: '',
+  resources: [
+    {
+      name: 'tr808bd.aif',
+      kind: 'sample',
+      slot: 'tr808-kick',
+      byteSize: 4150,
+      frameCount: 2048,
+      sampleRate: 44100,
+      channels: 1,
+      bitDepth: 16,
+      decodeStatus: 'ok',
+      loaded: true,
+    },
+  ],
+  status: 'ok',
+  loadedSlots: 1,
+  skinCount: 0,
+  usedFrames: 2048,
+  capacityFrames: 2097152,
+};
+void uiMod;
+
+const modParser: RbmParserInstance = new MockRbmParser();
+void modParser;

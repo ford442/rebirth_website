@@ -26,6 +26,17 @@ public:
   /** Initialise internal delay lines, filter states, etc. (no heap alloc). */
   void init(float sampleRate);
 
+  /**
+   * Clear time-varying DSP state — delay line, limiter and compressor
+   * envelopes, PCF filter memory — while leaving levels, pans, mutes and FX
+   * settings untouched.
+   *
+   * An offline bounce needs this so a second render starts from silence
+   * rather than inheriting the previous render's delay tail; init() would
+   * also reset the song's mixer configuration, which a bounce must keep.
+   */
+  void resetDspState();
+
   /** Copy mixer routing from the loaded song (main thread). */
   void setDeviceStates(const std::array<DeviceState, NUM_DEVICES>& devices);
   void setSongFx(const SongFxSettings& fx);
@@ -45,6 +56,9 @@ public:
   void setChannelLevel(int deviceIndex, float level);
   void setChannelPan(int deviceIndex, float pan);
   void setChannelMuted(int deviceIndex, bool muted);
+
+  /** Current mute state, so a stem render can solo one device and restore. */
+  bool channelMuted(int deviceIndex) const;
 
   void setDelayFeedback(float feedback);
   void setDelayWet(float wet);
