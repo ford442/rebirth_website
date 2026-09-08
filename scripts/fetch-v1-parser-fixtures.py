@@ -73,7 +73,7 @@ def decode_committed_b64(expected: dict[str, str]) -> list[str]:
         if not payload.is_file():
             missing.append(rel)
             continue
-        data = base64.b64decode(payload.read_text().strip().encode("ascii"), validate=True)
+        data = base64.b64decode(payload.read_text().encode("ascii"), validate=True)
         write_checked(rel, data, expected)
     return missing
 

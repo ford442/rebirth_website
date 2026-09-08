@@ -40,14 +40,14 @@ Source for the official packs:
 
 https://archive.org/details/rebirth-rb338-songpacks
 
-| File                         | Pack origin                              | Version string | Size     | Role                   |
-| ---------------------------- | ---------------------------------------- | -------------- | -------- | ---------------------- |
-| `v1/just-15.rbs`             | RBSongPack 09 / `Just 15.RBS`            | 3.1.0          | 19,705 B | v1 golden              |
-| `v1/retrograde.rbs`          | RBSongPack 02 / `Retrograde.RBS`         | 3.1.0          | 20,029 B | v1 golden              |
-| `v15/gurkensalat.rbs`        | RBSongPack 37 / `Gurkensalat.RBS`        | 3.2.0          | 19,349 B | v1.5 golden            |
-| `v15/hermetico-absoluto.rbs` | RBSongPack 18 / `Hermetico Absoluto.RBS` | 3.2.0          | 20,082 B | v1.5 golden            |
-| `v15/cavey-3-acid.rbs`       | archive `Artists/Cavey/3_acid.rbs`       | 3.2.0          | 27,163 B | community v1.5 golden  |
-| `reject/generic-smf.mid`     | synthetic empty Type-1 SMF               | (none)         | 26 B     | MIDI rejection fixture |
+| File | Pack origin | Version string | Size | Role |
+| ---- | ----------- | -------------- | ---- | ---- |
+| `v1/just-15.rbs` | RBSongPack 09 / `Just 15.RBS` | 3.1.0 | 19,705 B | v1 golden |
+| `v1/retrograde.rbs` | RBSongPack 02 / `Retrograde.RBS` | 3.1.0 | 20,029 B | v1 golden |
+| `v15/gurkensalat.rbs` | RBSongPack 37 / `Gurkensalat.RBS` | 3.2.0 | 19,349 B | v1.5 golden |
+| `v15/hermetico-absoluto.rbs` | RBSongPack 18 / `Hermetico Absoluto.RBS` | 3.2.0 | 20,082 B | v1.5 golden |
+| `v15/cavey-3-acid.rbs` | archive `Artists/Cavey/3_acid.rbs` | 3.2.0 | 27,163 B | community v1.5 golden |
+| `reject/generic-smf.mid` | synthetic empty Type-1 SMF | (none) | 26 B | MIDI rejection fixture |
 
 The raw bytes are vendored as `*.b64` next to each fixture (GitHub text-safe).
 Materialize the binary files with:
