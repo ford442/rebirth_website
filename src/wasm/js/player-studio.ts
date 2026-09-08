@@ -19,6 +19,11 @@ export const DEVICE_INDEX: Record<DeviceId, number> = {
   tr909: 3,
 };
 
+/** Short display label per device, e.g. for metadata chips and studio tabs. */
+export const STUDIO_DEVICE_LABEL: Record<DeviceId, string> = Object.fromEntries(
+  STUDIO_DEVICES.map((d) => [d.id, d.label])
+) as Record<DeviceId, string>;
+
 /** Must match C++ DeviceParamId. */
 export const DeviceParam = {
   Tune: 0,

@@ -240,6 +240,7 @@ struct ParsedSong {
   std::array<DeviceState, NUM_DEVICES> devices;
   std::vector<Pattern> patterns;
   std::vector<ArrangementBar> arrangement;
+  SongFxSettings fx;
 };
 ```
 
@@ -259,8 +260,57 @@ export interface WasmParsedSong {
   devices: WasmDeviceState[];
   patterns: WasmPattern[];
   arrangement: WasmArrangementBar[];
+  fx: WasmSongFxSettings;
 }
 ```
+
+`AutomationEvent` / `ParsedSong.automation` remain C++-only and are **not**
+exported through Embind.
+
+### `SongFxSettings`
+
+C++ (`src/wasm/cpp/parser/RbsTypes.h`):
+
+```cpp
+struct DelaySettings {
+  bool enabled = false;
+  uint8_t time = 0;
+  uint8_t feedback = 0;
+  uint8_t wet = 0;
+};
+
+struct PcfSettings {
+  bool enabled = false;
+  uint8_t cutoff = 64;
+  uint8_t resonance = 0;
+  uint8_t envAmount = 0;
+};
+
+struct DistSettings {
+  bool enabled = false;
+  uint8_t drive = 32;
+  uint8_t mix = 29;
+};
+
+struct CompSettings {
+  bool enabled = false;
+  uint8_t threshold = 32;
+  uint8_t ratio = 127;
+  uint8_t attack = 127;
+};
+
+struct SongFxSettings {
+  uint8_t masterLevel = 127;
+  DelaySettings delay;
+  PcfSettings pcf;
+  DistSettings dist;
+  CompSettings comp;
+};
+```
+
+TypeScript (`WasmSongFxSettings` in `src/wasm/types/wasm-audio.ts`) mirrors the
+nested structs field-for-field. `RbsVersion` adds `V1_0 = 0x10` for MIDI-container
+v1.0 songs.
 
 The bridge converts `WasmParsedSong` to the UI-facing `ParsedSong`, mapping numeric `WasmDeviceId` values to string labels and flattening knob fields into `DeviceState.knobs`.
 
@@ -272,21 +322,21 @@ block; it does not create a JavaScript `rb338` namespace.
 
 ### `RbsAudioEngine`
 
-| C++ API                                   | Embind name           | TS signature                        |
-| ----------------------------------------- | --------------------- | ----------------------------------- |
-| `bool init(const EngineConfig&)`          | `init`                | `(config: EngineConfig) => boolean` |
-| `bool loadSong(const ParsedSong&)`        | `loadSong`            | `(song: WasmParsedSong) => boolean` |
-| `void play()`                             | `play`                | `() => void`                        |
-| `void pause()`                            | `pause`               | `() => void`                        |
-| `void stop()`                             | `stop`                | `() => void`                        |
-| `void seek(uint16_t)`                     | `seek`                | `(bar: number) => void`             |
-| `void setVolume(float)`                   | `setVolume`           | `(volume: number) => void`          |
-| `void setTempo(float)`                    | `setTempo`            | `(bpm: number) => void`             |
-| `float getTempo() const`                  | `getTempo`            | `() => number`                      |
-| `void setTempoMultiplier(float)`          | `setTempoMultiplier`  | `(multiplier: number) => void`      |
-| `void setDeviceParam(uint8_t,uint8_t,float)` | `setDeviceParam`   | `(deviceId, paramId, value) => void` |
-| `bool isPlaying() const`                  | `isPlaying`           | `() => boolean`                     |
-| `void getPlaybackPosition(...)` (wrapped) | `getPlaybackPosition` | `() => PlaybackPosition`            |
+| C++ API                                      | Embind name           | TS signature                         |
+| -------------------------------------------- | --------------------- | ------------------------------------ |
+| `bool init(const EngineConfig&)`             | `init`                | `(config: EngineConfig) => boolean`  |
+| `bool loadSong(const ParsedSong&)`           | `loadSong`            | `(song: WasmParsedSong) => boolean`  |
+| `void play()`                                | `play`                | `() => void`                         |
+| `void pause()`                               | `pause`               | `() => void`                         |
+| `void stop()`                                | `stop`                | `() => void`                         |
+| `void seek(uint16_t)`                        | `seek`                | `(bar: number) => void`              |
+| `void setVolume(float)`                      | `setVolume`           | `(volume: number) => void`           |
+| `void setTempo(float)`                       | `setTempo`            | `(bpm: number) => void`              |
+| `float getTempo() const`                     | `getTempo`            | `() => number`                       |
+| `void setTempoMultiplier(float)`             | `setTempoMultiplier`  | `(multiplier: number) => void`       |
+| `void setDeviceParam(uint8_t,uint8_t,float)` | `setDeviceParam`      | `(deviceId, paramId, value) => void` |
+| `bool isPlaying() const`                     | `isPlaying`           | `() => boolean`                      |
+| `void getPlaybackPosition(...)` (wrapped)    | `getPlaybackPosition` | `() => PlaybackPosition`             |
 
 ### `RbsParser`
 
@@ -295,12 +345,127 @@ block; it does not create a JavaScript `rb338` namespace.
 | `std::optional<ParsedSong> parse(const uint8_t*, size_t)` | `parse`     | `(ptr: number, size: number) => WasmParsedSong \| null` |
 | `const std::string& lastError() const`                    | `lastError` | `() => string`                                          |
 
+## Live device parameters (`DeviceParamId`)
+
+`RbsAudioEngine::setDeviceParam(uint8_t deviceId, uint8_t paramId, float value)` is the
+only path for live knob/mixer changes (UI knobs, automation events). `paramId` is the
+numeric value of `DeviceParamId` (`src/wasm/cpp/engine/EngineCommands.h`):
+
+| Value | C++ (`DeviceParamId`) | TS (`DeviceParam` in `player-studio.ts`) | Applied to |
+| ----- | --------------------- | ---------------------------------------- | ---------- |
+| 0     | `Tune`                | `Tune`                                   | `Voice`    |
+| 1     | `Cutoff`              | `Cutoff`                                 | `Voice`    |
+| 2     | `Resonance`           | `Resonance`                              | `Voice`    |
+| 3     | `EnvMod`              | `EnvMod`                                 | `Voice`    |
+| 4     | `Decay`               | `Decay`                                  | `Voice`    |
+| 5     | `Accent`              | `Accent`                                 | `Voice`    |
+| 6     | `Waveform`            | `Waveform`                               | `Voice`    |
+| 7     | `Level`               | `Level`                                  | `Mixer`    |
+| 8     | `Pan`                 | `Pan`                                    | `Mixer`    |
+| 9     | `Mute`                | `Mute`                                   | `Mixer`    |
+
+`RbsAudioEngine::applyDeviceParam` (audio thread) forwards `Tune`/`Cutoff`/`Resonance`/
+`EnvMod`/`Decay`/`Accent`/`Waveform` straight to `Voice::setParameter(DeviceParamId, float)`
+and handles `Level`/`Pan`/`Mute` on the `Mixer` — there is **no string lookup** on the audio
+thread. Each `Voice` subclass (`Tb303Voice`, `Tr808Voice`, `Tr909Voice`) switches on the
+enum directly and ignores params it doesn't own (a TB-303-only param reaching a drum voice
+is a no-op, not an error).
+
+`scripts/check-wasm-contract.mjs` (run via `npm run contract:check`) fails CI if the
+`DeviceParamId` enumerators in `EngineCommands.h`, the `DeviceParam` object in
+`player-studio.ts`, and this table drift apart — see that script for exactly what it
+compares.
+
+### `RbmParser` — `.rbm` mods
+
+| C++ API                                                     | Embind name | TS signature                                                    |
+| ----------------------------------------------------------- | ----------- | --------------------------------------------------------------- |
+| `parseModWrapper(RbmParser&, uintptr_t, size_t)` (main.cpp) | `parse`     | `(ptr: number, size: number) => WasmModLoadReport \| undefined` |
+| `const std::string& lastError() const`                      | `lastError` | `() => string`                                                  |
+
+**Rule — payload bytes never cross the boundary.** `parse` deliberately
+returns a `ModLoadReport`, _not_ the C++ `ParsedMod`. `ParsedMod` owns a
+`std::vector<uint8_t> bytes` per resource; registering it as a value object
+would copy every embedded sample and JPEG skin onto the JS heap. The report
+type has no byte field at all, so this is enforced structurally rather than by
+convention. `byteSize` is a number for display only.
+
+`RbmParser.parse` reads sample headers but decodes no PCM and touches no
+arena — cheap enough for a catalogue view. In a report it produces, `loaded`
+means "would load" and `usedFrames` is what a load _would_ consume, so a UI
+can warn about an oversized mod before committing. To actually load samples,
+use `RbsAudioEngine.loadMod()`.
+
+### `RbsAudioEngine` — offline bounce
+
+| C++ API                                                       | Embind name          | TS signature                          |
+| ------------------------------------------------------------- | -------------------- | ------------------------------------- |
+| `renderOfflineWavWrapper(RbsAudioEngine&, uint32_t, uint8_t)` | `renderOfflineToWav` | `(frames, deviceIndex) => Uint8Array` |
+| `uint32_t songLengthFrames() const`                           | `songLengthFrames`   | `() => number`                        |
+
+`deviceIndex` is a stem index 0-3, or `MASTER_BUS` (255) for the full mix.
+The returned array is a **copy** (`new Uint8Array(view)`), not a view into the
+WASM heap — a bare `typed_memory_view` would dangle as soon as the C++ vector
+went out of scope.
+
+**Rule — never bounce on the live engine.** `renderOffline*` advances the
+sequencer on the calling thread. The AudioWorklet advances the same sequencer
+from its own thread, so calling these on the engine the worklet is driving is
+a data race. `WasmAudioBridge` builds a second, throwaway engine for every
+bounce (`_createOfflineEngine`), which also means the listener hears no gap
+while a file is written.
+
+Offline output is bit-identical to the worklet's, and
+`cpp/tests/test_offline.cpp` pins the properties that make that true:
+`processBlock()` is deterministic, is invariant to the render quantum, and
+needs no AudioContext.
+
+**Rule — live knob moves are sticky.** `setDeviceParam()` is session-only and
+never writes back into the loaded song, but the engine now remembers each
+value and replays it whenever the graph is rebuilt (loading a mod, or
+rewinding for a bounce). Without that, a bounce would render the song's
+untouched knobs rather than what the user is hearing.
+
+### `RbsAudioEngine` — mod methods
+
+| C++ API                                                | Embind name    | TS signature                            |
+| ------------------------------------------------------ | -------------- | --------------------------------------- |
+| `loadModWrapper(RbsAudioEngine&, uintptr_t, size_t)`   | `loadMod`      | `(ptr: number, size: number) => number` |
+| `void clearMod()`                                      | `clearMod`     | `() => void`                            |
+| `bool hasMod() const`                                  | `hasMod`       | `() => boolean`                         |
+| `const ModLoadReport& lastModReport() const` (wrapped) | `getModReport` | `() => WasmModLoadReport`               |
+
+`loadMod` returns a numeric `ModLoadStatus`. It decodes the whole mod in C++
+and republishes the engine snapshot atomically; the audio thread never
+allocates, decodes, or sees a half-loaded pool. Slots the mod does not supply
+keep their procedural voices.
+
+### Mod enum tables
+
+`ModResourceKind`, `ModSampleSlot`, `ModLoadStatus` and `SampleDecodeStatus`
+cross as plain numbers. `src/wasm/types/wasm-audio.ts` holds label arrays
+indexed by the raw enum value:
+
+| C++ enum             | TS label table           |
+| -------------------- | ------------------------ |
+| `ModResourceKind`    | `MOD_RESOURCE_KINDS`     |
+| `ModSampleSlot`      | `MOD_SAMPLE_SLOTS`       |
+| `ModLoadStatus`      | `MOD_LOAD_STATUSES`      |
+| `SampleDecodeStatus` | `SAMPLE_DECODE_STATUSES` |
+
+**Rule:** these arrays are indexed by enum value, so their _order_ is part of
+the contract. Adding a slot to `ModSampleSlot` in `cpp/parser/RbmTypes.h`
+requires appending to `MOD_SAMPLE_SLOTS`, bumping `NUM_MOD_SAMPLE_SLOTS` (a
+`static_assert` guards the C++ half), and updating the length assertions in
+`src/wasm/tests/wasm-audio-types.typecheck.ts` (the TypeScript half).
+
 ## Container registrations
 
 Embind must register these container types before `ParsedSong` can cross the boundary:
 
 - `register_vector<Pattern>("PatternVector")`
 - `register_vector<ArrangementBar>("ArrangementBarVector")`
+- `register_vector<ModSampleReportEntry>("ModSampleReportEntryVector")`
 - `register_array<StepData, MAX_STEPS>("StepDataArray")`
 - `register_array<DeviceState, NUM_DEVICES>("DeviceStateArray")`
 - `register_array<PatternRef, NUM_DEVICES>("PatternRefArray")`
@@ -320,6 +485,7 @@ The Emscripten module must export:
 - `emscriptenGetAudioObject(handle: number): AudioObject`
 - `RbsAudioEngine` (class constructor)
 - `RbsParser` (class constructor)
+- `RbmParser` (class constructor)
 - `initAudioWorklet` (function)
 
 `initAudioWorklet` receives the Embind-managed `RbsAudioEngine` object itself;
@@ -381,16 +547,16 @@ Linker and export flags are defined in
 
 Key release linker settings:
 
-| Flag | Value |
-| ---- | ----- |
-| `-pthread` | Enabled |
-| `-sAUDIO_WORKLET=1` | Enabled |
-| `-sWASM_WORKERS=1` | Enabled |
-| `-sSTACK_SIZE` | 131072 (128 KiB module linear stack) |
-| `-sINITIAL_MEMORY` | 67108864 (64 MiB) |
-| `-sALLOW_MEMORY_GROWTH` | 0 |
-| `-sASSERTIONS` | 0 |
-| `-sEXPORTED_FUNCTIONS` | `_malloc`, `_free` |
+| Flag                         | Value                                                                                                           |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `-pthread`                   | Enabled                                                                                                         |
+| `-sAUDIO_WORKLET=1`          | Enabled                                                                                                         |
+| `-sWASM_WORKERS=1`           | Enabled                                                                                                         |
+| `-sSTACK_SIZE`               | 131072 (128 KiB module linear stack)                                                                            |
+| `-sINITIAL_MEMORY`           | 67108864 (64 MiB)                                                                                               |
+| `-sALLOW_MEMORY_GROWTH`      | 0                                                                                                               |
+| `-sASSERTIONS`               | 0                                                                                                               |
+| `-sEXPORTED_FUNCTIONS`       | `_malloc`, `_free`                                                                                              |
 | `-sEXPORTED_RUNTIME_METHODS` | `ccall`, `cwrap`, `getValue`, `setValue`, `HEAPU8`, `emscriptenRegisterAudioObject`, `emscriptenGetAudioObject` |
 
 See ADR [`docs/adr/0002-wasm-build-variants-and-heap.md`](../../docs/adr/0002-wasm-build-variants-and-heap.md)
@@ -401,4 +567,5 @@ for dual-build and heap policy decisions.
 1. If you change a C++ struct, update the matching TypeScript interface in `src/wasm/types/wasm-audio.ts` and this contract.
 2. If you change an Embind registration, update the `EngineModule` / instance interfaces in `src/wasm/types/wasm-audio.ts`.
 3. If you add a new field, ensure it is present in both the C++ `value_object<>` registration and the TypeScript interface with the same name and compatible type.
-4. Run `npx astro check` after any TypeScript change and `npm run wasm:build` after any C++ change.
+4. If you change `DeviceParamId`, update the table above, `player-studio.ts`'s `DeviceParam`, and every `Voice::setParameter` switch that should react to the new value.
+5. Run `npm run contract:check` (structural drift between C++ and TS), `npx astro check` (type-checks `src/wasm/tests/wasm-audio-types.typecheck.ts`, the compile-time contract test) after any TypeScript change, and `npm run wasm:build` after any C++ change.

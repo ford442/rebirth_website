@@ -137,6 +137,43 @@ TEST_CASE("Mixer: distortion send changes the output waveform") {
   CHECK(wetPeak > dryPeak);
 }
 
+TEST_CASE("Mixer: PCF send changes the output waveform") {
+  Mixer mixer;
+  mixer.init(44100.0f);
+  mixer.setDistortionEnabled(false);
+  mixer.setDelayEnabled(false);
+  mixer.setCompressorEnabled(false);
+
+  SongFxSettings fx{};
+  fx.pcf.enabled = true;
+  fx.pcf.cutoff = 8;
+  fx.pcf.resonance = 8;
+  mixer.setSongFx(fx);
+
+  std::array<DeviceState, NUM_DEVICES> devices{};
+  devices[0].id = DeviceId::TB303_A;
+  devices[0].level = 1.0f;
+  devices[0].pan = 0.5f;
+  devices[0].pcf = false;
+  mixer.setDeviceStates(devices);
+
+  auto tone = makeConstant(0.6f);
+  const float* inputs[NUM_DEVICES] = {tone.data(), nullptr, nullptr, nullptr};
+  float dryLeft[kFrames] = {0};
+  float dryRight[kFrames] = {0};
+  mixer.process(inputs, dryLeft, dryRight, kFrames, 120.0f);
+  const float dryPeak = peakPlanar(dryLeft, kFrames);
+
+  devices[0].pcf = true;
+  mixer.setDeviceStates(devices);
+  float wetLeft[kFrames] = {0};
+  float wetRight[kFrames] = {0};
+  mixer.process(inputs, wetLeft, wetRight, kFrames, 120.0f);
+  const float wetPeak = peakPlanar(wetLeft, kFrames);
+
+  CHECK(wetPeak != doctest::Approx(dryPeak).epsilon(0.01));
+}
+
 TEST_CASE("Mixer: delay send produces energy after the tap time") {
   Mixer mixer;
   mixer.init(44100.0f);

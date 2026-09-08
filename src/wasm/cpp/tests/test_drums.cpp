@@ -1,6 +1,7 @@
 #include "../engine/RbsAudioEngine.h"
 #include "../synth/DrumBitfield.h"
 #include "../synth/Tr808Voice.h"
+#include "../synth/Tr909Voice.h"
 #include "../third_party/doctest.h"
 #include <cmath>
 
@@ -9,6 +10,21 @@ using namespace rb338;
 namespace {
 
 float renderPeak(Tr808Voice& voice, uint32_t frames = 4096) {
+  float peak = 0.0f;
+  float buffer[512];
+  uint32_t rendered = 0;
+  while (rendered < frames) {
+    const uint32_t block = std::min<uint32_t>(512, frames - rendered);
+    voice.render(buffer, block);
+    for (uint32_t i = 0; i < block; ++i) {
+      peak = std::max(peak, std::fabs(buffer[i]));
+    }
+    rendered += block;
+  }
+  return peak;
+}
+
+float renderPeak909(Tr909Voice& voice, uint32_t frames = 4096) {
   float peak = 0.0f;
   float buffer[512];
   uint32_t rendered = 0;
@@ -113,6 +129,83 @@ TEST_CASE("Engine: 808 drum pattern produces non-silent mix output") {
   }
 
   CHECK(peak > 0.01f);
+}
+
+TEST_CASE("Tr808Voice: tom hits produce audio") {
+  Tr808Voice voice;
+  voice.init(44100.0f);
+  DeviceState state{};
+  voice.load(state, {});
+
+  StepData step{};
+  step.active = true;
+  step.note = DrumHit::LT | DrumHit::MT | DrumHit::HT;
+  voice.triggerStep(0, step);
+
+  const float peak = renderPeak(voice);
+  CHECK(peak > 0.005f);
+}
+
+TEST_CASE("Tr808Voice: clave and clap are distinct voices") {
+  Tr808Voice voice;
+  voice.init(44100.0f);
+  DeviceState state{};
+  voice.load(state, {});
+
+  StepData claveStep{};
+  claveStep.active = true;
+  claveStep.note = DrumHit::CL;
+  voice.triggerStep(0, claveStep);
+  const float clavePeak = renderPeak(voice);
+
+  voice.reset();
+  StepData clapStep{};
+  clapStep.active = true;
+  clapStep.drumExtra = DrumExtra::CP;
+  voice.triggerStep(0, clapStep);
+  const float clapPeak = renderPeak(voice);
+
+  CHECK(clavePeak > 0.003f);
+  CHECK(clapPeak > 0.003f);
+  CHECK(clavePeak != doctest::Approx(clapPeak).epsilon(0.001f));
+}
+
+TEST_CASE("Tr909Voice: rimshot and crash extra hits sound") {
+  Tr909Voice voice;
+  voice.init(44100.0f);
+  DeviceState state{};
+  voice.load(state, {});
+
+  StepData step{};
+  step.active = true;
+  step.drumExtra = DrumExtra::RS | DrumExtra::CP;
+  voice.triggerStep(0, step);
+
+  const float peak = renderPeak909(voice);
+  CHECK(peak > 0.005f);
+}
+
+TEST_CASE("Engine: 808 tom-only pattern produces non-silent mix output") {
+  RbsAudioEngine eng;
+  REQUIRE(eng.init(drumsOnlyConfig()));
+  REQUIRE(eng.loadSong(makeDrumSong(DeviceId::TR808,
+                                    DrumHit::LT | DrumHit::MT | DrumHit::HT)));
+
+  float left[128] = {0};
+  float right[128] = {0};
+  float* buffers[2] = {left, right};
+
+  eng.play();
+  float peak = 0.0f;
+  for (int i = 0; i < 8; ++i) {
+    eng.processBlock(buffers, 2, 128);
+    for (int s = 0; s < 128; ++s) {
+      peak = std::max(peak, std::fabs(left[s]));
+      peak = std::max(peak, std::fabs(right[s]));
+    }
+  }
+
+  CHECK(peak > 0.005f);
 }
 
 TEST_CASE("Engine: mixer honors device mute") {

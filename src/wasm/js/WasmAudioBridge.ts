@@ -18,21 +18,25 @@
 
 import type {
   ParsedSong,
+  ParsedMod,
+  RenderedFile,
   EngineConfig,
   PlayerStatus,
   EngineError,
   PlaybackPosition,
-  WasmParsedSong,
-  WasmDeviceState,
-  WasmPattern,
-  WasmArrangementBar,
-  WasmDeviceId,
   EngineModule,
   RbsAudioEngineInstance,
 } from '../types/wasm-audio';
 
+import {
+  MOD_LOAD_STATUSES,
+  MASTER_BUS,
+  STEM_DEVICES,
+} from '../types/wasm-audio';
+
 import { wasmAudioConfig } from '../audio-module.config';
 import type { AudioContextDiagnostics } from '../types/wasm-audio';
+import { toUiParsedMod, toUiParsedSong } from '../types/wasm-audio-mapping';
 import { WasmInitError, INIT_FAILURE_MESSAGES } from './rbs-init-errors';
 import { createProductionAudioContext } from './create-audio-context';
 import { waitForCrossOriginIsolation } from '../../scripts/coi-bootstrap';
@@ -42,13 +46,6 @@ export type PositionCallback = (bar: number, step: number) => void;
 
 /** Callback invoked when player status changes. */
 export type StatusCallback = (status: PlayerStatus) => void;
-
-const DEVICE_LABELS: Record<WasmDeviceId, string> = {
-  0: 'tb303-a',
-  1: 'tb303-b',
-  2: 'tr808',
-  3: 'tr909',
-};
 
 export class WasmAudioBridge {
   private module: EngineModule | null = null;
@@ -63,6 +60,13 @@ export class WasmAudioBridge {
   private volume = 0.8;
   private positionPollId: number | null = null;
   private _audioDiagnostics: AudioContextDiagnostics | null = null;
+
+  // Kept so an offline bounce can rebuild exactly what is playing: the source
+  // files plus any live knob moves, which the engine treats as session-only.
+  private _songBuffer: ArrayBuffer | null = null;
+  private _modBuffer: ArrayBuffer | null = null;
+  private _songTitle = '';
+  private _paramOverrides = new Map<string, { deviceId: number; paramId: number; value: number }>();
 
   /** Is the bridge initialised and ready to load files? */
   get isReady(): boolean {
@@ -194,17 +198,7 @@ export class WasmAudioBridge {
       this._audioDiagnostics = diagnostics;
 
       // 4. Create WASM engine instance via Embind
-      const config: EngineConfig = {
-        sampleRate: this.audioContext.sampleRate,
-        bufferSize: wasmAudioConfig.bufferSize,
-        enableTb303A: wasmAudioConfig.features.tb303_a,
-        enableTb303B: wasmAudioConfig.features.tb303_b,
-        enableTr808: wasmAudioConfig.features.tr808,
-        enableTr909: wasmAudioConfig.features.tr909,
-        enableDistortion: wasmAudioConfig.features.distortion,
-        enableCompressor: wasmAudioConfig.features.compressor,
-        enableDelay: wasmAudioConfig.features.delay,
-      };
+      const config: EngineConfig = this._buildEngineConfig();
 
       // EMSCRIPTEN_BINDINGS exports Embind classes directly on the module.
       this.enginePtr = new this.module.RbsAudioEngine();
@@ -296,7 +290,13 @@ export class WasmAudioBridge {
 
         // Load into engine before consuming the Embind vector handles.
         this.enginePtr.loadSong(parsed);
-        const song = this._toUiParsedSong(parsed);
+        const song = toUiParsedSong(parsed);
+
+        // Keep the source bytes so a bounce can rebuild this song offline.
+        // A new song starts from its own knob values, so drop stale overrides.
+        this._songBuffer = buffer.slice(0);
+        this._songTitle = song.title;
+        this._paramOverrides.clear();
 
         this._setStatus('ready');
         return song;
@@ -309,6 +309,239 @@ export class WasmAudioBridge {
       this._setStatus('error');
       throw err;
     }
+  }
+
+  /**
+   * Load a `.rbm` mod, replacing drum and oscillator sounds with its samples.
+   *
+   * The file is copied once into the WASM heap and decoded entirely in C++.
+   * Sample and skin bytes never cross back into JavaScript — only a metadata
+   * summary does — so a multi-megabyte mod costs one heap copy, not two.
+   *
+   * Slots the mod does not supply keep their procedural voices.
+   *
+   * @param buffer Raw ArrayBuffer of the .rbm file
+   * @returns A summary of what was loaded
+   */
+  async loadRbmFile(buffer: ArrayBuffer): Promise<ParsedMod> {
+    if (!this.module || !this.enginePtr) {
+      throw new Error('Bridge not initialised. Call init() first.');
+    }
+
+    this._setStatus('loading');
+
+    const byteLength = buffer.byteLength;
+    let ptr = 0;
+    try {
+      // The shipping build runs with ALLOW_MEMORY_GROWTH=0, so a large mod
+      // can legitimately fail to allocate. Surface that as a real error
+      // rather than writing to address 0.
+      ptr = this.module._malloc(byteLength);
+      if (ptr === 0) {
+        const err: EngineError = {
+          code: 'MOD_TOO_LARGE',
+          message: `Not enough WASM heap for a ${Math.round(byteLength / 1024)} KB mod.`,
+        };
+        throw err;
+      }
+
+      this.module.HEAPU8.set(new Uint8Array(buffer), ptr);
+
+      const status = this.enginePtr.loadMod(ptr, byteLength);
+      const report = toUiParsedMod(this.enginePtr.getModReport());
+
+      if (report.loadedSlots === 0) {
+        const err: EngineError = {
+          code: 'MOD_LOAD_ERROR',
+          message: this._modStatusMessage(MOD_LOAD_STATUSES[status] ?? 'no-samples'),
+        };
+        throw err;
+      }
+
+      // Kept so an offline bounce loads the same samples you are hearing.
+      this._modBuffer = buffer.slice(0);
+
+      this._setStatus('ready');
+      return report;
+    } catch (err) {
+      console.error('[WasmAudioBridge] mod load failed:', err);
+      this._setStatus('error');
+      throw err;
+    } finally {
+      if (ptr !== 0) this.module._free(ptr);
+    }
+  }
+
+  /** Mods require the WASM sample engine, which this bridge provides. */
+  canLoadMod(): boolean {
+    return true;
+  }
+
+  /** This bridge can bounce offline; the degraded player cannot. */
+  canBounce(): boolean {
+    return this.module !== null && this._songBuffer !== null;
+  }
+
+  /**
+   * The flat EngineConfig the C++ side expects, per CONTRACT.md.
+   *
+   * Shared by init() and the offline bounce engine so the two can never
+   * drift — a bounce configured differently from the live engine would not
+   * be the same render.
+   */
+  private _buildEngineConfig(): EngineConfig {
+    return {
+      sampleRate: this.audioContext?.sampleRate ?? wasmAudioConfig.preferredSampleRate,
+      bufferSize: wasmAudioConfig.bufferSize,
+      enableTb303A: wasmAudioConfig.features.tb303_a,
+      enableTb303B: wasmAudioConfig.features.tb303_b,
+      enableTr808: wasmAudioConfig.features.tr808,
+      enableTr909: wasmAudioConfig.features.tr909,
+      enableDistortion: wasmAudioConfig.features.distortion,
+      enableCompressor: wasmAudioConfig.features.compressor,
+      enableDelay: wasmAudioConfig.features.delay,
+    };
+  }
+
+  /**
+   * Build a throwaway engine loaded with exactly what the live one is
+   * playing, for offline rendering.
+   *
+   * A bounce must not run on the live engine: renderOffline() drives the
+   * sequencer from the calling thread, and the AudioWorklet is driving the
+   * same sequencer from its own. Rendering into a second engine sidesteps
+   * that entirely — no locks, no stopping playback, and the listener does
+   * not hear a gap while a file is written.
+   */
+  private _createOfflineEngine(): RbsAudioEngineInstance | null {
+    if (!this.module || !this._songBuffer) return null;
+
+    const engine = new this.module.RbsAudioEngine();
+    engine.init(this._buildEngineConfig());
+
+    const songBytes = new Uint8Array(this._songBuffer);
+    const songPtr = this.module._malloc(songBytes.byteLength);
+    if (songPtr === 0) {
+      engine.delete();
+      return null;
+    }
+
+    const parser = new this.module.RbsParser();
+    try {
+      this.module.HEAPU8.set(songBytes, songPtr);
+      const parsed = parser.parse(songPtr, songBytes.byteLength);
+      if (parsed === undefined) {
+        engine.delete();
+        return null;
+      }
+      engine.loadSong(parsed);
+    } finally {
+      parser.delete();
+      this.module._free(songPtr);
+    }
+
+    // Re-apply the mod, so a bounce uses the same samples you are hearing.
+    if (this._modBuffer) {
+      const modBytes = new Uint8Array(this._modBuffer);
+      const modPtr = this.module._malloc(modBytes.byteLength);
+      if (modPtr !== 0) {
+        try {
+          this.module.HEAPU8.set(modBytes, modPtr);
+          engine.loadMod(modPtr, modBytes.byteLength);
+        } finally {
+          this.module._free(modPtr);
+        }
+      }
+    }
+
+    // …and the live knob moves, which are session-only in the engine.
+    for (const override of this._paramOverrides.values()) {
+      engine.setDeviceParam(override.deviceId, override.paramId, override.value);
+    }
+
+    engine.setTempo(this.enginePtr?.getTempo() ?? 125);
+    return engine;
+  }
+
+  /** Frames covering the whole arrangement, for a default bounce length. */
+  songLengthFrames(): number {
+    return this.enginePtr?.songLengthFrames() ?? 0;
+  }
+
+  /**
+   * Render the loaded song to a WAV file.
+   *
+   * @param frames Defaults to the full arrangement.
+   * @param deviceIndex A stem index, or MASTER_BUS for the full mix.
+   */
+  bounceToWav(frames?: number, deviceIndex: number = MASTER_BUS): RenderedFile | null {
+    const engine = this._createOfflineEngine();
+    if (!engine) return null;
+
+    try {
+      const length = frames && frames > 0 ? frames : engine.songLengthFrames();
+      if (length === 0) return null;
+
+      const bytes = engine.renderOfflineToWav(length, deviceIndex);
+      const stem = STEM_DEVICES.find((d) => d.index === deviceIndex);
+      const suffix = stem ? `-${stem.slug}` : '';
+      return {
+        filename: `${this._downloadStem()}${suffix}.wav`,
+        bytes,
+        mimeType: 'audio/wav',
+      };
+    } finally {
+      engine.delete();
+    }
+  }
+
+  /**
+   * Render one WAV per device.
+   *
+   * Uses a single offline engine for all four passes rather than rebuilding
+   * it each time, so a stem set costs one parse instead of four.
+   */
+  bounceStems(frames?: number): RenderedFile[] {
+    const engine = this._createOfflineEngine();
+    if (!engine) return [];
+
+    try {
+      const length = frames && frames > 0 ? frames : engine.songLengthFrames();
+      if (length === 0) return [];
+
+      const files: RenderedFile[] = [];
+      for (const device of STEM_DEVICES) {
+        const bytes = engine.renderOfflineToWav(length, device.index);
+        files.push({
+          filename: `${this._downloadStem()}-${device.slug}.wav`,
+          bytes,
+          mimeType: 'audio/wav',
+        });
+      }
+      return files;
+    } finally {
+      engine.delete();
+    }
+  }
+
+  /** Filesystem-safe base name for downloads, from the song title. */
+  private _downloadStem(): string {
+    const title = (this._songTitle || 'rebirth-song').toLowerCase();
+    const slug = title
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 48);
+    return slug || 'rebirth-song';
+  }
+
+  /** Drop mod samples and return every voice to procedural synthesis. */
+  clearMod(): void {
+    this.enginePtr?.clearMod();
+  }
+
+  /** True when mod samples are currently backing at least one slot. */
+  hasMod(): boolean {
+    return this.enginePtr?.hasMod() ?? false;
   }
 
   /** Start or resume playback. */
@@ -387,6 +620,10 @@ export class WasmAudioBridge {
     const param = Math.max(0, Math.min(9, Math.floor(paramId)));
     const clamped = Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
     this.enginePtr.setDeviceParam(id, param, clamped);
+    // Remembered so an offline bounce reproduces what you are hearing, not
+    // the song's untouched knob values. Live knob moves are session-only and
+    // are never written back into the loaded song by the engine.
+    this._paramOverrides.set(`${id}:${param}`, { deviceId: id, paramId: param, value: clamped });
     return true;
   }
 
@@ -442,79 +679,17 @@ export class WasmAudioBridge {
     this.positionPollId = requestAnimationFrame(poll);
   }
 
-  private _toUiParsedSong(wasmSong: WasmParsedSong): ParsedSong {
-    const patterns = this._consumeVector(wasmSong.patterns);
-    const arrangement = this._consumeVector(wasmSong.arrangement);
-    return {
-      title: wasmSong.title,
-      author: wasmSong.author,
-      bpm: wasmSong.bpm,
-      devices: wasmSong.devices.map((d) => this._toUiDeviceState(d)),
-      patterns: patterns.map((p) => this._toUiPattern(p)),
-      arrangement: arrangement.map((b) => this._toUiArrangementStep(b)),
-    };
-  }
-
-  private _consumeVector<T>(vector: import('../types/wasm-audio').EmbindVector<T>): T[] {
-    const values: T[] = [];
-    try {
-      for (let index = 0; index < vector.size(); index += 1) {
-        values.push(vector.get(index));
-      }
-      return values;
-    } finally {
-      vector.delete();
+  /** Human-readable copy for a failed mod load, for the LCD / toast. */
+  private _modStatusMessage(status: string): string {
+    switch (status) {
+      case 'arena-exhausted':
+        return 'Mod is too large for the sample memory budget.';
+      case 'no-samples':
+        return 'No playable samples in this mod (it may be skins only).';
+      case 'not-initialised':
+        return 'Audio engine is not ready yet.';
+      default:
+        return 'Mod could not be loaded.';
     }
-  }
-
-  private _toUiDeviceState(wasmDevice: WasmDeviceState): import('../types/wasm-audio').DeviceState {
-    return {
-      deviceId: DEVICE_LABELS[wasmDevice.id] as 'tb303-a' | 'tb303-b' | 'tr808' | 'tr909',
-      knobs: {
-        tune: wasmDevice.tune,
-        cutoff: wasmDevice.cutoff,
-        resonance: wasmDevice.resonance,
-        envMod: wasmDevice.envMod,
-        decay: wasmDevice.decay,
-        accent: wasmDevice.accent,
-      },
-      muted: wasmDevice.muted,
-      level: wasmDevice.level,
-      pan: wasmDevice.pan,
-      waveform: wasmDevice.waveform,
-      initialPatternBank: wasmDevice.initialPatternBank,
-      initialPatternIndex: wasmDevice.initialPatternIndex,
-    };
-  }
-
-  private _toUiPattern(wasmPattern: WasmPattern): import('../types/wasm-audio').Pattern {
-    return {
-      deviceId: DEVICE_LABELS[wasmPattern.deviceId],
-      bank: wasmPattern.bank,
-      patternIndex: wasmPattern.patternIndex,
-      steps: wasmPattern.steps.map((s) => ({
-        active: s.active,
-        note: s.note === 0 ? undefined : s.note,
-        accent: s.accent,
-        slide: s.slide,
-        drumExtra: s.drumExtra,
-      })),
-    };
-  }
-
-  private _toUiArrangementStep(
-    wasmBar: WasmArrangementBar
-  ): import('../types/wasm-audio').ArrangementStep {
-    const patternRefs: Record<string, import('../types/wasm-audio').PatternRef> = {};
-    wasmBar.devicePatterns.forEach((ref, index) => {
-      const label = DEVICE_LABELS[index as WasmDeviceId];
-      if (label) {
-        patternRefs[label] = { bank: ref.bank, index: ref.index };
-      }
-    });
-    return {
-      bar: wasmBar.barNumber,
-      patternRefs,
-    };
   }
 }

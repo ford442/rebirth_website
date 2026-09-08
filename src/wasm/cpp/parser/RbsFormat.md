@@ -175,6 +175,29 @@ Each 12-byte mixer record:
 | 6      | Compressor send (0/1)   |
 | 7–11   | ?                       |
 
+### 6a-ii. Global FX chunks (inside `DEVL`)
+
+Observed payload bytes from `standard-rebirth.rbs`:
+
+| Chunk | Size | Offset | Field layout (bytes 0…) |
+| ----- | ---- | ------ | ------------------------- |
+| `DELY` | 8 | 0 | enabled, time, ?, feedback, wet, pad… |
+| `PCF ` | 12 | 0 | enabled, cutoff, resonance, envAmount, ?, pad… |
+| `DIST` | 8 | 0 | enabled, drive, mix, pad… |
+| `COMP` | 8 | 0 | enabled, ratio, threshold, pad… |
+
+Example payloads (hex):
+
+| Chunk | Payload |
+| ----- | ------- |
+| `DELY` | `0103013e50000000` |
+| `PCF ` | `014b4f401843010000000000` |
+| `DIST` | `01201d0000000000` |
+| `COMP` | `01207f7f00000000` |
+
+All scalar fields are 0–127. The parser stores them on `ParsedSong.fx`
+(`SongFxSettings`) and the mixer reads them through `Mixer::setSongFx()`.
+
 ### 6b. TB-303 Device Chunk (`303 `)
 
 Total chunk size observed: **1097 bytes**.
@@ -330,6 +353,37 @@ distributed RBS 4.2 format document and the independent
 - [x] Skip automation events with length-safe advancing
 - [x] Identify and decode BPM field in GLOB
 - [x] Validate all parsed offsets and lengths (prevent buffer over-read)
+- [x] Parse v1 / v1.5 Propellerhead MIDI-container songs (`MThd` + SysEx payload)
+- [x] Decode `DELY` / `PCF` / `DIST` / `COMP` FX chunks into `SongFxSettings`
+
+---
+
+## 8. v1 / v1.5 MIDI-container songs
+
+Legacy `.rbs` files (ReBirth 1.0–1.5) are Standard MIDI Files with a single
+Propellerhead SysEx payload. Detection rules:
+
+1. File begins with `MThd`
+2. Meta track contains `File version 3.1.0` or `3.2.0` and
+   `Propellerhead Software`
+3. Generic SMF files (without that meta) are rejected
+
+The SysEx body is optionally wrapped in a MIDI 7-bit escape (`F0 81 … 30 …`).
+After stripping wrappers, song data begins with a fixed **309-byte header**
+followed by a DEVL-equivalent block:
+
+| DEVL offset | Content |
+| ----------- | ------- |
+| 0x00 | `MIXR` mixer (64 bytes) |
+| 0x40 | `DELY` (8), `PCF ` (12), `DIST` (8), `COMP` (8) |
+| 0x64 | `303 ` block ×2 (4681 bytes each) |
+| +9362 | `TR0\08` TR-808 block (6238 bytes) |
+| optional | `TR0\09` TR-909 block (6239 bytes) when present |
+
+v1 device blocks use ASCII labels (`303 `, `TR0\08`) before a compact state
+header. TB-303 pattern slots are **146 bytes** with length in byte 0; v2 slots
+keep length in byte 1. Version is inferred from header byte 9 (`0x01` = v1.0,
+`0x02` = v1.5).
 
 ---
 

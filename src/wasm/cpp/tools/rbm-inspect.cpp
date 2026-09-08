@@ -4,11 +4,18 @@
  *   cmake --build src/wasm/cpp/build --target rbm-inspect
  *   ./src/wasm/cpp/build/rbm-inspect path/to/mod.rbm
  *   ./src/wasm/cpp/build/rbm-inspect --pretty path/to/mod.rbm
+ *   ./src/wasm/cpp/build/rbm-inspect --samples path/to/mod.rbm
+ *
+ * `--samples` runs the payloads through the same SamplePool the engine uses,
+ * so it answers "will this mod actually play?" rather than just "does it
+ * parse?".
  */
 
 #include "../parser/ParsedModJson.h"
 #include "../parser/RbmParser.h"
+#include "../synth/SamplePool.h"
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -48,24 +55,64 @@ void printPretty(const ParsedMod& mod) {
   }
 }
 
+void printSamples(const ParsedMod& mod) {
+  SamplePool pool;
+  if (!pool.init()) {
+    std::cerr << "Could not allocate the sample arena\n";
+    return;
+  }
+
+  ModLoadReport report;
+  const ModLoadStatus status = pool.loadFromParsedMod(mod, report);
+
+  std::cout << "Title:        " << (report.title.empty() ? "(none)" : report.title) << "\n";
+  std::cout << "Load status:  " << modLoadStatusName(status) << "\n";
+  std::cout << "Slots loaded: " << report.loadedSlots << "\n";
+  std::cout << "Skins:        " << report.skinCount << " (catalogued, never decoded)\n";
+  std::cout << "Arena:        " << report.usedFrames << " / " << report.capacityFrames
+            << " frames\n";
+  std::cout << "Resources:    " << report.resources.size() << "\n";
+
+  for (const auto& entry : report.resources) {
+    std::cout << "  - " << std::left << std::setw(20) << entry.name << std::right
+              << "  slot=" << std::setw(18) << modSampleSlotName(entry.slot)
+              << "  bytes=" << std::setw(8) << entry.byteSize;
+    if (entry.loaded) {
+      std::cout << "  frames=" << std::setw(7) << entry.frameCount
+                << "  " << entry.sampleRate << " Hz"
+                << "  " << static_cast<int>(entry.bitDepth) << "-bit"
+                << "  ch=" << static_cast<int>(entry.channels);
+    } else if (entry.kind == ModResourceKind::Sample) {
+      std::cout << "  NOT LOADED (" << sampleDecodeStatusName(entry.decodeStatus) << ")";
+    } else {
+      std::cout << "  (" << (entry.kind == ModResourceKind::Skin ? "skin" : "non-sample")
+                << ", not decoded)";
+    }
+    std::cout << "\n";
+  }
+}
+
 } // namespace
 
 int main(int argc, char** argv) {
   bool pretty = false;
+  bool samples = false;
   std::string path;
   for (int i = 1; i < argc; ++i) {
     const std::string arg = argv[i];
     if (arg == "--pretty") {
       pretty = true;
+    } else if (arg == "--samples") {
+      samples = true;
     } else if (arg == "-h" || arg == "--help") {
-      std::cout << "Usage: rbm-inspect [--pretty] file.rbm\n";
+      std::cout << "Usage: rbm-inspect [--pretty|--samples] file.rbm\n";
       return 0;
     } else {
       path = arg;
     }
   }
   if (path.empty()) {
-    std::cerr << "Usage: rbm-inspect [--pretty] file.rbm\n";
+    std::cerr << "Usage: rbm-inspect [--pretty|--samples] file.rbm\n";
     return 2;
   }
 
@@ -77,7 +124,9 @@ int main(int argc, char** argv) {
       std::cerr << "Parse error: " << parser.lastError() << "\n";
       return 1;
     }
-    if (pretty) {
+    if (samples) {
+      printSamples(*mod);
+    } else if (pretty) {
       printPretty(*mod);
     } else {
       std::cout << parsedModToJson(*mod) << "\n";

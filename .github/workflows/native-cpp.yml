@@ -65,3 +65,16 @@ jobs:
         run: |
           ./src/wasm/cpp/build/rbm-inspect src/wasm/test-fixtures/mods/minimal.rbm \
             | node -e "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); if(j.resources[0].slot!=='tr808-kick') process.exit(1)"
+
+      - name: Smoke-test rbm-inspect --samples decoding
+        if: matrix.sanitizer == 'none'
+        run: |
+          ./src/wasm/cpp/build/rbm-inspect --samples src/wasm/test-fixtures/mods/sample-kit.rbm \
+            | tee /dev/stderr \
+            | grep -q "Slots loaded: 3"
+
+      - name: Verify the mod fixture is unmodified
+        if: matrix.sanitizer == 'none'
+        run: |
+          python3 scripts/make-rbm-sample-fixture.py
+          git diff --exit-code -- src/wasm/test-fixtures/mods/sample-kit.rbm

@@ -220,7 +220,19 @@ std::optional<ParsedSong> RbsParser::parse(std::span<const uint8_t> buffer) {
   }
 
   ParsedSong song;
-  if (!parseContainer(buffer.data(), buffer.size(), song, true)) {
+  const uint8_t* data = buffer.data();
+  const size_t size = buffer.size();
+
+  if (size >= 4 && matchId(data, RBS_CONTAINER_MAGIC)) {
+    if (!parseContainer(data, size, song, true)) {
+      return std::nullopt;
+    }
+  } else if (size >= 4 && matchId(data, "MThd")) {
+    if (!parseMidiContainer(data, size, song)) {
+      return std::nullopt;
+    }
+  } else {
+    m_error = "Unrecognized ReBirth song container";
     return std::nullopt;
   }
 
@@ -300,6 +312,14 @@ bool RbsParser::parseContainer(const uint8_t* data, size_t size,
       if (!parseUsri(chunkData, chunkSize, song)) return false;
     } else if (matchId(id, "MIXR")) {
       if (!parseMixr(chunkData, chunkSize, song)) return false;
+    } else if (matchId(id, "DELY")) {
+      if (!parseDely(chunkData, chunkSize, song)) return false;
+    } else if (matchId(id, "PCF ")) {
+      if (!parsePcf(chunkData, chunkSize, song)) return false;
+    } else if (matchId(id, "DIST")) {
+      if (!parseDist(chunkData, chunkSize, song)) return false;
+    } else if (matchId(id, "COMP")) {
+      if (!parseComp(chunkData, chunkSize, song)) return false;
     } else if (matchId(id, RBS_CONTAINER_MAGIC)) {
       if (!parseNestedCat(chunkData, chunkSize, song)) return false;
     } else if (matchId(id, "303 ")) {
@@ -462,7 +482,8 @@ bool RbsParser::parseMixr(const uint8_t* data, size_t size, ParsedSong& song) {
     return false;
   }
 
-  // Master level at byte 0.
+  song.fx.masterLevel = data[0];
+
   // Per-device records begin at offset 0x10, 12 bytes each.
   for (int i = 0; i < NUM_DEVICES; ++i) {
     size_t off = 0x10 + i * 12;
@@ -479,6 +500,56 @@ bool RbsParser::parseMixr(const uint8_t* data, size_t size, ParsedSong& song) {
     dev.compressor = (data[off + 6] != 0);
   }
 
+  return true;
+}
+
+bool RbsParser::parseDely(const uint8_t* data, size_t size, ParsedSong& song) {
+  if (size < 5) {
+    m_error = "DELY chunk too small";
+    return false;
+  }
+  auto& fx = song.fx.delay;
+  fx.enabled = (data[0] != 0);
+  fx.time = data[1];
+  fx.feedback = data[3];
+  fx.wet = data[4];
+  return true;
+}
+
+bool RbsParser::parsePcf(const uint8_t* data, size_t size, ParsedSong& song) {
+  if (size < 7) {
+    m_error = "PCF  chunk too small";
+    return false;
+  }
+  auto& fx = song.fx.pcf;
+  fx.enabled = (data[0] != 0);
+  fx.cutoff = data[1];
+  fx.resonance = data[2];
+  fx.envAmount = data[3];
+  return true;
+}
+
+bool RbsParser::parseDist(const uint8_t* data, size_t size, ParsedSong& song) {
+  if (size < 3) {
+    m_error = "DIST chunk too small";
+    return false;
+  }
+  auto& fx = song.fx.dist;
+  fx.enabled = (data[0] != 0);
+  fx.drive = data[1];
+  fx.mix = data[2];
+  return true;
+}
+
+bool RbsParser::parseComp(const uint8_t* data, size_t size, ParsedSong& song) {
+  if (size < 3) {
+    m_error = "COMP chunk too small";
+    return false;
+  }
+  auto& fx = song.fx.comp;
+  fx.enabled = (data[0] != 0);
+  fx.ratio = data[1];
+  fx.threshold = data[2];
   return true;
 }
 
@@ -560,13 +631,101 @@ bool RbsParser::parseDeviceChunk(DeviceId primaryId, DeviceId secondaryId,
   return true;
 }
 
+bool RbsParser::parseV1DeviceChunk(DeviceId primaryId, DeviceId secondaryId,
+                                   const uint8_t* data, size_t size,
+                                   ParsedSong& song, size_t labelSkip,
+                                   size_t slotSize, size_t headerSize,
+                                   bool is303, bool lengthAtZero) {
+  DeviceId targetId = primaryId;
+  if (primaryId == DeviceId::TB303_A) {
+    if (m_seenTb303A) {
+      targetId = secondaryId;
+    } else {
+      m_seenTb303A = true;
+    }
+  }
+
+  if (size < labelSkip + headerSize + 32 * slotSize) {
+    m_error = "v1 device block too small for state + 32 pattern slots";
+    return false;
+  }
+
+  const uint8_t* hdr = data + labelSkip;
+  DeviceState& dev = song.devices[static_cast<int>(targetId)];
+  dev.id = targetId;
+
+  uint8_t selectedPattern = 0;
+  if (is303) {
+    if (hdr[0] <= 1 && hdr[1] > 31) {
+      dev.muted = (hdr[0] == 0);
+      dev.tune = static_cast<float>(hdr[1]) / 127.0f;
+      selectedPattern = hdr[2];
+      dev.cutoff = static_cast<float>(hdr[3]) / 127.0f;
+      if (headerSize >= 5) {
+        dev.resonance = static_cast<float>(hdr[4]) / 127.0f;
+      }
+    } else {
+      dev.muted = false;
+      dev.tune = static_cast<float>(hdr[0]) / 127.0f;
+      selectedPattern = hdr[1];
+      dev.cutoff = static_cast<float>(hdr[2]) / 127.0f;
+      if (headerSize >= 5) {
+        dev.resonance = static_cast<float>(hdr[3]) / 127.0f;
+        dev.waveform = hdr[4] <= 1 ? hdr[4] : 0;
+      }
+    }
+  } else {
+    if (hdr[0] <= 1 && hdr[1] <= 31) {
+      dev.muted = (hdr[0] == 0);
+      selectedPattern = hdr[1];
+    } else if (hdr[0] <= 1) {
+      dev.muted = (hdr[0] == 0);
+      selectedPattern = hdr[2] <= 31 ? hdr[2] : 0;
+    } else {
+      dev.muted = false;
+      selectedPattern = hdr[1] <= 31 ? hdr[1] : 0;
+    }
+  }
+
+  if (selectedPattern >= 32) {
+    m_error = "v1 device selected-pattern value exceeds the 32 pattern slots (device=" +
+              std::to_string(static_cast<int>(targetId)) +
+              ", pattern=" + std::to_string(selectedPattern) + ")";
+    return false;
+  }
+  dev.initialPatternBank = static_cast<uint8_t>(selectedPattern / 8);
+  dev.initialPatternIndex = static_cast<uint8_t>(selectedPattern % 8);
+
+  const uint8_t* slotData = hdr + headerSize;
+  for (int slot = 0; slot < 32; ++slot) {
+    const uint8_t* slotPtr = slotData + static_cast<size_t>(slot) * slotSize;
+    const uint8_t length =
+        lengthAtZero ? slotPtr[0] : slotPtr[1];
+    const uint8_t* stepData = lengthAtZero ? slotPtr + 1 : slotPtr + 2;
+
+    Pattern pattern;
+    pattern.deviceId = targetId;
+    pattern.bank = static_cast<uint8_t>(slot / MAX_PATTERNS_PER_BANK);
+    pattern.patternIndex = static_cast<uint8_t>(slot % MAX_PATTERNS_PER_BANK);
+    pattern.length = std::min<uint8_t>(length, MAX_STEPS);
+
+    if (is303) {
+      pattern.steps = decode303Pattern(stepData, pattern.length);
+    } else {
+      pattern.steps = decodeDrumPattern(stepData, pattern.length);
+    }
+
+    song.patterns.push_back(pattern);
+  }
+
+  return true;
+}
+
 // ═════════════════════════════════════════════════════════════════════
 // TRAK event stream and arrangement projection
 // ═════════════════════════════════════════════════════════════════════
 
 bool RbsParser::parseTrak(const uint8_t* data, size_t size, ParsedSong& song) {
-  (void)song;
-
   const size_t trackIndex = m_trakIndex++;
   if (size < 4) {
     m_error = "TRAK chunk too small for event count";
@@ -603,14 +762,20 @@ bool RbsParser::parseTrak(const uint8_t* data, size_t size, ParsedSong& song) {
     absolutePosition += delta;
 
     // Tracks 1-4 are 303-A, 303-B, 808 and 909. Controller 1 selects
-    // one of their 32 pattern slots; all other events are automation and are
-    // deliberately length-checked above but not projected yet.
+    // one of their 32 pattern slots; all other events are automation.
     if (trackIndex >= 1 && trackIndex <= NUM_DEVICES && controller == 0x01) {
       if (value >= 32) {
         m_error = "TRAK selected-pattern value exceeds the 32 pattern slots";
         return false;
       }
       m_patternChanges[trackIndex - 1].emplace_back(absolutePosition, value);
+    } else {
+      AutomationEvent ev;
+      ev.trackIndex = static_cast<uint8_t>(trackIndex);
+      ev.tickPosition = absolutePosition;
+      ev.controller = controller;
+      ev.value = value;
+      song.automation.push_back(ev);
     }
   }
 

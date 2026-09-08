@@ -66,12 +66,67 @@ Parser contract:
 
 ## Mod fixtures (`mods/`)
 
-| File            | Source                         | Size    | Notes                                      |
-| --------------- | ------------------------------ | ------- | ------------------------------------------ |
-| `minimal.rbm`   | synthetic (`CAT `/`PRBM`)      | 1,596 B | One `EMBF` 808 kick stub + `INFO` title    |
+| File             | Source                       | Size    | Notes                                                 |
+| ---------------- | ---------------------------- | ------- | ----------------------------------------------------- |
+| `minimal.rbm`    | synthetic (`CAT `/`PRBM`)    | 1,596 B | One `EMBF` 808 kick stub + `INFO` title               |
+| `sample-kit.rbm` | synthetic (generator script) | 9,264 B | Real AIFF + WAV + 303 wavetable payloads, plus a skin |
 
 Real archive mods (`test.rbm`, `PITCH_TUNE.rbm`, …) were used to reverse the
 container (`src/wasm/cpp/parser/RbmFormat.md`) but are not committed.
+
+### `minimal.rbm` vs `sample-kit.rbm`
+
+They test different things and both are needed.
+
+`minimal.rbm`'s single `EMBF` payload is a 12-byte `FORM....AIFF` stub with
+no `COMM` and no `SSND` — it carries **no PCM at all**. That makes it the
+fixture for the failure path: the parser must still classify the resource as
+`tr808-kick`, and the sample decoder must reject it as `malformed` without
+loading anything or crashing.
+
+`sample-kit.rbm` carries real audio, so it exercises the path that actually
+produces sound:
+
+| Resource      | Format                            | Slot          | Frames |
+| ------------- | --------------------------------- | ------------- | ------ |
+| `tr808bd.aif` | AIFF, 16-bit big-endian, 44.1 kHz | `tr808-kick`  | 2,048  |
+| `tr909sd.wav` | RIFF/WAVE, 16-bit LE, 44.1 kHz    | `tr909-snare` | 1,536  |
+| `303saw.aif`  | AIFF single-cycle wavetable       | `tb303-saw`   | 128    |
+| `12522.jpg`   | JPEG magic only                   | (skin)        | —      |
+
+The skin is there to prove it is catalogued but never decoded: image bytes
+must not reach the audio thread.
+
+Regenerate with:
+
+```
+python3 scripts/make-rbm-sample-fixture.py
+```
+
+The script is deterministic (no randomness), so re-running it on an unchanged
+script reproduces the same bytes — `native-cpp.yml` regenerates and runs
+`git diff --exit-code` to prove the committed fixture matches its generator.
+After an intentional change, update the `sha256` in `manifest.json` and the
+frame counts in `cpp/tests/test_sample_pool.cpp`.
+
+## Golden audio fixtures (`golden/`)
+
+| File                                  | Generated from                       | Size      | Notes                                                   |
+| ------------------------------------- | ------------------------------------ | --------- | ------------------------------------------------------- |
+| `golden/standard-rebirth-303b.f32raw` | `standard-rebirth.rbs` TB-303-B line | 352,800 B | 2.0 s @ 44.1 kHz, mono (L+R averaged), raw `float32` LE |
+
+Regression net for `Tb303Voice` DSP changes (see `tests/test_tb303_golden.cpp`):
+render the fixture with only TB-303-B enabled at a fixed 125 BPM, then
+compare RMS and spectral centroid against this checked-in reference within a
+tolerance — not a bit-exact sample match. TB-303-B is used rather than -A
+because device A's arranged patterns don't end up audible over a full
+playthrough of this particular song (a sequencer/pattern-selection question,
+unrelated to filter fidelity).
+
+To regenerate after an intentional DSP change, render
+`standard-rebirth.rbs` with `RbsAudioEngine` (`enableTb303B` only,
+`sampleRate=44100`, `setTempo(125)`), average L+R per frame, and write the
+first 88,200 samples as raw little-endian `float32`.
 
 ## Permission / licensing note
 

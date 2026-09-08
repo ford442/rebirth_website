@@ -1,9 +1,12 @@
 #pragma once
 
+#include "../engine/EngineCommands.h"
 #include "../parser/RbsTypes.h"
 #include <cstdint>
 
 namespace rb338 {
+
+class SamplePool;
 
 /**
  * Voice — abstract base class for all synthesis voices (303, 808, 909).
@@ -13,6 +16,15 @@ namespace rb338 {
 class Voice {
 public:
   virtual ~Voice() = default;
+
+  /**
+   * Attach decoded `.rbm` sample PCM, or nullptr to stay fully procedural.
+   *
+   * Main thread only, during snapshot construction. The pool must outlive
+   * the voice; EngineSnapshot guarantees that by holding a shared_ptr to it
+   * alongside the voices. Voices that have no sample path ignore this.
+   */
+  virtual void setSamplePool(const SamplePool* pool) { (void)pool; }
 
   /** Initialise voice with host sample rate. */
   virtual void init(float sampleRate) = 0;
@@ -32,7 +44,7 @@ public:
   virtual void triggerStep(uint8_t stepIndex, const StepData& step) = 0;
 
   /** Set device state knobs (for real-time automation). */
-  virtual void setParameter(const char* name, float value) = 0;
+  virtual void setParameter(DeviceParamId param, float value) = 0;
 
   /** Reset all state. */
   virtual void reset() = 0;

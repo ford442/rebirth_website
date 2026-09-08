@@ -150,6 +150,36 @@ export class DegradedRbsPlayer {
     return false;
   }
 
+  /**
+   * Mods need the WASM sample engine, which is exactly what is missing in
+   * degraded mode. Reported as unsupported so the UI can say so plainly
+   * rather than appearing to load a mod that will never be heard.
+   */
+  canLoadMod(): boolean {
+    return false;
+  }
+
+  /**
+   * A bounce is a render of the real engine, which is exactly what degraded
+   * mode lacks. Reported as unsupported so the UI can disable the control
+   * rather than produce a file of metronome clicks.
+   */
+  canBounce(): boolean {
+    return false;
+  }
+
+  songLengthFrames(): number {
+    return 0;
+  }
+
+  clearMod(): void {
+    /* no mod can be loaded in degraded mode */
+  }
+
+  hasMod(): boolean {
+    return false;
+  }
+
   setVolume(level: number): void {
     const clamped = Math.max(0, Math.min(1, Number.isFinite(level) ? level : this.volume));
     this.volume = clamped;

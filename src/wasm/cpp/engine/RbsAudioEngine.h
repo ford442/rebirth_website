@@ -2,9 +2,12 @@
 
 #include "AudioThreadLimits.h"
 #include "../parser/RbsTypes.h"
+#include "../synth/SamplePool.h"
 #include "EngineCommands.h"
 #include "EngineSnapshot.h"
 #include "Sequencer.h"
+#include "AutomationScheduler.h"
+#include "../audio/WavWriter.h"
 #include <array>
 #include <atomic>
 #include <cstdint>
@@ -54,6 +57,28 @@ public:
   /** Load a parsed song. Safe to call from main thread only. */
   bool loadSong(const ParsedSong& song);
 
+  /**
+   * Parse and decode a `.rbm` mod, replacing drum/oscillator PCM. Main
+   * thread only.
+   *
+   * Decoding happens here, never in processBlock(): a fresh SamplePool is
+   * filled, then a new snapshot is published atomically. The previously
+   * live pool stays alive until its snapshot is reclaimed, so the audio
+   * thread never reads freed PCM.
+   *
+   * Skins are catalogued in the report and never decoded.
+   */
+  ModLoadStatus loadMod(const uint8_t* data, size_t size);
+
+  /** Drop mod samples and return every voice to procedural synthesis. */
+  void clearMod();
+
+  /** True when at least one slot is currently backed by mod PCM. */
+  bool hasMod() const;
+
+  /** Diagnostics for the most recent loadMod() call. Main thread only. */
+  const ModLoadReport& lastModReport() const { return m_modReport; }
+
   /** Start playback from the current position. */
   void play();
 
@@ -95,6 +120,53 @@ public:
   /** Render one block synchronously and return its absolute peak (test hook). */
   float renderTestBlock(uint32_t numFrames);
 
+  // ── Offline rendering (bounce / stems) ────────────────────────────
+  //
+  // These drive the *same* processBlock() the AudioWorklet drives, over the
+  // same published EngineSnapshot, with no AudioContext involved. The engine
+  // is deterministic and block-size invariant (see tests/test_offline.cpp),
+  // so an offline render is sample-for-sample what the worklet would have
+  // produced from the same starting transport position.
+  //
+  // Thread safety: run these only on an engine the audio thread is NOT
+  // currently pulling. They advance the sequencer on the calling thread, so
+  // a concurrently running worklet would race them. The JS bridge renders on
+  // a dedicated offline engine rather than the live one.
+
+  /**
+   * Render `frames` of interleaved stereo from bar 1.
+   *
+   * @param interleavedStereo Destination, at least `frames * 2` floats.
+   * @return Frames actually written.
+   */
+  uint32_t renderOffline(float* interleavedStereo, uint32_t frames);
+
+  /**
+   * Render one device in isolation, for stem export.
+   *
+   * Every other device is muted for the duration, so the stem is that
+   * device's contribution through the full mixer chain — its level, pan and
+   * FX sends included. Stems therefore do not sum bit-exactly back to the
+   * master bounce: the master limiter is non-linear and reacts to the summed
+   * signal. They sum closely, and each is individually correct.
+   */
+  uint32_t renderOfflineStem(float* interleavedStereo, uint32_t frames, uint8_t deviceIndex);
+
+  /** Frames needed to cover the loaded song's arrangement at the current tempo. */
+  uint32_t songLengthFrames() const;
+
+  /**
+   * Bounce to a complete 16-bit PCM WAV file.
+   *
+   * Encodes block by block rather than buffering the whole render as float
+   * first, so peak memory is the output file rather than ~2.5x it — which
+   * matters against a fixed 64 MiB heap.
+   *
+   * `deviceIndex` selects a stem; pass MASTER_BUS for the full mix.
+   */
+  static constexpr uint8_t MASTER_BUS = 0xffu;
+  std::vector<uint8_t> renderOfflineWav(uint32_t frames, uint8_t deviceIndex = MASTER_BUS);
+
   /** Push a control command from the main thread. Never blocks. */
   bool pushCommand(const EngineCommand& cmd);
 
@@ -115,6 +187,12 @@ public:
 private:
   void drainCommands();
   void handleCommand(const EngineCommand& cmd);
+  void republishGraph();
+  /** Rewind transport + graph for a bounce. Returns the snapshot, or null. */
+  EngineSnapshot* prepareOfflineTransport();
+  /** Single offline render path; writes floats, WAV bytes, or both. */
+  uint32_t runOfflineRender(uint32_t frames, uint8_t deviceIndex,
+                            float* interleavedOut, WavPcm16Builder* wav);
   EngineSnapshot* pinSnapshot();
   void reclaimRetiredSnapshots();
   void resetVoices(EngineSnapshot* snap);
@@ -149,6 +227,24 @@ private:
 
   // Sequencer transport lives on the engine (audio-thread owned after init).
   std::unique_ptr<Sequencer> m_sequencer;
+  AutomationScheduler m_automation;
+
+  // Mod samples (main thread). The pool the audio thread reads is the one
+  // referenced by the published snapshot, not this handle.
+  std::shared_ptr<const SamplePool> m_samplePool;
+  ModLoadReport m_modReport;
+
+  // Live knob moves, remembered so they survive a graph rebuild.
+  //
+  // setDeviceParam() is session-only: it never writes back into the loaded
+  // song. Anything that re-applies the song to the graph — loading a mod,
+  // or rewinding for an offline bounce — would therefore silently discard
+  // every knob the user has touched. Replaying these afterwards is what
+  // makes a bounce sound like what is actually playing.
+  static constexpr size_t NUM_DEVICE_PARAMS = 10; // DeviceParamId::Tune..Mute
+  std::array<std::array<float, NUM_DEVICE_PARAMS>, NUM_DEVICES> m_paramOverrides{};
+  std::array<std::array<bool, NUM_DEVICE_PARAMS>, NUM_DEVICES> m_paramOverrideSet{};
+  void applyParamOverrides(EngineSnapshot* snap);
 
   // Per-device mono scratch buffers (member storage — not on the audio-thread stack).
   alignas(16) float m_scratchBuffers[NUM_DEVICES][MAX_RENDER_TEST_FRAMES];

@@ -245,3 +245,58 @@ TEST_CASE("standard-rebirth.rbs 808 has non-empty drum patterns") {
   }
   CHECK(active808 >= 3);
 }
+
+TEST_CASE("standard-rebirth.rbs FX chunks decode into SongFxSettings") {
+  const auto song = parseFixture("standard-rebirth.rbs");
+  CHECK(song.fx.masterLevel == 100);
+  CHECK(song.fx.delay.enabled);
+  CHECK(song.fx.delay.time == 3);
+  CHECK(song.fx.delay.feedback == 0x3e);
+  CHECK(song.fx.delay.wet == 0x50);
+  CHECK(song.fx.pcf.enabled);
+  CHECK(song.fx.pcf.cutoff == 0x4b);
+  CHECK(song.fx.pcf.resonance == 0x4f);
+  CHECK(song.fx.pcf.envAmount == 0x40);
+  CHECK(song.fx.dist.enabled);
+  CHECK(song.fx.dist.drive == 0x20);
+  CHECK(song.fx.dist.mix == 0x1d);
+  CHECK(song.fx.comp.enabled);
+  CHECK(song.fx.comp.ratio == 0x20);
+  CHECK(song.fx.comp.threshold == 0x7f);
+}
+
+ParsedSong parseFixturePath(const std::string& path) {
+  auto buffer = readFile(path);
+  RbsParser parser;
+  auto song = parser.parse(buffer.data(), buffer.size());
+  if (!song) {
+    throw std::runtime_error("Parse failed for " + path + ": " + parser.lastError());
+  }
+  return *song;
+}
+
+TEST_CASE("v1 MIDI-container golden fixtures parse successfully") {
+  for (const auto& spec : {
+         std::pair{"v1/just-15.rbs", RbsVersion::V1_0},
+         std::pair{"v1/retrograde.rbs", RbsVersion::V1_0},
+         std::pair{"v15/gurkensalat.rbs", RbsVersion::V1_5},
+         std::pair{"v15/hermetico-absoluto.rbs", RbsVersion::V1_5},
+         std::pair{"v15/cavey-3-acid.rbs", RbsVersion::V1_5},
+       }) {
+    CAPTURE(spec.first);
+    const auto song = parseFixturePath(std::string("src/wasm/test-fixtures/") + spec.first);
+    CHECK(song.version == spec.second);
+    CHECK(song.bpm > 40.0f);
+    CHECK(song.patterns.size() >= 96);
+    CHECK(countPatterns(song, DeviceId::TB303_A) == 32);
+    CHECK(countPatterns(song, DeviceId::TR808) == 32);
+  }
+}
+
+TEST_CASE("reject/generic-smf.mid is rejected as standard MIDI") {
+  RbsParser parser;
+  const auto buffer = readFile("src/wasm/test-fixtures/reject/generic-smf.mid");
+  const auto song = parser.parse(buffer.data(), buffer.size());
+  CHECK(!song);
+  CHECK(parser.lastError().find("Standard MIDI file") != std::string::npos);
+}

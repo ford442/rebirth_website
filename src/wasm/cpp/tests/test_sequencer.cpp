@@ -1,4 +1,5 @@
 #include "../engine/Sequencer.h"
+#include "../engine/AutomationScheduler.h"
 #include "../third_party/doctest.h"
 #include <array>
 #include <cmath>
@@ -252,4 +253,22 @@ TEST_CASE("Sequencer: null snapshot emits no events") {
   seq.setPosition(1, 0);
   Sequencer::Event ev[16];
   CHECK(seq.generateEvents(nullptr, 120.0f, 44100.0f, 128, ev, 16) == 0);
+}
+
+TEST_CASE("AutomationScheduler: seek applies the last event at or before the bar") {
+  ParsedSong song;
+  song.bpm = 120.0f;
+  song.automation.push_back({1, 0, 0x03, 40});
+  song.automation.push_back({1, 32, 0x03, 80});
+
+  AutomationScheduler scheduler;
+  scheduler.setPosition(&song, 2, 0);
+
+  alignas(16) AutomationScheduler::Event events[8];
+  const uint32_t count = scheduler.generateEvents(
+      &song, 120.0f, 44100.0f, 2, 0, 0.0, 128, events, 8);
+  REQUIRE(count == 1);
+  CHECK(events[0].controller == 0x03);
+  CHECK(events[0].value == 80);
+  CHECK(events[0].sampleOffset == 0);
 }
