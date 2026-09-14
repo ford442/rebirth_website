@@ -97,11 +97,10 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
   }
 
   /**
-   * Audio export blocks the main thread while WASM renders. Disable the
-   * controls and yield a frame first so the "rendering…" text actually
-   * paints before the freeze, rather than after it.
+   * Audio export runs on a Dedicated Worker. Disable the controls while it
+   * runs; the LCD stays at playing and the page keeps painting.
    */
-  async function withExportBusy(label: string, run: () => void) {
+  async function withExportBusy(label: string, run: () => Promise<void> | void) {
     if (!songLoaded) {
       setExportStatus('Load a song first', 'error');
       return;
@@ -115,13 +114,17 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
     const buttons = [dom.btnBounce, dom.btnStems, dom.btnMidi];
     buttons.forEach((b) => b && (b.disabled = true));
     setExportStatus(label, 'working');
-    await new Promise((resolve) => requestAnimationFrame(resolve));
 
     try {
-      run();
+      await run();
     } catch (err) {
       console.error('Export failed:', err);
-      const message = err instanceof Error ? err.message : 'Export failed';
+      const message =
+        err instanceof Error
+          ? err.message
+          : err && typeof err === 'object' && 'message' in err
+            ? String((err as { message: unknown }).message)
+            : 'Export failed';
       setExportStatus(message, 'error');
       transport.showToast(`Export failed: ${message}`, 'error');
     } finally {
@@ -370,10 +373,9 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
 
   dom.btnBounce?.addEventListener('click', () => {
     markUserGesture();
-    void withExportBusy('Rendering WAV…', () => {
+    void withExportBusy('Rendering WAV…', async () => {
       if (!(bridge instanceof WasmAudioBridge)) throw new Error('Nothing to render');
-      const file = bridge.bounceToWav();
-      if (!file) throw new Error('Nothing to render');
+      const file = await bridge.bounceToWav();
       const result = downloadBytes(file.filename, file.bytes, file.mimeType);
       if (!result.ok) throw new Error(result.reason ?? 'Download failed');
       const kb = Math.round(file.bytes.byteLength / 1024);
@@ -384,9 +386,9 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
 
   dom.btnStems?.addEventListener('click', () => {
     markUserGesture();
-    void withExportBusy('Rendering stems…', () => {
+    void withExportBusy('Rendering stems…', async () => {
       if (!(bridge instanceof WasmAudioBridge)) throw new Error('Nothing to render');
-      const files = bridge.bounceStems();
+      const files = await bridge.bounceStems();
       if (files.length === 0) throw new Error('Nothing to render');
       for (const file of files) {
         const result = downloadBytes(file.filename, file.bytes, file.mimeType);

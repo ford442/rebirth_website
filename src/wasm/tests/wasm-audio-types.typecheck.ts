@@ -140,6 +140,14 @@ class MockRbsAudioEngine implements RbsAudioEngineInstance {
     return true;
   }
 
+  loadSongFromBytes(_ptr: number, _size: number): WasmParsedSong | undefined {
+    return undefined;
+  }
+
+  lastParseError(): string {
+    return '';
+  }
+
   play(): void {}
   pause(): void {}
   stop(): void {}
@@ -229,6 +237,9 @@ const mockModule: EngineModule = {
   RbmParser: MockRbmParser,
   initAudioWorklet(_contextHandle, _engine, callback) {
     callback(1);
+  },
+  heapStats() {
+    return { initialMemory: 0, heapSize: 0, usedBytes: 0 };
   },
   HEAPU8: new Uint8Array(0),
   _malloc(_size: number): number {

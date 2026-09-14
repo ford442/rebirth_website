@@ -53,6 +53,32 @@ void writeU32BE(std::vector<uint8_t>& bytes, size_t offset, uint32_t value) {
   bytes[offset + 3] = static_cast<uint8_t>(value);
 }
 
+uint32_t readU32BE(const std::vector<uint8_t>& bytes, size_t offset) {
+  return (static_cast<uint32_t>(bytes[offset]) << 24) |
+         (static_cast<uint32_t>(bytes[offset + 1]) << 16) |
+         (static_cast<uint32_t>(bytes[offset + 2]) << 8) |
+         static_cast<uint32_t>(bytes[offset + 3]);
+}
+
+size_t findLastChunk(const std::vector<uint8_t>& bytes, const char (&id)[5]) {
+  const std::array<uint8_t, 4> needle = {
+    static_cast<uint8_t>(id[0]), static_cast<uint8_t>(id[1]),
+    static_cast<uint8_t>(id[2]), static_cast<uint8_t>(id[3])
+  };
+  size_t last = static_cast<size_t>(-1);
+  auto it = bytes.begin();
+  while (true) {
+    it = std::search(it, bytes.end(), needle.begin(), needle.end());
+    if (it == bytes.end()) break;
+    last = static_cast<size_t>(it - bytes.begin());
+    ++it;
+  }
+  if (last == static_cast<size_t>(-1)) {
+    throw std::runtime_error(std::string("Missing chunk: ") + id);
+  }
+  return last;
+}
+
 uint8_t selectedPattern(const ArrangementBar& bar, DeviceId device) {
   const PatternRef& ref = bar.devicePatterns[static_cast<int>(device)];
   return static_cast<uint8_t>(ref.bank * MAX_PATTERNS_PER_BANK + ref.index);
@@ -180,6 +206,38 @@ TEST_CASE("Parser rejects truncated GLOB and TRAK chunks with an error") {
   RbsParser trakParser;
   CHECK(!trakParser.parse(trakBytes.data(), trakBytes.size()));
   CHECK(trakParser.lastError().find("TRAK") != std::string::npos);
+}
+
+TEST_CASE("v2.x fixtures decode non-empty TRAK automation") {
+  for (const auto* name : {"standard-rebirth.rbs", "blue-planet.rbs", "no-remorse.rbs"}) {
+    const auto song = parseFixture(name);
+    CAPTURE(name);
+    CHECK(song.automation.size() > 0);
+  }
+}
+
+TEST_CASE("5-byte STRAK id is parsed as a TRAK alias") {
+  const auto original = parseFixture("no-remorse.rbs");
+  auto bytes = readFile("src/wasm/test-fixtures/no-remorse.rbs");
+  const size_t trak = findLastChunk(bytes, "TRAK");
+  REQUIRE(bytes[trak] == 'T');
+  const uint32_t trakSize = readU32BE(bytes, trak + 4);
+  bytes[trak + 0] = 'S';
+  bytes[trak + 1] = 'T';
+  bytes[trak + 2] = 'R';
+  bytes[trak + 3] = 'A';
+  bytes.insert(bytes.begin() + trak + 4, static_cast<uint8_t>('K'));
+
+  // 9-byte STRAK header + odd body is even, so the original IFF pad is gone.
+  if ((trakSize & 1u) && !bytes.empty()) {
+    bytes.pop_back();
+  }
+
+  RbsParser parser;
+  auto song = parser.parse(bytes.data(), bytes.size());
+  REQUIRE(song);
+  CHECK(song->automation.size() == original.automation.size());
+  CHECK(song->arrangement.size() == original.arrangement.size());
 }
 
 TEST_CASE("v2.x fixtures expose 32 patterns per device") {

@@ -1,0 +1,696 @@
+/* ============================================================
+   4. NAVIGATION (Enhanced)
+   ============================================================ */
+.site-header,
+.rb-header {
+  background: linear-gradient(180deg, #2a2a2a 0%, #1e1e1e 60%, #161616 100%);
+  border-bottom: 2px solid #111;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(12px);
+}
+
+.site-header .container,
+.rb-header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-block: 0.75rem;
+}
+
+.rb-logo,
+.site-logo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.15em;
+  text-decoration: none;
+  font-family: var(--rb-font-display);
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  position: relative;
+}
+
+.logo-rb {
+  color: var(--rb-amber);
+  font-size: 1.8rem;
+  text-shadow:
+    0 0 12px var(--rb-amber-glow),
+    0 0 24px rgba(255, 176, 0, 0.2);
+}
+
+.logo-338 {
+  color: var(--rb-silver);
+  font-size: 1.6rem;
+}
+
+.logo-sub {
+  color: var(--rb-silver-dim);
+  font-size: var(--text-xs);
+  letter-spacing: 0.22em;
+  margin-left: 0.6em;
+  align-self: center;
+  border: 1px solid var(--rb-border-hi);
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+
+/* Desktop nav */
+.rb-nav {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.rb-nav ul {
+  display: flex;
+  list-style: none;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0;
+}
+
+.rb-nav-btn {
+  font-family: var(--rb-font-display);
+  font-size: var(--text-sm);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--rb-silver-dim);
+  padding: 0.4em 0.9em;
+  background: linear-gradient(180deg, #363636 0%, #282828 100%);
+  border: 1px solid var(--rb-border);
+  border-bottom: 2px solid #111;
+  border-radius: var(--rb-radius-sm);
+  transition: all 120ms ease;
+  position: relative;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+}
+
+/* LED dot on nav buttons */
+.rb-nav-btn::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--rb-border-hi);
+  transition: all 120ms ease;
+  flex-shrink: 0;
+}
+
+.rb-nav-btn:hover,
+.rb-nav-btn:focus-visible,
+.rb-nav-btn.is-active {
+  color: var(--rb-amber);
+  border-color: var(--rb-amber-dim);
+  background: linear-gradient(180deg, #3a3a2a 0%, #2a2a1a 100%);
+  box-shadow:
+    0 0 10px var(--rb-amber-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.rb-nav-btn:active {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+  box-shadow: none;
+  transition-duration: 60ms;
+}
+
+.rb-nav-btn:hover::before,
+.rb-nav-btn:focus-visible::before,
+.rb-nav-btn.is-active::before {
+  background: var(--rb-amber);
+  box-shadow:
+    0 0 6px var(--rb-amber-glow),
+    0 0 12px var(--rb-amber-glow);
+}
+
+/* Mobile toggle */
+.rb-mobile-toggle {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: linear-gradient(180deg, #363636 0%, #282828 100%);
+  border: 1px solid var(--rb-border);
+  border-bottom: 2px solid #111;
+  border-radius: 4px;
+  padding: 0.5em 0.75em;
+  cursor: pointer;
+  position: relative;
+}
+
+.rb-mobile-toggle__bar {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--rb-silver);
+  border-radius: 1px;
+  transition: all 0.2s ease;
+}
+
+.rb-menu-label {
+  font-family: var(--rb-font-display);
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
+  color: var(--rb-silver-dim);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rb-menu-label__led {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--rb-border-hi);
+  transition: all 0.2s ease;
+}
+
+.rb-menu-label__led.is-on {
+  background: var(--rb-amber);
+  box-shadow: 0 0 6px var(--rb-amber-glow);
+}
+
+/* Mobile menu panel */
+.rb-mobile-menu.is-open {
+  display: flex;
+}
+
+/* ============================================================
+   5. LED INDICATORS
+   ============================================================ */
+.rb-led {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-family: var(--rb-font-display);
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rb-silver-dim);
+}
+
+.rb-led__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rb-border-hi);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.rb-led--online .rb-led__dot {
+  background: var(--rb-green);
+  box-shadow:
+    0 0 6px var(--rb-green-glow),
+    0 0 12px var(--rb-green-glow),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+  animation: rb-pulse-green 2s ease-in-out infinite;
+}
+
+.rb-led--pending .rb-led__dot {
+  background: var(--rb-amber);
+  box-shadow:
+    0 0 8px var(--rb-amber-glow),
+    0 0 16px var(--rb-amber-glow),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.2);
+  animation: rb-pulse-amber 1.5s ease-in-out infinite;
+}
+
+.rb-led--offline .rb-led__dot {
+  background: var(--rb-red-dim);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  animation: rb-pulse-red-slow 3s ease-in-out infinite;
+}
+
+.rb-led--dim .rb-led__dot {
+  opacity: 0.5;
+}
+
+.rb-led--fast .rb-led__dot {
+  animation-duration: 0.8s;
+}
+
+.rb-led--flicker .rb-led__dot {
+  animation: rb-flicker-amber 1.5s steps(8, end) infinite;
+}
+
+.rb-led--flicker-green .rb-led__dot {
+  animation: rb-flicker-green 1.5s steps(8, end) infinite;
+}
+
+.rb-led__label {
+  color: inherit;
+}
+
+@keyframes rb-pulse-green {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow:
+      0 0 6px var(--rb-green-glow),
+      0 0 12px var(--rb-green-glow);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow:
+      0 0 2px var(--rb-green-glow),
+      0 0 4px var(--rb-green-glow);
+  }
+}
+
+@keyframes rb-pulse-amber {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow:
+      0 0 8px var(--rb-amber-glow),
+      0 0 18px var(--rb-amber-glow);
+  }
+  50% {
+    opacity: 0.38;
+    box-shadow: 0 0 2px var(--rb-amber-glow);
+  }
+}
+
+@keyframes rb-pulse-red-slow {
+  0%,
+  100% {
+    opacity: 0.6;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    opacity: 1;
+    box-shadow:
+      0 0 4px var(--rb-red-glow),
+      inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+}
+
+@keyframes rb-flicker-amber {
+  0%,
+  19%,
+  21%,
+  23%,
+  25%,
+  54%,
+  56%,
+  100% {
+    opacity: 1;
+    box-shadow:
+      0 0 6px var(--rb-amber-glow),
+      0 0 12px var(--rb-amber-glow);
+  }
+  20%,
+  24%,
+  55% {
+    opacity: 0.4;
+    box-shadow: 0 0 2px var(--rb-amber-glow);
+  }
+}
+
+@keyframes rb-flicker-green {
+  0%,
+  19%,
+  21%,
+  23%,
+  25%,
+  54%,
+  56%,
+  100% {
+    opacity: 1;
+    box-shadow:
+      0 0 6px var(--rb-green-glow),
+      0 0 12px var(--rb-green-glow);
+  }
+  20%,
+  24%,
+  55% {
+    opacity: 0.4;
+    box-shadow: 0 0 2px var(--rb-green-glow);
+  }
+}
+
+/* ============================================================
+   6. LCD DISPLAY
+   ============================================================ */
+.rb-lcd {
+  background: var(--rb-lcd-bg);
+  color: var(--rb-lcd-text);
+  font-family: var(--rb-font-display);
+  border: 2px solid #111;
+  border-radius: 4px;
+  padding: 0.6em 1em;
+  box-shadow:
+    inset 0 0 12px rgba(0, 0, 0, 0.8),
+    inset 0 0 4px rgba(255, 176, 0, 0.08),
+    0 0 8px rgba(0, 0, 0, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.rb-lcd::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.15) 3px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+  pointer-events: none;
+}
+
+/* Disable LCD scanlines for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .rb-lcd::before {
+    display: none;
+  }
+}
+
+.lcd-label,
+.rb-lcd__label {
+  font-size: var(--text-xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--rb-lcd-dim);
+  margin-bottom: 0.2em;
+  position: relative;
+  z-index: 1;
+}
+
+.lcd-value,
+.rb-lcd__value {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--rb-amber);
+  text-shadow:
+    0 0 8px var(--rb-amber-glow),
+    0 0 16px rgba(255, 176, 0, 0.2);
+  line-height: 1.1;
+  position: relative;
+  z-index: 1;
+}
+
+.lcd-value--sm,
+.rb-lcd__value--sm {
+  font-size: 1rem;
+}
+
+.lcd-unit {
+  font-size: 0.6em;
+  color: var(--rb-amber-dim);
+  margin-left: 2px;
+}
+
+/* ============================================================
+   7. BUTTONS
+   ============================================================ */
+.rb-pattern-btn,
+.rb-btn-pattern {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  font-family: var(--rb-font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #fff;
+  padding: 0.5em 1.1em;
+  min-height: 36px;
+  background: linear-gradient(180deg, #d42040 0%, #a0182e 60%, #8a1525 100%);
+  border: 1px solid var(--rb-red-dim);
+  border-bottom: 3px solid #600a18;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: all 100ms ease;
+  position: relative;
+}
+
+.rb-pattern-btn::before,
+.rb-btn-pattern::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 160, 160, 0.6);
+  box-shadow: 0 0 4px #ff4060;
+  flex-shrink: 0;
+}
+
+.rb-pattern-btn:hover,
+.rb-pattern-btn:focus-visible,
+.rb-btn-pattern:hover,
+.rb-btn-pattern:focus-visible {
+  background: linear-gradient(180deg, #e82548 0%, #b81e34 60%, #9a1a2c 100%);
+  box-shadow:
+    0 0 12px var(--rb-red-glow),
+    0 2px 8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  color: #fff;
+  outline: none;
+}
+
+.rb-pattern-btn:focus-visible,
+.rb-btn-pattern:focus-visible {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.55),
+    0 0 12px var(--rb-red-glow),
+    0 2px 8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.rb-pattern-btn:active,
+.rb-btn-pattern:active {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.rb-mix-btn,
+.rb-btn-mix {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  font-family: var(--rb-font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #fff;
+  padding: 0.5em 1.1em;
+  min-height: 36px;
+  background: linear-gradient(180deg, #339958 0%, #236e3e 60%, #1a5230 100%);
+  border: 1px solid var(--rb-green-dim);
+  border-bottom: 3px solid #0d3020;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: all 100ms ease;
+  position: relative;
+}
+
+.rb-mix-btn::before,
+.rb-btn-mix::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(100, 255, 140, 0.5);
+  box-shadow: 0 0 4px #44ff88;
+  flex-shrink: 0;
+}
+
+.rb-mix-btn:hover,
+.rb-mix-btn:focus-visible,
+.rb-btn-mix:hover,
+.rb-btn-mix:focus-visible {
+  background: linear-gradient(180deg, #3dba66 0%, #2d8a4e 60%, #1e6038 100%);
+  box-shadow:
+    0 0 14px var(--rb-green-glow),
+    0 2px 8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  color: #fff;
+  outline: none;
+}
+
+.rb-mix-btn:focus-visible,
+.rb-btn-mix:focus-visible {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.55),
+    0 0 14px var(--rb-green-glow),
+    0 2px 8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.rb-mix-btn:active,
+.rb-btn-mix:active {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Transport buttons */
+.rb-transport {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.rb-transport-btn,
+.rb-btn-transport {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  font-family: var(--rb-font-display);
+  font-size: 1rem;
+  text-decoration: none;
+  color: var(--rb-silver);
+  background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+  border: 1px solid var(--rb-border);
+  border-bottom: 2px solid #111;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 120ms ease;
+}
+
+.rb-transport-btn:hover,
+.rb-transport-btn:focus-visible,
+.rb-btn-transport:hover,
+.rb-btn-transport:focus-visible {
+  color: var(--rb-amber);
+  border-color: var(--rb-amber-dim);
+  box-shadow:
+    0 0 8px var(--rb-amber-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.rb-transport-btn:focus-visible,
+.rb-btn-transport:focus-visible {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.5),
+    0 0 8px var(--rb-amber-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.rb-transport-btn:active,
+.rb-btn-transport:active {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+  box-shadow: none;
+  transition-duration: 60ms;
+}
+
+.rb-transport-btn--play {
+  color: var(--rb-green);
+}
+.rb-transport-btn--play:hover,
+.rb-transport-btn--play:focus-visible {
+  color: var(--rb-green-bright);
+  box-shadow: 0 0 8px var(--rb-green-glow);
+}
+
+.rb-transport-btn--rec {
+  color: var(--rb-red);
+}
+.rb-transport-btn--rec:hover,
+.rb-transport-btn--rec:focus-visible {
+  color: #ff4060;
+  box-shadow: 0 0 8px var(--rb-red-glow);
+}
+
+/* ============================================================
+   8. STEP SEQUENCER
+   ============================================================ */
+.rb-step-grid {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 3px;
+  padding: 0.25rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+.rb-step-btn {
+  aspect-ratio: 1;
+  min-width: 28px;
+  min-height: 28px;
+  border: 1px solid var(--rb-border);
+  border-radius: 2px;
+  background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+  cursor: pointer;
+  transition: all 0.1s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .rb-step-btn {
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
+
+.rb-step-btn:hover {
+  border-color: var(--rb-border-hi);
+  background: linear-gradient(180deg, #444 0%, #333 100%);
+}
+
+.rb-step-btn:active {
+  border-color: var(--rb-border-hi);
+  background: linear-gradient(180deg, #444 0%, #333 100%);
+}
+
+.rb-step-btn.active {
+  background: linear-gradient(180deg, #ffb000 0%, #a07800 100%);
+  border-color: var(--rb-amber-dim);
+  box-shadow:
+    0 0 6px rgba(255, 176, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.rb-step-btn.active--green {
+  background: linear-gradient(180deg, #39ff14 0%, #1a7a33 100%);
+  border-color: var(--rb-green-dim);
+  box-shadow:
+    0 0 6px var(--rb-green-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.rb-step-btn.beat {
+  background: linear-gradient(180deg, #c41e3a 0%, #8a1528 100%);
+  border-color: var(--rb-red-dim);
+  box-shadow: 0 0 6px var(--rb-red-glow);
+}

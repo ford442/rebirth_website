@@ -29,8 +29,8 @@ test.describe('Studio export', () => {
 
         // Two seconds is plenty to prove the path without a slow full bounce.
         const frames = 2 * Math.round(audioContext.sampleRate);
-        const first = bridge.bounceToWav(frames);
-        const second = bridge.bounceToWav(frames);
+        const first = await bridge.bounceToWav(frames);
+        const second = await bridge.bounceToWav(frames);
 
         // Decode the produced file with the browser's own decoder: if this
         // succeeds, the header we hand-wrote is one real software accepts.
@@ -99,8 +99,8 @@ test.describe('Studio export', () => {
         await bridge.loadRbsFile(songBuffer);
 
         const frames = Math.round(bridge.ctx.sampleRate);
-        const master = bridge.bounceToWav(frames);
-        const stems = bridge.bounceStems(frames);
+        const master = await bridge.bounceToWav(frames);
+        const stems = await bridge.bounceStems(frames);
 
         const sameAsMaster = stems.filter((stem: any) => {
           if (stem.bytes.byteLength !== master.bytes.byteLength) return false;
@@ -206,16 +206,16 @@ test.describe('Studio export', () => {
         await bridge.loadRbsFile(songBuffer);
 
         const frames = Math.round(bridge.ctx.sampleRate);
-        const before = bridge.bounceToWav(frames);
+        const before = await bridge.bounceToWav(frames);
 
         // DeviceParamId::Decay == 4, on TB-303 B (device 1) — the audible 303
         // in this fixture. Shorten it all the way.
         bridge.setDeviceParam(1, 4, 0.0);
-        const after = bridge.bounceToWav(frames);
+        const after = await bridge.bounceToWav(frames);
 
         // …and putting it back must restore the original bounce exactly.
         bridge.setDeviceParam(1, 4, 0.5);
-        const restored = bridge.bounceToWav(frames);
+        const restored = await bridge.bounceToWav(frames);
 
         const same = (a: Uint8Array, b: Uint8Array) => {
           if (a.byteLength !== b.byteLength) return false;
@@ -236,6 +236,52 @@ test.describe('Studio export', () => {
     expect(result.sameSize).toBe(true);
     expect(result.changed).toBe(true);
     expect(result.restoredDiffersFromShortened).toBe(true);
+  });
+
+  test('bounce while playing still paints and yields non-silent WAV', async ({ page }) => {
+    await page.goto('/rebirth_website/');
+    await page.waitForFunction(() => !!(window as any).WasmAudioBridge, null, { timeout: 5000 });
+
+    const result = await page.evaluate(async ({ fixtureUrl }) => {
+      const WasmAudioBridge = (window as any).WasmAudioBridge;
+      const bridge = new WasmAudioBridge();
+      await bridge.init();
+
+      const audioContext = bridge.ctx;
+      if (!audioContext) throw new Error('Audio context not exposed');
+
+      const songBuffer = await (await fetch(fixtureUrl)).arrayBuffer();
+      await bridge.loadRbsFile(songBuffer);
+      bridge.play();
+
+      let paints = 0;
+      let raf = 0;
+      const tick = () => {
+        paints += 1;
+        raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+
+      const frames = Math.round(audioContext.sampleRate);
+      const bounced = await bridge.bounceToWav(frames);
+      cancelAnimationFrame(raf);
+
+      const decoded = await audioContext.decodeAudioData(bounced.bytes.buffer.slice(0));
+      const channel = decoded.getChannelData(0);
+      let sumSq = 0;
+      for (let i = 0; i < channel.length; i += 1) sumSq += channel[i] * channel[i];
+      const rms = Math.sqrt(sumSq / channel.length);
+      const status = bridge.playerStatus;
+
+      bridge.stop();
+      bridge.dispose();
+      return { paints, rms, status, riff: String.fromCharCode(...bounced.bytes.slice(0, 4)) };
+    }, { fixtureUrl: WASM_FIXTURE_URL });
+
+    expect(result.riff).toBe('RIFF');
+    expect(result.paints).toBeGreaterThan(1);
+    expect(result.rms).toBeGreaterThan(0.001);
+    expect(result.status).toBe('playing');
   });
 
   test('export controls are present and gated on a loaded song', async ({ page }) => {

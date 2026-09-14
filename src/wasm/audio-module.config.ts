@@ -22,7 +22,6 @@ export const wasmAudioConfig: WasmAudioModuleConfig = {
 
   /** Preferred AudioContext sample rate (Hz) */
   preferredSampleRate: 44100,
-  sampleRate: 44100,
 
   /** Request low output latency for interactive archive preview */
   latencyHint: 'interactive',

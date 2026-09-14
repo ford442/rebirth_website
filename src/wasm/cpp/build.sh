@@ -154,36 +154,22 @@ if [[ ! -f "$GLUE_FILE" ]]; then
 fi
 
 # ── Materialise the stable AudioWorklet bootstrap ───────────────────
-if [[ -f "$WORKLET_SRC" ]]; then
-  # Older Emscripten releases emitted a dedicated .aw.js sidecar.
-  mv "$WORKLET_SRC" "$WORKLET_DST"
-else
-  # Emscripten 6 folds the AudioWorklet bootstrap into the ES-module glue but
-  # no longer emits a dedicated .aw.js sidecar. The generated module detects
-  # AudioWorkletGlobalScope and starts itself, so the stable wrapper imports it
-  # only for side effects. Invoking its factory here registers processors twice.
-  node -e "
-const fs = require('fs');
-const file = '$GLUE_FILE';
-const needle = 'locateFile(\"${GLUE_BASENAME}.js\")';
-const replacement = 'locateFile(\"rbsWorklet.js\")';
-const source = fs.readFileSync(file, 'utf8');
-if (!source.includes(needle)) {
-  console.error('AudioWorklet module locator was not found in generated glue');
-  process.exit(1);
-}
-fs.writeFileSync(file, source.replace(needle, replacement));
-fs.writeFileSync(
-  '$WORKLET_DST',
-  \"import './${GLUE_BASENAME}.js';\\n\"
-);
-"
+# Checked-in template — never string-replace generated glue. locateFile in
+# WasmAudioBridge maps worklet-scope glue requests to this file.
+WORKLET_BOOTSTRAP="$ROOT_DIR/src/wasm/js/rbs-worklet-bootstrap.js"
+if [[ ! -f "$WORKLET_BOOTSTRAP" ]]; then
+  echo "❌ Missing worklet bootstrap: $WORKLET_BOOTSTRAP" >&2
+  exit 1
 fi
+cp "$WORKLET_BOOTSTRAP" "$WORKLET_DST"
+# Older Emscripten emitted a dedicated .aw.js sidecar; Emscripten 6 folds
+# that into the ES-module glue. Drop the sidecar so public/wasm stays tidy.
+rm -f "$WORKLET_SRC"
 
-# The generic Wasm Worker bootstrap is emitted alongside the AudioWorklet file,
-# but this project only uses AudioWorklets. Remove the unused .ww.js to keep
-# public/wasm tidy.
-rm -f "$OUT_DIR/${GLUE_BASENAME}.ww.js"
+# The generic Wasm Worker bootstrap is emitted alongside the AudioWorklet file.
+# Keep it: a Dedicated Worker bounce instantiates the same pthread glue and
+# may request rbsParser.ww.js via locateFile.
+# (Previously deleted; bounce-worker maps .ww.js if the file exists.)
 
 # ── Manifest / version stamp ─────────────────────────────────────────
 echo ""
@@ -198,8 +184,28 @@ file_size() {
   fi
 }
 
+HEAP_FLAGS_FILE="$WASM_BUILD_DIR/wasm-heap-flags.txt"
+INITIAL_MEMORY=0
+MAXIMUM_MEMORY=0
+ALLOW_MEMORY_GROWTH=0
+if [[ -f "$HEAP_FLAGS_FILE" ]]; then
+  # shellcheck disable=SC1090
+  source "$HEAP_FLAGS_FILE"
+fi
+
 node -e "
 const fs = require('fs');
+const glue = fs.readFileSync('$GLUE_FILE', 'utf8');
+if (!glue.includes('locateFile(')) {
+  console.error('Generated glue no longer contains locateFile(; refuse to ship a worklet bootstrap that cannot remap assets');
+  process.exit(1);
+}
+const pthreadWorkerPath = fs.existsSync('$OUT_DIR/${GLUE_BASENAME}.ww.js')
+  ? '${GLUE_BASENAME}.ww.js'
+  : '';
+const pthreadWorkerBytes = pthreadWorkerPath
+  ? $(file_size "$OUT_DIR/${GLUE_BASENAME}.ww.js")
+  : 0;
 const manifest = {
   project: {
     version: '$PROJECT_VERSION',
@@ -214,15 +220,19 @@ const manifest = {
     mode: '$MODE',
     sourceDir: '$SRC_DIR',
     outputDir: '$OUT_DIR',
+    initialMemory: $INITIAL_MEMORY,
+    maximumMemory: $MAXIMUM_MEMORY,
+    allowMemoryGrowth: $ALLOW_MEMORY_GROWTH,
   },
   files: {
-    // Paths are relative to this manifest's own directory (public/wasm/),
-    // so they stay valid regardless of the site's Astro base path.
     glue:   { path: 'rbsParser.js',  bytes: $(file_size "$GLUE_FILE") },
     wasm:   { path: 'rbsParser.wasm', bytes: $(file_size "$WASM_FILE") },
     worklet:{ path: 'rbsWorklet.js',  bytes: $(file_size "$WORKLET_DST") },
   },
 };
+if (pthreadWorkerPath) {
+  manifest.files.pthreadWorker = { path: pthreadWorkerPath, bytes: pthreadWorkerBytes };
+}
 fs.writeFileSync('$MANIFEST_FILE', JSON.stringify(manifest, null, 2) + '\n');
 " || {
   echo "❌ Failed to write manifest" >&2

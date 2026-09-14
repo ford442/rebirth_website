@@ -38,8 +38,15 @@ import { wasmAudioConfig } from '../audio-module.config';
 import type { AudioContextDiagnostics } from '../types/wasm-audio';
 import { toUiParsedMod, toUiParsedSong } from '../types/wasm-audio-mapping';
 import { WasmInitError, INIT_FAILURE_MESSAGES } from './rbs-init-errors';
-import { createProductionAudioContext } from './create-audio-context';
+import {
+  attachAudioContextLifecycle,
+  createProductionAudioContext,
+  type AudioContextLifecycle,
+} from './create-audio-context';
 import { waitForCrossOriginIsolation } from '../../scripts/coi-bootstrap';
+import { locateWasmAsset } from './wasm-locate-file';
+import { mallocCopy } from './wasm-engine-io';
+import type { BounceRequest, BounceResponse } from './bounce-protocol';
 
 /** Callback invoked when playback position changes (bar, step). */
 export type PositionCallback = (bar: number, step: number) => void;
@@ -60,6 +67,13 @@ export class WasmAudioBridge {
   private volume = 0.8;
   private positionPollId: number | null = null;
   private _audioDiagnostics: AudioContextDiagnostics | null = null;
+  private _audioLifecycle: AudioContextLifecycle | null = null;
+  private _bounceWorker: Worker | null = null;
+  private _bounceSeq = 0;
+  private _bouncePending = new Map<
+    number,
+    { resolve: (value: BounceResponse) => void; reject: (err: Error) => void }
+  >();
 
   // Kept so an offline bounce can rebuild exactly what is playing: the source
   // files plus any live knob moves, which the engine treats as session-only.
@@ -67,6 +81,11 @@ export class WasmAudioBridge {
   private _modBuffer: ArrayBuffer | null = null;
   private _songTitle = '';
   private _paramOverrides = new Map<string, { deviceId: number; paramId: number; value: number }>();
+
+  /** The instantiated Emscripten module (heap probe / integration tests). */
+  get wasmModule(): EngineModule | null {
+    return this.module;
+  }
 
   /** Is the bridge initialised and ready to load files? */
   get isReady(): boolean {
@@ -178,15 +197,12 @@ export class WasmAudioBridge {
       }) => Promise<EngineModule>;
 
       this.module = await moduleFactory({
-        locateFile: (path: string) => {
-          if (path.endsWith('.wasm')) return wasmAudioConfig.wasmPath;
-          // Map both the legacy .aw.js sidecar and Emscripten 6's rewritten
-          // module request to the stable worklet path produced by build.sh.
-          if (path.endsWith('rbsWorklet.js') || (path.endsWith('.js') && path.includes('.aw.'))) {
-            return wasmAudioConfig.workletPath;
-          }
-          return path;
-        },
+        locateFile: (path: string) =>
+          locateWasmAsset(path, {
+            wasmPath: wasmAudioConfig.wasmPath,
+            glueScriptPath: wasmAudioConfig.glueScriptPath,
+            workletPath: wasmAudioConfig.workletPath,
+          }),
       });
 
       // 3. Create AudioContext (retry without sampleRate on NotSupportedError)
@@ -196,6 +212,7 @@ export class WasmAudioBridge {
       );
       this.audioContext = context;
       this._audioDiagnostics = diagnostics;
+      this._audioLifecycle = attachAudioContextLifecycle(context);
 
       // 4. Create WASM engine instance via Embind
       const config: EngineConfig = this._buildEngineConfig();
@@ -271,25 +288,27 @@ export class WasmAudioBridge {
     this._setStatus('loading');
 
     try {
-      // Copy file into WASM heap
+      // Copy file into WASM heap. Parse + load stay in C++ so TRAK automation
+      // is never stripped by the Embind ParsedSong round-trip.
       const byteLength = buffer.byteLength;
-      const ptr = this.module._malloc(byteLength);
-      const parser = new this.module.RbsParser();
+      const ptr = mallocCopy(this.module, new Uint8Array(buffer));
+      if (ptr === 0) {
+        const err: EngineError = {
+          code: 'PARSE_ERROR',
+          message: `Not enough WASM heap for a ${Math.round(byteLength / 1024)} KB song.`,
+        };
+        throw err;
+      }
       try {
-        this.module.HEAPU8.set(new Uint8Array(buffer), ptr);
-
-        // Parse via Embind-exposed parser
-        const parsed = parser.parse(ptr, byteLength);
+        const parsed = this.enginePtr.loadSongFromBytes(ptr, byteLength);
         if (parsed === undefined) {
           const err: EngineError = {
             code: 'PARSE_ERROR',
-            message: parser.lastError(),
+            message: this.enginePtr.lastParseError(),
           };
           throw err;
         }
 
-        // Load into engine before consuming the Embind vector handles.
-        this.enginePtr.loadSong(parsed);
         const song = toUiParsedSong(parsed);
 
         // Keep the source bytes so a bounce can rebuild this song offline.
@@ -301,7 +320,6 @@ export class WasmAudioBridge {
         this._setStatus('ready');
         return song;
       } finally {
-        parser.delete();
         this.module._free(ptr);
       }
     } catch (err) {
@@ -336,7 +354,7 @@ export class WasmAudioBridge {
       // The shipping build runs with ALLOW_MEMORY_GROWTH=0, so a large mod
       // can legitimately fail to allocate. Surface that as a real error
       // rather than writing to address 0.
-      ptr = this.module._malloc(byteLength);
+      ptr = mallocCopy(this.module, new Uint8Array(buffer));
       if (ptr === 0) {
         const err: EngineError = {
           code: 'MOD_TOO_LARGE',
@@ -344,8 +362,6 @@ export class WasmAudioBridge {
         };
         throw err;
       }
-
-      this.module.HEAPU8.set(new Uint8Array(buffer), ptr);
 
       const status = this.enginePtr.loadMod(ptr, byteLength);
       const report = toUiParsedMod(this.enginePtr.getModReport());
@@ -404,124 +420,119 @@ export class WasmAudioBridge {
   }
 
   /**
-   * Build a throwaway engine loaded with exactly what the live one is
-   * playing, for offline rendering.
-   *
-   * A bounce must not run on the live engine: renderOffline() drives the
-   * sequencer from the calling thread, and the AudioWorklet is driving the
-   * same sequencer from its own. Rendering into a second engine sidesteps
-   * that entirely — no locks, no stopping playback, and the listener does
-   * not hear a gap while a file is written.
+   * Bounce on a Dedicated Worker that owns its own WASM instance so the live
+   * engine never holds two SamplePool arenas on the shipping 64 MiB heap.
    */
-  private _createOfflineEngine(): RbsAudioEngineInstance | null {
-    if (!this.module || !this._songBuffer) return null;
-
-    const engine = new this.module.RbsAudioEngine();
-    engine.init(this._buildEngineConfig());
-
-    const songBytes = new Uint8Array(this._songBuffer);
-    const songPtr = this.module._malloc(songBytes.byteLength);
-    if (songPtr === 0) {
-      engine.delete();
-      return null;
-    }
-
-    const parser = new this.module.RbsParser();
-    try {
-      this.module.HEAPU8.set(songBytes, songPtr);
-      const parsed = parser.parse(songPtr, songBytes.byteLength);
-      if (parsed === undefined) {
-        engine.delete();
-        return null;
+  private _ensureBounceWorker(): Worker {
+    if (this._bounceWorker) return this._bounceWorker;
+    this._bounceWorker = new Worker(new URL('./bounce-worker.ts', import.meta.url), {
+      type: 'module',
+    });
+    this._bounceWorker.onmessage = (event: MessageEvent<BounceResponse>) => {
+      const pending = this._bouncePending.get(event.data.id);
+      if (!pending) return;
+      this._bouncePending.delete(event.data.id);
+      pending.resolve(event.data);
+    };
+    this._bounceWorker.onerror = (event) => {
+      const err = new Error(event.message || 'Bounce worker failed');
+      for (const pending of this._bouncePending.values()) {
+        pending.reject(err);
       }
-      engine.loadSong(parsed);
-    } finally {
-      parser.delete();
-      this.module._free(songPtr);
-    }
+      this._bouncePending.clear();
+    };
+    return this._bounceWorker;
+  }
 
-    // Re-apply the mod, so a bounce uses the same samples you are hearing.
-    if (this._modBuffer) {
-      const modBytes = new Uint8Array(this._modBuffer);
-      const modPtr = this.module._malloc(modBytes.byteLength);
-      if (modPtr !== 0) {
-        try {
-          this.module.HEAPU8.set(modBytes, modPtr);
-          engine.loadMod(modPtr, modBytes.byteLength);
-        } finally {
-          this.module._free(modPtr);
-        }
-      }
+  private _bouncePayload(frames: number | undefined, deviceIndex: number): BounceRequest {
+    if (!this._songBuffer) {
+      throw { code: 'PARSE_ERROR', message: 'Nothing to render' } satisfies EngineError;
     }
+    this._audioLifecycle?.resumeIfNeeded();
+    const id = ++this._bounceSeq;
+    return {
+      id,
+      kind: 'wav',
+      songBytes: this._songBuffer.slice(0),
+      modBytes: this._modBuffer ? this._modBuffer.slice(0) : null,
+      paramOverrides: [...this._paramOverrides.values()],
+      frames: frames && frames > 0 ? frames : 0,
+      deviceIndex,
+      tempo: this.enginePtr?.getTempo() ?? 125,
+      config: this._buildEngineConfig(),
+      glueScriptPath: wasmAudioConfig.glueScriptPath,
+      wasmPath: wasmAudioConfig.wasmPath,
+      workletPath: wasmAudioConfig.workletPath,
+    };
+  }
 
-    // …and the live knob moves, which are session-only in the engine.
-    for (const override of this._paramOverrides.values()) {
-      engine.setDeviceParam(override.deviceId, override.paramId, override.value);
+  private _postBounce(request: BounceRequest, transfer: Transferable[]): Promise<BounceResponse> {
+    const worker = this._ensureBounceWorker();
+    return new Promise((resolve, reject) => {
+      this._bouncePending.set(request.id, { resolve, reject });
+      worker.postMessage(request, transfer);
+    });
+  }
+
+  private _throwBounceError(response: BounceResponse): never {
+    if (response.ok) {
+      throw new Error('Bounce succeeded unexpectedly');
     }
+    const err: EngineError = {
+      code: response.error.code,
+      message: response.error.message,
+    };
+    throw err;
+  }
 
-    engine.setTempo(this.enginePtr?.getTempo() ?? 125);
-    return engine;
+  /**
+   * Render the loaded song to a WAV file on a Worker (AudioContext-free).
+   */
+  async bounceToWav(frames?: number, deviceIndex: number = MASTER_BUS): Promise<RenderedFile> {
+    const request = this._bouncePayload(frames, deviceIndex);
+    const transfer: Transferable[] = [request.songBytes];
+    if (request.modBytes) transfer.push(request.modBytes);
+    const response = await this._postBounce(request, transfer);
+    if (!response.ok) {
+      this._throwBounceError(response);
+    }
+    if (response.kind !== 'wav') {
+      throw new Error('Unexpected bounce response');
+    }
+    const stem = STEM_DEVICES.find((d) => d.index === deviceIndex);
+    const suffix = stem ? `-${stem.slug}` : '';
+    return {
+      filename: `${this._downloadStem()}${suffix}.wav`,
+      bytes: new Uint8Array(response.wav),
+      mimeType: 'audio/wav',
+    };
+  }
+
+  /**
+   * Render one WAV per device on a single Worker engine.
+   */
+  async bounceStems(frames?: number): Promise<RenderedFile[]> {
+    const request = this._bouncePayload(frames, MASTER_BUS);
+    request.kind = 'stems';
+    const transfer: Transferable[] = [request.songBytes];
+    if (request.modBytes) transfer.push(request.modBytes);
+    const response = await this._postBounce(request, transfer);
+    if (!response.ok) {
+      this._throwBounceError(response);
+    }
+    if (response.kind !== 'stems') {
+      throw new Error('Unexpected bounce response');
+    }
+    return STEM_DEVICES.map((device, index) => ({
+      filename: `${this._downloadStem()}-${device.slug}.wav`,
+      bytes: new Uint8Array(response.wavs[index] ?? new ArrayBuffer(0)),
+      mimeType: 'audio/wav',
+    }));
   }
 
   /** Frames covering the whole arrangement, for a default bounce length. */
   songLengthFrames(): number {
     return this.enginePtr?.songLengthFrames() ?? 0;
-  }
-
-  /**
-   * Render the loaded song to a WAV file.
-   *
-   * @param frames Defaults to the full arrangement.
-   * @param deviceIndex A stem index, or MASTER_BUS for the full mix.
-   */
-  bounceToWav(frames?: number, deviceIndex: number = MASTER_BUS): RenderedFile | null {
-    const engine = this._createOfflineEngine();
-    if (!engine) return null;
-
-    try {
-      const length = frames && frames > 0 ? frames : engine.songLengthFrames();
-      if (length === 0) return null;
-
-      const bytes = engine.renderOfflineToWav(length, deviceIndex);
-      const stem = STEM_DEVICES.find((d) => d.index === deviceIndex);
-      const suffix = stem ? `-${stem.slug}` : '';
-      return {
-        filename: `${this._downloadStem()}${suffix}.wav`,
-        bytes,
-        mimeType: 'audio/wav',
-      };
-    } finally {
-      engine.delete();
-    }
-  }
-
-  /**
-   * Render one WAV per device.
-   *
-   * Uses a single offline engine for all four passes rather than rebuilding
-   * it each time, so a stem set costs one parse instead of four.
-   */
-  bounceStems(frames?: number): RenderedFile[] {
-    const engine = this._createOfflineEngine();
-    if (!engine) return [];
-
-    try {
-      const length = frames && frames > 0 ? frames : engine.songLengthFrames();
-      if (length === 0) return [];
-
-      const files: RenderedFile[] = [];
-      for (const device of STEM_DEVICES) {
-        const bytes = engine.renderOfflineToWav(length, device.index);
-        files.push({
-          filename: `${this._downloadStem()}-${device.slug}.wav`,
-          bytes,
-          mimeType: 'audio/wav',
-        });
-      }
-      return files;
-    } finally {
-      engine.delete();
-    }
   }
 
   /** Filesystem-safe base name for downloads, from the song title. */
@@ -537,6 +548,7 @@ export class WasmAudioBridge {
   /** Drop mod samples and return every voice to procedural synthesis. */
   clearMod(): void {
     this.enginePtr?.clearMod();
+    this._modBuffer = null;
   }
 
   /** True when mod samples are currently backing at least one slot. */
@@ -547,9 +559,7 @@ export class WasmAudioBridge {
   /** Start or resume playback. */
   play(): void {
     if (!this.audioContext || !this.enginePtr) return;
-    if (this.audioContext.state === 'suspended') {
-      void this.audioContext.resume();
-    }
+    this._audioLifecycle?.resumeIfNeeded();
     this.enginePtr.play();
     this._setStatus('playing');
   }
@@ -640,6 +650,16 @@ export class WasmAudioBridge {
   /** Clean up resources. */
   dispose(): void {
     this.stop();
+    this._audioLifecycle?.dispose();
+    this._audioLifecycle = null;
+    if (this._bounceWorker) {
+      this._bounceWorker.terminate();
+      this._bounceWorker = null;
+    }
+    for (const pending of this._bouncePending.values()) {
+      pending.reject(new Error('Bridge disposed'));
+    }
+    this._bouncePending.clear();
     if (this.positionPollId != null) {
       cancelAnimationFrame(this.positionPollId);
       this.positionPollId = null;

@@ -409,3 +409,59 @@ TEST_CASE("Offline: knob moves survive loading a mod") {
   CHECK(std::memcmp(afterMod.data(), longDecay.data(), afterMod.size()) != 0);
   CHECK(tweaked.size() == afterMod.size());
 }
+
+TEST_CASE("loadSongFromBytes keeps TRAK automation in the offline mix") {
+  const auto bytes = readFixture("standard-rebirth.rbs");
+  constexpr uint32_t frames = 44100 * 4;
+
+  RbsAudioEngine withAuto;
+  REQUIRE(withAuto.init(testConfig()));
+  REQUIRE(withAuto.loadSongFromBytes(bytes.data(), bytes.size()));
+  CHECK(withAuto.lastParseError().empty());
+  std::vector<float> automated(static_cast<size_t>(frames) * 2u);
+  REQUIRE(withAuto.renderOffline(automated.data(), frames) == frames);
+
+  auto stripped = parseSongFixture("standard-rebirth.rbs");
+  REQUIRE_FALSE(stripped.automation.empty());
+  stripped.automation.clear();
+  RbsAudioEngine withoutAuto;
+  REQUIRE(withoutAuto.init(testConfig()));
+  REQUIRE(withoutAuto.loadSong(stripped));
+  std::vector<float> staticKnobs(static_cast<size_t>(frames) * 2u);
+  REQUIRE(withoutAuto.renderOffline(staticKnobs.data(), frames) == frames);
+
+  CHECK_FALSE(bitIdentical(automated, staticKnobs));
+
+  RbsAudioEngine uninitialised;
+  CHECK_FALSE(uninitialised.loadSongFromBytes(bytes.data(), bytes.size()));
+  CHECK(uninitialised.lastParseError().find("initialised") != std::string::npos);
+
+  const uint8_t garbage[] = {1, 2, 3, 4};
+  RbsAudioEngine bad;
+  REQUIRE(bad.init(testConfig()));
+  CHECK_FALSE(bad.loadSongFromBytes(garbage, sizeof(garbage)));
+  CHECK_FALSE(bad.lastParseError().empty());
+}
+
+TEST_CASE("Offline: live plus bounce engines can render 32 bars together") {
+  const auto songBytes = readFixture("standard-rebirth.rbs");
+  const auto modBytes = readFixture("mods/sample-kit.rbm");
+
+  RbsAudioEngine live;
+  REQUIRE(live.init(testConfig()));
+  REQUIRE(live.loadSongFromBytes(songBytes.data(), songBytes.size()));
+  (void)live.loadMod(modBytes.data(), modBytes.size());
+
+  RbsAudioEngine bounce;
+  REQUIRE(bounce.init(testConfig()));
+  REQUIRE(bounce.loadSongFromBytes(songBytes.data(), songBytes.size()));
+  (void)bounce.loadMod(modBytes.data(), modBytes.size());
+
+  const double seconds = (60.0 / 150.0) * 4.0 * 32.0;
+  const auto frames = static_cast<uint32_t>(44100.0 * seconds);
+  const auto wav = bounce.renderOfflineWav(frames);
+  REQUIRE(wav.size() > 44);
+  CHECK(wav[0] == 'R');
+  CHECK(wav[1] == 'I');
+  CHECK(live.hasMod());
+}

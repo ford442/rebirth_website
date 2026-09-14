@@ -1,0 +1,346 @@
+/* ============================================================
+   RB-338 Unified Enhancement CSS
+   New panel system + backward-compatible original classes
+   ============================================================ */
+
+/* ============================================================
+   1. CSS VARIABLES
+   ============================================================ */
+:root {
+  --rb-dark: #2d2d2d;
+  --rb-darker: #1e1e1e;
+  --rb-darkest: #111111;
+  --rb-panel: #262626;
+  --rb-panel-raised: #303030;
+  --rb-border: #3a3a3a;
+  --rb-border-hi: #555555;
+
+  --rb-red: #c41e3a;
+  --rb-red-dim: #8a1528;
+  --rb-red-glow: rgba(196, 30, 58, 0.5);
+
+  --rb-green: #39ff14;
+  --rb-green-bright: #3dba66;
+  --rb-green-dim: #1a5230;
+  --rb-green-glow: rgba(57, 255, 20, 0.4);
+
+  --rb-amber: #ffb000;
+  --rb-amber-dim: #b37800;
+  --rb-amber-glow: rgba(255, 176, 0, 0.4);
+
+  --rb-silver: #c0c0c0;
+  --rb-silver-dim: #888888;
+
+  --rb-lcd-bg: #1a1a0a;
+  --rb-lcd-text: #ffb000;
+  --rb-lcd-dim: #7a5500;
+
+  --rb-phosphor: #33ff66;
+  --rb-phosphor-dim: #1a7a33;
+
+  --rb-font-display: 'Share Tech Mono', 'Courier New', monospace;
+  --rb-font-label: system-ui, -apple-system, sans-serif;
+
+  /* Display face for titles and panel headers */
+  --font-title: 'Oswald', system-ui, sans-serif;
+
+  --color-bg: #0d0e0f;
+  --color-surface: #161819;
+  --color-surface-alt: #1e2021;
+  --color-border: #2e3133;
+  --color-amber: #f5a623;
+  --color-amber-dim: #b37416;
+  --color-green: #39ff14;
+  --color-green-dim: #20991e;
+  --color-text: #d4cfc8;
+  --color-text-muted: #9a9490;
+  --color-accent: #e8533f;
+
+  /* Rackmount / futuristic accents */
+  --rb-cyan: #00e5ff;
+  --rb-cyan-dim: #0088aa;
+  --rb-cyan-glow: rgba(0, 229, 255, 0.35);
+  --rb-acid: #ccff00;
+  --rb-acid-dim: #88aa00;
+  --rb-acid-glow: rgba(204, 255, 0, 0.3);
+  --rb-metal-hi: #aaaaaa;
+  --rb-metal-lo: #1a1a1a;
+
+  /* Typography */
+  --font-mono: 'Share Tech Mono', 'Courier New', Courier, monospace;
+  --font-sans: system-ui, -apple-system, sans-serif;
+  --font-size-base: 1rem;
+
+  /* Typographic scale */
+  --text-xs: 0.65rem;
+  --text-sm: 0.75rem;
+  --text-md: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.1rem;
+  --text-xl: 1.25rem;
+  --text-2xl: clamp(1.6rem, 4vw, 2.2rem);
+  --text-3xl: clamp(2rem, 5vw, 3.2rem);
+
+  /* Radius scale */
+  --rb-radius-sm: 3px; /* badges, chips, tags, small inputs */
+  --rb-radius: 6px; /* cards, panels, main inputs */
+  --rb-radius-lg: 8px; /* large panels, drawers, modals */
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 2rem;
+  --space-xl: 4rem;
+
+  /* Transitions */
+  --transition-fast: 120ms ease;
+}
+
+/* ============================================================
+   2. BASE & BACKGROUND EFFECTS
+   ============================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--rb-darkest);
+  color: var(--rb-silver);
+  font-family: var(--rb-font-label);
+  font-size: 1rem;
+  line-height: 1.6;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* Scanline overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.06) 2px,
+    rgba(0, 0, 0, 0.06) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Disable scanline overlay for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    display: none;
+  }
+}
+
+/* Vignette */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.4) 100%);
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* Disable vignette for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  body::after {
+    display: none;
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-title);
+  color: var(--rb-amber);
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
+p {
+  margin-block: 0.75em;
+}
+
+a {
+  color: var(--rb-amber);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.12s ease;
+}
+a:hover,
+a:focus-visible {
+  color: var(--rb-green);
+}
+
+/* ============================================================
+   Accessibility: Reduce Motion Support
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable all transitions and animations for users preferring reduced motion */
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--rb-font-display);
+  font-size: 0.9em;
+}
+
+code {
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--rb-radius-sm);
+  padding: 0.1em 0.4em;
+  color: var(--rb-amber);
+}
+
+pre {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--rb-radius);
+  overflow-x: auto;
+  padding: 1rem;
+}
+
+.container {
+  max-width: 1100px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-nav {
+  position: absolute;
+  top: -999px;
+  left: 0;
+  background: var(--rb-amber);
+  color: var(--rb-darkest);
+  font-family: var(--rb-font-display);
+  font-weight: 700;
+  padding: 0.5em 1em;
+  z-index: 10000;
+}
+.skip-nav:focus {
+  top: 0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--rb-darkest);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--rb-border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--rb-amber-dim);
+}
+
+:focus-visible {
+  outline: 2px solid var(--rb-amber);
+  outline-offset: 3px;
+}
+
+/* ============================================================
+   11. TYPOGRAPHY HELPERS
+   ============================================================ */
+.t-amber {
+  color: var(--rb-amber);
+}
+.t-green {
+  color: var(--rb-green);
+}
+.t-red {
+  color: var(--rb-red);
+}
+.t-dim {
+  color: var(--rb-silver-dim);
+}
+.t-silver {
+  color: var(--rb-silver);
+}
+
+/* ============================================================
+   13. LAYOUT UTILITIES
+   ============================================================ */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}

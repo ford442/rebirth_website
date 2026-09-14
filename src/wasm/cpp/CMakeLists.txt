@@ -122,8 +122,10 @@ if(EMSCRIPTEN)
     -sMODULARIZE=1
     -sEXPORT_NAME=RbsAudioModule
     "-sEXPORTED_FUNCTIONS=['_malloc','_free']"
-    "-sEXPORTED_RUNTIME_METHODS=['ccall','cwrap','getValue','setValue','HEAPU8','emscriptenRegisterAudioObject','emscriptenGetAudioObject']"
+    "-sEXPORTED_RUNTIME_METHODS=['HEAPU8','emscriptenRegisterAudioObject','emscriptenGetAudioObject']"
     -sENVIRONMENT=web,worker
+    -sFILESYSTEM=0
+    -sSUPPORT_LONGJMP=0
     -sALLOW_TABLE_GROWTH=1
     # WASM module linear stack (main thread + synchronous WASM calls).
     # Not the AudioWorklet pthread stack — see engine/AudioThreadLimits.h.
@@ -131,7 +133,12 @@ if(EMSCRIPTEN)
     --no-entry
     -lembind
   )
+  # Heap sizes are cache vars so build.sh can stamp wasm-build.json without
+  # duplicating the numbers. Growth stays off in Release (ADR 0002).
   if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(RB338_WASM_INITIAL_MEMORY 33554432 CACHE STRING "Emscripten INITIAL_MEMORY" FORCE)
+    set(RB338_WASM_MAXIMUM_MEMORY 134217728 CACHE STRING "Emscripten MAXIMUM_MEMORY" FORCE)
+    set(RB338_WASM_ALLOW_MEMORY_GROWTH 1 CACHE STRING "Emscripten ALLOW_MEMORY_GROWTH" FORCE)
     target_compile_options(rbsParser PRIVATE -O0 -g3)
     target_link_options(rbsParser PRIVATE
       -sASSERTIONS=1
@@ -139,19 +146,28 @@ if(EMSCRIPTEN)
       -sSTACK_OVERFLOW_CHECK=2
       -sWEBAUDIO_DEBUG=1
       -sALLOW_MEMORY_GROWTH=1
-      -sINITIAL_MEMORY=33554432
-      -sMAXIMUM_MEMORY=134217728
+      -sINITIAL_MEMORY=${RB338_WASM_INITIAL_MEMORY}
+      -sMAXIMUM_MEMORY=${RB338_WASM_MAXIMUM_MEMORY}
+      -sMALLOC=emmalloc-memvalidate
     )
   else()
+    set(RB338_WASM_INITIAL_MEMORY 67108864 CACHE STRING "Emscripten INITIAL_MEMORY" FORCE)
+    set(RB338_WASM_MAXIMUM_MEMORY 67108864 CACHE STRING "Emscripten MAXIMUM_MEMORY" FORCE)
+    set(RB338_WASM_ALLOW_MEMORY_GROWTH 0 CACHE STRING "Emscripten ALLOW_MEMORY_GROWTH" FORCE)
     target_compile_options(rbsParser PRIVATE -O3 -flto)
     target_link_options(rbsParser PRIVATE
       -O3
       -flto
       -sASSERTIONS=0
       -sALLOW_MEMORY_GROWTH=0
-      -sINITIAL_MEMORY=67108864
+      -sINITIAL_MEMORY=${RB338_WASM_INITIAL_MEMORY}
+      -sMAXIMUM_MEMORY=${RB338_WASM_MAXIMUM_MEMORY}
+      -sMALLOC=emmalloc
     )
   endif()
+  file(WRITE "${CMAKE_BINARY_DIR}/wasm-heap-flags.txt"
+    "INITIAL_MEMORY=${RB338_WASM_INITIAL_MEMORY}\nMAXIMUM_MEMORY=${RB338_WASM_MAXIMUM_MEMORY}\nALLOW_MEMORY_GROWTH=${RB338_WASM_ALLOW_MEMORY_GROWTH}\n"
+  )
   set_target_properties(rbsParser PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${RB338_WASM_OUT}"
     SUFFIX ".js"

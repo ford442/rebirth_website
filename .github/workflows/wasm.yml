@@ -80,12 +80,26 @@ jobs:
               test -s "$directory/$file"
             done
           done
+          python3 -c "
+import json, pathlib
+for directory in ('public/wasm', 'dist/wasm'):
+    manifest = json.loads(pathlib.Path(directory, 'wasm-build.json').read_text())
+    build = manifest['build']
+    assert build['mode'] == 'release', build
+    assert build['initialMemory'] == 67108864, build
+    assert build['maximumMemory'] == 67108864, build
+    assert build['allowMemoryGrowth'] == 0, build
+    worklet = pathlib.Path(directory, 'rbsWorklet.js').read_text().strip()
+    assert worklet == \"import './rbsParser.js';\", worklet
+    glue = pathlib.Path(directory, 'rbsParser.js').read_text()
+    assert 'locateFile(' in glue
+"
 
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
       - name: WASM Playwright tests
-        run: npx playwright test tests/wasm-assets.spec.ts tests/wasm-engine-preview.spec.ts tests/wasm-rbm-mod.spec.ts tests/wasm-export.spec.ts --project wasm-preview
+        run: npx playwright test tests/wasm-assets.spec.ts tests/wasm-engine-preview.spec.ts tests/wasm-rbm-mod.spec.ts tests/wasm-export.spec.ts tests/wasm-heap-probe.spec.ts --project wasm-preview
         env:
           CI: true
           WASM_BUILT: '1'

@@ -9,6 +9,12 @@ interface WasmBuildManifest {
     pinned: string;
     installed: string;
   };
+  build: {
+    mode: string;
+    initialMemory: number;
+    maximumMemory: number;
+    allowMemoryGrowth: number;
+  };
   files: Record<(typeof ARTIFACT_KEYS)[number], { path: string; bytes: number }>;
 }
 
@@ -24,6 +30,16 @@ test('WASM manifest and declared assets are valid under the site base path', asy
     pinned: EMSCRIPTEN_VERSION,
     installed: EMSCRIPTEN_VERSION,
   });
+  expect(manifest.build.mode).toBe('release');
+  expect(manifest.build.initialMemory).toBe(67108864);
+  expect(manifest.build.maximumMemory).toBe(67108864);
+  expect(manifest.build.allowMemoryGrowth).toBe(0);
+
+  const glueText = await (await request.get(`${BASE}/wasm/rbsParser.js`)).text();
+  expect(glueText).toContain('locateFile(');
+
+  const workletText = await (await request.get(`${BASE}/wasm/rbsWorklet.js`)).text();
+  expect(workletText.trim()).toBe("import './rbsParser.js';");
 
   for (const key of ARTIFACT_KEYS) {
     const artifact = manifest.files[key];

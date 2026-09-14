@@ -34,6 +34,9 @@ tests/screenshots/
 # Generated WASM artifacts (rebuilt via npm run wasm:build)
 public/wasm/
 
+# Arena-filling heap-probe mod (regenerate with scripts/make-rbm-large-kit-fixture.py)
+src/wasm/test-fixtures/mods/large-kit.rbm
+
 # Native C++ CMake / Makefile build output
 src/wasm/cpp/build/
 src/wasm/cpp/build-*/

@@ -3,11 +3,18 @@
  * =====================================
  *
  * All global styles (design tokens, reset, typography, utilities, and
- * hardware-themed components) live in:
+ * hardware-themed components) live under:
  *
- *   public/styles/rebirth-theme.css
+ *   public/styles/rebirth-theme.css   ← linked from BaseLayout (aggregator)
+ *   public/styles/theme/
+ *     tokens-base.css                 ← :root tokens, reset, a11y, type, layout utils
+ *     panels-rack.css                 ← .rb-panel, screws, rackmount 303
+ *     chrome-controls.css             ← header/nav, LEDs, LCD, buttons, sequencer
+ *     content.css                     ← terminal, homepage leftovers, WASM LCD
+ *     cards-archive.css               ← song/mod cards, archive filters, skeletons
+ *     motion-responsive.css           ← keyframes, micro-interactions, @media
  *
- * That file is linked once from `src/layouts/BaseLayout.astro`.
+ * Import order in the aggregator is cascade order; do not rearrange.
  *
  * Page-specific layout rules belong in scoped `<style>` blocks inside
  * individual `.astro` files. Do not add a second global stylesheet here.

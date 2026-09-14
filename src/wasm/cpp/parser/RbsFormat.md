@@ -329,9 +329,20 @@ All observed pattern-selection events occur on bar boundaries.
 
 For instrument tracks 1–4, controller `0x01` selects a flat pattern slot
 `0`–`31`. The parser samples that state at each bar boundary and converts it to
-`PatternRef { bank: slot / 8, index: slot % 8 }`. Other controllers are
-automation: they are fully decoded and bounds-checked, but currently skipped
-after advancing so they cannot desynchronise later events.
+`PatternRef { bank: slot / 8, index: slot % 8 }`. Other controllers are TRAK
+automation: they are decoded into `ParsedSong.automation` (C++-only; not copied
+through Embind). `RbsAudioEngine::loadSong` / `loadSongFromBytes` publish that
+vector on the engine snapshot, and `AutomationScheduler` applies the events on
+the audio thread (cutoff, resonance, mixer level/pan, FX). JavaScript archive
+loads must call `loadSongFromBytes` so this vector is never dropped by an
+Embind round-trip.
+
+A 5-byte chunk id `STRAK` (`STRA` + `K`) is an alias of `TRAK` with the same
+body layout. The parser consumes the extra `K` before the size field and
+parses the body with `parseTrak`. IFF padding is computed from the 9-byte
+header plus body, not from the 4-byte-id rule. Archive fixtures such as
+`no-remorse.rbs` may contain the substring `STRAK` at a `TRAK` boundary
+without being a 5-byte chunk.
 
 The layout and controller IDs are corroborated by Propellerhead's freely
 distributed RBS 4.2 format document and the independent
@@ -350,7 +361,8 @@ distributed RBS 4.2 format document and the independent
 - [x] Decode TB-303 notes / accent / slide
 - [x] Decode 808/909 drum hits
 - [x] Parse `TRAK` chunks into arrangement bars
-- [x] Skip automation events with length-safe advancing
+- [x] Parse TRAK automation into `ParsedSong.automation` for in-engine playback
+- [x] Parse 5-byte `STRAK` as a `TRAK` alias
 - [x] Identify and decode BPM field in GLOB
 - [x] Validate all parsed offsets and lengths (prevent buffer over-read)
 - [x] Parse v1 / v1.5 Propellerhead MIDI-container songs (`MThd` + SysEx payload)

@@ -20,6 +20,8 @@
  *        a. the `struct T { ... };` code block documented under that name
  *           in CONTRACT.md, and
  *        b. the matching TypeScript interface in wasm-audio.ts.
+ *   3. Required `RbsAudioEngine` Embind `.function("name")` entries exist in
+ *      main.cpp and as methods on `RbsAudioEngineInstance` in wasm-audio.ts.
  *
  * Exit code is non-zero (and CI fails) on any mismatch.
  */
@@ -40,6 +42,7 @@ const WASM_AUDIO_TS = path.join(ROOT, 'src/wasm/types/wasm-audio.ts');
 /** C++ struct name -> TypeScript interface name in wasm-audio.ts. */
 const STRUCT_TO_TS_INTERFACE = {
   EngineConfig: 'EngineConfig',
+  HeapStats: 'HeapStats',
   PlaybackPosition: 'PlaybackPosition',
   StepData: 'WasmStepData',
   PatternRef: 'WasmPatternRef',
@@ -52,6 +55,8 @@ const STRUCT_TO_TS_INTERFACE = {
   DistSettings: 'WasmDistSettings',
   CompSettings: 'WasmCompSettings',
   SongFxSettings: 'WasmSongFxSettings',
+  ModSampleReportEntry: 'WasmModSampleReportEntry',
+  ModLoadReport: 'WasmModLoadReport',
 };
 
 const errors = [];
@@ -264,8 +269,74 @@ function checkValueObjects() {
   }
 }
 
+/** Archive/load path names that must stay on RbsAudioEngine Embind. */
+const REQUIRED_ENGINE_EMBIND_FUNCTIONS = [
+  'init',
+  'loadSong',
+  'loadSongFromBytes',
+  'lastParseError',
+  'loadMod',
+  'play',
+  'stop',
+  'setDeviceParam',
+  'renderOfflineToWav',
+  'songLengthFrames',
+  'getPlaybackPosition',
+];
+
+function parseClassEmbindFunctions(src, className) {
+  const re = new RegExp(`class_<${className}>\\("${className}"\\)([\\s\\S]*?);`);
+  const m = src.match(re);
+  if (!m) return null;
+  const names = [];
+  const fnRe = /\.function\("(\w+)"/g;
+  let match;
+  while ((match = fnRe.exec(m[1])) !== null) {
+    names.push(match[1]);
+  }
+  return names;
+}
+
+function checkEngineFunctions() {
+  const names = parseClassEmbindFunctions(read(MAIN_CPP), 'RbsAudioEngine');
+  if (!names) {
+    fail(`${relative(MAIN_CPP)}: could not find class_<RbsAudioEngine>("RbsAudioEngine") chain.`);
+    return;
+  }
+  for (const required of REQUIRED_ENGINE_EMBIND_FUNCTIONS) {
+    if (!names.includes(required)) {
+      fail(
+        `RbsAudioEngine Embind is missing .function("${required}") in ${relative(MAIN_CPP)} ` +
+          `(required by scripts/check-wasm-contract.mjs).`
+      );
+    }
+  }
+
+  const tsSrc = read(WASM_AUDIO_TS);
+  const tsBody = extractBracedInterfaceBody(tsSrc, 'RbsAudioEngineInstance');
+  if (!tsBody) {
+    fail(`${relative(WASM_AUDIO_TS)}: missing interface RbsAudioEngineInstance.`);
+    return;
+  }
+  const tsMethods = [];
+  for (const rawLine of tsBody.split('\n')) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('//') || line.startsWith('*') || line.startsWith('/*')) continue;
+    const m = line.match(/^(\w+)\s*\(/);
+    if (m) tsMethods.push(m[1]);
+  }
+  for (const required of REQUIRED_ENGINE_EMBIND_FUNCTIONS) {
+    if (!tsMethods.includes(required)) {
+      fail(
+        `RbsAudioEngineInstance is missing "${required}(...)" in ${relative(WASM_AUDIO_TS)}.`
+      );
+    }
+  }
+}
+
 checkDeviceParamId();
 checkValueObjects();
+checkEngineFunctions();
 
 if (errors.length > 0) {
   console.error(`\n✗ WASM contract check found ${errors.length} problem(s):\n`);

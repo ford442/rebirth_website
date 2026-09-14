@@ -1,5 +1,6 @@
 #include "RbsAudioEngine.h"
 #include "../parser/RbmParser.h"
+#include "../parser/RbsParser.h"
 #include <algorithm>
 #include <bit>
 #include <cmath>
@@ -88,6 +89,22 @@ bool RbsAudioEngine::loadSong(const ParsedSong& song) {
   stop();
   reclaimRetiredSnapshots();
   return true;
+}
+
+std::optional<ParsedSong> RbsAudioEngine::loadSongFromBytes(const uint8_t* data,
+                                                            size_t size) {
+  RbsParser parser;
+  auto song = parser.parse(data, size);
+  if (!song) {
+    m_lastParseError = parser.lastError();
+    return std::nullopt;
+  }
+  m_lastParseError.clear();
+  if (!loadSong(*song)) {
+    m_lastParseError = "Engine not initialised";
+    return std::nullopt;
+  }
+  return song;
 }
 
 void RbsAudioEngine::republishGraph() {

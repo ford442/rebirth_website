@@ -24,6 +24,7 @@
     "wasm:native:build": "cmake --build src/wasm/cpp/build --parallel",
     "wasm:native:test": "ctest --test-dir src/wasm/cpp/build --output-on-failure",
     "wasm:test": "npm run wasm:native:configure && npm run wasm:native:build && npm run wasm:native:test",
+    "wasm:heap-probe": "node scripts/wasm-heap-probe.mjs",
     "songs:enrich": "python3 scripts/enrich-rbs-catalog.py --phase A",
     "songs:enrich:all": "python3 scripts/enrich-rbs-catalog.py --phase B",
     "songs:discovery": "python3 scripts/build-song-discovery.py",

@@ -53,19 +53,18 @@ main-thread offline `renderTestBlock`-only preview without a worklet.
 
 Release keeps growth disabled so the audio callback never triggers a heap resize.
 
-### Future `.rbm` sample banks
+### Future `.rbm` sample banks / offline bounce
 
-Multi-megabyte sample pools will not fit comfortably in 64 MiB alongside parser
-state, engine voices, and delay lines.
+Measured 2026-09 (see `npm run wasm:heap-probe` / `tests/wasm-heap-probe.spec.ts`):
+a second `RbsAudioEngine` on the **same** module doubles the 8 MiB `SamplePool`
+and holds the WAV vector next to the live worklet. That is the OOM shape, not
+Metallicon PCM itself (the arena is fixed at 8 MiB).
 
-**Options (choose before wiring mod playback):**
-
-1. **Bump `INITIAL_MEMORY`** on the shipping binary after benchmarking peak
-   usage with representative mods (preferred if headroom is modest).
-2. **Separate "studio" build** with higher fixed heap (e.g. 128 MiB) for
-   editors; keep the archive player lean.
-3. **Main-thread allocation:** load/decode samples on the main thread; pass
-   offsets into WASM; never `malloc` in `processBlock`.
+**Chosen:** ADR option 3 — keep the shipping **64 MiB** heap (`ALLOW_MEMORY_GROWTH=0`)
+and **never** hold two full engines on it. Offline bounce runs in a Dedicated
+Worker with its own module instance. Bump `INITIAL_MEMORY` only if the probe
+shows a **single** engine + large kit + 32-bar WAV exceeding
+`INITIAL_MEMORY - 8 MiB`. A separate studio binary is not required.
 
 **Rejected without benchmark:** `-sALLOW_MEMORY_GROWTH=1` on the shipping audio
 binary — growth can stall the real-time thread.
@@ -77,10 +76,20 @@ CMake option `RB338_NO_EXCEPTIONS` compiles `rb338_engine` with
 exceptions. Use only in native test matrix to measure; do not enable for the
 shipping Emscripten link until Embind compatibility is proven.
 
+Release also sets `-sSUPPORT_LONGJMP=0`. Engine failures are `optional` / status
+codes rather than C++ exceptions through Embind. If a toolchain change requires
+SJLJ, drop that flag and record the measurement here.
+
+MAXIMUM_MEMORY is unused when growth is off (Emscripten warns); we still set it
+equal to INITIAL_MEMORY so the no-growth policy is explicit in the linker line
+and in `wasm-build.json`.
+
 ## Consequences
 
 - Linker flags live in [`src/wasm/cpp/CMakeLists.txt`](../../src/wasm/cpp/CMakeLists.txt)
   (single source of truth); `build.sh` is an `emcmake` wrapper only.
 - JS hosts must use `createProductionAudioContext()` (`latencyHint: 'interactive'`,
   sample-rate retry) — see [`src/wasm/js/create-audio-context.ts`](../../src/wasm/js/create-audio-context.ts).
-- Heap size stays at 64 MiB until mod playback benchmarking dictates otherwise.
+- Heap size stays at 64 MiB; bounce uses a second WASM instance on a Worker
+  rather than a second engine on the live heap. Re-run the heap probe before
+  bumping `INITIAL_MEMORY`.

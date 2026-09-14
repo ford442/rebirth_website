@@ -70,7 +70,8 @@ Astro automatically reloads the page when you edit source files.
 │   │   ├── rbs-songs/          ← .rbs song files (hosted externally; .gitkeep only)
 │   │   └── rbm-mods/           ← .rbm mod files (hosted externally; .gitkeep only)
 │   ├── styles/
-│   │   └── rebirth-theme.css   ← Single source of truth for global CSS
+│   │   ├── rebirth-theme.css   ← Global CSS aggregator (linked from BaseLayout)
+│   │   └── theme/              ← Token, panel, chrome, content, archive, motion modules
 │   └── rbs-manifest.json       ← Archive metadata index
 ├── src/
 │   ├── components/
@@ -323,7 +324,7 @@ WASM builds require pinned Emscripten 6.0.3 on your machine (`npm run build:ship
 
 - **Astro** components use `.astro` file extension
 - **TypeScript** strict mode is enabled; avoid `any`
-- **CSS** single source of truth: `public/styles/rebirth-theme.css` (linked in `BaseLayout.astro`). `src/styles/global.css` is a layering pointer only — do not import it.
+- **CSS** single source of truth: `public/styles/rebirth-theme.css` (aggregator linked in `BaseLayout.astro`) plus modules in `public/styles/theme/`. `src/styles/global.css` is a layering pointer only — do not import it.
 - **Internal links** must use `normalizeBase(import.meta.env.BASE_URL)` from `src/lib/url.ts`
 - **Linting**: `npm run lint` (ESLint flat config) and `npm run format` (Prettier) cover Astro/TS sources
 - Keep the **retro-industrial aesthetic**: dark background, amber/green palette, monospace

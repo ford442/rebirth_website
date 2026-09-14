@@ -10,8 +10,11 @@
  */
 
 #include <emscripten/bind.h>
+#include <emscripten/heap.h>
 #include <emscripten/val.h>
 #include <array>
+#include <cstdint>
+#include <malloc.h>
 #include <utility>
 #include "parser/RbsTypes.h"
 #include "parser/RbsParser.h"
@@ -60,6 +63,16 @@ std::optional<ModLoadReport> parseModWrapper(RbmParser& self,
   return summariseMod(*mod);
 }
 
+/**
+ * Parse + load on the WASM heap so TRAK automation never round-trips through JS.
+ * Returns the Embind UI summary (no automation vector).
+ */
+std::optional<ParsedSong> loadSongFromBytesWrapper(RbsAudioEngine& self,
+                                                   uintptr_t dataPtr,
+                                                   size_t size) {
+  return self.loadSongFromBytes(reinterpret_cast<const uint8_t*>(dataPtr), size);
+}
+
 /** Decode a .rbm straight from the WASM heap into the engine's sample pool. */
 ModLoadStatus loadModWrapper(RbsAudioEngine& self, uintptr_t dataPtr, size_t size) {
   return self.loadMod(reinterpret_cast<const uint8_t*>(dataPtr), size);
@@ -80,6 +93,29 @@ val renderOfflineWavWrapper(RbsAudioEngine& self, uint32_t frames, uint8_t devic
   const std::vector<uint8_t> wav = self.renderOfflineWav(frames, deviceIndex);
   return val::global("Uint8Array")
       .new_(val(typed_memory_view(wav.size(), wav.data())));
+}
+
+/**
+ * Allocator accounting for the shipping fixed heap. `heapSize` is the mapped
+ * WASM memory (INITIAL_MEMORY when growth is off). `usedBytes` is dlmalloc /
+ * emmalloc `uordblks` — peak this across load/bounce steps in the heap probe.
+ */
+struct HeapStats {
+  uint32_t initialMemory = 0;
+  uint32_t heapSize = 0;
+  uint32_t usedBytes = 0;
+};
+
+HeapStats heapStatsWrapper() {
+  HeapStats stats;
+  stats.heapSize = static_cast<uint32_t>(emscripten_get_heap_size());
+  stats.initialMemory = static_cast<uint32_t>(emscripten_get_heap_max());
+  if (stats.initialMemory == 0) {
+    stats.initialMemory = stats.heapSize;
+  }
+  const auto info = mallinfo();
+  stats.usedBytes = static_cast<uint32_t>(info.uordblks);
+  return stats;
 }
 
 // Helpers to register fixed-size std::array types with value_array.
@@ -312,6 +348,13 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .function("parse",     &parseModWrapper)
     .function("lastError", &RbmParser::lastError);
 
+  value_object<HeapStats>("HeapStats")
+    .field("initialMemory", &HeapStats::initialMemory)
+    .field("heapSize",      &HeapStats::heapSize)
+    .field("usedBytes",     &HeapStats::usedBytes);
+
+  function("heapStats", &heapStatsWrapper);
+
   // EngineConfig
   value_object<EngineConfig>("EngineConfig")
     .field("sampleRate",        &EngineConfig::sampleRate)
@@ -329,6 +372,8 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .constructor()
     .function("init",      &RbsAudioEngine::init)
     .function("loadSong",  &RbsAudioEngine::loadSong)
+    .function("loadSongFromBytes", &loadSongFromBytesWrapper)
+    .function("lastParseError", &RbsAudioEngine::lastParseError)
     .function("loadMod",   &loadModWrapper)
     .function("clearMod",  &RbsAudioEngine::clearMod)
     .function("hasMod",    &RbsAudioEngine::hasMod)

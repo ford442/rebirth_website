@@ -52,9 +52,10 @@ We use **Architecture A — Emscripten Wasm Audio Worklet**.
 - **Main thread** (`WasmAudioBridge`):
   - Loads the Emscripten glue and WASM module.
   - Creates the `AudioContext` and wires the `AudioWorkletNode`.
-  - Parses `.rbs` files via `RbsParser` and calls `RbsAudioEngine::loadSong()`.
+  - Copies `.rbs` bytes onto the WASM heap and calls `RbsAudioEngine::loadSongFromBytes()` so parse and load stay in C++ (TRAK automation never round-trips through Embind). The returned value is a UI summary only.
   - Sends transport/control commands (`play`, `pause`, `stop`, `seek`, `setVolume`, `setTempo`) by pushing them into a lock-free command queue that lives in shared WASM memory.
   - Polls `getPlaybackPosition()` for UI updates.
+  - Offline bounce/stems run in a Dedicated Worker that instantiates a **second** copy of the same glue (no AudioWorklet). The live worklet keeps `status=playing` and never holds two `SamplePool` arenas.
 
 - **Audio thread** (`RbsWorklet` / `RbsAudioEngine::processBlock()`):
   - Pins an `EngineSnapshot*` via a lock-free hazard (no `shared_ptr` in the callback).
@@ -69,7 +70,7 @@ This keeps latency low (128-frame Web Audio quanta), avoids main-thread synthesi
 ### Why not Option B or C?
 
 - **Option B** (main-thread WASM + ScriptProcessor/ring buffer) would push synthesis or PCM streaming onto the main thread, creating latency and jank risks for a UI-heavy archive site.
-- **Option C** (hybrid: parse on main, synthesise on audio thread) is essentially the same runtime shape as Option A; we capture it explicitly above by stating that `.rbs` parsing stays on the main thread while the audio thread owns synthesis and sequencing.
+- **Option C** (hybrid: parse on main, synthesise on audio thread) is essentially the same runtime shape as Option A; we capture it explicitly above by stating that `.rbs` parsing stays on the main thread (inside `loadSongFromBytes`) while the audio thread owns synthesis and sequencing.
 
 ### Real-time constraints
 
@@ -172,7 +173,10 @@ only.
 | Optimisation | `-O3 -flto` | `-O0 -g3` |
 | `-sASSERTIONS` | `0` | `1` |
 | `-sINITIAL_MEMORY` | 64 MiB | 32 MiB |
+| `-sMAXIMUM_MEMORY` | 64 MiB (equal to INITIAL) | 128 MiB |
 | `-sALLOW_MEMORY_GROWTH` | `0` | `1` (max 128 MiB) |
+| `-sMALLOC` | `emmalloc` | `emmalloc-memvalidate` |
+| `-sFILESYSTEM` | `0` | `0` |
 | `-sSTACK_SIZE` | 128 KiB (module linear stack) | 128 KiB |
 | AudioWorklet pthread stack | 64 KiB (`AUDIO_THREAD_STACK_SIZE`) | 64 KiB |
 | `-pthread -sAUDIO_WORKLET=1 -sWASM_WORKERS=1` | yes | yes |
@@ -189,11 +193,11 @@ Root [`.clangd`](../../.clangd) points clangd at that compilation database.
 
 ### Emitted files
 
-Emscripten produces `rbsParser.js` and `rbsParser.wasm`. Older releases also
-emitted `rbsParser.aw.js`, which the build still accepts. Emscripten 6 folds the
-AudioWorklet code into the ES-module glue, so the build emits a tiny
-`rbsWorklet.js` wrapper that imports the self-starting module inside the worklet scope. A
-`wasm-build.json` manifest is also generated for cache-busting and diagnostics.
+Emscripten produces `rbsParser.js` and `rbsParser.wasm`. `build.sh` copies the
+checked-in [`js/rbs-worklet-bootstrap.js`](js/rbs-worklet-bootstrap.js) to
+`rbsWorklet.js` and does **not** patch generated glue. `WasmAudioBridge`
+`locateFile` remaps worklet-scope glue requests. `wasm-build.json` records
+mode, heap sizes, and artifact byte counts.
 
 ### Deployment paths
 

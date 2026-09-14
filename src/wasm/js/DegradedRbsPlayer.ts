@@ -10,6 +10,11 @@ import type { ParsedSong, PlayerStatus } from '../types/wasm-audio';
 import { wasmAudioConfig } from '../audio-module.config';
 import type { InitFailureReason } from './rbs-init-errors';
 import { sniffRbsMetadata } from './RbsMetadataSniffer';
+import {
+  attachAudioContextLifecycle,
+  createProductionAudioContext,
+  type AudioContextLifecycle,
+} from './create-audio-context';
 
 export type PositionCallback = (bar: number, step: number) => void;
 export type StatusCallback = (status: PlayerStatus) => void;
@@ -28,6 +33,7 @@ export class DegradedRbsPlayer {
   private tempoBpm = 125;
   private audioContext: AudioContext | null = null;
   private gainNode: GainNode | null = null;
+  private audioLifecycle: AudioContextLifecycle | null = null;
   private sketchTimer: ReturnType<typeof setInterval> | null = null;
   private currentStep = 0;
   private currentBar = 1;
@@ -69,7 +75,12 @@ export class DegradedRbsPlayer {
 
     if (this.mode === 'sketch') {
       try {
-        this.audioContext = new AudioContext({ latencyHint: wasmAudioConfig.latencyHint });
+        const { context } = createProductionAudioContext(
+          wasmAudioConfig.preferredSampleRate,
+          wasmAudioConfig.latencyHint
+        );
+        this.audioContext = context;
+        this.audioLifecycle = attachAudioContextLifecycle(context);
         this.gainNode = this.audioContext.createGain();
         this.gainNode.gain.value = this.volume;
         this.gainNode.connect(this.audioContext.destination);
@@ -121,9 +132,7 @@ export class DegradedRbsPlayer {
       return;
     }
 
-    if (this.audioContext.state === 'suspended') {
-      void this.audioContext.resume();
-    }
+    this.audioLifecycle?.resumeIfNeeded();
 
     this._startSketch();
     this._setStatus('playing');
@@ -206,6 +215,8 @@ export class DegradedRbsPlayer {
 
   dispose(): void {
     this._stopSketch();
+    this.audioLifecycle?.dispose();
+    this.audioLifecycle = null;
     void this.audioContext?.close();
     this.audioContext = null;
     this.gainNode = null;

@@ -7,9 +7,9 @@ this website. They are included only for parser regression testing.
 
 | File                   | Source URL                                                                                         | Size     | Notes                                        |
 | ---------------------- | -------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------- |
-| `standard-rebirth.rbs` | `https://test.1ink.us/rb338/archive/rbs-songs/By_Source/Rebirth_2.0/Complete/%23008.rbs`           | 24,904 B | HEAD marker `0x01`; no `STRAK` chunk         |
-| `blue-planet.rbs`      | `https://test.1ink.us/rb338/archive/rbs-songs/By_Source/Archives/Hotline%20Archive/%23hardv~1.rbs` | 21,864 B | HEAD marker `0x02`; no `STRAK` chunk         |
-| `no-remorse.rbs`       | `https://test.1ink.us/rb338/archive/rbs-songs/By_Source/Archives/Hotline%20Archive/%23primate.rbs` | 21,282 B | HEAD marker `0x02`; contains a `STRAK` chunk |
+| `standard-rebirth.rbs` | `https://test.1ink.us/rb338/archive/rbs-songs/By_Source/Rebirth_2.0/Complete/%23008.rbs`           | 24,904 B | HEAD marker `0x01`; nine `TRAK` chunks, no 5-byte `STRAK` |
+| `blue-planet.rbs`      | `https://test.1ink.us/rb338/archive/rbs-songs/By_Source/Archives/Hotline%20Archive/%23hardv~1.rbs` | 21,864 B | HEAD marker `0x02`; nine `TRAK` chunks, no 5-byte `STRAK` |
+| `no-remorse.rbs`       | `https://test.1ink.us/rb338/archive/rbs-songs/By_Source/Archives/Hotline%20Archive/%23primate.rbs` | 21,282 B | HEAD marker `0x02`; nine `TRAK` chunks. The substring `STRAK` at a chunk boundary is event byte `0x53` plus the next `TRAK` id, not a 5-byte chunk. |
 
 All three are v2.x format files using the Propellerhead `CAT `/`RB40HEAD` chunk
 container. They were chosen because they differ in title/author/info content and
@@ -101,6 +101,17 @@ Regenerate with:
 
 ```
 python3 scripts/make-rbm-sample-fixture.py
+```
+
+### `large-kit.rbm` (heap probe, not committed)
+
+`scripts/make-rbm-large-kit-fixture.py` writes ~1.8M frames of 16-bit PCM into
+one 808 kick slot so the 8 MiB `SamplePool` arena is mostly full. Used by
+`npm run wasm:heap-probe` and `tests/wasm-heap-probe.spec.ts`. The file is
+gitignored (~3.6 MiB). Do not vendor Metallicon.rbm.
+
+```
+python3 scripts/make-rbm-large-kit-fixture.py
 ```
 
 The script is deterministic (no randomness), so re-running it on an unchanged

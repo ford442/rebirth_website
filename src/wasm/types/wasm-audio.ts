@@ -110,8 +110,6 @@ export interface WasmAudioModuleConfig {
   workletPath: string;
   /** Preferred AudioContext sample rate (Hz); browser may use a different rate. */
   preferredSampleRate: number;
-  /** @deprecated Use preferredSampleRate */
-  sampleRate: number;
   /** AudioContext latency hint for archive preview */
   latencyHint: AudioContextLatencyCategory;
   bufferSize: number;
@@ -446,7 +444,14 @@ export type WorkletNodeHandle = number;
 /** Class constructor shape exposed by Embind for `RbsAudioEngine` */
 export interface RbsAudioEngineInstance {
   init(config: EngineConfig): boolean;
+  /**
+   * In-process writer/test path. Archive loads must use loadSongFromBytes so
+   * TRAK automation is not dropped by the Embind copy.
+   */
   loadSong(song: WasmParsedSong): boolean;
+  /** Parse + load from WASM heap bytes. Returns the UI summary, or undefined. */
+  loadSongFromBytes(ptr: number, size: number): WasmParsedSong | undefined;
+  lastParseError(): string;
   /** Decode a `.rbm` already copied into the WASM heap. Returns ModLoadStatus. */
   loadMod(ptr: number, size: number): number;
   clearMod(): void;
@@ -473,6 +478,13 @@ export interface RbsAudioEngineInstance {
   songLengthFrames(): number;
   getPlaybackPosition(): PlaybackPosition;
   delete(): void;
+}
+
+/** Allocator snapshot from Embind `heapStats()`. */
+export interface HeapStats {
+  initialMemory: number;
+  heapSize: number;
+  usedBytes: number;
 }
 
 /** Class constructor shape exposed by Embind for `RbsParser` */
@@ -511,6 +523,7 @@ export interface EngineModule {
     engine: RbsAudioEngineInstance,
     callback: (nodeHandle: WorkletNodeHandle | null) => void
   ): void;
+  heapStats(): HeapStats;
 
   /** Heap views */
   HEAPU8: Uint8Array;

@@ -53,6 +53,30 @@ export interface EngineConfig {
 
 **Rule:** The bridge must flatten the `EngineFeatures` helper object from `audio-module.config.ts` into these flat fields before calling `RbsAudioEngine.init()`.
 
+### `HeapStats`
+
+C++ value object (Embind free function `heapStats()`, not an engine method):
+
+```cpp
+struct HeapStats {
+  uint32_t initialMemory = 0;
+  uint32_t heapSize = 0;
+  uint32_t usedBytes = 0;
+};
+```
+
+TypeScript interface (`src/wasm/types/wasm-audio.ts`):
+
+```ts
+export interface HeapStats {
+  initialMemory: number;
+  heapSize: number;
+  usedBytes: number;
+}
+```
+
+`heapSize` is `emscripten_get_heap_size()`. `initialMemory` is `emscripten_get_heap_max()` (equals the mapped heap when growth is off). `usedBytes` is allocator `mallinfo().uordblks`.
+
 ### `PlaybackPosition`
 
 C++ value object (returned by `RbsAudioEngine::getPlaybackPosition()` via wrapper):
@@ -265,7 +289,9 @@ export interface WasmParsedSong {
 ```
 
 `AutomationEvent` / `ParsedSong.automation` remain C++-only and are **not**
-exported through Embind.
+exported through Embind. Archive loads must call `loadSongFromBytes` so parse
+and `loadSong` happen on the WASM heap; `loadSong(WasmParsedSong)` from JS
+drops the vector. Native tests may still call `loadSong(const ParsedSong&)`.
 
 ### `SongFxSettings`
 
@@ -326,6 +352,8 @@ block; it does not create a JavaScript `rb338` namespace.
 | -------------------------------------------- | --------------------- | ------------------------------------ |
 | `bool init(const EngineConfig&)`             | `init`                | `(config: EngineConfig) => boolean`  |
 | `bool loadSong(const ParsedSong&)`           | `loadSong`            | `(song: WasmParsedSong) => boolean`  |
+| `loadSongFromBytesWrapper(..., uintptr_t, size_t)` | `loadSongFromBytes` | `(ptr: number, size: number) => WasmParsedSong \| undefined` |
+| `const std::string& lastParseError() const`  | `lastParseError`      | `() => string`                       |
 | `void play()`                                | `play`                | `() => void`                         |
 | `void pause()`                               | `pause`               | `() => void`                         |
 | `void stop()`                                | `stop`                | `() => void`                         |
@@ -337,6 +365,12 @@ block; it does not create a JavaScript `rb338` namespace.
 | `void setDeviceParam(uint8_t,uint8_t,float)` | `setDeviceParam`      | `(deviceId, paramId, value) => void` |
 | `bool isPlaying() const`                     | `isPlaying`           | `() => boolean`                      |
 | `void getPlaybackPosition(...)` (wrapped)    | `getPlaybackPosition` | `() => PlaybackPosition`             |
+
+`loadSong` remains bound for an in-process writer/editor that already holds
+C++ state. The browser archive path is `loadSongFromBytes`: parse on the
+engine, publish the snapshot (including `automation`), return a UI summary.
+`WasmAudioBridge.loadRbsFile` and `_createOfflineEngine` must not call
+`RbsParser.parse` then `loadSong`.
 
 ### `RbsParser`
 
@@ -413,7 +447,8 @@ sequencer on the calling thread. The AudioWorklet advances the same sequencer
 from its own thread, so calling these on the engine the worklet is driving is
 a data race. `WasmAudioBridge` builds a second, throwaway engine for every
 bounce (`_createOfflineEngine`), which also means the listener hears no gap
-while a file is written.
+while a file is written. That offline engine must `loadSongFromBytes` (and
+`loadMod`) from the retained file buffers — never `parser.parse` → `loadSong`.
 
 Offline output is bit-identical to the worklet's, and
 `cpp/tests/test_offline.cpp` pins the properties that make that true:
@@ -427,6 +462,37 @@ rewinding for a bounce). Without that, a bounce would render the song's
 untouched knobs rather than what the user is hearing.
 
 ### `RbsAudioEngine` — mod methods
+
+C++ (`src/wasm/cpp/synth/SamplePool.h`):
+
+```cpp
+struct ModSampleReportEntry {
+  std::string name;
+  ModResourceKind kind = ModResourceKind::Other;
+  ModSampleSlot slot = ModSampleSlot::Unknown;
+  uint32_t byteSize = 0;
+  uint32_t frameCount = 0;
+  uint32_t sampleRate = 0;
+  uint8_t channels = 0;
+  uint8_t bitDepth = 0;
+  SampleDecodeStatus decodeStatus = SampleDecodeStatus::UnknownFormat;
+  bool loaded = false;
+};
+
+struct ModLoadReport {
+  std::string title;
+  std::string description;
+  std::string copyright;
+  std::vector<ModSampleReportEntry> resources;
+  ModLoadStatus status = ModLoadStatus::NotInitialised;
+  uint32_t loadedSlots = 0;
+  uint32_t skinCount = 0;
+  uint32_t usedFrames = 0;
+  uint32_t capacityFrames = 0;
+};
+```
+
+TypeScript: `WasmModSampleReportEntry` / `WasmModLoadReport` in `wasm-audio.ts`.
 
 | C++ API                                                | Embind name    | TS signature                            |
 | ------------------------------------------------------ | -------------- | --------------------------------------- |
@@ -487,6 +553,7 @@ The Emscripten module must export:
 - `RbsParser` (class constructor)
 - `RbmParser` (class constructor)
 - `initAudioWorklet` (function)
+- `heapStats(): HeapStats` (allocator used/mapped bytes for the heap probe)
 
 `initAudioWorklet` receives the Embind-managed `RbsAudioEngine` object itself;
 JavaScript must not depend on Embind's private raw-pointer representation.
@@ -554,10 +621,13 @@ Key release linker settings:
 | `-sWASM_WORKERS=1`           | Enabled                                                                                                         |
 | `-sSTACK_SIZE`               | 131072 (128 KiB module linear stack)                                                                            |
 | `-sINITIAL_MEMORY`           | 67108864 (64 MiB)                                                                                               |
+| `-sMAXIMUM_MEMORY`           | 67108864 (equal to INITIAL; no growth)                                                                          |
 | `-sALLOW_MEMORY_GROWTH`      | 0                                                                                                               |
+| `-sMALLOC`                   | `emmalloc` (release) / `emmalloc-memvalidate` (debug)                                                           |
+| `-sFILESYSTEM`               | 0                                                                                                               |
 | `-sASSERTIONS`               | 0                                                                                                               |
 | `-sEXPORTED_FUNCTIONS`       | `_malloc`, `_free`                                                                                              |
-| `-sEXPORTED_RUNTIME_METHODS` | `ccall`, `cwrap`, `getValue`, `setValue`, `HEAPU8`, `emscriptenRegisterAudioObject`, `emscriptenGetAudioObject` |
+| `-sEXPORTED_RUNTIME_METHODS` | `HEAPU8`, `emscriptenRegisterAudioObject`, `emscriptenGetAudioObject`                                           |
 
 See ADR [`docs/adr/0002-wasm-build-variants-and-heap.md`](../../docs/adr/0002-wasm-build-variants-and-heap.md)
 for dual-build and heap policy decisions.

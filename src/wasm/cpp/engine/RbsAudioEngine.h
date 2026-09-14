@@ -12,6 +12,8 @@
 #include <atomic>
 #include <cstdint>
 #include <memory>
+#include <optional>
+#include <string>
 #include <vector>
 
 namespace rb338 {
@@ -56,6 +58,20 @@ public:
 
   /** Load a parsed song. Safe to call from main thread only. */
   bool loadSong(const ParsedSong& song);
+
+  /**
+   * Parse bytes in-process and load the full ParsedSong (including TRAK
+   * automation). Main thread only.
+   *
+   * This is the archive path: JavaScript must not round-trip ParsedSong
+   * through Embind, which cannot carry `automation`. On success the returned
+   * song is a UI summary (same Embind fields as RbsParser.parse). On failure
+   * see lastParseError().
+   */
+  std::optional<ParsedSong> loadSongFromBytes(const uint8_t* data, size_t size);
+
+  /** Last loadSongFromBytes parse/init error (empty on success). */
+  const std::string& lastParseError() const { return m_lastParseError; }
 
   /**
    * Parse and decode a `.rbm` mod, replacing drum/oscillator PCM. Main
@@ -233,6 +249,7 @@ private:
   // referenced by the published snapshot, not this handle.
   std::shared_ptr<const SamplePool> m_samplePool;
   ModLoadReport m_modReport;
+  std::string m_lastParseError;
 
   // Live knob moves, remembered so they survive a graph rebuild.
   //

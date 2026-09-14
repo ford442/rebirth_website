@@ -1,0 +1,537 @@
+/* ============================================================
+   15. ANIMATIONS
+   ============================================================ */
+@keyframes rb-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rb-panel--animate {
+  animation: rb-panel-in 0.5s ease-out both;
+}
+
+.rb-panel--animate:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.rb-panel--animate:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.rb-panel--animate:nth-child(3) {
+  animation-delay: 0.15s;
+}
+.rb-panel--animate:nth-child(4) {
+  animation-delay: 0.2s;
+}
+.rb-panel--animate:nth-child(5) {
+  animation-delay: 0.25s;
+}
+.rb-panel--animate:nth-child(6) {
+  animation-delay: 0.3s;
+}
+.rb-panel--animate:nth-child(7) {
+  animation-delay: 0.35s;
+}
+
+/* ============================================================
+   15. RESPONSIVE
+   ============================================================ */
+/* Extra-small mobile devices (under 480px) */
+@media (max-width: 479px) {
+  .rb-panel {
+    margin-inline: 0.5rem;
+    border-radius: 2px;
+  }
+
+  .rb-panel__body {
+    padding: 0.75rem;
+  }
+
+  .rb-knob-row {
+    gap: 0.5rem;
+  }
+
+  .rb-knob {
+    gap: 0.25rem;
+  }
+
+  .rb-knob__dial {
+    width: 36px;
+    height: 36px;
+  }
+
+  .rb-knob__label {
+    font-size: 0.5rem;
+  }
+
+  .rb-step-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 2px;
+    padding: 0.5rem;
+  }
+
+  .rb-step-btn {
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .rb-step-btn:nth-child(n + 7) {
+    display: none;
+  }
+
+  .seq-row {
+    gap: 0.25rem;
+  }
+
+  .seq-row__label {
+    width: 2rem;
+    font-size: 0.5rem;
+  }
+
+  .seq-num {
+    font-size: 0.4rem;
+  }
+
+  .seq-track-labels {
+    display: none;
+  }
+
+  .action-btns {
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .action-btns button {
+    width: 100%;
+  }
+
+  .rb-knob__dial::after {
+    width: 2px;
+  }
+
+  .master-header {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .master-title__main {
+    font-size: clamp(1.2rem, 5vw, 1.8rem);
+  }
+
+  .master-stats {
+    gap: 1rem;
+  }
+
+  .instrument-strip {
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .hero-body {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .container {
+    padding-inline: 0.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .rb-mobile-toggle {
+    display: flex;
+  }
+
+  .rb-nav {
+    display: none;
+    position: fixed;
+    top: 60px;
+    right: 0;
+    width: min(280px, 80vw);
+    background: linear-gradient(180deg, #2a2a2a 0%, #1e1e1e 100%);
+    border: 1px solid var(--rb-border);
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    padding: 1rem;
+    z-index: 999;
+    box-shadow: -4px 4px 24px rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(12px);
+  }
+
+  .rb-nav.is-open {
+    display: flex;
+  }
+
+  .rb-nav ul {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .rb-nav-btn {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .master-header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem 1rem;
+  }
+
+  .master-header__screws {
+    flex-direction: row;
+    order: 0;
+    margin-bottom: 0;
+  }
+
+  .master-header__screws--right {
+    margin-left: 0;
+    order: 0;
+  }
+
+  .master-leds {
+    gap: 1rem;
+  }
+
+  .master-stats {
+    gap: 1.5rem;
+  }
+
+  .seq-num-row {
+    grid-template-columns: repeat(8, 1fr);
+  }
+
+  .seq-num:nth-child(n + 9) {
+    display: none;
+  }
+
+  .rb-step-grid {
+    grid-template-columns: repeat(8, 1fr);
+  }
+
+  .rb-step-btn:nth-child(n + 9) {
+    display: none;
+  }
+
+  /* Larger step buttons for touch on mobile */
+  .rb-step-btn {
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  @supports (pointer: coarse) {
+    .rb-step-btn {
+      min-width: 40px;
+      min-height: 40px;
+    }
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-row {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-body {
+    grid-template-columns: 1fr;
+  }
+
+  .lcd-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .action-btns {
+    justify-content: center;
+  }
+
+  /* Knob row: smaller dials on mobile */
+  .rb-knob__dial {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Touch-friendly knob sizing for small phones */
+  @supports (pointer: coarse) {
+    .rb-knob__dial {
+      width: 44px;
+      height: 44px;
+    }
+  }
+
+  /* Instrument strip: full column layout */
+  .instrument-strip {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .instrument-strip__screws--right {
+    margin-left: 0;
+  }
+
+  .rb-transport {
+    justify-content: center;
+  }
+
+  /* Player responsive */
+  .player-status-row {
+    justify-content: center;
+  }
+
+  .player-led {
+    margin-left: 0;
+  }
+
+  .player-stepbar {
+    gap: 0.25rem;
+    padding: 0.35rem;
+  }
+
+  .step-dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  /* Collection card: larger tap targets */
+  .folder-item {
+    padding: 0.75rem 1rem;
+    min-height: 44px;
+  }
+
+  /* Archive table: horizontal scroll wrapper */
+  .list-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .archive-table {
+    min-width: 520px;
+  }
+
+  /* Sequencer labels: slightly smaller */
+  .seq-row__label {
+    width: 2.5rem;
+    font-size: 0.55rem;
+  }
+
+  /* Hero title sizing */
+  .master-title__main {
+    font-size: clamp(1.6rem, 6vw, 2.8rem);
+  }
+
+  /* Search input: full width on tiny screens */
+  .rb-search-input {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .about-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hero-body {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Tablet: optimize knob and step sizing */
+  @media (hover: none) and (pointer: coarse) {
+    .rb-knob__dial {
+      width: 44px;
+      height: 44px;
+    }
+
+    .rb-step-btn {
+      min-width: 38px;
+      min-height: 38px;
+    }
+
+    .rb-step-grid {
+      gap: 4px;
+    }
+  }
+}
+
+/* ============================================================
+   20. MICRO-INTERACTIONS
+   ============================================================ */
+
+/* Knob tweak — play on .rb-knob--tweaking (add/remove via JS on click) */
+@keyframes rb-knob-tweak {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  30% {
+    transform: rotate(28deg) scale(0.96);
+  }
+  65% {
+    transform: rotate(10deg) scale(1.02);
+  }
+  100% {
+    transform: rotate(18deg) scale(1);
+  }
+}
+
+.rb-knob--tweaking .rb-knob__dial {
+  animation: rb-knob-tweak 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* LED click flash */
+@keyframes rb-led-flash {
+  0% {
+    opacity: 1;
+  }
+  25% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.rb-led--flash .rb-led__dot {
+  animation: rb-led-flash 0.3s ease-out;
+}
+
+/* Gentle panel entrance — elements that animate in */
+@keyframes rb-panel-lift {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rb-panel--animate-in {
+  animation: rb-panel-lift 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Disable knob tweak + panel lift for reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .rb-knob--tweaking .rb-knob__dial,
+  .rb-led--flash .rb-led__dot,
+  .rb-panel--animate-in {
+    animation: none !important;
+  }
+}
+
+/* ============================================================
+   21. CRISP RENDERING — screws, bevels, dividers
+   ============================================================ */
+
+/* Force sub-pixel crisp edges on decorative geometry */
+.rb-screw,
+.rb-screw--hex,
+.etched,
+.rb-rack::before,
+.rb-rack::after {
+  image-rendering: crisp-edges;
+  image-rendering: -webkit-optimize-contrast; /* Safari */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Etched divider — sharper, higher-contrast on all densities */
+.etched {
+  border: none;
+  height: 0;
+  border-top: 1px solid #1a1a1a;
+  border-bottom: 1px solid #444;
+  margin: 2rem 0;
+  background: none;
+}
+
+/* Section divider — ensure crisp label borders */
+.rb-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 2rem 0;
+  color: var(--rb-silver-dim);
+  font-family: var(--rb-font-display);
+  font-size: var(--text-xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.rb-divider::before,
+.rb-divider::after {
+  content: '';
+  flex: 1;
+  height: 0;
+  border-top: 1px solid #1a1a1a;
+  border-bottom: 1px solid #3a3a3a;
+}
+
+/* Screw hover — subtle gleam on pointer-capable devices */
+@media (hover: hover) and (pointer: fine) {
+  .rb-screw {
+    transition: box-shadow 150ms ease;
+  }
+  .rb-screw:hover {
+    box-shadow:
+      inset 0 1px 3px rgba(255, 255, 255, 0.4),
+      0 1px 4px rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* card-rack subtle panel lift */
+.rb-card-rack {
+  transition:
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 200ms ease;
+}
+
+/* ============================================================
+   Mobile touch-target overrides
+   ============================================================ */
+@media (max-width: 767px) {
+  .rb-pattern-btn,
+  .rb-mix-btn,
+  .rb-transport-btn,
+  .rb-btn-pattern,
+  .rb-btn-mix,
+  .rb-btn-transport {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .rb-filter-btn,
+  .rb-tag-filter {
+    min-height: 44px;
+    min-width: 48px;
+  }
+
+  .rb-step-btn {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .rb-nav-btn {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}

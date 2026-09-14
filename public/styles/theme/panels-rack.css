@@ -1,0 +1,676 @@
+/* ============================================================
+   3. NEW PANEL SYSTEM
+   ============================================================ */
+.rb-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 4%),
+    linear-gradient(180deg, #2e2e2e 0%, #252525 100%);
+  border: 1px solid var(--rb-border);
+  border-top: 2px solid var(--rb-border-hi);
+  border-radius: var(--rb-radius-lg);
+  box-shadow:
+    /* deep drop shadow */
+    0 8px 32px rgba(0, 0, 0, 0.7),
+    0 2px 8px rgba(0, 0, 0, 0.5),
+    /* top highlight bevel */ inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    /* inner depth shadow */ inset 0 -2px 6px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 1.5rem;
+  transition:
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 200ms ease,
+    border-color 200ms ease;
+}
+
+.rb-panel:hover {
+  border-color: #444;
+  border-top-color: #666;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.75),
+    0 4px 12px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(0, 229, 255, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.35);
+  transform: translateY(-2px);
+}
+
+/* Focus states for accessibility */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--rb-green);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible {
+    outline-offset: 1px;
+  }
+}
+
+.rb-panel--dark {
+  background: linear-gradient(180deg, #222222 0%, #1a1a1a 100%);
+  border-color: #2a2a2a;
+}
+
+.rb-panel--amber {
+  border-left: 3px solid var(--rb-amber-dim);
+  border-top-color: var(--rb-amber-dim);
+}
+
+.rb-panel--green {
+  border-left: 3px solid var(--rb-green-dim);
+  border-top-color: var(--rb-green-dim);
+}
+
+.rb-panel--red {
+  border-left: 3px solid var(--rb-red-dim);
+  border-top-color: var(--rb-red-dim);
+}
+
+.rb-panel--chassis {
+  border-radius: var(--rb-radius-lg);
+  border: 2px solid #111;
+  border-top: 2px solid #333;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 6%),
+    linear-gradient(180deg, #1a1a1a 0%, #141414 100%);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.85),
+    0 4px 12px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.4);
+}
+
+.rb-panel--chassis:hover {
+  border-color: #222;
+  border-top-color: #444;
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.9),
+    0 6px 16px rgba(0, 0, 0, 0.6),
+    0 0 24px rgba(0, 229, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.45);
+}
+
+.rb-panel--compact .rb-panel__body {
+  padding: 0.75rem 1rem;
+}
+
+.rb-panel--compact .rb-panel__header {
+  padding: 0.4em 0.8em;
+}
+
+.rb-panel--flat {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  border-color: #2a2a2a;
+}
+
+.rb-panel--raised {
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.7),
+    0 0 16px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border-top: 2px solid #666;
+}
+
+.rb-panel__header {
+  background: linear-gradient(180deg, #333 0%, #2a2a2a 100%);
+  border-bottom: 1px solid #111;
+  padding: 0.6em 1em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+}
+
+.rb-panel__title {
+  font-family: var(--font-title);
+  font-size: var(--text-sm);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--rb-silver-dim);
+}
+
+.rb-panel__body {
+  padding: 1.25rem;
+  overflow-x: hidden;
+}
+
+.rb-panel__footer {
+  padding: 0.75rem 1.25rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid var(--rb-border);
+}
+
+/* Corner screws for panels */
+.rb-screw {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: conic-gradient(from 180deg, #444 0%, #777 25%, #aaa 50%, #777 75%, #444 100%);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.25),
+    0 1px 3px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+.rb-screw::before,
+.rb-screw::after {
+  content: '';
+  position: absolute;
+  background: #1a1a1a;
+  border-radius: 1px;
+}
+
+.rb-screw::before {
+  width: 60%;
+  height: 2px;
+  top: 50%;
+  left: 20%;
+  transform: translateY(-50%);
+}
+
+.rb-screw::after {
+  width: 2px;
+  height: 60%;
+  left: 50%;
+  top: 20%;
+  transform: translateX(-50%);
+}
+
+.rb-screw.cross::before {
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.rb-screw.cross::after {
+  transform: translateX(-50%) rotate(45deg);
+}
+
+/* Screw sizing variants */
+.rb-screw--sm {
+  width: 10px;
+  height: 10px;
+}
+
+.rb-screw--sm::before {
+  height: 1.5px;
+}
+.rb-screw--sm::after {
+  width: 1.5px;
+}
+
+.rb-screw--lg {
+  width: 18px;
+  height: 18px;
+}
+
+.rb-screw--lg::before {
+  height: 2.5px;
+}
+.rb-screw--lg::after {
+  width: 2.5px;
+}
+
+/* Screw positioning helpers */
+.rb-screw--tl {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 5;
+}
+.rb-screw--tr {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 5;
+}
+.rb-screw--bl {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  z-index: 5;
+}
+.rb-screw--br {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  z-index: 5;
+}
+
+.rb-chassis {
+  position: relative;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(180deg, #1a1a1a 0%, #141414 100%);
+  border: 2px solid #111;
+  border-radius: var(--rb-radius-lg);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ============================================================
+   14. RACKMOUNT 303 SYSTEM
+   ============================================================ */
+
+/* Base rackmount panel — heavy industrial chassis feel */
+.rb-rack {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 6%),
+    linear-gradient(180deg, #2a2a2a 0%, #1e1e1e 40%, #181818 100%);
+  border: 1px solid #2a2a2a;
+  border-top: 2px solid #555;
+  border-bottom: 2px solid #0d0d0d;
+  border-radius: var(--rb-radius);
+  box-shadow:
+    /* outer deep shadow */
+    0 10px 40px rgba(0, 0, 0, 0.75),
+    0 4px 12px rgba(0, 0, 0, 0.55),
+    /* top metallic highlight */ inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    /* inner side shadows for depth */ inset 0 -3px 10px rgba(0, 0, 0, 0.4),
+    inset 3px 0 8px rgba(0, 0, 0, 0.15),
+    inset -3px 0 8px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+.rb-rack:hover {
+  border-color: #3a3a3a;
+  border-top-color: #666;
+  box-shadow:
+    0 14px 48px rgba(0, 0, 0, 0.8),
+    0 6px 16px rgba(0, 0, 0, 0.6),
+    0 0 28px rgba(0, 229, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -3px 10px rgba(0, 0, 0, 0.45),
+    inset 3px 0 8px rgba(0, 0, 0, 0.2),
+    inset -3px 0 8px rgba(0, 0, 0, 0.2);
+  transform: translateY(-3px);
+}
+
+/* Inner bezel ring */
+.rb-rack::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Cyan circuit accent line */
+.rb-rack::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--rb-cyan-dim) 20%,
+    var(--rb-cyan) 50%,
+    var(--rb-cyan-dim) 80%,
+    transparent 100%
+  );
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.rb-rack:hover::after {
+  opacity: 0.5;
+}
+
+/* Rack module variant — 303 bassline style */
+.rb-rack--module {
+  border-left: 3px solid var(--rb-cyan-dim);
+  border-top: 2px solid #555;
+}
+
+.rb-rack--module::after {
+  background: linear-gradient(90deg, var(--rb-cyan-dim) 0%, var(--rb-cyan) 30%, transparent 60%);
+  opacity: 0.3;
+}
+
+/* Heavy chassis variant */
+.rb-rack--chassis {
+  border: 2px solid #111;
+  border-top: 2px solid #444;
+  border-radius: var(--rb-radius-lg);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 8%),
+    linear-gradient(180deg, #1c1c1c 0%, #131313 100%);
+  box-shadow:
+    0 14px 48px rgba(0, 0, 0, 0.85),
+    0 6px 16px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -4px 12px rgba(0, 0, 0, 0.5),
+    inset 4px 0 10px rgba(0, 0, 0, 0.2),
+    inset -4px 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.rb-rack--chassis:hover {
+  border-color: #1a1a1a;
+  border-top-color: #555;
+  box-shadow:
+    0 18px 56px rgba(0, 0, 0, 0.9),
+    0 8px 20px rgba(0, 0, 0, 0.7),
+    0 0 32px rgba(0, 229, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -4px 12px rgba(0, 0, 0, 0.55),
+    inset 4px 0 10px rgba(0, 0, 0, 0.25),
+    inset -4px 0 10px rgba(0, 0, 0, 0.25);
+}
+
+/* Rack ears (inset side mounting tabs) */
+.rb-rack__ear {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 50px;
+  background: linear-gradient(180deg, #3a3a3a 0%, #222 100%);
+  border: 1px solid #222;
+  z-index: 0;
+}
+
+.rb-rack__ear--left {
+  left: 3px;
+  border-radius: 0 2px 2px 0;
+  border-left: none;
+}
+
+.rb-rack__ear--right {
+  right: 3px;
+  border-radius: 2px 0 0 2px;
+  border-right: none;
+}
+
+.rb-rack__ear::before,
+.rb-rack__ear::after {
+  content: '';
+  position: absolute;
+  left: 1px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #111;
+  border: 1px solid #444;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.rb-rack__ear::before {
+  top: 6px;
+}
+.rb-rack__ear::after {
+  bottom: 6px;
+}
+
+/* Ventilation grill pattern */
+.rb-vent {
+  position: relative;
+  overflow: hidden;
+}
+
+.rb-vent::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.25) 3px,
+    rgba(0, 0, 0, 0.25) 5px
+  );
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 1;
+}
+
+.rb-vent::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 8px,
+    rgba(0, 0, 0, 0.15) 8px,
+    rgba(0, 0, 0, 0.15) 9px
+  );
+  pointer-events: none;
+  opacity: 0.4;
+  z-index: 1;
+}
+
+/* Disable ventilation grill patterns for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .rb-vent::before,
+  .rb-vent::after {
+    display: none;
+  }
+}
+
+/* Hex-head screw variant */
+.rb-screw--hex {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background: conic-gradient(from 180deg, #555 0%, #888 25%, #bbb 50%, #888 75%, #555 100%);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.rb-screw--hex::before {
+  width: 50%;
+  height: 2.5px;
+  left: 25%;
+}
+
+.rb-screw--hex::after {
+  width: 2.5px;
+  height: 50%;
+  top: 25%;
+}
+
+.rb-screw--hex.rb-screw--lg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Cyan/acid glow accent utilities */
+.rb-glow-cyan {
+  box-shadow:
+    0 0 12px var(--rb-cyan-glow),
+    0 0 24px rgba(0, 229, 255, 0.15);
+}
+
+.rb-glow-acid {
+  box-shadow:
+    0 0 12px var(--rb-acid-glow),
+    0 0 24px rgba(204, 255, 0, 0.12);
+}
+
+/* Rackmount header — machined metal strip */
+.rb-rack__header {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, transparent 3%),
+    linear-gradient(180deg, #363636 0%, #2a2a2a 50%, #222 100%);
+  border-bottom: 1px solid #111;
+  padding: 0.7em 1.2em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+  position: relative;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.rb-rack__header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--rb-cyan-dim), transparent);
+  opacity: 0.4;
+}
+
+/* Rackmount body */
+.rb-rack__body {
+  padding: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Enhanced card rackmount style */
+.rb-card-rack {
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.03) 0%, transparent 20%),
+    linear-gradient(160deg, #2a2a2a 0%, #1e1e1e 100%);
+  border: 1px solid #333;
+  border-top: 2px solid #555;
+  border-bottom: 2px solid #1a1a1a;
+  border-radius: var(--rb-radius);
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.65),
+    0 2px 6px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.3);
+  transition:
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 200ms ease,
+    border-color 200ms ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.rb-card-rack::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.3), transparent);
+  opacity: 0.3;
+}
+
+.rb-card-rack:hover {
+  border-color: #444;
+  border-top-color: #777;
+  box-shadow:
+    0 10px 32px rgba(0, 0, 0, 0.7),
+    0 4px 10px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(0, 229, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.35);
+  transform: translateY(-3px);
+}
+
+/* Collection section rackmount variant */
+.collection-section.rb-rack-variant {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 6%),
+    linear-gradient(180deg, #2c2c2c 0%, #222 40%, #1a1a1a 100%);
+  border: 1px solid #333;
+  border-top: 2px solid #555;
+  border-bottom: 2px solid #111;
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.65),
+    0 3px 8px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.collection-section.rb-rack-variant:hover {
+  border-color: #444;
+  border-top-color: #666;
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.7),
+    0 5px 12px rgba(0, 0, 0, 0.5),
+    0 0 24px rgba(0, 229, 255, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    inset 0 -2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.collection-section.rb-rack-variant .section-header {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 3%),
+    linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+  border-bottom: 1px solid #111;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.02);
+}
+
+/* Mod card rackmount variant */
+.mod-card.rb-rack-variant {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 8%),
+    linear-gradient(180deg, #2c2c2c 0%, #242424 50%, #1a1a1a 100%);
+  border: 1px solid #333;
+  border-top: 2px solid #555;
+  border-bottom: 2px solid #111;
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.65),
+    0 2px 6px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.mod-card.rb-rack-variant:hover {
+  border-color: #444;
+  border-top-color: #777;
+  box-shadow:
+    0 10px 32px rgba(0, 0, 0, 0.7),
+    0 0 20px rgba(0, 229, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Acid-green variant accent for specific modules */
+.rb-rack--acid {
+  border-left: 3px solid var(--rb-acid-dim);
+}
+
+.rb-rack--acid::after {
+  background: linear-gradient(90deg, var(--rb-acid-dim) 0%, var(--rb-acid) 30%, transparent 60%);
+  opacity: 0.25;
+}
+
+.rb-rack--acid:hover {
+  box-shadow:
+    0 14px 48px rgba(0, 0, 0, 0.8),
+    0 6px 16px rgba(0, 0, 0, 0.6),
+    0 0 28px rgba(204, 255, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -3px 10px rgba(0, 0, 0, 0.45);
+}
+
+/* Responsive rackmount */
+@media (max-width: 767px) {
+  .rb-rack__ear {
+    display: none;
+  }
+  .rb-rack {
+    border-radius: var(--rb-radius-sm);
+  }
+  .rb-rack__body {
+    padding: 1rem;
+  }
+}

@@ -78,6 +78,12 @@ public:
     return true;
   }
 
+  bool peekU8(uint8_t& out) const {
+    if (!canRead(1)) return false;
+    out = m_data[m_pos];
+    return true;
+  }
+
   bool readBytes(size_t n, const uint8_t*& out) {
     if (!canRead(n)) return false;
     out = m_data.data() + m_pos;
@@ -106,8 +112,19 @@ bool matchId(const uint8_t* id, const char* expected) {
   return std::memcmp(id, expected, 4) == 0;
 }
 
-bool readChunkHeader(ByteStream& stream, const uint8_t*& id, uint32_t& size) {
+bool readChunkHeader(ByteStream& stream, const uint8_t*& id, uint32_t& size,
+                     bool& fiveByteId) {
+  fiveByteId = false;
   if (!stream.readBytes(4, id)) return false;
+  // Some files use a 5-byte "STRAK" id (STRA + K) as an alias of TRAK.
+  // Consume the extra K before the BE size so the body is a normal TRAK stream.
+  uint8_t extra = 0;
+  if (matchId(id, "STRA") && stream.peekU8(extra) && extra == 'K') {
+    if (!stream.skip(1)) return false;
+    static constexpr uint8_t kTrakId[4] = {'T', 'R', 'A', 'K'};
+    id = kTrakId;
+    fiveByteId = true;
+  }
   if (!stream.readU32BE(size)) return false;
   return true;
 }
@@ -260,7 +277,8 @@ bool RbsParser::parseContainer(const uint8_t* data, size_t size,
   if (isRoot) {
     const uint8_t* id = nullptr;
     uint32_t catSize = 0;
-    if (!readChunkHeader(stream, id, catSize)) {
+    bool fiveByteId = false;
+    if (!readChunkHeader(stream, id, catSize, fiveByteId)) {
       m_error = "Failed to read root container header";
       return false;
     }
@@ -268,6 +286,7 @@ bool RbsParser::parseContainer(const uint8_t* data, size_t size,
       m_error = "Missing root 'CAT ' container magic";
       return false;
     }
+    (void)fiveByteId;
     if (catSize + 8 > size) {
       m_error = "Root container size exceeds file size";
       return false;
@@ -283,7 +302,8 @@ bool RbsParser::parseContainer(const uint8_t* data, size_t size,
   while (!stream.atEnd()) {
     const uint8_t* id = nullptr;
     uint32_t chunkSize = 0;
-    if (!readChunkHeader(stream, id, chunkSize)) {
+    bool fiveByteId = false;
+    if (!readChunkHeader(stream, id, chunkSize, fiveByteId)) {
       if (stream.atEnd()) break;
       m_error = "Truncated chunk header";
       return false;
@@ -299,7 +319,11 @@ bool RbsParser::parseContainer(const uint8_t* data, size_t size,
       m_error = "Failed to skip chunk body";
       return false;
     }
-    if ((chunkSize & 1) && !stream.skip(1)) {
+    // IFF pads to an even byte length from the chunk start. A 4-byte id is
+    // 8 header bytes (pad when size is odd); STRAK's 5-byte id is 9 (pad
+    // when size is even).
+    const uint32_t headerBytes = fiveByteId ? 9u : 8u;
+    if (((headerBytes + chunkSize) & 1u) && !stream.skip(1)) {
       m_error = "Missing chunk alignment padding";
       return false;
     }
@@ -339,12 +363,8 @@ bool RbsParser::parseContainer(const uint8_t* data, size_t size,
       }
     } else if (matchId(id, "TRAK")) {
       if (!parseTrak(chunkData, chunkSize, song)) return false;
-    } else if (matchId(id, "STRA") || matchId(id, "STRAK")) {
-      // STRAK is a 5-byte ID that overlaps the next chunk marker.
-      // For now skip the body (arrangement detail phase 3).
-      (void)chunkData;
     }
-    // Unknown chunks are ignored.
+    // Unknown chunks (including a 4-byte STRA that is not STRAK) are ignored.
   }
 
   return true;

@@ -87,6 +87,77 @@ test.describe('WASM audio engine', () => {
     expect(audioInfo.diagnosticsSampleRate).toBe(audioInfo.sampleRate);
   });
 
+  test('falls back to webkitAudioContext only when AudioContext is missing', async ({ page }) => {
+    await page.addInitScript(() => {
+      const Native = window.AudioContext;
+      (window as any).__webkitUsed = false;
+      (window as any).webkitAudioContext = function (
+        this: AudioContext,
+        options?: AudioContextOptions
+      ) {
+        (window as any).__webkitUsed = true;
+        return new Native(options);
+      };
+    });
+
+    await page.goto('/rebirth_website/');
+    await page.waitForFunction(() => !!(window as any).resolveAudioContextConstructor, {
+      timeout: 5000,
+    });
+
+    const result = await page.evaluate(() => {
+      const resolve = (window as any).resolveAudioContextConstructor as () => typeof AudioContext;
+      const Ctor = resolve();
+      return { usedStandard: Ctor === window.AudioContext, webkitUsed: (window as any).__webkitUsed };
+    });
+    expect(result.usedStandard).toBe(true);
+    expect(result.webkitUsed).toBe(false);
+  });
+
+  test('uses webkitAudioContext when the standard ctor is missing', async ({ page }) => {
+    await page.addInitScript(() => {
+      const Native = window.AudioContext;
+      (window as any).webkitAudioContext = Native;
+      // @ts-expect-error test shim
+      delete window.AudioContext;
+    });
+
+    await page.goto('/rebirth_website/');
+    await page.waitForFunction(() => !!(window as any).createProductionAudioContext, {
+      timeout: 5000,
+    });
+
+    const result = await page.evaluate(() => {
+      const create = (window as any).createProductionAudioContext;
+      const { context, diagnostics } = create(44100, 'interactive');
+      return { sampleRate: context.sampleRate, hint: diagnostics.latencyHint };
+    });
+    expect(result.sampleRate).toBeGreaterThan(0);
+    expect(result.hint).toBe('interactive');
+  });
+
+  test('resumes interrupted AudioContext on the next user-gesture helper', async ({ page }) => {
+    await page.goto('/rebirth_website/');
+    await page.waitForFunction(() => !!(window as any).attachAudioContextLifecycle, {
+      timeout: 5000,
+    });
+
+    const resumed = await page.evaluate(async () => {
+      const create = (window as any).createProductionAudioContext;
+      const attach = (window as any).attachAudioContextLifecycle;
+      const { context } = create(44100, 'interactive');
+      let needed = 0;
+      const life = attach(context, () => {
+        needed += 1;
+      });
+      Object.defineProperty(context, 'state', { configurable: true, get: () => 'interrupted' });
+      context.dispatchEvent(new Event('statechange'));
+      life.resumeIfNeeded();
+      return { needed, calledResume: true };
+    });
+    expect(resumed.needed).toBeGreaterThan(0);
+  });
+
   test('initialises, loads a fixture, and advances playback position', async ({ page }) => {
     await page.goto('/rebirth_website/');
     await page.waitForSelector('.rbs-player');
