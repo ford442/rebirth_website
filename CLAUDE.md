@@ -46,7 +46,7 @@ src/
 │   └── (legacy, consolidated into public/styles/rebirth-theme.css)
 └── wasm/                     # In-browser .rbs playback engine (C++ compiled to WASM)
     ├── CONTRACT.md           # C++ ↔ TypeScript field-for-field contract (SSOT)
-    ├── README.md             # Architecture, build, status (PARTIAL ENGINE, SHIPPING PIPELINE)
+    ├── README.md             # Architecture, build, status (SHIPPING ENGINE, PARTIAL FEATURE SET)
     ├── cpp/                  # Parser, sequencer, mixer, TB-303/TR-808/TR-909 voices
     ├── js/                   # WasmAudioBridge, bounce client, player UI (dom/transport/studio-view split)
     └── types/                # wasm-audio-{song,engine,config,mod}.ts + WASM→UI mapping
