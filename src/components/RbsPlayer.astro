@@ -8,6 +8,8 @@
 // Usage:
 //   <RbsPlayer title="BROWSER PLAYBACK ENGINE" />
 
+import { DRUM_HITS } from '../wasm/js/player-step-edit';
+import { midiNoteName } from '../wasm/js/player-studio';
 import HardwarePanel from './ui/HardwarePanel.astro';
 import Led from './ui/Led.astro';
 import Lcd from './ui/Lcd.astro';
@@ -27,6 +29,14 @@ const { src, autoplay = false, title = 'BROWSER PLAYBACK ENGINE', demos = [] } =
 
 // LED status derived from props
 const hasSrc = !!src;
+
+// Step-editor pickers. Two octaves either side of C3 covers the 303's own
+// range without inventing a piano roll.
+const ACID_NOTES = Array.from({ length: 25 }, (_, i) => {
+  const value = 36 + i;
+  return { value, label: midiNoteName(value) };
+});
+const DRUM_CHOICES = DRUM_HITS.map((hit) => ({ key: hit.key, label: hit.label }));
 ---
 
 <HardwarePanel
@@ -196,21 +206,60 @@ const hasSrc = !!src;
         >
           {Array.from({ length: 8 }, (_, i) => <option value={String(i)}>{i + 1}</option>)}
         </select>
+        <span class="studio-editctl" data-studio-note-wrap>
+          <label class="player-control-label" for="rbsStudioNote">NOTE</label>
+          <select
+            id="rbsStudioNote"
+            class="player-select studio-select"
+            aria-label="Note written to a switched-on 303 step"
+            disabled
+          >
+            {
+              ACID_NOTES.map((note) => (
+                <option value={String(note.value)} selected={note.value === 48}>
+                  {note.label}
+                </option>
+              ))
+            }
+          </select>
+        </span>
+        <span class="studio-editctl" data-studio-drum-wrap hidden>
+          <label class="player-control-label" for="rbsStudioDrum">HIT</label>
+          <select
+            id="rbsStudioDrum"
+            class="player-select studio-select"
+            aria-label="Drum instrument toggled by a step click"
+            disabled
+          >
+            {DRUM_CHOICES.map((hit) => <option value={hit.key}>{hit.label}</option>)}
+          </select>
+        </span>
+        <button
+          type="button"
+          class="player-button studio-undo"
+          id="rbsStudioUndo"
+          disabled
+          title="Undo the last step edit"
+        >
+          UNDO
+        </button>
       </div>
 
-      <div class="studio-grid" id="rbsStudioGrid" role="grid" aria-label="16-step pattern grid">
+      <div class="studio-grid" id="rbsStudioGrid" role="group" aria-label="16-step pattern grid">
         {
           Array.from({ length: 16 }, (_, i) => (
-            <div
+            <button
+              type="button"
               class={`studio-step${i % 4 === 0 ? ' studio-step--beat' : ''}`}
               data-studio-step={i}
-              role="gridcell"
               aria-label={`Step ${i + 1}`}
+              aria-pressed="false"
+              disabled
             >
               <span class="studio-step__index">{i + 1}</span>
               <span class="studio-step__label" data-studio-label />
               <span class="studio-step__flags" data-studio-flags />
-            </div>
+            </button>
           ))
         }
       </div>
@@ -338,7 +387,7 @@ const hasSrc = !!src;
         </label>
       </div>
       <p class="studio-hint" id="rbsStudioHint">
-        Load a song in the WASM engine to tweak live knobs.
+        Load a song in the WASM engine to edit steps and tweak live knobs.
       </p>
     </section>
 
@@ -832,9 +881,45 @@ const hasSrc = !!src;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    align-items: stretch;
+    text-align: left;
     font-family: var(--rb-font-display, 'Courier New', monospace);
     font-size: 0.58rem;
     color: #666;
+    cursor: pointer;
+  }
+
+  .studio-step:disabled {
+    cursor: default;
+    opacity: 0.75;
+  }
+
+  .studio-step:not(:disabled):hover {
+    border-color: var(--rb-amber, #ffb000);
+  }
+
+  .studio-step:focus-visible {
+    outline: 2px solid var(--rb-green, #39ff14);
+    outline-offset: 1px;
+  }
+
+  .studio-step.is-accent {
+    border-color: var(--rb-red, #c41e3a);
+  }
+
+  .studio-editctl {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .studio-editctl[hidden] {
+    display: none;
+  }
+
+  .studio-undo {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.5rem;
   }
 
   .studio-step--beat {

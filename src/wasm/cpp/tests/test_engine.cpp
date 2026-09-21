@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <cstring>
 #include <thread>
+#include <vector>
 
 using namespace rb338;
 
@@ -282,4 +283,172 @@ TEST_CASE("DeviceParamId: numeric values are 0..9, matching player-studio.ts Dev
   CHECK(static_cast<uint8_t>(DeviceParamId::Level) == 7);
   CHECK(static_cast<uint8_t>(DeviceParamId::Pan) == 8);
   CHECK(static_cast<uint8_t>(DeviceParamId::Mute) == 9);
+}
+
+// ── Pattern editing (engine working copy) ──────────────────────────
+
+namespace {
+
+/** A drum song: 909 kick on every step, 303 silent. */
+ParsedSong makeDrumSong() {
+  ParsedSong song;
+  song.bpm = 120.0f;
+  for (int i = 0; i < NUM_DEVICES; ++i) {
+    song.devices[i].id = static_cast<DeviceId>(i);
+  }
+  Pattern p;
+  p.deviceId = DeviceId::TR909;
+  p.bank = 0;
+  p.patternIndex = 0;
+  p.length = 16;
+  for (int s = 0; s < MAX_STEPS; ++s) {
+    p.steps[s].active = true;
+    p.steps[s].note = 0x01; // BD
+  }
+  song.patterns.push_back(p);
+  song.devices[3].initialPatternBank = 0;
+  song.devices[3].initialPatternIndex = 0;
+  return song;
+}
+
+/** RMS of one bar rendered offline from bar 1. */
+double renderRms(RbsAudioEngine& eng, uint32_t frames) {
+  std::vector<float> buffer(static_cast<size_t>(frames) * 2u, 0.0f);
+  const uint32_t rendered = eng.renderOffline(buffer.data(), frames);
+  double sum = 0.0;
+  for (uint32_t i = 0; i < rendered * 2u; ++i) {
+    sum += static_cast<double>(buffer[i]) * static_cast<double>(buffer[i]);
+  }
+  return rendered == 0 ? 0.0 : std::sqrt(sum / static_cast<double>(rendered * 2u));
+}
+
+} // namespace
+
+TEST_CASE("Engine: setStep changes what renders, and restoring the step restores the render") {
+  RbsAudioEngine eng;
+  REQUIRE(eng.init(makeConfig()));
+  REQUIRE(eng.loadSong(makeDrumSong()));
+
+  constexpr uint32_t kFrames = 44100; // ~two bars at 120 BPM
+  const double original = renderRms(eng, kFrames);
+  CHECK(original > 0.0);
+
+  // The undo patch JavaScript would keep: the previous StepData, not a song clone.
+  const StepData previous = eng.getStep(3, 0, 0, 0);
+  CHECK(previous.active);
+  CHECK(previous.note == 0x01);
+
+  StepData silenced;
+  silenced.active = false;
+  REQUIRE(eng.setStep(3, 0, 0, 0, silenced));
+  CHECK_FALSE(eng.getStep(3, 0, 0, 0).active);
+
+  const double edited = renderRms(eng, kFrames);
+  CHECK(edited > 0.0);           // the other 15 kicks still play
+  CHECK(edited != doctest::Approx(original).epsilon(0.0001));
+
+  REQUIRE(eng.setStep(3, 0, 0, 0, previous));
+  const double undone = renderRms(eng, kFrames);
+  CHECK(undone == doctest::Approx(original).epsilon(0.0001));
+}
+
+TEST_CASE("Engine: setStep materialises a pattern slot the song never stored") {
+  RbsAudioEngine eng;
+  REQUIRE(eng.init(makeConfig()));
+  REQUIRE(eng.loadSong(makeDrumSong()));
+
+  // Bank B / pattern 4 is not in the file at all.
+  CHECK(eng.getPatternLength(3, 1, 4) == 0);
+  CHECK_FALSE(eng.getStep(3, 1, 4, 7).active);
+
+  StepData hit;
+  hit.active = true;
+  hit.note = 0x02; // SD
+  hit.accent = true;
+  REQUIRE(eng.setStep(3, 1, 4, 7, hit));
+
+  const StepData back = eng.getStep(3, 1, 4, 7);
+  CHECK(back.active);
+  CHECK(back.note == 0x02);
+  CHECK(back.accent);
+  CHECK(eng.getPatternLength(3, 1, 4) == 16);
+}
+
+TEST_CASE("Engine: drum steps never carry slide; bad coordinates are rejected") {
+  RbsAudioEngine eng;
+  REQUIRE(eng.init(makeConfig()));
+  REQUIRE(eng.loadSong(makeDrumSong()));
+
+  StepData sliding;
+  sliding.active = true;
+  sliding.note = 0x01;
+  sliding.slide = true;
+  REQUIRE(eng.setStep(3, 0, 0, 2, sliding));
+  CHECK_FALSE(eng.getStep(3, 0, 0, 2).slide);
+
+  // A 303 keeps it.
+  REQUIRE(eng.setStep(0, 0, 0, 2, sliding));
+  CHECK(eng.getStep(0, 0, 0, 2).slide);
+
+  CHECK_FALSE(eng.setStep(NUM_DEVICES, 0, 0, 0, sliding));
+  CHECK_FALSE(eng.setStep(0, MAX_BANKS, 0, 0, sliding));
+  CHECK_FALSE(eng.setStep(0, 0, MAX_PATTERNS_PER_BANK, 0, sliding));
+  CHECK_FALSE(eng.setStep(0, 0, 0, MAX_STEPS, sliding));
+  CHECK_FALSE(eng.setPatternLength(0, 0, 0, 0));
+  CHECK_FALSE(eng.setPatternLength(0, 0, 0, MAX_STEPS + 1));
+  CHECK(eng.setPatternLength(0, 0, 0, 8));
+  CHECK(eng.getPatternLength(0, 0, 0) == 8);
+}
+
+TEST_CASE("Engine: a pattern edit survives a graph rebuild") {
+  RbsAudioEngine eng;
+  REQUIRE(eng.init(makeConfig()));
+  REQUIRE(eng.loadSong(makeDrumSong()));
+
+  StepData silenced;
+  silenced.active = false;
+  REQUIRE(eng.setStep(3, 0, 0, 0, silenced));
+
+  // clearMod() with no mod loaded is a no-op; a knob move republishes through
+  // the same path an actual mod load would.
+  eng.setDeviceParam(3, static_cast<uint8_t>(DeviceParamId::Level), 0.5f);
+  eng.renderTestBlock(128);
+
+  CHECK_FALSE(eng.getStep(3, 0, 0, 0).active);
+}
+
+TEST_CASE("Engine: step edits stress the snapshot handoff while audio runs") {
+  // Editing republishes the graph on every click, so the hazard-pointer
+  // handoff sees far more traffic than transport commands ever produced.
+  RbsAudioEngine eng;
+  REQUIRE(eng.init(makeConfig()));
+  REQUIRE(eng.loadSong(makeDrumSong()));
+
+  std::atomic<bool> running{true};
+  std::atomic<uint32_t> blocks{0};
+
+  std::thread audio([&]() {
+    float left[128] = {0};
+    float right[128] = {0};
+    float* buffers[2] = {left, right};
+    while (running.load(std::memory_order_relaxed)) {
+      eng.processBlock(buffers, 2, 128);
+      blocks.fetch_add(1, std::memory_order_relaxed);
+    }
+  });
+
+  eng.play();
+  StepData on;
+  on.active = true;
+  on.note = 0x01;
+  StepData off;
+  for (int i = 0; i < 400; ++i) {
+    const auto step = static_cast<uint8_t>(i % MAX_STEPS);
+    CHECK(eng.setStep(3, 0, 0, step, (i % 2) ? on : off));
+    if (i % 13 == 0) CHECK(eng.setPatternLength(3, 0, 0, 1 + (i % MAX_STEPS)));
+  }
+
+  running.store(false, std::memory_order_relaxed);
+  audio.join();
+  CHECK(blocks.load() > 0);
 }

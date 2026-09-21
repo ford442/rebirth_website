@@ -78,6 +78,19 @@ ModLoadStatus loadModWrapper(RbsAudioEngine& self, uintptr_t dataPtr, size_t siz
   return self.loadMod(reinterpret_cast<const uint8_t*>(dataPtr), size);
 }
 
+/**
+ * Pattern edit: one step patch, by value.
+ *
+ * Embind can pass a registered value_object straight through, so the UI sends
+ * a `{active, note, drumExtra, accent, slide}` object rather than a whole
+ * song. `ParsedSong` must never travel back across this boundary — it cannot
+ * carry `automation`, so a round trip would silently erase it.
+ */
+bool setStepWrapper(RbsAudioEngine& self, uint8_t deviceId, uint8_t bank,
+                    uint8_t patternIndex, uint8_t stepIndex, StepData step) {
+  return self.setStep(deviceId, bank, patternIndex, stepIndex, step);
+}
+
 ModLoadReport getModReportWrapper(const RbsAudioEngine& self) {
   return self.lastModReport();
 }
@@ -387,6 +400,10 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .function("getTempo",  &RbsAudioEngine::getTempo)
     .function("setTempoMultiplier", &RbsAudioEngine::setTempoMultiplier)
     .function("setDeviceParam", &RbsAudioEngine::setDeviceParam)
+    .function("setStep",   &setStepWrapper)
+    .function("getStep",   &RbsAudioEngine::getStep)
+    .function("setPatternLength", &RbsAudioEngine::setPatternLength)
+    .function("getPatternLength", &RbsAudioEngine::getPatternLength)
     .function("isPlaying", &RbsAudioEngine::isPlaying)
     .function("getProcessedBlockCount", &RbsAudioEngine::getProcessedBlockCount)
     .function("renderTestBlock", &RbsAudioEngine::renderTestBlock)
