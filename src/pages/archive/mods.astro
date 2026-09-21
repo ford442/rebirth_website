@@ -12,6 +12,7 @@ import {
   modCoveragePercent,
 } from '../../data/archive-stats';
 import { normalizeBase } from '../../lib/url';
+import { getModSkinUrl, getModSkinUrls } from '../../data/rbm-skins';
 
 const allMods = indexedMods;
 const totalRaw = totalMods;
@@ -207,6 +208,24 @@ const archiveStats = [
                     class={`raw-item ${m.hasMeta ? 'raw-item--documented' : ''}`}
                     data-filename={m.filename.toLowerCase()}
                   >
+                    {getModSkinUrl(m.filename) && (
+                      <button
+                        type="button"
+                        class="raw-item__thumb-btn"
+                        data-skin-lightbox
+                        data-images={JSON.stringify(getModSkinUrls(m.filename))}
+                        aria-label={`View panel art for ${m.filename}`}
+                      >
+                        <img
+                          class="raw-item__thumb"
+                          src={getModSkinUrl(m.filename)}
+                          alt=""
+                          loading="lazy"
+                          width="28"
+                          height="28"
+                        />
+                      </button>
+                    )}
                     <span class="raw-item__name">{m.filename.replace(/\.rbm$/i, '')}</span>
                     <div class="raw-item__row raw-item__row--meta">
                       <span class="raw-item__size">{m.size}</span>
@@ -668,6 +687,33 @@ const archiveStats = [
     color: var(--rb-green-bright);
     border-color: var(--rb-green-dim);
     box-shadow: 0 0 8px rgba(57, 255, 20, 0.15);
+  }
+
+  .raw-item__thumb-btn {
+    grid-column: 2;
+    grid-row: 3 / 5; /* bottom-right, below the download/document link */
+    align-self: end;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--rb-border);
+    border-radius: 3px;
+    overflow: hidden;
+    background: #111;
+    cursor: zoom-in;
+    line-height: 0;
+  }
+
+  .raw-item__thumb-btn:hover,
+  .raw-item__thumb-btn:focus-visible {
+    border-color: var(--rb-amber, #ffb000);
+  }
+
+  .raw-item__thumb {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .mods-footer {

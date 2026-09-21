@@ -25,6 +25,8 @@ export interface PlayerDom {
   modFileInput: HTMLInputElement | null;
   btnModLoad: HTMLButtonElement | null;
   btnModClear: HTMLButtonElement | null;
+  /** Toggles the loaded mod's extracted panel art as the player background. Hidden when none was extracted. */
+  btnSkinToggle: HTMLButtonElement | null;
   modStatus: HTMLElement | null;
   btnBounce: HTMLButtonElement | null;
   btnStems: HTMLButtonElement | null;
@@ -91,6 +93,7 @@ export function queryPlayerDom(playerEl: HTMLElement): PlayerDom {
     modFileInput: playerEl.querySelector('#rbsModFileInput'),
     btnModLoad: playerEl.querySelector('#rbsBtnModLoad'),
     btnModClear: playerEl.querySelector('#rbsBtnModClear'),
+    btnSkinToggle: playerEl.querySelector('#rbsBtnSkinToggle'),
     modStatus: playerEl.querySelector('#rbsModStatus'),
     btnBounce: playerEl.querySelector('#rbsBtnBounce'),
     btnStems: playerEl.querySelector('#rbsBtnStems'),

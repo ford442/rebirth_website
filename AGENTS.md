@@ -508,6 +508,7 @@ Before opening a PR, at minimum: `npm run check && npm run contract:check && npm
 3. **Empty archive directories**: `public/archive/rbs-songs/` and `public/archive/rbm-mods/` contain only `.gitkeep` files; actual assets are hosted externally.
 4. **WASM module**: Shipping, with a known feature set. Open items are `.rbm` skin rendering, voice calibration, and exposing TRAK automation across Embind (today it survives only the `loadSongFromBytes` path). See `src/wasm/README.md`.
 5. **Test coverage**: Playwright (`tests/`) covers browser/E2E behavior and doctest (`src/wasm/cpp/tests/`) covers the native C++ engine; there is no unit-test layer for the Astro/TS UI code itself.
+6. **`.rbm` skin extraction is blocked on a parser bug, not missing UI**: `scripts/extract-rbm-skins.py` + `rbm-inspect --extract-skins` + the mods-browser thumbnail/lightbox + the player's "skin the player" toggle are all built and wired up, but `RbmParser`'s EMBF resource-boundary handling does not decode full-size skin JPEGs byte-accurately (small icon fragments are fine; splash/panel stills are not) — see `src/wasm/cpp/parser/RbmFormat.md` §7 for what was found. The extraction script validates every image with a real decode before writing it, so today it correctly extracts nothing rather than shipping corrupt art.
 
 ## Contributing Files
 

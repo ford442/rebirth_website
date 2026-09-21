@@ -1,0 +1,226 @@
+---
+// Museum Extras page — modern companion tools, hardware, and legal/preservation notes.
+// Content sourced from src/content/docs/rebirth-website-structure-plan.md §2.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import HardwarePanel from '../components/ui/HardwarePanel.astro';
+import ExternalLink from '../components/ExternalLink.astro';
+import ArchiveLink from '../components/ArchiveLink.astro';
+---
+
+<BaseLayout
+  title="Extras"
+  description="Modern companion tools, hardware tributes, and preservation notes for ReBirth RB-338 — ReMaker, the LMNC hardware controller, ReBirth for iPad, and where to legally get the software."
+>
+  <div class="extras-page">
+    <div class="container">
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Extras', href: '/extras' },
+        ]}
+      />
+
+      <HardwarePanel
+        variant="rackmount-chassis"
+        animate
+        title="MUSEUM EXTRAS"
+        ledStatus="online"
+        ledLabel="COMPANION TOOLS"
+        class="rb-panel--center-header rb-panel--padded-body"
+      >
+        <p class="extras-subtitle">
+          Modern tools, hardware tributes, and legacy apps built around ReBirth RB-338 — plus where
+          the original software can still be legally obtained.
+        </p>
+      </HardwarePanel>
+
+      <!-- ReMaker vs in-browser MIDI export -->
+      <HardwarePanel
+        variant="rackmount"
+        animate
+        title="REMAKER 1.32 — MIDI EXTRACTION"
+        ledStatus="online"
+        ledLabel="SECTION 01"
+      >
+        <div class="extras-prose">
+          <p>
+            <strong>ReMaker</strong> is a standalone Windows utility, now mirrored by <ExternalLink
+              href="https://nordbeat.com/remaker"
+              kind="external"
+              host="nordbeat.com"
+            /> and archived on <ExternalLink
+              href="https://archive.org/details/rebirth-2.01-2001-version"
+              kind="external"
+              host="archive.org"
+            />, that converts ReBirth 2.0 <code>.rbs</code> songs into Standard MIDI-1 Format (SMF) —
+            and back again. It reads the same pattern, arrangement, and note data this archive's player
+            parses, but it runs against a real ReBirth 2.0 install rather than a from-scratch parser,
+            so it only handles 2.0-generation songs; a 1.5 file has to be reopened and re-saved in ReBirth
+            2.0 first before ReMaker will touch it.
+          </p>
+          <h3>What this site's own MIDI export does differently</h3>
+          <p>
+            Every playable song in this archive can export a Standard MIDI File directly in the
+            browser — no Windows install, no emulator. Open a song in the <ArchiveLink
+              href="/archive/songs">archive player</ArchiveLink
+            > and use the <strong>MIDI</strong> button to export patterns and arrangement order for both
+            v1/v1.5 (MIDI-container) and v2 (<code>CAT </code>/<code>RB40</code>) songs alike,
+            straight from the in-browser WASM parser. It does not (yet) carry ReMaker's round-trip —
+            MIDI-to-<code>.rbs</code> — or export the automation curves ReMaker can read from a live ReBirth
+            session; those stay a reason to keep ReMaker around for deep archival work.
+          </p>
+        </div>
+      </HardwarePanel>
+
+      <!-- Hardware / modern twist -->
+      <HardwarePanel
+        variant="rackmount-module"
+        animate
+        title="HARDWARE & MODERN TRIBUTES"
+        ledStatus="online"
+        ledLabel="SECTION 02"
+      >
+        <div class="extras-prose">
+          <h3>The LMNC ReBirth-338 Controller</h3>
+          <p>
+            In 2023, <strong>Sam Battle (Look Mum No Computer)</strong> built a dedicated hardware MIDI
+            controller for ReBirth RB-338 — a box covered in switches and potentiometers wired to drive
+            the emulator's twin TB-303s and drum machines like a real acid machine, turning a piece of
+            1990s abandonware into a tactile instrument again. Watch the build on <ExternalLink
+              href="https://www.youtube.com/watch?v=QRyP5YrfsIk"
+              kind="external"
+              host="youtube.com"
+            />.
+          </p>
+          <h3>ReBirth for iPad</h3>
+          <p>
+            Propellerhead ported ReBirth to iPhone and iPad in 2010 (with Retronyms), giving the
+            13-year-old engine a second life on touchscreens. Roland's 2017 IP claim over the
+            emulated TB-303/TR-808/TR-909 forced Propellerhead to pull it from the App Store that
+            June — the same claim that keeps the desktop version from ever being resold today. A
+            copy of the discontinued app is preserved on <ExternalLink
+              href="https://archive.org/details/rebirth-app"
+              kind="external"
+              host="archive.org"
+            />.
+          </p>
+          <h3>Legacy Community Hubs</h3>
+          <p>
+            <ExternalLink
+              href="https://nordbeat.com/rebirth-corner"
+              kind="external"
+              host="nordbeat.com"
+            />
+            {' '}mirrors ReBirth Corner, once a small fan hub for sounds, mods, and inspiration from
+            the software's late-90s/early-2000s heyday. <ExternalLink
+              href="https://www.peff.com/rebirth/"
+              kind="external"
+              host="peff.com"
+            /> — Kurt "Peff" Kurasaki's long-running archive — remains the primary curated source this
+            site's own mod and song mirrors are built from.
+          </p>
+        </div>
+      </HardwarePanel>
+
+      <!-- Legal / abandonware notice -->
+      <HardwarePanel
+        variant="rackmount"
+        animate
+        title="GETTING REBIRTH ITSELF — LEGAL & PRESERVATION NOTES"
+        ledStatus="online"
+        ledLabel="SECTION 03"
+      >
+        <div class="extras-prose">
+          <p>
+            Propellerhead discontinued ReBirth RB-338 in September 2005 and released it as a free
+            download rather than sunset it entirely. This archive preserves community
+            <code>.rbs</code> songs and <code>.rbm</code> mods and plays them back through an original
+            in-browser engine — <strong
+              >it does not host, mirror, or redistribute the Propellerhead installer or ISO itself.</strong
+            >
+          </p>
+          <p>
+            The last official 2.0.1 build is preserved on the Internet Archive, including a
+            community-repackaged installer for modern 64-bit Windows: <ExternalLink
+              href="https://archive.org/details/rebirthrb338forwin7810"
+              kind="external"
+              host="archive.org"
+            />. Running it on current hardware still generally means a compatibility layer — Wine on
+            Linux, an emulated Windows 9x/Mac OS 9 environment (QEMU, SheepShaver), or one of the
+            patched Windows 10/11 installers linked from that Archive.org page — since the original
+            executable predates modern OS security and driver models. See the <ArchiveLink
+              href="/history">History page</ArchiveLink
+            > for more on the emulation path.
+          </p>
+          <p class="extras-callout">
+            These are community/fan-preserved archives. Respect original copyrights, and treat
+            third-party installers as unofficial redistributions of abandoned software, not current
+            Propellerhead/Reason Studios releases.
+          </p>
+        </div>
+      </HardwarePanel>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .extras-page {
+    padding-block: 2rem 4rem;
+    background: #0f0f0f;
+    min-height: 60vh;
+  }
+
+  .extras-subtitle {
+    font-size: 0.95rem;
+    color: #888;
+    margin: 0;
+    text-align: center;
+  }
+
+  .extras-prose {
+    font-size: 0.92rem;
+    line-height: 1.7;
+    color: #aaa;
+  }
+
+  .extras-prose p {
+    margin-block: 0 1em;
+  }
+
+  .extras-prose h3 {
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--rb-amber);
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #2a2a2a;
+    padding-bottom: 0.3rem;
+  }
+
+  .extras-prose h3:first-child {
+    margin-top: 0;
+  }
+
+  .extras-prose strong {
+    color: var(--rb-silver);
+  }
+
+  .extras-prose code {
+    background: rgba(255, 176, 0, 0.08);
+    border: 1px solid rgba(255, 176, 0, 0.2);
+    border-radius: 3px;
+    padding: 0.1em 0.35em;
+    font-size: 0.85em;
+    color: var(--rb-amber);
+  }
+
+  .extras-callout {
+    border-left: 3px solid var(--rb-amber-dim, #b37800);
+    padding-left: 1rem;
+    color: #999;
+    font-style: italic;
+  }
+</style>

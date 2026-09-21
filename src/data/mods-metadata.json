@@ -90,6 +90,27 @@
       "tags": ["ethnic", "world", "tribal", "sitar"]
     },
     {
+      "filename": "Anomaly 2.0.rbm",
+      "title": "Anomaly 2.0",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental", "version-controlled"]
+    },
+    {
+      "filename": "Antrop.rbm",
+      "title": "Antrop",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "Aqueous.rbm",
+      "title": "Aqueous",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["ambient"]
+    },
+    {
       "filename": "Axiom(b2).rbm",
       "title": "Axiom (b2)",
       "author": "Unknown",
@@ -155,12 +176,41 @@
       "tags": ["experimental", "percussion", "community-classic"]
     },
     {
+      "filename": "BeachMod_(Beta 2.01).rbm",
+      "title": "Beachmod (beta 2.01)",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["beta", "experimental", "version-controlled"]
+    },
+    {
       "filename": "Beatnik.rbm",
       "title": "Beatnik",
       "author": "Flip Dog & Supernaut",
       "year": null,
       "description": "Rock-and-roll oriented mod from the peff.com archive with live-feel percussion.",
       "tags": ["rock", "breaks", "community-classic"]
+    },
+    {
+      "filename": "beta3.rbm",
+      "title": "Beta3",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["beta", "experimental"]
+    },
+    {
+      "filename": "bLADErUNNER.rbm",
+      "title": "Blade Runner",
+      "author": "Unknown",
+      "year": null,
+      "description": "Film-inspired mod with noir sci-fi visuals and atmospheric drum textures.",
+      "tags": ["themed", "sci-fi", "ambient"]
+    },
+    {
+      "filename": "BLUENOTE.rbm",
+      "title": "BLUENOTE",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["jazz", "acid-jazz"]
     },
     {
       "filename": "bo's-haq_(alpha).rbm",
@@ -178,12 +228,75 @@
       "tags": ["dark", "industrial", "darkwave", "percussion"]
     },
     {
+      "filename": "BoneVibes.rbm",
+      "title": "Bonevibes",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "ChoiceCutz_v1.0.rbm",
+      "title": "Choicecutz v1.0",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental", "version-controlled"]
+    },
+    {
+      "filename": "ChoiceCutz_v1.2.rbm",
+      "title": "Choicecutz v1.2",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental", "version-controlled"]
+    },
+    {
       "filename": "Circuit.rbm",
       "title": "Circuit",
       "author": "Epilogue",
       "year": null,
       "description": "Has a green glowing electric look and features a collection of industrial-type basses and snares.",
       "tags": ["industrial", "electronic", "techno", "bass"]
+    },
+    {
+      "filename": "Circuitbreak_Theorem_(beta3).rbm",
+      "title": "Circuitbreak Theorem (beta3)",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["beta", "experimental"]
+    },
+    {
+      "filename": "Circuitbreak_Theorem_(final_version).rbm",
+      "title": "Circuitbreak Theorem (final Version)",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "Circuitbreaker_Theorem.rbm",
+      "title": "Circuitbreaker Theorem",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "CircuitbreakerTheorem.rbm",
+      "title": "Circuitbreakertheorem",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "Composit.rbm",
+      "title": "Composit",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "contest_copy.rbm",
+      "title": "Contest Copy",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["beta", "experimental", "contest"]
     },
     {
       "filename": "Controllerism.rbm",
@@ -201,12 +314,111 @@
       "tags": ["dub", "dark", "community-classic"]
     },
     {
+      "filename": "degenerate_oxide(old).rbm",
+      "title": "Degenerate Oxide (old)",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["industrial"]
+    },
+    {
+      "filename": "degenerate_oxide.rbm",
+      "title": "Degenerate Oxide",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["industrial"]
+    },
+    {
+      "filename": "degenerate_oxidized.rbm",
+      "title": "Degenerate Oxidized",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "dejenerate_oxide.rbm",
+      "title": "Dejenerate Oxide",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["industrial"]
+    },
+    {
+      "filename": "dejenerate_oxide5.rbm",
+      "title": "Dejenerate Oxide5",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["industrial"]
+    },
+    {
+      "filename": "Delirium.rbm",
+      "title": "Delirium",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
       "filename": "digalog.rbm",
       "title": "Digalog",
       "author": "Einzelg\u00e4nger",
       "year": null,
       "description": "Features a very plastic blue interface with highly electronic, synthetic percussion sounds and bleeps.",
       "tags": ["electronic", "synth", "futuristic", "bleeps"]
+    },
+    {
+      "filename": "DIGITAL_M.rbm",
+      "title": "DIGITAL M",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "disko1.rbm",
+      "title": "Disko1",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "DJ_Turn's_8-Track.rbm",
+      "title": "DJ Turn's 8-track",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "DnB5000.rbm",
+      "title": "DnB 5000",
+      "author": "Unknown",
+      "year": null,
+      "description": "Drum-and-bass oriented mod with fast break programming and heavy sub bass.",
+      "tags": ["dnb", "breaks", "bass"]
+    },
+    {
+      "filename": "Dogma.rbm",
+      "title": "Dogma",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "Dunkel_Mod.rbm",
+      "title": "Dunkel MOD",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["dark", "industrial"]
+    },
+    {
+      "filename": "Eden_Machine.rbm",
+      "title": "Eden Machine",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "electrolyte.rbm",
+      "title": "Electrolyte",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
     },
     {
       "filename": "ElekD2.0 _\u0092.rbm",
@@ -230,12 +442,68 @@
       "tags": ["experimental", "version-controlled"]
     },
     {
+      "filename": "Experience2.0.rbm",
+      "title": "Experience2.0",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental", "version-controlled"]
+    },
+    {
+      "filename": "Fatboy_v2_Beta2.rbm",
+      "title": "Fatboy v2 Beta2",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["beta", "experimental"]
+    },
+    {
+      "filename": "Fatboy_v2_Beta3.1.rbm",
+      "title": "Fatboy v2 Beta3.1",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["beta", "experimental", "version-controlled"]
+    },
+    {
+      "filename": "Fatboy_v2_Beta3.4.rbm",
+      "title": "Fatboy v2 Beta3.4",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["beta", "experimental", "version-controlled"]
+    },
+    {
+      "filename": "Fatboy_v2_Beta3.rbm",
+      "title": "Fatboy v2 Beta3",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["beta", "experimental"]
+    },
+    {
+      "filename": "final_version.rbm",
+      "title": "Final Version",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "FlipDog.rbm",
+      "title": "Flipdog",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
       "filename": "FunkPeffomenon2.0.rbm",
       "title": "Funk Peffomenon 2.0",
       "author": "Peff",
       "year": null,
       "description": "Funk-oriented peff.com mod with playful branding and breakbeat-friendly drums.",
       "tags": ["funk", "community-classic"]
+    },
+    {
+      "filename": "Gaia.rbm",
+      "title": "Gaia",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
     },
     {
       "filename": "Groove_engine.rbm",
@@ -253,12 +521,33 @@
       "tags": ["industrial", "experimental", "community-classic"]
     },
     {
+      "filename": "H2-69_MIXED.rbm",
+      "title": "H2-69 MIXED",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
       "filename": "HouseMOD.rbm",
       "title": "House MOD",
       "author": "Unknown",
       "year": null,
       "description": "Classic house-oriented mod from the peff.com curated archive.",
       "tags": ["house", "community-classic"]
+    },
+    {
+      "filename": "hypnosyz.rbm",
+      "title": "Hypnosyz",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "ibex.rbm",
+      "title": "Ibex",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
     },
     {
       "filename": "ibex_mkII.rbm",
@@ -277,12 +566,40 @@
       "tags": ["chilly", "experimental", "original"]
     },
     {
+      "filename": "Illusion.rbm",
+      "title": "Illusion",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "InCubus.rbm",
+      "title": "Incubus",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
       "filename": "INFERNALIZER.rbm",
       "title": "Infernalizer",
       "author": "Jesuspark",
       "year": null,
       "description": "Hailed historically as 'The Most Beautiful Mod Ever,' it features sharp drums, synths, and a church organ tailored for dark or loud styles.",
       "tags": ["dark", "organ", "sharp", "award-winning"]
+    },
+    {
+      "filename": "INFERNALIZERfinal.rbm",
+      "title": "Infernalizerfinal",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["industrial"]
+    },
+    {
+      "filename": "Inner_mod.rbm",
+      "title": "Inner MOD",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
     },
     {
       "filename": "IQ.rbm",
@@ -293,11 +610,96 @@
       "tags": ["funk", "collaboration", "funky"]
     },
     {
+      "filename": "IQ_mod.rbm",
+      "title": "IQ MOD",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "K-3-0-3.rbm",
+      "title": "K-303",
+      "author": "Unknown",
+      "year": null,
+      "description": "TB-303 tribute naming mod with acid-oriented sample mapping.",
+      "tags": ["acid", "303", "tribute"]
+    },
+    {
+      "filename": "Kali.rbm",
+      "title": "Kali",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "l2bl.mod.rbm",
+      "title": "L2bl.mod",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "l2bl.mod_3.rbm",
+      "title": "L2bl.mod 3",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "l2bl.rbm",
+      "title": "L2bl",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "lamb_birthb1.rbm",
+      "title": "Lamb Birthb1",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
       "filename": "LongLoops.rbm",
       "title": "Longloops",
       "author": "Unknown",
       "year": null,
       "tags": ["experimental"]
+    },
+    {
+      "filename": "LTvsDO.rbm",
+      "title": "Ltvsdo",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "LTvsO2.rbm",
+      "title": "Ltvso2",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "LTvsO2[a].rbm",
+      "title": "Ltvso2[a]",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental", "version-controlled"]
+    },
+    {
+      "filename": "LTvsRS.rbm",
+      "title": "Ltvsrs",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "LTvsRS[a].rbm",
+      "title": "Ltvsrs[a]",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental", "version-controlled"]
     },
     {
       "filename": "LuPbe2.rbm",
@@ -307,12 +709,26 @@
       "tags": ["dark", "industrial"]
     },
     {
+      "filename": "macroserv.rbm",
+      "title": "Macroserv",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
       "filename": "ManicBox.rbm",
       "title": "Manic Box",
       "author": "DJ LuVcHiLE",
       "year": null,
       "description": "A mean, black interface packed with phat percussion sounds tailored for tribal-minded producers.",
       "tags": ["tribal", "percussion", "house", "dark"]
+    },
+    {
+      "filename": "MaShMoD.rbm",
+      "title": "Mashmod",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
     },
     {
       "filename": "Metallicon.rbm",
@@ -376,6 +792,34 @@
       "tags": ["community-classic"]
     },
     {
+      "filename": "MMax3000_2.rbm",
+      "title": "Mmax3000 2",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "ModeBox.rbm",
+      "title": "Modebox",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "MODesty.rbm",
+      "title": "Modesty",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "Modivarius.rbm",
+      "title": "Modivarius",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
       "filename": "Modulus.rbm",
       "title": "Modulus",
       "author": "Tristan",
@@ -390,6 +834,13 @@
       "year": null,
       "description": "Metallic futuristic aesthetic with heavily compressed drum kits; a community favorite for electro and hard dance.",
       "tags": ["industrial", "futuristic", "metal", "community-classic"]
+    },
+    {
+      "filename": "Nag_Champa_OM-3T3.rbm",
+      "title": "Nag Champa OM-3T3",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
     },
     {
       "filename": "noize.rbm",
@@ -495,6 +946,20 @@
       "tags": ["community-classic", "house"]
     },
     {
+      "filename": "Phat_Boy.rbm",
+      "title": "Phat Boy",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "Pierce.rbm",
+      "title": "Pierce",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
       "filename": "Plasmafire.rbm",
       "title": "Plasmafire",
       "author": "The Silencer & CelticSons",
@@ -505,6 +970,13 @@
     {
       "filename": "Plasmafire.rbm..rbm",
       "title": "Plasmafire.rbm.",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "Poison.rbm",
+      "title": "Poison",
       "author": "Unknown",
       "year": null,
       "tags": ["experimental"]
@@ -596,6 +1068,21 @@
       "tags": ["development", "experimental"]
     },
     {
+      "filename": "Pxl9000.rbm",
+      "title": "Pxl9000",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "Quake_II_-_Drop_Pod.rbm",
+      "title": "Quake II \u2014 Drop Pod",
+      "author": "Unknown",
+      "year": null,
+      "description": "Quake II game-themed mod with industrial percussion and dark GUI styling.",
+      "tags": ["themed", "industrial", "gaming"]
+    },
+    {
       "filename": "RADIUM_A.B.S.U._EDITION.rbm",
       "title": "RADIUM A.B.S.U. EDITION",
       "author": "Unknown",
@@ -625,12 +1112,47 @@
       "tags": ["experimental"]
     },
     {
+      "filename": "RB_Pitchshifter.rbm",
+      "title": "RB Pitchshifter",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "RBillusion.rbm",
+      "title": "Rbillusion",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "ReBasX.rbm",
+      "title": "Rebasx",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
       "filename": "ReBirthday.rbm",
       "title": "ReBirthday",
       "author": "Peff & Bitplant",
       "year": null,
       "description": "10th-anniversary gift mod celebrating Propellerhead ReBirth \u2014 archived on peff.com.",
       "tags": ["community-classic", "celebration"]
+    },
+    {
+      "filename": "ReConstruct.rbm",
+      "title": "Reconstruct",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "ReConstructed.rbm",
+      "title": "Reconstructed",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
     },
     {
       "filename": "Red_Stripe_a6.1.rbm",
@@ -657,12 +1179,40 @@
       "tags": ["official", "campaign", "dnb", "beta"]
     },
     {
+      "filename": "ReDirt.rbm",
+      "title": "Redirt",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "redirt_zabo.rbm",
+      "title": "Redirt Zabo",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "RedShift.rbm",
+      "title": "Redshift",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
       "filename": "redstripe-dnb.rbm",
       "title": "Red Stripe Drum & Bass",
       "author": "Peff, Jesuspark & JackPlug",
       "year": null,
       "description": "Drum-and-bass oriented Red Stripe variant archived on peff.com.",
       "tags": ["campaign", "dnb", "community-classic"]
+    },
+    {
+      "filename": "ReEvilb1p.rbm",
+      "title": "Reevilb1p",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
     },
     {
       "filename": "regulator.rbm",
@@ -673,12 +1223,61 @@
       "tags": ["experimental", "community-classic"]
     },
     {
+      "filename": "remix.rbm",
+      "title": "Remix",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "Retro_Funk.rbm",
+      "title": "Retro Funk",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["funk"]
+    },
+    {
+      "filename": "ReUVerb.rbm",
+      "title": "Reuverb",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "ReVerb+.rbm",
+      "title": "Reverb+",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
       "filename": "ReVerse808.rbm",
       "title": "ReVerse 808",
       "author": "Unknown",
       "year": null,
       "description": "808-focused mod from the peff.com archive with reversed and treated drum samples.",
       "tags": ["808", "experimental", "community-classic"]
+    },
+    {
+      "filename": "rrevision_r26[].rbm",
+      "title": "Rrevision R26[]",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental", "version-controlled"]
+    },
+    {
+      "filename": "RunStopRestore.rbm",
+      "title": "Runstoprestore",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "senction_birth.rbm",
+      "title": "Senction Birth",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
     },
     {
       "filename": "Sonor.rbm",
@@ -689,12 +1288,40 @@
       "tags": ["house", "deep-house", "community-classic"]
     },
     {
+      "filename": "Spassiba.rbm",
+      "title": "Spassiba",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "Spider.rbm",
+      "title": "Spider",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
       "filename": "Star_Wars_-_Dark_Jedi_MoD.rbm",
       "title": "Star Wars \u2014 Dark Jedi Mod",
       "author": "Unknown",
       "year": null,
       "description": "Pop-culture themed mod with sci-fi GUI artwork and cinematic percussion.",
       "tags": ["themed", "sci-fi", "experimental"]
+    },
+    {
+      "filename": "Structure.rbm",
+      "title": "Structure",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "SuB_-_X.rbm",
+      "title": "Sub - X",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
     },
     {
       "filename": "TechnoBox.rbm",
@@ -710,6 +1337,27 @@
       "year": null,
       "description": "Techno drum toolkit with evil sub basses \u2014 second revision of Peff's TechnoBox series.",
       "tags": ["techno", "bass", "community-classic"]
+    },
+    {
+      "filename": "The_Funkateer.rbm",
+      "title": "The Funkateer",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["funk"]
+    },
+    {
+      "filename": "THUNDER(Beta).rbm",
+      "title": "THUNDER (beta)",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["beta", "experimental", "version-controlled"]
+    },
+    {
+      "filename": "THUNDER_BETA2.rbm",
+      "title": "THUNDER BETA2",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["beta", "experimental"]
     },
     {
       "filename": "timing_test.rbm",
@@ -734,6 +1382,41 @@
       "tags": ["techno"]
     },
     {
+      "filename": "transformer.rbm",
+      "title": "Transformer",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "u_Gene.rbm",
+      "title": "U Gene",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "Untidy_House.rbm",
+      "title": "Untidy House",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["house"]
+    },
+    {
+      "filename": "Upsetter.rbm",
+      "title": "Upsetter",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
+      "filename": "Visions_Drums.rbm",
+      "title": "Visions Drums",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
       "filename": "Voltage2.rbm",
       "title": "Voltage 2",
       "author": "Dr. Bruno",
@@ -749,12 +1432,26 @@
       "tags": ["experimental", "version-controlled"]
     },
     {
+      "filename": "Warp_3.rbm",
+      "title": "Warp 3",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
+    },
+    {
       "filename": "X-Anvers.rbm",
       "title": "X-Anvers",
       "author": "Unknown",
       "year": null,
       "description": "A house-style mod featuring pads and synth bleeps that react beautifully to the Pattern Controlled Filter.",
       "tags": ["house", "pads", "synth", "experimental"]
+    },
+    {
+      "filename": "xt4c2.rbm",
+      "title": "Xt4c2",
+      "author": "Unknown",
+      "year": null,
+      "tags": ["experimental"]
     }
   ]
 }

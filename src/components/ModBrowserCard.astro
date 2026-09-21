@@ -1,6 +1,7 @@
 ---
 // ModBrowserCard.astro — display a single RBM mod with metadata
 import ExternalLink from './ExternalLink.astro';
+import { getModSkinUrl, getModSkinUrls } from '../data/rbm-skins';
 
 export interface Props {
   filename: string;
@@ -27,11 +28,35 @@ const {
 
 const baseModsUrl = 'https://storage.1ink.us/rebirth_mods';
 const modUrl = downloadUrl || `${baseModsUrl}/${filename}`;
+
+const thumbnailUrl = getModSkinUrl(filename);
+const skinImages = getModSkinUrls(filename);
 ---
 
 <div
   class={`mod-card ${rackmount ? 'rb-rack-variant' : ''} ${!description ? 'mod-card--minimal' : ''}`}
 >
+  {
+    thumbnailUrl && (
+      <button
+        type="button"
+        class="mod-card__thumbnail-btn"
+        data-skin-lightbox
+        data-images={JSON.stringify(skinImages)}
+        aria-label={`View panel art for ${title}`}
+      >
+        <img
+          class="mod-card__thumbnail"
+          src={thumbnailUrl}
+          alt={`${title} panel art`}
+          loading="lazy"
+          width="128"
+          height="128"
+        />
+      </button>
+    )
+  }
+
   <div class="mod-card__header">
     <h3 class="mod-card__title">{title}</h3>
     {year && <span class="mod-card__year">{year}</span>}
@@ -174,5 +199,142 @@ const modUrl = downloadUrl || `${baseModsUrl}/${filename}`;
 
   .mod-card--minimal:hover {
     opacity: 1;
+  }
+
+  .mod-card__thumbnail-btn {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #111;
+    cursor: zoom-in;
+    line-height: 0;
+  }
+
+  .mod-card__thumbnail-btn:hover,
+  .mod-card__thumbnail-btn:focus-visible {
+    border-color: var(--rb-amber, #ffb000);
+  }
+
+  .mod-card__thumbnail {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+</style>
+
+<script>
+  // Delegated click handler so N mod cards only cost one listener. Builds a
+  // simple lightbox from the `data-images` list on the clicked thumbnail.
+  (function () {
+    let overlay: HTMLDivElement | null = null;
+
+    function closeLightbox() {
+      overlay?.remove();
+      overlay = null;
+      document.removeEventListener('keydown', onKeydown);
+    }
+
+    function onKeydown(e: KeyboardEvent) {
+      if (e.key === 'Escape') closeLightbox();
+    }
+
+    function openLightbox(images: string[], alt: string) {
+      if (!images.length) return;
+      closeLightbox();
+      overlay = document.createElement('div');
+      overlay.className = 'mod-skin-lightbox';
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.innerHTML = `
+        <div class="mod-skin-lightbox__frame">
+          <button type="button" class="mod-skin-lightbox__close" aria-label="Close">×</button>
+          <div class="mod-skin-lightbox__images"></div>
+        </div>
+      `;
+      const imagesEl = overlay.querySelector('.mod-skin-lightbox__images');
+      images.forEach((src) => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = alt;
+        img.loading = 'lazy';
+        imagesEl?.appendChild(img);
+      });
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeLightbox();
+      });
+      overlay.querySelector('.mod-skin-lightbox__close')?.addEventListener('click', closeLightbox);
+      document.body.appendChild(overlay);
+      document.addEventListener('keydown', onKeydown);
+    }
+
+    document.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement)?.closest<HTMLElement>('[data-skin-lightbox]');
+      if (!btn) return;
+      e.preventDefault();
+      const images = JSON.parse(btn.dataset.images || '[]') as string[];
+      const alt = btn.getAttribute('aria-label') || 'Mod panel art';
+      openLightbox(images, alt);
+    });
+  })();
+</script>
+
+<style is:global>
+  .mod-skin-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 2rem;
+  }
+
+  .mod-skin-lightbox__frame {
+    position: relative;
+    max-width: min(90vw, 720px);
+    max-height: 90vh;
+    overflow: auto;
+    background: #1a1a1a;
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    padding: 2.5rem 1rem 1rem;
+  }
+
+  .mod-skin-lightbox__images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+
+  .mod-skin-lightbox__images img {
+    max-width: 100%;
+    max-height: 70vh;
+    border-radius: 4px;
+  }
+
+  .mod-skin-lightbox__close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    background: #222;
+    color: #ccc;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .mod-skin-lightbox__close:hover {
+    border-color: var(--rb-amber, #ffb000);
+    color: var(--rb-amber, #ffb000);
   }
 </style>

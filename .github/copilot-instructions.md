@@ -157,6 +157,6 @@ See README.md for full contribution guidelines.
 
 ## WebAssembly Audio Module
 
-The `src/wasm/` directory holds a **partially implemented** in-browser `.rbs` playback engine — C++ compiled to WASM via Emscripten, built and shipped by CI. The parser, sequencer, transport, and Phase-1 procedural TB-303/TR-808/TR-909 voices work; `.rbm` sample playback does not yet. See `src/wasm/README.md` for architecture notes and `src/wasm/CONTRACT.md` for the C++ ↔ TypeScript contract (run `npm run contract:check` after changing either side).
+The `src/wasm/` directory holds a **shipping, partial-feature-set** in-browser `.rbs` playback engine — C++ compiled to WASM via Emscripten, built and shipped by CI. It parses both `.rbs` generations (v2 `CAT `/`RB40` containers and v1/v1.5 MIDI containers), sequences the arrangement, and synthesises TB-303/TR-808/TR-909 either procedurally or from `.rbm` mod samples; pattern steps are editable in the studio grid and save back out to a v2.x `.rbs`. It does not embed `.rbm` mods in a saved song, write the v1/v1.5 container, or render `.rbm` skins (skin resources are catalogued but never decoded/drawn). See `src/wasm/README.md` for the full status and roadmap and `src/wasm/CONTRACT.md` for the C++ ↔ TypeScript contract (run `npm run contract:check` after changing either side).
 
 If you have C/C++/Rust audio DSP experience or knowledge of the `.rbs`/`.rbm` binary formats, contributions are welcome — see the roadmap in `src/wasm/README.md`.
