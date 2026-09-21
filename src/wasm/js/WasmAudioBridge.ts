@@ -17,25 +17,21 @@
  */
 
 import type {
-  ParsedSong,
-  ParsedMod,
-  RenderedFile,
   EngineConfig,
-  PlayerStatus,
   EngineError,
-  PlaybackPosition,
   EngineModule,
+  PlaybackPosition,
   RbsAudioEngineInstance,
-} from '../types/wasm-audio';
+  RenderedFile,
+} from '../types/wasm-audio-engine';
+import type { ParsedMod } from '../types/wasm-audio-mod';
+import type { ParsedSong, PlayerStatus } from '../types/wasm-audio-song';
 
-import {
-  MOD_LOAD_STATUSES,
-  MASTER_BUS,
-  STEM_DEVICES,
-} from '../types/wasm-audio';
+import { MASTER_BUS } from '../types/wasm-audio-engine';
+import { MOD_LOAD_STATUSES } from '../types/wasm-audio-mod';
 
 import { wasmAudioConfig } from '../audio-module.config';
-import type { AudioContextDiagnostics } from '../types/wasm-audio';
+import type { AudioContextDiagnostics } from '../types/wasm-audio-config';
 import { toUiParsedMod, toUiParsedSong } from '../types/wasm-audio-mapping';
 import { WasmInitError, INIT_FAILURE_MESSAGES } from './rbs-init-errors';
 import {
@@ -46,7 +42,7 @@ import {
 import { waitForCrossOriginIsolation } from '../../scripts/coi-bootstrap';
 import { locateWasmAsset } from './wasm-locate-file';
 import { mallocCopy } from './wasm-engine-io';
-import type { BounceRequest, BounceResponse } from './bounce-protocol';
+import { BounceClient, type BouncePayload } from './wasm-bounce';
 
 /** Callback invoked when playback position changes (bar, step). */
 export type PositionCallback = (bar: number, step: number) => void;
@@ -68,12 +64,7 @@ export class WasmAudioBridge {
   private positionPollId: number | null = null;
   private _audioDiagnostics: AudioContextDiagnostics | null = null;
   private _audioLifecycle: AudioContextLifecycle | null = null;
-  private _bounceWorker: Worker | null = null;
-  private _bounceSeq = 0;
-  private _bouncePending = new Map<
-    number,
-    { resolve: (value: BounceResponse) => void; reject: (err: Error) => void }
-  >();
+  private _bounce = new BounceClient();
 
   // Kept so an offline bounce can rebuild exactly what is playing: the source
   // files plus any live knob moves, which the engine treats as session-only.
@@ -419,40 +410,13 @@ export class WasmAudioBridge {
     };
   }
 
-  /**
-   * Bounce on a Dedicated Worker that owns its own WASM instance so the live
-   * engine never holds two SamplePool arenas on the shipping 64 MiB heap.
-   */
-  private _ensureBounceWorker(): Worker {
-    if (this._bounceWorker) return this._bounceWorker;
-    this._bounceWorker = new Worker(new URL('./bounce-worker.ts', import.meta.url), {
-      type: 'module',
-    });
-    this._bounceWorker.onmessage = (event: MessageEvent<BounceResponse>) => {
-      const pending = this._bouncePending.get(event.data.id);
-      if (!pending) return;
-      this._bouncePending.delete(event.data.id);
-      pending.resolve(event.data);
-    };
-    this._bounceWorker.onerror = (event) => {
-      const err = new Error(event.message || 'Bounce worker failed');
-      for (const pending of this._bouncePending.values()) {
-        pending.reject(err);
-      }
-      this._bouncePending.clear();
-    };
-    return this._bounceWorker;
-  }
-
-  private _bouncePayload(frames: number | undefined, deviceIndex: number): BounceRequest {
+  /** The per-render payload the Worker needs to rebuild what is playing. */
+  private _bouncePayload(frames: number | undefined, deviceIndex: number): BouncePayload {
     if (!this._songBuffer) {
       throw { code: 'PARSE_ERROR', message: 'Nothing to render' } satisfies EngineError;
     }
     this._audioLifecycle?.resumeIfNeeded();
-    const id = ++this._bounceSeq;
     return {
-      id,
-      kind: 'wav',
       songBytes: this._songBuffer.slice(0),
       modBytes: this._modBuffer ? this._modBuffer.slice(0) : null,
       paramOverrides: [...this._paramOverrides.values()],
@@ -466,68 +430,14 @@ export class WasmAudioBridge {
     };
   }
 
-  private _postBounce(request: BounceRequest, transfer: Transferable[]): Promise<BounceResponse> {
-    const worker = this._ensureBounceWorker();
-    return new Promise((resolve, reject) => {
-      this._bouncePending.set(request.id, { resolve, reject });
-      worker.postMessage(request, transfer);
-    });
-  }
-
-  private _throwBounceError(response: BounceResponse): never {
-    if (response.ok) {
-      throw new Error('Bounce succeeded unexpectedly');
-    }
-    const err: EngineError = {
-      code: response.error.code,
-      message: response.error.message,
-    };
-    throw err;
-  }
-
-  /**
-   * Render the loaded song to a WAV file on a Worker (AudioContext-free).
-   */
+  /** Render the loaded song to a WAV file on a Worker (AudioContext-free). */
   async bounceToWav(frames?: number, deviceIndex: number = MASTER_BUS): Promise<RenderedFile> {
-    const request = this._bouncePayload(frames, deviceIndex);
-    const transfer: Transferable[] = [request.songBytes];
-    if (request.modBytes) transfer.push(request.modBytes);
-    const response = await this._postBounce(request, transfer);
-    if (!response.ok) {
-      this._throwBounceError(response);
-    }
-    if (response.kind !== 'wav') {
-      throw new Error('Unexpected bounce response');
-    }
-    const stem = STEM_DEVICES.find((d) => d.index === deviceIndex);
-    const suffix = stem ? `-${stem.slug}` : '';
-    return {
-      filename: `${this._downloadStem()}${suffix}.wav`,
-      bytes: new Uint8Array(response.wav),
-      mimeType: 'audio/wav',
-    };
+    return this._bounce.renderWav(this._bouncePayload(frames, deviceIndex), this._downloadStem());
   }
 
-  /**
-   * Render one WAV per device on a single Worker engine.
-   */
+  /** Render one WAV per device on a single Worker engine. */
   async bounceStems(frames?: number): Promise<RenderedFile[]> {
-    const request = this._bouncePayload(frames, MASTER_BUS);
-    request.kind = 'stems';
-    const transfer: Transferable[] = [request.songBytes];
-    if (request.modBytes) transfer.push(request.modBytes);
-    const response = await this._postBounce(request, transfer);
-    if (!response.ok) {
-      this._throwBounceError(response);
-    }
-    if (response.kind !== 'stems') {
-      throw new Error('Unexpected bounce response');
-    }
-    return STEM_DEVICES.map((device, index) => ({
-      filename: `${this._downloadStem()}-${device.slug}.wav`,
-      bytes: new Uint8Array(response.wavs[index] ?? new ArrayBuffer(0)),
-      mimeType: 'audio/wav',
-    }));
+    return this._bounce.renderStems(this._bouncePayload(frames, MASTER_BUS), this._downloadStem());
   }
 
   /** Frames covering the whole arrangement, for a default bounce length. */
@@ -652,14 +562,7 @@ export class WasmAudioBridge {
     this.stop();
     this._audioLifecycle?.dispose();
     this._audioLifecycle = null;
-    if (this._bounceWorker) {
-      this._bounceWorker.terminate();
-      this._bounceWorker = null;
-    }
-    for (const pending of this._bouncePending.values()) {
-      pending.reject(new Error('Bridge disposed'));
-    }
-    this._bouncePending.clear();
+    this._bounce.dispose('Bridge disposed');
     if (this.positionPollId != null) {
       cancelAnimationFrame(this.positionPollId);
       this.positionPollId = null;

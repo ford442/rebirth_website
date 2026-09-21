@@ -8,7 +8,7 @@
  * Does not call decodeAudioData, audioWorklet.addModule, or OfflineAudioContext.
  */
 
-import type { AudioContextDiagnostics } from '../types/wasm-audio';
+import type { AudioContextDiagnostics } from '../types/wasm-audio-config';
 
 function readLatencySeconds(
   context: AudioContext,
@@ -118,8 +118,7 @@ export function createProductionAudioContext(
 /** Format diagnostics for LCD tooltips, e.g. "48000 Hz · 18 ms out". */
 export function formatAudioContextDiagnostics(diagnostics: AudioContextDiagnostics): string {
   const latencySec = diagnostics.outputLatency ?? diagnostics.baseLatency;
-  const latencyMs =
-    latencySec != null ? ` · ${Math.round(latencySec * 1000)} ms out` : '';
+  const latencyMs = latencySec != null ? ` · ${Math.round(latencySec * 1000)} ms out` : '';
   const rateNote =
     diagnostics.requestedSampleRate != null &&
     diagnostics.requestedSampleRate !== diagnostics.sampleRate

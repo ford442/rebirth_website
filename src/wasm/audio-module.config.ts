@@ -5,7 +5,7 @@
  */
 
 import { normalizeBase } from '../lib/url';
-import type { WasmAudioModuleConfig } from './types/wasm-audio';
+import type { WasmAudioModuleConfig } from './types/wasm-audio-config';
 
 const base = normalizeBase(import.meta.env.BASE_URL);
 const prefix = base ? `${base}/` : '/';

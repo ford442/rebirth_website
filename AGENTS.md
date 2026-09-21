@@ -84,8 +84,8 @@ npm run astro check
 │   ├── content/
 │   │   └── docs/               ← Historical markdown docs (v1.0, v1.5, v2.0, v2.0.1, etc.)
 │   ├── data/
-│   │   ├── mods-metadata.json  ← Documented mod metadata (101 of 367)
-│   │   ├── mods-full-index.json← All 367 .rbm files with sizes
+│   │   ├── mods-metadata.json  ← Documented mod metadata (subset of the full index)
+│   │   ├── mods-full-index.json← Every hosted .rbm file with sizes
 │   │   ├── songs-full-index.json← All catalogued .rbs files with metadata
 │   │   ├── song-collections.ts ← Shared collection section definitions
 │   │   └── archive-stats.ts    ← Single source of truth for archive stats
@@ -97,7 +97,8 @@ npm run astro check
 │   │   │   ├── build.sh                 # Emscripten compile script
 │   │   │   ├── parser/                  # .rbs binary parser
 │   │   │   ├── engine/                  # Audio engine (sequencer, mixer, voices)
-│   │   │   ├── synth/                   # TB-303 / TR-808 / TR-909 voices (Phase 1: procedural, no PCM)
+│   │   │   ├── synth/                   # TB-303 (ZDF ladder + PolyBLEP), TR-808/909, SamplePool
+│   │   │   ├── audio/                   # WAV/AIFF sample decode + WAV writer (bounce)
 │   │   │   └── worklet/                 # AudioWorklet processor callback
 │   │   ├── js/
 │   │   │   ├── WasmAudioBridge.ts       # I/O + Embind calls (AudioContext, worklet, parse)
@@ -105,9 +106,15 @@ npm run astro check
 │   │   │   ├── player-dom.ts            # DOM lookup (query + null checks)
 │   │   │   ├── player-transport.ts      # Status/toasts/position/play-stop/volume/tempo
 │   │   │   ├── player-studio-view.ts    # Pattern grid + device knob panel
-│   │   │   └── player-studio.ts         # Pure mapping helpers (pattern/knob math, no DOM)
-│   │   ├── types/
-│   │   │   ├── wasm-audio.ts            # Shared TypeScript interfaces
+│   │   │   ├── player-studio.ts         # Pure mapping helpers (pattern/knob math, no DOM)
+│   │   │   ├── player-test-hooks.ts     # window.* hooks the Playwright specs drive
+│   │   │   ├── wasm-bounce.ts           # Offline bounce client (owns the render Worker)
+│   │   │   └── bounce-worker.ts         # Worker: second WASM instance, no AudioWorklet
+│   │   ├── types/                       # One job per file — see src/wasm/README.md
+│   │   │   ├── wasm-audio-song.ts       # ParsedSong / devices / patterns
+│   │   │   ├── wasm-audio-engine.ts     # Embind surface: EngineConfig, instances, bounce
+│   │   │   ├── wasm-audio-config.ts     # Runtime module config + AudioContext diagnostics
+│   │   │   ├── wasm-audio-mod.ts        # .rbm enums + load report + ParsedMod
 │   │   │   └── wasm-audio-mapping.ts    # WASM → UI ParsedSong mapping
 │   │   ├── tests/
 │   │   │   └── wasm-audio-types.typecheck.ts # Compile-time bridge contract check (astro check only, not a runtime test)
@@ -301,7 +308,12 @@ Structured metadata for documented `.rbm` mod files:
 - `year` is nullable
 - `tags` is an array of lowercase kebab-case strings
 
-Currently **101 mods** are documented out of **367** available. See `docs/CONTRIBUTING-MODS.md` for the up-to-date breakdown and how to add more.
+Counts are derived, not written down twice: `src/data/archive-stats.ts` computes
+`totalMods` / `documentedMods` / `modCoveragePercent` from these JSON files, and
+every page reads them from there. At the time of writing that is **101
+documented of 367**; run `npm run build` (or read `archive-stats.ts`) rather
+than trusting a number quoted in prose. `docs/CONTRIBUTING-MODS.md` explains how
+to add more, and `scripts/check-mod-metadata.py` reports the gap.
 
 ### `public/rbs-manifest.json`
 
@@ -414,28 +426,60 @@ Manual deployment script that zips the `dist/` build and uploads it as a single 
 
 **Credentials come from the environment — never hardcode secrets.** Set `DEPLOY_TOKEN` (and optionally `CONTABO_BASE_URL` / `DEPLOY_FOLDER`) via your shell or a git-ignored `.env` file. See `.env.example` and the [Deployment](README.md#deployment) section of the README. The legacy `deploy_old.py` (direct SFTP with an inline password) has been removed.
 
-## WebAssembly Audio Module (Future)
+## WebAssembly Audio Module
 
-The `src/wasm/` directory is reserved for a planned in-browser `.rbs` playback engine.
+`src/wasm/` is a **shipping** in-browser `.rbs` playback engine: C++ compiled to
+WASM with Emscripten, built and deployed by CI.
 
-- **Status**: `PENDING` — no compiled binaries exist
-- **Planned toolchain**: Emscripten (C/C++) or wasm-pack (Rust)
-- **Architecture**: `.rbs` binary → WASM parser → AudioWorkletProcessor → Web Audio API
-- **Config**: `src/wasm/audio-module.config.ts` defines runtime parameters (sample rate, buffer size, feature flags)
+- **Status**: `SHIPPING` — CI builds `public/wasm/` with pinned Emscripten 6.0.3
+  (`src/wasm/cpp/.emscripten-version`). Generated binaries are git-ignored, not
+  committed.
+- **Toolchain**: Emscripten + CMake. `npm run wasm:build` (WASM),
+  `npm run wasm:test` (native doctest), `npm run build:ship` (WASM + site).
+- **Architecture**: `.rbs` bytes → C++ parser → sequencer + voices →
+  AudioWorkletProcessor → Web Audio API.
+- **It does**: parse v1/v1.5 and v2 `.rbs`, load `.rbm` drum samples
+  (`loadMod`), synthesise TB-303 (ZDF ladder + PolyBLEP) and TR-808/909,
+  bounce offline to WAV mix or stems (`renderOfflineToWav`), and export `.mid`
+  from TypeScript (`src/lib/midi-smf.ts`).
+- **It does not**: write `.rbs`, edit patterns, or render `.rbm` skins. TRAK
+  automation plays only via `loadSongFromBytes` — it is not part of the Embind
+  `ParsedSong`.
+- **Contract**: `src/wasm/CONTRACT.md` is the SSOT for the C++ ↔ TypeScript data
+  contract; `npm run contract:check` fails CI on drift.
+- **Config**: `src/wasm/audio-module.config.ts` defines runtime parameters
+  (sample rate, buffer size, feature flags).
 
-Contributions from anyone with audio DSP or `.rbs` binary format knowledge are welcome.
+**Which language owns what** — C++ owns parsing, DSP, sequencing, mixing,
+sample decode and WAV bytes; TypeScript owns the AudioContext, the Embind
+boundary, the player UI, the SMF writer and download helpers; Astro owns markup
+and `BASE_URL` links only (`RbsPlayer.astro`'s `<script>` just calls
+`initPlayerUI`). The full table, with the "must not do" column, is in
+[`src/wasm/README.md`](src/wasm/README.md#language-roles).
+
+Contributions from anyone with audio DSP or `.rbs` / `.rbm` binary format
+knowledge are welcome — see the roadmap in `src/wasm/README.md`.
 
 ## Testing Strategy
 
-**No automated tests are currently configured.**
+`npm run ci` runs the whole gate: `astro check` → `contract:check` → `build` →
+Playwright.
 
-For manual verification:
+| Layer              | Command                          | Covers                                                                                               |
+| ------------------ | -------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| TypeScript / Astro | `npm run check`                  | `astro check` in strict mode — the primary type gate                                                 |
+| C++ ↔ TS contract  | `npm run contract:check`         | Embind struct fields and `DeviceParamId` values (`scripts/check-wasm-contract.mjs`)                  |
+| Native C++ units   | `npm run wasm:test`              | doctest suite in `src/wasm/cpp/tests/` (parser, sequencer, engine, DSP, mods)                        |
+| Browser / E2E      | `npm test`                       | Playwright specs in `tests/` — routes, responsive, player, WASM engine, `.rbm` loading, bounce, heap |
+| Lint / format      | `npm run lint`, `npm run format` | ESLint + Prettier                                                                                    |
 
-1. `npm run dev` — verify all routes load without Astro errors
-2. `npm run build` — verify the build succeeds with zero TypeScript errors
-3. `npm run preview` — verify the production build renders correctly
-4. Check that all internal links use `import.meta.env.BASE_URL`
-5. Verify contrast ratios for new UI elements against the dark theme
+CI also runs a native sanitizer matrix
+([`.github/workflows/native-cpp.yml`](.github/workflows/native-cpp.yml)).
+
+There is no unit-test layer for the Astro/TS UI code itself — that gap is
+covered indirectly by Playwright.
+
+Before opening a PR, at minimum: `npm run check && npm run contract:check && npm run build`.
 
 ## Deployment
 
@@ -460,9 +504,9 @@ For manual verification:
 ## Known Gaps & TODOs
 
 1. **External link clarity**: Archive downloads and folder browse links now use the `ExternalLink` component with host labels and `(opens in new tab)` cues.
-2. **Incomplete mod metadata**: 101 of 367 mods are documented in `mods-metadata.json`. A GitHub issue template (`.github/ISSUE_TEMPLATE/mod-metadata.yml`) and helper scripts (`check-mod-metadata.py`, `sync-mod-metadata.py`) now exist to close this gap.
+2. **Incomplete mod metadata**: most of the 367 indexed mods still lack a `mods-metadata.json` entry (see `archive-stats.ts` for the live count). A GitHub issue template (`.github/ISSUE_TEMPLATE/mod-metadata.yml`) and helper scripts (`check-mod-metadata.py`, `sync-mod-metadata.py`) now exist to close this gap.
 3. **Empty archive directories**: `public/archive/rbs-songs/` and `public/archive/rbm-mods/` contain only `.gitkeep` files; actual assets are hosted externally.
-4. **WASM module**: Partially implemented — parser, sequencer, transport, and Phase-1 procedural TB-303/TR-808/TR-909 voices work; `.rbm` sample playback is not wired up yet. See `src/wasm/README.md`.
+4. **WASM module**: Shipping, with a known feature set. Open items are `.rbm` skin rendering, voice calibration, and exposing TRAK automation across Embind (today it survives only the `loadSongFromBytes` path). See `src/wasm/README.md`.
 5. **Test coverage**: Playwright (`tests/`) covers browser/E2E behavior and doctest (`src/wasm/cpp/tests/`) covers the native C++ engine; there is no unit-test layer for the Astro/TS UI code itself.
 
 ## Contributing Files

@@ -11,7 +11,7 @@
  * which is what a DAW expects when you drag a multi-instrument file in.
  */
 
-import type { ParsedSong, StepData, DeviceId } from '../wasm/types/wasm-audio';
+import type { DeviceId, ParsedSong, StepData } from '../wasm/types/wasm-audio-song';
 
 /** MIDI ticks per quarter note. 96 divides evenly by 6 for triplet-free 16ths. */
 export const TICKS_PER_QUARTER = 96;

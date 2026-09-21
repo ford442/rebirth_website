@@ -1,5 +1,5 @@
-import type { EngineModule, RbsAudioEngineInstance } from '../types/wasm-audio';
-import { MASTER_BUS, STEM_DEVICES } from '../types/wasm-audio';
+import type { EngineModule, RbsAudioEngineInstance } from '../types/wasm-audio-engine';
+import { MASTER_BUS, STEM_DEVICES } from '../types/wasm-audio-engine';
 import { loadModIntoEngine, loadSongIntoEngine } from './wasm-engine-io';
 import { locateWasmAsset } from './wasm-locate-file';
 import type { BounceRequest, BounceResponse } from './bounce-protocol';
@@ -57,10 +57,9 @@ function wavBuffer(bytes: Uint8Array): ArrayBuffer {
 }
 
 function postResponse(response: BounceResponse, transfer: Transferable[] = []) {
-  (self as unknown as { postMessage: (msg: BounceResponse, t?: Transferable[]) => void }).postMessage(
-    response,
-    transfer
-  );
+  (
+    self as unknown as { postMessage: (msg: BounceResponse, t?: Transferable[]) => void }
+  ).postMessage(response, transfer);
 }
 
 self.onmessage = (event: MessageEvent<BounceRequest>) => {
@@ -93,7 +92,10 @@ self.onmessage = (event: MessageEvent<BounceRequest>) => {
     } catch (err) {
       const error =
         err && typeof err === 'object' && 'code' in err && 'message' in err
-          ? { code: String((err as { code: unknown }).code), message: String((err as { message: unknown }).message) }
+          ? {
+              code: String((err as { code: unknown }).code),
+              message: String((err as { message: unknown }).message),
+            }
           : {
               code: 'PARSE_ERROR',
               message: err instanceof Error ? err.message : 'Bounce failed.',

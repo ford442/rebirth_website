@@ -6,7 +6,7 @@
  * mapping from `DeviceParam` (see `player-studio.ts`) to `bridge.setDeviceParam`.
  */
 
-import type { DeviceId, ParsedSong } from '../types/wasm-audio';
+import type { DeviceId, ParsedSong } from '../types/wasm-audio-song';
 import {
   buildStepCells,
   defaultPatternCoords,

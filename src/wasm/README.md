@@ -4,10 +4,48 @@ In-browser playback engine for ReBirth RB-338 `.rbs` song files.
 
 ## Status
 
-> **PARTIAL ENGINE, SHIPPING PIPELINE ACTIVE**
-> Parser, sequencer, transport, and **Phase 1 synthetic TR-808 / TR-909 drums** are implemented in C++.  
+> **SHIPPING ENGINE, PARTIAL FEATURE SET**
 > CI builds and deploys the browser engine with pinned Emscripten 6.0.3. Run `npm run build:ship` locally to reproduce the shipping build.
 > The UI component (`RbsPlayer.astro`) degrades gracefully when WASM is missing: metadata sniffing and sketch preview remain available.
+
+### What the engine does
+
+Parses both `.rbs` generations (v2 `CAT `/`RB40` containers and v1/v1.5
+Propellerhead MIDI containers), sequences the arrangement, and synthesises all
+four devices: TB-303 A/B through a ZDF ladder filter
+(`synth/dsp/ZdfLadder.h`) with PolyBLEP oscillators (`synth/dsp/PolyBlep.h`),
+and TR-808 / TR-909 either procedurally (`synth/DrumSynth.*`) or from `.rbm`
+mod samples (`RbsAudioEngine::loadMod` → `synth/SamplePool.*`, covered by
+`tests/wasm-rbm-mod.spec.ts`). It bounces offline to 16-bit WAV — full mix or
+per-device stems — via `renderOfflineToWav` on a dedicated Worker, and the TS
+side exports the loaded song as a Standard MIDI File (`src/lib/midi-smf.ts`).
+
+### What it does not do
+
+- **Write `.rbs`.** The parser is read-only; there is no serialiser.
+- **Edit patterns.** The studio view renders pattern and knob state; it does
+  not change the song.
+- **Play TRAK automation from an archive file loaded through Embind.** The
+  parser _stores_ every non-pattern TRAK event in `ParsedSong::automation` and
+  `AutomationScheduler` applies it on the audio thread — but that vector is not
+  registered with Embind, so it only survives the `loadSongFromBytes` path
+  (parse inside C++). A song handed back through `loadSong(WasmParsedSong)`
+  loses it. Archive loads must use `loadSongFromBytes`.
+- **Load `.rbm` skins.** Skin resources are counted and reported, never drawn.
+
+## Language roles
+
+New code lands in the layer that owns the job. This table is the rule; when a
+change does not fit it, the split is wrong, not the table.
+
+| Language       | Owns                                                                                                      | Must not do                                                             |
+| -------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **C++**        | `.rbs` / `.rbm` parsing, DSP, sequencer, mixer, sample decode, WAV byte generation, RT-safe snapshot swap | JPEG skins, DOM, `fetch`, MIDI SMF writing (already TypeScript)         |
+| **TypeScript** | `AudioContext`, the Embind boundary, player UI, MiniSearch, the SMF writer, download helpers              | Inner-loop DSP, owning PCM buffers, growing WASM memory                 |
+| **Astro**      | Markup, `BASE_URL` links, content collections                                                             | Engine logic — `RbsPlayer.astro`'s `<script>` only calls `initPlayerUI` |
+
+The C++ ↔ TypeScript field contract itself is `CONTRACT.md`, enforced by
+`npm run contract:check`.
 
 ## Player capability matrix
 
@@ -20,6 +58,9 @@ In-browser playback engine for ReBirth RB-338 `.rbs` song files.
 | Step bar + level meter animation         | ✅          | ✅                    | ❌                       |
 | Tempo slider                             | ✅          | ✅                    | ✅ (display only)        |
 | Volume slider                            | ✅          | ✅                    | ❌                       |
+| Load an `.rbm` mod (drum samples)        | ✅          | ❌                    | ❌                       |
+| Bounce to WAV / per-device stems         | ✅          | ❌                    | ❌                       |
+| Export `.mid` (pure TypeScript)          | ✅          | ✅                    | ❌                       |
 
 ### Init failure reasons
 
@@ -38,12 +79,13 @@ Pure-TS metadata parsing lives in `src/wasm/js/RbsMetadataSniffer.ts` (HEAD / GL
 
 ## Integration Roadmap (Phase Plan)
 
-1. **Parser completion** — metadata, patterns, and TRAK arrangement decode from real `.rbs` payloads (`RbsParser::readArrangement` / `buildArrangement`) ✅. `.rbm` mods are `CAT `/`PRBM` + `EMBF` resource bundles (`RbmParser`, `RbmFormat.md`) ✅ — sample playback is not wired yet.
-2. **Audio engine parity** — Phase 1 procedural TR-808 / TR-909 drums (BD, SD, CH, OH, RS, CP / clap) ✅. TB-303 filter/slide DSP and `.rbm` sample playback remain future work.
+1. **Parser completion** — metadata, patterns, and TRAK arrangement decode from real `.rbs` payloads (`RbsTrak.cpp`) ✅, plus v1 / v1.5 MIDI-container songs ✅. `.rbm` mods are `CAT `/`PRBM` + `EMBF` resource bundles (`RbmParser`, `RbmFormat.md`) ✅, and their samples load into the engine ✅.
+2. **Audio engine parity** — procedural TR-808 / TR-909 drums ✅; TB-303 ZDF ladder filter, PolyBLEP oscillators and slide ✅; `.rbm` sample playback through `SamplePool` ✅. Remaining: `.rbm` skin rendering and closer voice-by-voice calibration against hardware.
 3. **Realtime control API** — transport + tempo + volume commands flow through a lock-free queue ✅.
-4. **Archive demo pipeline** — add curated demo `.rbs` files under `public/archive/rbs-songs/demo/` for direct browser previews.
-5. **Fallback mode** — if WASM init fails, provide metadata sniffing + Web Audio sketch preview so the UI remains usable ✅.
-6. **End-to-end validation** — add browser tests that cover upload, demo loading, transport controls, and fallback behaviour ✅ (degraded path in `tests/rbs-player.spec.ts`).
+4. **Archive demo pipeline** — curated demo `.rbs` files under `public/archive/rbs-songs/demo/` for direct browser previews ✅.
+5. **Offline bounce + MIDI export** — WAV mix and per-device stems on a Worker (`js/wasm-bounce.ts`), and `.mid` export from `src/lib/midi-smf.ts` ✅.
+6. **Fallback mode** — if WASM init fails, provide metadata sniffing + Web Audio sketch preview so the UI remains usable ✅.
+7. **End-to-end validation** — browser tests cover upload, demo loading, transport controls, mod loading and fallback behaviour ✅ (`tests/rbs-player.spec.ts`, `tests/wasm-*.spec.ts`).
 
 ## Audio thread architecture
 
@@ -168,18 +210,18 @@ All Emscripten compile and link flags live in
 [`cpp/CMakeLists.txt`](cpp/CMakeLists.txt). `build.sh` is an `emcmake` wrapper
 only.
 
-| Flag / setting | Release | Debug |
-| -------------- | ------- | ----- |
-| Optimisation | `-O3 -flto` | `-O0 -g3` |
-| `-sASSERTIONS` | `0` | `1` |
-| `-sINITIAL_MEMORY` | 64 MiB | 32 MiB |
-| `-sMAXIMUM_MEMORY` | 64 MiB (equal to INITIAL) | 128 MiB |
-| `-sALLOW_MEMORY_GROWTH` | `0` | `1` (max 128 MiB) |
-| `-sMALLOC` | `emmalloc` | `emmalloc-memvalidate` |
-| `-sFILESYSTEM` | `0` | `0` |
-| `-sSTACK_SIZE` | 128 KiB (module linear stack) | 128 KiB |
-| AudioWorklet pthread stack | 64 KiB (`AUDIO_THREAD_STACK_SIZE`) | 64 KiB |
-| `-pthread -sAUDIO_WORKLET=1 -sWASM_WORKERS=1` | yes | yes |
+| Flag / setting                                | Release                            | Debug                  |
+| --------------------------------------------- | ---------------------------------- | ---------------------- |
+| Optimisation                                  | `-O3 -flto`                        | `-O0 -g3`              |
+| `-sASSERTIONS`                                | `0`                                | `1`                    |
+| `-sINITIAL_MEMORY`                            | 64 MiB                             | 32 MiB                 |
+| `-sMAXIMUM_MEMORY`                            | 64 MiB (equal to INITIAL)          | 128 MiB                |
+| `-sALLOW_MEMORY_GROWTH`                       | `0`                                | `1` (max 128 MiB)      |
+| `-sMALLOC`                                    | `emmalloc`                         | `emmalloc-memvalidate` |
+| `-sFILESYSTEM`                                | `0`                                | `0`                    |
+| `-sSTACK_SIZE`                                | 128 KiB (module linear stack)      | 128 KiB                |
+| AudioWorklet pthread stack                    | 64 KiB (`AUDIO_THREAD_STACK_SIZE`) | 64 KiB                 |
+| `-pthread -sAUDIO_WORKLET=1 -sWASM_WORKERS=1` | yes                                | yes                    |
 
 Heap and dual-build policy: [`docs/adr/0002-wasm-build-variants-and-heap.md`](../../docs/adr/0002-wasm-build-variants-and-heap.md).
 
@@ -189,7 +231,12 @@ Heap and dual-build policy: [`docs/adr/0002-wasm-build-variants-and-heap.md`](..
 npm run wasm:native:configure   # writes src/wasm/cpp/build/compile_commands.json
 ```
 
-Root [`.clangd`](../../.clangd) points clangd at that compilation database.
+**Run this once after cloning.** Root [`.clangd`](../../.clangd) points clangd
+at `src/wasm/cpp/build/compile_commands.json`; until that file exists, clangd
+guesses include paths and will resolve the wrong `parser/` vs `native_stubs/`
+headers, so an editor shows errors the real build does not have. `npm run
+wasm:test` regenerates it as a side effect. The database is git-ignored — it
+records absolute paths from your machine.
 
 ### Emitted files
 
@@ -278,32 +325,64 @@ src/wasm/
 │   ├── Makefile                 # Optional g++ wrapper (no CMake required)
 │   ├── main.cpp                 # Emscripten entry point + embind exports
 │   ├── build.sh                 # Thin emcmake wrapper + worklet/manifest post-process
-│   ├── tools/
-│   │   └── rbs-inspect.cpp      # CLI: .rbs → JSON ParsedSong dump
+│   ├── tools/                   # rbs-inspect / rbm-inspect CLIs (JSON dumps)
 │   ├── tests/                   # doctest unit tests (native only)
+│   ├── native_stubs/            # Emscripten-only APIs stubbed for the native build
 │   ├── third_party/doctest.h    # Vendored doctest 2.4.11
 │   ├── parser/
-│   │   ├── RbsParser.h/.cpp     # .rbs binary parser
-│   │   ├── ParsedSongJson.h/.cpp# ParsedSong → JSON (CLI + debugging)
+│   │   ├── RbsParser.h/.cpp     # .rbs container + chunk decoding (HEAD/GLOB/DEVL/FX)
+│   │   ├── RbsTrak.cpp          # TRAK/STRAK events + arrangement projection
+│   │   ├── RbsMidiContainer.cpp # v1 / v1.5 MIDI-container songs
+│   │   ├── RbsByteStream.h      # Internal: bounds-checked reader + chunk/VLQ helpers
+│   │   ├── RbmParser.h/.cpp     # .rbm mod bundle parser
+│   │   ├── ParsedSongJson.*     # ParsedSong → JSON (CLI + debugging)
+│   │   ├── ParsedModJson.*      # ParsedMod → JSON (CLI + debugging)
 │   │   ├── RbsTypes.h           # C++ structs matching .rbs data
-│   │   └── RbsFormat.md         # Reverse-engineered format spec
+│   │   └── RbsFormat.md         # Reverse-engineered format spec (RbmFormat.md too)
+│   ├── audio/                   # WAV/AIFF sample decode + WAV writer (bounce)
 │   ├── synth/
 │   │   ├── Voice.h/.cpp         # Abstract voice base class
-│   │   ├── Tb303Voice.h/.cpp    # TB-303 voice
+│   │   ├── Tb303Voice.h/.cpp    # TB-303 voice (ZDF ladder + PolyBLEP)
 │   │   ├── Tr808Voice.h/.cpp    # TR-808 drums
-│   │   └── Tr909Voice.h/.cpp    # TR-909 drums
+│   │   ├── Tr909Voice.h/.cpp    # TR-909 drums
+│   │   ├── DrumSynth.h/.cpp     # Shared procedural drum models
+│   │   ├── SamplePool.h/.cpp    # .rbm sample arena (fixed, RT-safe)
+│   │   └── dsp/                 # ZdfLadder.h, PolyBlep.h
 │   ├── engine/
 │   │   ├── RbsAudioEngine.h/.cpp# Top-level engine
 │   │   ├── Sequencer.h/.cpp     # Pattern scheduler
+│   │   ├── AutomationScheduler.*# TRAK automation playback
+│   │   ├── EngineCommands.*     # Lock-free command queue + DeviceParamId
+│   │   ├── EngineSnapshot.*     # RT-safe snapshot swap
 │   │   └── Mixer.h/.cpp         # Stereo mix + FX
 │   └── worklet/
 │       └── RbsWorklet.cpp       # AudioWorkletProcessor callback (WASM only)
-├── test-fixtures/               # Golden .rbs files for native + browser tests
-├── js/
-│   └── WasmAudioBridge.ts       # Typed JS wrapper around Emscripten Module
-├── types/
-│   └── wasm-audio.ts            # Shared TypeScript interfaces
+├── test-fixtures/               # Golden .rbs / .rbm files for native + browser tests
+├── js/                          # TypeScript: everything from Embind out to the DOM
+│   ├── WasmAudioBridge.ts       # Typed wrapper around the Emscripten module
+│   ├── wasm-bounce.ts           # Offline bounce client (owns the render Worker)
+│   ├── bounce-worker.ts         # Worker: second WASM instance, no AudioWorklet
+│   ├── bounce-protocol.ts       # Message shapes shared with the Worker
+│   ├── create-audio-context.ts  # AudioContext creation + lifecycle
+│   ├── wasm-engine-io.ts        # Heap copies + engine error mapping
+│   ├── wasm-locate-file.ts      # Emscripten locateFile remapping
+│   ├── player-ui.ts             # Composer: state, file/demo loading
+│   ├── player-dom.ts            # DOM lookup
+│   ├── player-transport.ts      # Status, toasts, play/stop, volume, tempo
+│   ├── player-studio-view.ts    # Pattern grid + device knobs
+│   ├── player-studio.ts         # DeviceParam ids + knob mapping
+│   ├── player-test-hooks.ts     # window.* hooks for the Playwright specs
+│   ├── rbs-init-errors.ts       # Init failure classification
+│   ├── RbsMetadataSniffer.ts    # Pure-TS HEAD/GLOB/USRI sniffing (degraded mode)
+│   └── DegradedRbsPlayer.ts     # Web Audio sketch preview (no WASM)
+├── types/                       # One job per file; see CONTRACT.md
+│   ├── wasm-audio-song.ts       # ParsedSong / devices / patterns (UI + Wasm shapes)
+│   ├── wasm-audio-engine.ts     # Embind surface: EngineConfig, instances, bounce
+│   ├── wasm-audio-config.ts     # WasmAudioModuleConfig + AudioContext diagnostics
+│   ├── wasm-audio-mod.ts        # .rbm enums + load report + ParsedMod
+│   └── wasm-audio-mapping.ts    # Wasm* → UI mapping helpers
 ├── audio-module.config.ts       # Runtime paths + feature flags
+├── CONTRACT.md                  # C++ ↔ TS contract (SSOT, checked in CI)
 └── README.md                    # This file
 ```
 
@@ -328,7 +407,9 @@ If you have experience with:
 - **Reverse engineering** — binary file format analysis
 - **Emscripten / Web Audio** — WASM Audio Worklet optimisation
 
-…please open a GitHub Discussion or PR. The parser and voice stubs are ready to be filled in.
+…please open a GitHub Discussion or PR. The parser and voices are implemented;
+see the roadmap above for what is still open (`.rbm` skins, voice calibration,
+an Embind-visible automation path).
 
 ## License
 

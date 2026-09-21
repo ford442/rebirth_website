@@ -3,6 +3,7 @@
 
 set(RB338_PARSER_SOURCES
   parser/RbsParser.cpp
+  parser/RbsTrak.cpp
   parser/RbsMidiContainer.cpp
   parser/ParsedSongJson.cpp
   parser/RbmParser.cpp

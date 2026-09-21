@@ -14,8 +14,10 @@ export interface WasmLocatePaths {
 }
 
 function inAudioWorkletGlobalScope(): boolean {
-  return typeof (globalThis as { AudioWorkletGlobalScope?: unknown }).AudioWorkletGlobalScope !==
-    'undefined';
+  return (
+    typeof (globalThis as { AudioWorkletGlobalScope?: unknown }).AudioWorkletGlobalScope !==
+    'undefined'
+  );
 }
 
 export function locateWasmAsset(path: string, paths: WasmLocatePaths): string {

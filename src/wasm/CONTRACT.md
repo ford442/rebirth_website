@@ -35,7 +35,7 @@ struct EngineConfig {
 };
 ```
 
-TypeScript interface (`src/wasm/types/wasm-audio.ts`):
+TypeScript interface (`src/wasm/types/wasm-audio-engine.ts`):
 
 ```ts
 export interface EngineConfig {
@@ -65,7 +65,7 @@ struct HeapStats {
 };
 ```
 
-TypeScript interface (`src/wasm/types/wasm-audio.ts`):
+TypeScript interface (`src/wasm/types/wasm-audio-engine.ts`):
 
 ```ts
 export interface HeapStats {
@@ -334,7 +334,7 @@ struct SongFxSettings {
 };
 ```
 
-TypeScript (`WasmSongFxSettings` in `src/wasm/types/wasm-audio.ts`) mirrors the
+TypeScript (`WasmSongFxSettings` in `src/wasm/types/wasm-audio-song.ts`) mirrors the
 nested structs field-for-field. `RbsVersion` adds `V1_0 = 0x10` for MIDI-container
 v1.0 songs.
 
@@ -492,7 +492,7 @@ struct ModLoadReport {
 };
 ```
 
-TypeScript: `WasmModSampleReportEntry` / `WasmModLoadReport` in `wasm-audio.ts`.
+TypeScript: `WasmModSampleReportEntry` / `WasmModLoadReport` in `wasm-audio-mod.ts`.
 
 | C++ API                                                | Embind name    | TS signature                            |
 | ------------------------------------------------------ | -------------- | --------------------------------------- |
@@ -509,7 +509,7 @@ keep their procedural voices.
 ### Mod enum tables
 
 `ModResourceKind`, `ModSampleSlot`, `ModLoadStatus` and `SampleDecodeStatus`
-cross as plain numbers. `src/wasm/types/wasm-audio.ts` holds label arrays
+cross as plain numbers. `src/wasm/types/wasm-audio-mod.ts` holds label arrays
 indexed by the raw enum value:
 
 | C++ enum             | TS label table           |
@@ -634,8 +634,8 @@ for dual-build and heap policy decisions.
 
 ## Change protocol
 
-1. If you change a C++ struct, update the matching TypeScript interface in `src/wasm/types/wasm-audio.ts` and this contract.
-2. If you change an Embind registration, update the `EngineModule` / instance interfaces in `src/wasm/types/wasm-audio.ts`.
+1. If you change a C++ struct, update the matching TypeScript interface in the `src/wasm/types/wasm-audio-*.ts` file that owns it (song / engine / config / mod) and this contract.
+2. If you change an Embind registration, update the `EngineModule` / instance interfaces in `src/wasm/types/wasm-audio-engine.ts`.
 3. If you add a new field, ensure it is present in both the C++ `value_object<>` registration and the TypeScript interface with the same name and compatible type.
 4. If you change `DeviceParamId`, update the table above, `player-studio.ts`'s `DeviceParam`, and every `Voice::setParameter` switch that should react to the new value.
 5. Run `npm run contract:check` (structural drift between C++ and TS), `npx astro check` (type-checks `src/wasm/tests/wasm-audio-types.typecheck.ts`, the compile-time contract test) after any TypeScript change, and `npm run wasm:build` after any C++ change.

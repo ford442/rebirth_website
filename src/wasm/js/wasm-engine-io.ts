@@ -3,7 +3,7 @@
  * Shared by the live bridge and the bounce Worker so malloc(0) is never written.
  */
 
-import type { EngineError, EngineModule, RbsAudioEngineInstance } from '../types/wasm-audio';
+import type { EngineError, EngineModule, RbsAudioEngineInstance } from '../types/wasm-audio-engine';
 import { toUiParsedSong } from '../types/wasm-audio-mapping';
 
 export function mallocCopy(module: EngineModule, bytes: Uint8Array): number {

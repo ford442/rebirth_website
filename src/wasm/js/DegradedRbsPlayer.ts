@@ -6,7 +6,7 @@
  *   - Sketch playback: metronome clicks + step animation (audible, not silent)
  */
 
-import type { ParsedSong, PlayerStatus } from '../types/wasm-audio';
+import type { ParsedSong, PlayerStatus } from '../types/wasm-audio-song';
 import { wasmAudioConfig } from '../audio-module.config';
 import type { InitFailureReason } from './rbs-init-errors';
 import { sniffRbsMetadata } from './RbsMetadataSniffer';
