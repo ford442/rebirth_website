@@ -1,17 +1,17 @@
 {
   "meta": {
-    "generated": "2026-08-16T14:05:16.050758+00:00",
+    "generated": "2026-09-21T04:30:11.959914+00:00",
     "policy": "split",
     "adr": "docs/adr/0001-archive-hosting-split.md",
     "blobStore": ".mirror/blobs/sha256",
     "stats": {
-      "paths": 5977,
-      "uniqueBlobs": 8,
+      "paths": 6035,
+      "uniqueBlobs": 58,
       "mirrored": 0,
-      "localCore": 8,
+      "localCore": 66,
       "dead": 0,
       "remote": 5969,
-      "bytesUnique": 211115
+      "bytesUnique": 1475943
     }
   },
   "entries": {
@@ -77715,6 +77715,760 @@
       "localPath": null,
       "error": null,
       "fileSize": "3.0M"
+    },
+    "rbm-skins/alonanbox-2.0/splash.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "c33f22068c85a6bd34e9c85a70881f7ab4630a1056c12b367de55de38bed29c2",
+      "bytes": 15463,
+      "firstSeen": "2026-09-21T04:26:45.057918+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/AloNaNbox 2.0.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/alonanbox-2.0/splash.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/alonanbox-2.0/12520.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "77fa8b00849d141b766ef4b20d2a6b5f9707578b6e56daeceaa58ee9a5b7062b",
+      "bytes": 29116,
+      "firstSeen": "2026-09-21T04:26:45.057941+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/AloNaNbox 2.0.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/alonanbox-2.0/12520.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/atomik/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "affeb6a1ed52b3fa5b60a75392cc8faf39af46250ef86adf21d680d2d6522196",
+      "bytes": 28144,
+      "firstSeen": "2026-09-21T04:27:15.837966+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/ATOMiK.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/atomik/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/axiom_link/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "2ff872dcd8d0f96157a33ca8b22225bd852873240d5989de66e06bca6dfd84ca",
+      "bytes": 11309,
+      "firstSeen": "2026-09-21T04:27:19.422288+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/AXIOM_Link.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/axiom_link/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/axiom_peace/12520.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "4ae5ab7fd71f59d3dacb65d05cd801211b272c961222300ae175bfff4cfedeb3",
+      "bytes": 23216,
+      "firstSeen": "2026-09-21T04:27:21.407166+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/AXIOM_peace.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/axiom_peace/12520.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/axiompeace/12520.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "4ae5ab7fd71f59d3dacb65d05cd801211b272c961222300ae175bfff4cfedeb3",
+      "bytes": 23216,
+      "firstSeen": "2026-09-21T04:27:23.175405+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/AXIOMpeace.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/axiompeace/12520.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/badrat/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "96500d9ff192d49a07a1a2a6cf9ba51e440616358c2cdc2c075fd87695cb8006",
+      "bytes": 22878,
+      "firstSeen": "2026-09-21T04:27:23.738201+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/BadRat.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/badrat/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/cbt/12520.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "8efaf6abf5cc4c131a06e9bbd35692c48063da1fe7b87d8ae9b6d04295255e72",
+      "bytes": 14504,
+      "firstSeen": "2026-09-21T04:27:36.078976+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/cbt.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/cbt/12520.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/circuitbreak_theorem_-cbt/12520.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "8efaf6abf5cc4c131a06e9bbd35692c48063da1fe7b87d8ae9b6d04295255e72",
+      "bytes": 14504,
+      "firstSeen": "2026-09-21T04:27:41.316071+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/Circuitbreak_Theorem_(cbt).rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/circuitbreak_theorem_-cbt/12520.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/domino/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "2153c96b3efc5228d4ed037b8c6ab8b9b01ee1604621b17615d00164d22e5f2c",
+      "bytes": 20290,
+      "firstSeen": "2026-09-21T04:27:56.176029+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/domino.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/domino/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/domino/12520.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "d79e15b093d19139c7c32aa6976f2ae2501fd7ebe0d44c0c37488b70593691c3",
+      "bytes": 13435,
+      "firstSeen": "2026-09-21T04:27:56.176050+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/domino.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/domino/12520.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/dubwiser/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "6782aff27b399e48c3ff177c0a62439b1a714616f00979c645a52f4ae0042ae7",
+      "bytes": 13973,
+      "firstSeen": "2026-09-21T04:27:56.966014+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/dubwiser.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/dubwiser/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/experience2.0/12500.JPG": {
+      "kind": "rbm-skin",
+      "sha256": "7b106321938a6dc36ac3fc334338d946822596effd79ab712f37b1f945f0399d",
+      "bytes": 28144,
+      "firstSeen": "2026-09-21T04:28:01.054192+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/Experience2.0.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/experience2.0/12500.JPG",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/gunbirth/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "f9f5e184b0acfdc658249dbdab5185feabfec1669af928d62eb2ab3c139f8158",
+      "bytes": 28144,
+      "firstSeen": "2026-09-21T04:28:08.409801+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/GunBirth.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/gunbirth/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/house_of_love_juam1/Splash.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "89c51cac4639185ebd2daddd40a9f960f5ef3bded15c2c489d2207443810a779",
+      "bytes": 70182,
+      "firstSeen": "2026-09-21T04:28:10.060937+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/House_of_love_Juam1.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/house_of_love_juam1/Splash.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/house_of_love_juam1/12564.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "d332ce7feb5cdfb3f474bd0abea2f84b2d91d8bcb9d557090b6a561c42bee8e9",
+      "bytes": 23427,
+      "firstSeen": "2026-09-21T04:28:10.060957+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/House_of_love_Juam1.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/house_of_love_juam1/12564.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/house_of_love_juam1/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "0a03e64338bc4534a5b398733455ae40070d95dfa636eda26936d0e6a0e82109",
+      "bytes": 22945,
+      "firstSeen": "2026-09-21T04:28:10.060962+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/House_of_love_Juam1.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/house_of_love_juam1/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/ibex/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "7126ae7a135b337ade85fc8a8b67cb6bb876c45d62bff0cc13d05753902a59cf",
+      "bytes": 27317,
+      "firstSeen": "2026-09-21T04:28:12.230360+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/ibex.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/ibex/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/ibex_mkii/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "7126ae7a135b337ade85fc8a8b67cb6bb876c45d62bff0cc13d05753902a59cf",
+      "bytes": 27317,
+      "firstSeen": "2026-09-21T04:28:12.672672+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/ibex_mkII.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/ibex_mkii/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/illumitech/12564.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "a236e9ea419d025eacf06eec4d7caffb1b519770a259203e26798993253a7350",
+      "bytes": 24717,
+      "firstSeen": "2026-09-21T04:28:13.989330+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/Illumitech.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/illumitech/12564.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/illumitech2/12564.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "a236e9ea419d025eacf06eec4d7caffb1b519770a259203e26798993253a7350",
+      "bytes": 24717,
+      "firstSeen": "2026-09-21T04:28:14.386105+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/Illumitech2.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/illumitech2/12564.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/liquid/12564.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "362131901fb1163cad76cd8a9b088c765f2d4d8410d12fa32322b0ea79be7405",
+      "bytes": 54436,
+      "firstSeen": "2026-09-21T04:28:23.417668+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/liquid.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/liquid/12564.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/liquidbirthii/12564.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "362131901fb1163cad76cd8a9b088c765f2d4d8410d12fa32322b0ea79be7405",
+      "bytes": 54436,
+      "firstSeen": "2026-09-21T04:28:24.253619+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/LiquidBirthII.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/liquidbirthii/12564.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/magica/12520.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "410eefef5c2c97dc3bc7c52e7983513cfc1b24b4824f7b21c109d7af24f4e9d2",
+      "bytes": 14190,
+      "firstSeen": "2026-09-21T04:28:30.198864+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/Magica.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/magica/12520.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/mashmod/splash.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "cd77e0737ea8f1115c2c6587de1b85cad7e442f6010019ee485ef5efdcf60958",
+      "bytes": 19465,
+      "firstSeen": "2026-09-21T04:28:31.933599+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/MaShMoD.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/mashmod/splash.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/mellow/Splash.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "52b2cc6ccf6e6c788f1507013c6d9da2caffcfd3bb99a11a2e6ad30d427f918d",
+      "bytes": 20879,
+      "firstSeen": "2026-09-21T04:28:32.752278+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/mellow.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/mellow/Splash.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/mellow/12564.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "ba6c51ffc4c38f1e0532f289a863e995989dec4f1d0c9bade4feeb7e7699ea16",
+      "bytes": 17531,
+      "firstSeen": "2026-09-21T04:28:32.752300+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/mellow.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/mellow/12564.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/mellow/12520.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "ce7d67668976d857eca2c698735b8acab199c9e566765fc9a334f237a72c6408",
+      "bytes": 17013,
+      "firstSeen": "2026-09-21T04:28:32.752304+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/mellow.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/mellow/12520.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/minimod-a2/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "49bec45f9949130fb2e9aae341b69fd7c39d52e25435402f98f452da814aa36a",
+      "bytes": 12015,
+      "firstSeen": "2026-09-21T04:28:34.954447+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/minimod(a2).rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/minimod-a2/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/minimod/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "41ca45cf5ef1e7deb7a08684dd311903c6fc098c1b1f0d13d73235d6383e2236",
+      "bytes": 10950,
+      "firstSeen": "2026-09-21T04:28:36.245748+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/minimod.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/minimod/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/minimod23/12520.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "33b40743771771733b36f76d607e2e6d42d1f18c369169af868b4b5d9c069878",
+      "bytes": 14898,
+      "firstSeen": "2026-09-21T04:28:37.135396+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/minimod23.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/minimod23/12520.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/minimod23/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "7dcfadf085df49344a71da1818c03d232b6bc6dba2db6f821e0cc957d821877d",
+      "bytes": 10950,
+      "firstSeen": "2026-09-21T04:28:37.135415+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/minimod23.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/minimod23/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/minimod3/12520.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "d3a8e768c374d03a2b21848666d7b0db0a5d58b07633c7940e0660cf0eaa00c6",
+      "bytes": 14898,
+      "firstSeen": "2026-09-21T04:28:37.706551+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/minimod3.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/minimod3/12520.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/minimod-b/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "910fa570d38f95bbb48288cf8935e65af9155b1d40496c393f19f2910c353d17",
+      "bytes": 10950,
+      "firstSeen": "2026-09-21T04:28:38.715013+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/minimod=b.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/minimod-b/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/minimod_b3/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "754943359bd7e5b325d5330b2f7b063b3fb186253bdf01b2757a134c61ec3239",
+      "bytes": 10950,
+      "firstSeen": "2026-09-21T04:28:39.593521+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/minimod_b3.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/minimod_b3/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/minimod_copy/12564.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "50d7b39b2e64ae98ea793fb8fa24b41f662abf2652bd1eeded9b4557b6f89f74",
+      "bytes": 21678,
+      "firstSeen": "2026-09-21T04:28:40.025737+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/minimod_copy.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/minimod_copy/12564.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/minimodiiic/12520.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "d3a8e768c374d03a2b21848666d7b0db0a5d58b07633c7940e0660cf0eaa00c6",
+      "bytes": 14898,
+      "firstSeen": "2026-09-21T04:28:40.594035+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/minimodIIIc.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/minimodiiic/12520.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/modivarius/splash.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "fce0575f64f5cdeb2ecd259fbfa8febf4d8b23a4031b3b7bd526c02727c7f15d",
+      "bytes": 17012,
+      "firstSeen": "2026-09-21T04:28:43.228441+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/Modivarius.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/modivarius/splash.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/modname/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "7fe58d1290fa7270c53d3d0b16654a7f9c4b092d45397105d1b7733defdea1ea",
+      "bytes": 28144,
+      "firstSeen": "2026-09-21T04:28:43.723463+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/modname.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/modname/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/polar/12564.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "bdf14cc8ca8cccccf0a364ce2adf8a4268f2f26ee7df993dad5f2b591b8c7ce6",
+      "bytes": 36055,
+      "firstSeen": "2026-09-21T04:29:04.739570+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/Polar.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/polar/12564.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/polar_-vx3/12520.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "bcc52878f6d01e2962014274c9529a99c80b3c07f88050c33b313a50fca4591c",
+      "bytes": 37640,
+      "firstSeen": "2026-09-21T04:29:06.370932+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/Polar_[vx3].rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/polar_-vx3/12520.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/polar_-vx3/12564.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "1d6a625b2a10e6430f26d19b0695146233bd94f449cb5097c0ffd9fb9ff383ec",
+      "bytes": 36055,
+      "firstSeen": "2026-09-21T04:29:06.370954+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/Polar_[vx3].rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/polar_-vx3/12564.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/polar_-vx3-_2/12520.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "bcc52878f6d01e2962014274c9529a99c80b3c07f88050c33b313a50fca4591c",
+      "bytes": 37640,
+      "firstSeen": "2026-09-21T04:29:07.182954+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/Polar_[vx3]_2.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/polar_-vx3-_2/12520.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/polar_-vx3-_2/12564.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "1d6a625b2a10e6430f26d19b0695146233bd94f449cb5097c0ffd9fb9ff383ec",
+      "bytes": 36055,
+      "firstSeen": "2026-09-21T04:29:07.182975+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/Polar_[vx3]_2.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/polar_-vx3-_2/12564.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/polar_-vx3a/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "83e6f5ef546ff07c090791bc5ab233adeaadd656086d551d503a0092dc48018e",
+      "bytes": 37655,
+      "firstSeen": "2026-09-21T04:29:08.038455+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/Polar_[vx3a].rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/polar_-vx3a/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/polar_-vx4/12520.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "cc99e0e9af038b3a187e137fbe11f0b6f73eb2c27d909877635d44561f689209",
+      "bytes": 37640,
+      "firstSeen": "2026-09-21T04:29:08.922670+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/Polar_[vx4].rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/polar_-vx4/12520.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/polar_-vx/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "610f871bef5da0937ce1aa62185ee0a294ca0dc02a09152751525f0ad46c1355",
+      "bytes": 37655,
+      "firstSeen": "2026-09-21T04:29:09.827662+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/Polar_[vx].rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/polar_-vx/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/polar_-vx/12520.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "e922325c240f96b62abfa5f56aa4c414a9d030447040adf337baac886e16155e",
+      "bytes": 37640,
+      "firstSeen": "2026-09-21T04:29:09.827682+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/Polar_[vx].rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/polar_-vx/12520.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/polar_final/splash.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "fd3af2f3fcf11e5482fed4f3d98552e20ad829bdc411b9db124613d7cb4c136c",
+      "bytes": 12594,
+      "firstSeen": "2026-09-21T04:29:10.649305+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/Polar_final.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/polar_final/splash.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/r-sp_1200/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "dbf86cfd6cfe13f05592fb5f143d4c7509bb7b80832c34cdd692f5e8c83f6d1f",
+      "bytes": 30921,
+      "firstSeen": "2026-09-21T04:29:18.367444+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/R-SP_1200.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/r-sp_1200/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/r-sp_1200/12564.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "72557e600a66316ff9afddbde6ac73d34bcf6d2b99a86593dfc48512208f39c1",
+      "bytes": 20868,
+      "firstSeen": "2026-09-21T04:29:18.367464+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/R-SP_1200.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/r-sp_1200/12564.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/remix/12564.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "3e2a4d71cfffd1b3d4de0b001dcde1ccaca2bd787025ef6c19a8e8b7a6ff2b00",
+      "bytes": 30018,
+      "firstSeen": "2026-09-21T04:29:36.766785+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/remix.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/remix/12564.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/sensual_dreams/splash.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "097460d0efcb085fe83b6b9d5ba152f5c26fd308ed4c33a1b2f885fcc2310e6e",
+      "bytes": 17949,
+      "firstSeen": "2026-09-21T04:29:44.204442+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/sensual_dreams.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/sensual_dreams/splash.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/sync6/splash.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "0389e673f48e2a1d57d84df2ac3de661c399f02469a5ed7cceea49dbe06c96c7",
+      "bytes": 24210,
+      "firstSeen": "2026-09-21T04:29:52.402267+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/sync6.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/sync6/splash.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/sync6/12520.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "d0468e008a1118275cfce1b932c7b52fe1bb1d3c925973ec116bafafa5c25f6d",
+      "bytes": 13435,
+      "firstSeen": "2026-09-21T04:29:52.402288+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/sync6.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/sync6/12520.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/turnmod/Splash.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "8238cf33ff7498e7ad4fb001041580c94c2341dbfd3eb24a677fe74dc7694d6b",
+      "bytes": 72102,
+      "firstSeen": "2026-09-21T04:30:00.911476+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/TurnMod.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/turnmod/Splash.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/turnmod/12500.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "b8e9d672c98b83b0697c759e602479c17304f05200388aa53fd8ac9c75560b35",
+      "bytes": 48360,
+      "firstSeen": "2026-09-21T04:30:00.911499+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/TurnMod.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/turnmod/12500.jpg",
+      "error": null,
+      "fileSize": null
+    },
+    "rbm-skins/u_gene/12564.jpg": {
+      "kind": "rbm-skin",
+      "sha256": "598050736323ab451be31c8830e503bb0c9b152181472874b1086b00acf9a803",
+      "bytes": 20868,
+      "firstSeen": "2026-09-21T04:30:01.406667+00:00",
+      "sources": [
+        "https://storage.1ink.us/rebirth_mods/u_Gene.rbm"
+      ],
+      "status": "local-core",
+      "localPath": "archive/rbm-skins/u_gene/12564.jpg",
+      "error": null,
+      "fileSize": null
     }
   }
 }

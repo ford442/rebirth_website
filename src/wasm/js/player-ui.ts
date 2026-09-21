@@ -29,6 +29,7 @@ import { queryPlayerDom } from './player-dom';
 import { createTransportView, type PlayerBridge } from './player-transport';
 import { createStudioView } from './player-studio-view';
 import { installPlayerTestHooks } from './player-test-hooks';
+import { getModSkinUrl } from '../../data/rbm-skins';
 
 export type { PlayerBridge } from './player-transport';
 
@@ -256,6 +257,35 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
   }
 
   /**
+   * "Skin the player" — swaps `.rbs-player`'s background for the loaded
+   * mod's own extracted panel art, when this build has one for it (see
+   * `scripts/extract-rbm-skins.py`; most of the 367-mod corpus has none
+   * yet). Toggling never touches audio — it is a CSS-only background swap.
+   */
+  let currentSkinUrl: string | null = null;
+
+  function applySkin(on: boolean) {
+    if (currentSkinUrl && on) {
+      playerEl.style.setProperty('--rbs-skin-url', `url("${currentSkinUrl}")`);
+      playerEl.classList.add('is-skinned');
+    } else {
+      playerEl.classList.remove('is-skinned');
+      playerEl.style.removeProperty('--rbs-skin-url');
+    }
+    if (dom.btnSkinToggle) dom.btnSkinToggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+
+  function setSkinAvailability(url: string | null) {
+    currentSkinUrl = url;
+    if (dom.btnSkinToggle) dom.btnSkinToggle.hidden = !url;
+    applySkin(false);
+  }
+
+  dom.btnSkinToggle?.addEventListener('click', () => {
+    applySkin(dom.btnSkinToggle?.getAttribute('aria-pressed') !== 'true');
+  });
+
+  /**
    * Mods are a WASM-engine feature. In degraded mode the controls stay
    * visible but disabled with an explanation, rather than vanishing or
    * silently doing nothing.
@@ -287,6 +317,7 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
       const slots = mod.resources.filter((r) => r.loaded).map((r) => r.slot);
       const name = mod.title || label;
       setModStatus(`${name} — ${mod.loadedSlots} slot${mod.loadedSlots === 1 ? '' : 's'}`, true);
+      setSkinAvailability(sourceLabel ? (getModSkinUrl(sourceLabel) ?? null) : null);
 
       let msg = `Mod loaded: ${name} (${slots.join(', ')})`;
       if (mod.status === 'partial' || mod.status === 'arena-exhausted') {
@@ -308,6 +339,7 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
         detail ? `: ${detail}` : ''
       }`;
       setModStatus('No mod loaded', false);
+      setSkinAvailability(null);
       transport.setMessage(msg);
       transport.showToast(msg, 'error');
     }
@@ -522,6 +554,7 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
     markUserGesture();
     bridge.clearMod();
     setModStatus('No mod loaded', false);
+    setSkinAvailability(null);
     const msg = 'Mod cleared — back to procedural drums';
     transport.setMessage(msg);
     transport.showToast(msg, 'success');

@@ -157,14 +157,36 @@ string ≥ 20 characters is `description`. Remainder is ignored.
 ## 7. Skin policy
 
 JPEG/PNG payloads are **catalogued only**. They are not decoded in WASM and
-must not be copied into the AudioWorklet heap. The `#82` mirror pipeline is
-the place to extract stills to
+must not be copied into the AudioWorklet heap. `scripts/extract-rbm-skins.py`
+(native `rbm-inspect --extract-skins`) is the place to extract stills to
 
 ```
-public/archive/rbm-mods/<slug>/<original-filename>
+public/archive/rbm-skins/<slug>/<original-filename>
 ```
 
 for CSS `background-image`.
+
+### Known limitation — large skin payloads do not decode byte-accurately
+
+§4's "no length prefix, payload runs to the end of the chunk" rule is
+correct and matches what `RbmParser::parseEmbf` does — and it is sufficient
+for `.aif`/`.wav` sample payloads, which carry their own internal chunk
+sizes a decoder can trust independent of the outer EMBF length. It is
+**not** sufficient for JPEG skin payloads in practice: corpus-testing
+`extract-rbm-skins.py` across a dozen real mods found every full-size
+splash/panel JPEG (typically 256x256, tens to ~140 KB) decodes only its
+first few pixel rows before the entropy-coded scan data goes bad, while
+small (roughly sub-1 KB) icon/button/slider fragments usually decode
+cleanly. The SOI/APP0/SOF/DHT headers are intact (dimensions read
+correctly), so the corruption is specific to the scan data, not the
+resource boundary or the payload's start offset. Leading theory: the larger
+payloads are not a flat byte range at all — segmented/interleaved storage
+inherited from the assets' Mac resource-fork origin is suspected but
+unconfirmed. `extract-rbm-skins.py` validates every candidate with a real
+decode (Pillow) before writing anything, specifically because of this, and
+currently rejects the large images as a result — it is not a bug in the
+extraction script. Fixing this needs the true EMBF-for-skins payload layout
+reverse-engineered; contributions welcome.
 
 ---
 

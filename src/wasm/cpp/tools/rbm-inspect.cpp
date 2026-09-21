@@ -14,6 +14,7 @@
 #include "../parser/ParsedModJson.h"
 #include "../parser/RbmParser.h"
 #include "../synth/SamplePool.h"
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -92,27 +93,76 @@ void printSamples(const ParsedMod& mod) {
   }
 }
 
+// A skin resource name straight out of the mod is untrusted input — reject
+// anything that could escape the extraction directory (path separators,
+// `..`, or an empty name) instead of trying to sanitise it.
+bool isSafeResourceName(const std::string& name) {
+  if (name.empty() || name == "." || name == "..") return false;
+  return name.find('/') == std::string::npos && name.find('\\') == std::string::npos;
+}
+
+// Writes every Skin-kind resource's raw bytes to `<dir>/<resource name>` and
+// prints one "SKIN <name> <bytes>" line per file written, so a wrapper
+// script can extract skins across the whole mod corpus without linking a
+// JPEG decoder into the AudioWorklet-facing engine.
+int extractSkins(const ParsedMod& mod, const std::string& outDir) {
+  std::error_code ec;
+  std::filesystem::create_directories(outDir, ec);
+  if (ec) {
+    std::cerr << "Could not create output directory: " << outDir << " (" << ec.message() << ")\n";
+    return 1;
+  }
+
+  int written = 0;
+  for (const auto& res : mod.resources) {
+    if (res.kind != ModResourceKind::Skin) continue;
+    if (!isSafeResourceName(res.name)) {
+      std::cerr << "Skipping unsafe resource name: " << res.name << "\n";
+      continue;
+    }
+    const std::filesystem::path outPath = std::filesystem::path(outDir) / res.name;
+    std::ofstream out(outPath, std::ios::binary);
+    if (!out) {
+      std::cerr << "Could not write: " << outPath.string() << "\n";
+      continue;
+    }
+    out.write(reinterpret_cast<const char*>(res.bytes.data()),
+              static_cast<std::streamsize>(res.bytes.size()));
+    std::cout << "SKIN " << res.name << " " << res.bytes.size() << "\n";
+    ++written;
+  }
+  std::cout << "SKINS " << written << "\n";
+  return 0;
+}
+
 } // namespace
 
 int main(int argc, char** argv) {
   bool pretty = false;
   bool samples = false;
   std::string path;
+  std::string extractSkinsDir;
   for (int i = 1; i < argc; ++i) {
     const std::string arg = argv[i];
     if (arg == "--pretty") {
       pretty = true;
     } else if (arg == "--samples") {
       samples = true;
+    } else if (arg == "--extract-skins") {
+      if (i + 1 >= argc) {
+        std::cerr << "--extract-skins requires a directory argument\n";
+        return 2;
+      }
+      extractSkinsDir = argv[++i];
     } else if (arg == "-h" || arg == "--help") {
-      std::cout << "Usage: rbm-inspect [--pretty|--samples] file.rbm\n";
+      std::cout << "Usage: rbm-inspect [--pretty|--samples|--extract-skins DIR] file.rbm\n";
       return 0;
     } else {
       path = arg;
     }
   }
   if (path.empty()) {
-    std::cerr << "Usage: rbm-inspect [--pretty|--samples] file.rbm\n";
+    std::cerr << "Usage: rbm-inspect [--pretty|--samples|--extract-skins DIR] file.rbm\n";
     return 2;
   }
 
@@ -124,7 +174,9 @@ int main(int argc, char** argv) {
       std::cerr << "Parse error: " << parser.lastError() << "\n";
       return 1;
     }
-    if (samples) {
+    if (!extractSkinsDir.empty()) {
+      return extractSkins(*mod, extractSkinsDir);
+    } else if (samples) {
       printSamples(*mod);
     } else if (pretty) {
       printPretty(*mod);
