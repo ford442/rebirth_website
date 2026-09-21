@@ -197,6 +197,14 @@ class MockRbsAudioEngine implements RbsAudioEngineInstance {
     return 16;
   }
 
+  saveRbs(): Uint8Array {
+    return new Uint8Array(0);
+  }
+
+  lastSaveError(): string {
+    return '';
+  }
+
   isPlaying(): boolean {
     return false;
   }

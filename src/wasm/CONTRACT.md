@@ -348,27 +348,29 @@ block; it does not create a JavaScript `rb338` namespace.
 
 ### `RbsAudioEngine`
 
-| C++ API                                      | Embind name           | TS signature                         |
-| -------------------------------------------- | --------------------- | ------------------------------------ |
-| `bool init(const EngineConfig&)`             | `init`                | `(config: EngineConfig) => boolean`  |
-| `bool loadSong(const ParsedSong&)`           | `loadSong`            | `(song: WasmParsedSong) => boolean`  |
-| `loadSongFromBytesWrapper(..., uintptr_t, size_t)` | `loadSongFromBytes` | `(ptr: number, size: number) => WasmParsedSong \| undefined` |
-| `const std::string& lastParseError() const`  | `lastParseError`      | `() => string`                       |
-| `void play()`                                | `play`                | `() => void`                         |
-| `void pause()`                               | `pause`               | `() => void`                         |
-| `void stop()`                                | `stop`                | `() => void`                         |
-| `void seek(uint16_t)`                        | `seek`                | `(bar: number) => void`              |
-| `void setVolume(float)`                      | `setVolume`           | `(volume: number) => void`           |
-| `void setTempo(float)`                       | `setTempo`            | `(bpm: number) => void`              |
-| `float getTempo() const`                     | `getTempo`            | `() => number`                       |
-| `void setTempoMultiplier(float)`             | `setTempoMultiplier`  | `(multiplier: number) => void`       |
-| `void setDeviceParam(uint8_t,uint8_t,float)` | `setDeviceParam`      | `(deviceId, paramId, value) => void` |
-| `setStepWrapper(..., uint8_t x4, StepData)`  | `setStep`             | `(deviceId, bank, patternIndex, stepIndex, step: WasmStepData) => boolean` |
-| `StepData getStep(uint8_t,uint8_t,uint8_t,uint8_t) const` | `getStep` | `(deviceId, bank, patternIndex, stepIndex) => WasmStepData` |
-| `bool setPatternLength(uint8_t,uint8_t,uint8_t,uint8_t)` | `setPatternLength` | `(deviceId, bank, patternIndex, length) => boolean` |
-| `uint8_t getPatternLength(uint8_t,uint8_t,uint8_t) const` | `getPatternLength` | `(deviceId, bank, patternIndex) => number` |
-| `bool isPlaying() const`                     | `isPlaying`           | `() => boolean`                      |
-| `void getPlaybackPosition(...)` (wrapped)    | `getPlaybackPosition` | `() => PlaybackPosition`             |
+| C++ API                                                   | Embind name           | TS signature                                                               |
+| --------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------- |
+| `bool init(const EngineConfig&)`                          | `init`                | `(config: EngineConfig) => boolean`                                        |
+| `bool loadSong(const ParsedSong&)`                        | `loadSong`            | `(song: WasmParsedSong) => boolean`                                        |
+| `loadSongFromBytesWrapper(..., uintptr_t, size_t)`        | `loadSongFromBytes`   | `(ptr: number, size: number) => WasmParsedSong \| undefined`               |
+| `const std::string& lastParseError() const`               | `lastParseError`      | `() => string`                                                             |
+| `void play()`                                             | `play`                | `() => void`                                                               |
+| `void pause()`                                            | `pause`               | `() => void`                                                               |
+| `void stop()`                                             | `stop`                | `() => void`                                                               |
+| `void seek(uint16_t)`                                     | `seek`                | `(bar: number) => void`                                                    |
+| `void setVolume(float)`                                   | `setVolume`           | `(volume: number) => void`                                                 |
+| `void setTempo(float)`                                    | `setTempo`            | `(bpm: number) => void`                                                    |
+| `float getTempo() const`                                  | `getTempo`            | `() => number`                                                             |
+| `void setTempoMultiplier(float)`                          | `setTempoMultiplier`  | `(multiplier: number) => void`                                             |
+| `void setDeviceParam(uint8_t,uint8_t,float)`              | `setDeviceParam`      | `(deviceId, paramId, value) => void`                                       |
+| `setStepWrapper(..., uint8_t x4, StepData)`               | `setStep`             | `(deviceId, bank, patternIndex, stepIndex, step: WasmStepData) => boolean` |
+| `StepData getStep(uint8_t,uint8_t,uint8_t,uint8_t) const` | `getStep`             | `(deviceId, bank, patternIndex, stepIndex) => WasmStepData`                |
+| `bool setPatternLength(uint8_t,uint8_t,uint8_t,uint8_t)`  | `setPatternLength`    | `(deviceId, bank, patternIndex, length) => boolean`                        |
+| `uint8_t getPatternLength(uint8_t,uint8_t,uint8_t) const` | `getPatternLength`    | `(deviceId, bank, patternIndex) => number`                                 |
+| `saveRbsWrapper(RbsAudioEngine&)`                         | `saveRbs`             | `() => Uint8Array`                                                         |
+| `const std::string& lastSaveError() const`                | `lastSaveError`       | `() => string`                                                             |
+| `bool isPlaying() const`                                  | `isPlaying`           | `() => boolean`                                                            |
+| `void getPlaybackPosition(...)` (wrapped)                 | `getPlaybackPosition` | `() => PlaybackPosition`                                                   |
 
 `loadSong` remains bound for an in-process writer/editor that already holds
 C++ state. The browser archive path is `loadSongFromBytes`: parse on the
@@ -391,13 +393,13 @@ pointer is published, and nothing allocates inside `processBlock()`.
 
 Coordinate ranges — out of range is refused, not clamped:
 
-| Argument       | Range | C++ constant             |
-| -------------- | ----- | ------------------------ |
-| `deviceId`     | 0–3   | `NUM_DEVICES`            |
-| `bank`         | 0–3   | `MAX_BANKS`              |
-| `patternIndex` | 0–7   | `MAX_PATTERNS_PER_BANK`  |
-| `stepIndex`    | 0–15  | `MAX_STEPS`              |
-| `length`       | 1–16  | `MAX_STEPS`              |
+| Argument       | Range | C++ constant            |
+| -------------- | ----- | ----------------------- |
+| `deviceId`     | 0–3   | `NUM_DEVICES`           |
+| `bank`         | 0–3   | `MAX_BANKS`             |
+| `patternIndex` | 0–7   | `MAX_PATTERNS_PER_BANK` |
+| `stepIndex`    | 0–15  | `MAX_STEPS`             |
+| `length`       | 1–16  | `MAX_STEPS`             |
 
 A slot the file never stored is materialised on first write (length 16, all
 steps off), so every bank/pattern coordinate above is editable.
@@ -468,6 +470,25 @@ arena — cheap enough for a catalogue view. In a report it produces, `loaded`
 means "would load" and `usedFrames` is what a load _would_ consume, so a UI
 can warn about an oversized mod before committing. To actually load samples,
 use `RbsAudioEngine.loadMod()`.
+
+### `RbsAudioEngine` — `.rbs` write-back
+
+`saveRbs()` serialises the engine's working copy through `RbsWriter` and hands
+JavaScript the bytes. It is the mirror image of `loadSongFromBytes`, and for
+the same reason: the song has to be written from C++ state, because
+`ParsedSong.automation` never crosses Embind, so a writer fed a
+`WasmParsedSong` would drop every TRAK event in the file.
+
+The returned array is a **copy**, like `renderOfflineToWav`. An **empty**
+array means the save failed — read `lastSaveError()`. The call is synchronous
+and runs on the live engine: nothing is rendered and the sequencer is not
+advanced, so unlike a bounce it does not need a throwaway offline engine.
+
+What it saves is what you hear, not what was on disk: `setStep()` edits are
+already in the working copy, and the live transport tempo plus sticky
+`setDeviceParam()` knob values are folded in by `saveRbs()` itself. Output is
+always a ReBirth 2.x `CAT `/`RB40` container — see `parser/RbsFormat.md` §10
+for what a save drops.
 
 ### `RbsAudioEngine` — offline bounce
 
@@ -653,20 +674,20 @@ Linker and export flags are defined in
 
 Key release linker settings:
 
-| Flag                         | Value                                                                                                           |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `-pthread`                   | Enabled                                                                                                         |
-| `-sAUDIO_WORKLET=1`          | Enabled                                                                                                         |
-| `-sWASM_WORKERS=1`           | Enabled                                                                                                         |
-| `-sSTACK_SIZE`               | 131072 (128 KiB module linear stack)                                                                            |
-| `-sINITIAL_MEMORY`           | 67108864 (64 MiB)                                                                                               |
-| `-sMAXIMUM_MEMORY`           | 67108864 (equal to INITIAL; no growth)                                                                          |
-| `-sALLOW_MEMORY_GROWTH`      | 0                                                                                                               |
-| `-sMALLOC`                   | `emmalloc` (release) / `emmalloc-memvalidate` (debug)                                                           |
-| `-sFILESYSTEM`               | 0                                                                                                               |
-| `-sASSERTIONS`               | 0                                                                                                               |
-| `-sEXPORTED_FUNCTIONS`       | `_malloc`, `_free`                                                                                              |
-| `-sEXPORTED_RUNTIME_METHODS` | `HEAPU8`, `emscriptenRegisterAudioObject`, `emscriptenGetAudioObject`                                           |
+| Flag                         | Value                                                                 |
+| ---------------------------- | --------------------------------------------------------------------- |
+| `-pthread`                   | Enabled                                                               |
+| `-sAUDIO_WORKLET=1`          | Enabled                                                               |
+| `-sWASM_WORKERS=1`           | Enabled                                                               |
+| `-sSTACK_SIZE`               | 131072 (128 KiB module linear stack)                                  |
+| `-sINITIAL_MEMORY`           | 67108864 (64 MiB)                                                     |
+| `-sMAXIMUM_MEMORY`           | 67108864 (equal to INITIAL; no growth)                                |
+| `-sALLOW_MEMORY_GROWTH`      | 0                                                                     |
+| `-sMALLOC`                   | `emmalloc` (release) / `emmalloc-memvalidate` (debug)                 |
+| `-sFILESYSTEM`               | 0                                                                     |
+| `-sASSERTIONS`               | 0                                                                     |
+| `-sEXPORTED_FUNCTIONS`       | `_malloc`, `_free`                                                    |
+| `-sEXPORTED_RUNTIME_METHODS` | `HEAPU8`, `emscriptenRegisterAudioObject`, `emscriptenGetAudioObject` |
 
 See ADR [`docs/adr/0002-wasm-build-variants-and-heap.md`](../../docs/adr/0002-wasm-build-variants-and-heap.md)
 for dual-build and heap policy decisions.

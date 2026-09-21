@@ -27,15 +27,24 @@ graph, the same atomic snapshot swap `loadMod()` uses. Undo lives in JavaScript
 (`js/player-step-edit.ts`) as a bounded stack of inverse patches. Nothing sends
 a `ParsedSong` back across Embind, and nothing allocates in `processBlock()`.
 
+The edited song saves back out as a `.rbs` file. `RbsWriter`
+(`parser/RbsWriter.cpp`) serialises a `ParsedSong` to a v2.x `CAT `/`RB40`
+container, and `RbsAudioEngine::saveRbs()` (Embind `saveRbs`, the SAVE .RBS
+button) dumps the engine's working copy through it — pattern edits, the live
+transport tempo and sticky `setDeviceParam` knob values included. Writing from
+C++ is what keeps `automation` intact: it never crosses Embind, so a writer fed
+a `WasmParsedSong` would drop every TRAK event in the file. The round trip is
+semantic, not bitwise; `cpp/parser/RbsFormat.md` §10 lists what a save drops,
+`cpp/tests/test_writer.cpp` is the gate, and `rbs-write` is the CLI.
+
 ### What it does not do
 
-- **Write `.rbs`.** The parser is read-only; there is no serialiser, so every
-  edit — pattern steps and live knobs alike — is session-only. Reloading the
-  file from disk restores the original song.
-- **Persist knob moves in the working copy.** `setDeviceParam` replays onto a
-  rebuilt graph but does not rewrite `ParsedSong::devices`; only pattern edits
-  land in the engine's working copy today. A `SAVE .RBS` control would need to
-  snapshot both.
+- **Write the v1 / v1.5 MIDI-SysEx container.** That generation is read-only.
+  A v1 song always saves as ReBirth 2.x, labelled `…-exported.rbs`.
+- **Embed `.rbm` mods in a saved song.** A mod stays a separate file; a save
+  never grows a sample bank.
+- **Reproduce a source file byte for byte.** Unknown chunks, reserved fields
+  and Propellerhead checksums we have not documented are not preserved.
 - **Play TRAK automation from an archive file loaded through Embind.** The
   parser _stores_ every non-pattern TRAK event in `ParsedSong::automation` and
   `AutomationScheduler` applies it on the audio thread — but that vector is not
@@ -97,7 +106,7 @@ Pure-TS metadata parsing lives in `src/wasm/js/RbsMetadataSniffer.ts` (HEAD / GL
 5. **Offline bounce + MIDI export** — WAV mix and per-device stems on a Worker (`js/wasm-bounce.ts`), and `.mid` export from `src/lib/midi-smf.ts` ✅.
 6. **Fallback mode** — if WASM init fails, provide metadata sniffing + Web Audio sketch preview so the UI remains usable ✅.
 7. **End-to-end validation** — browser tests cover upload, demo loading, transport controls, mod loading and fallback behaviour ✅ (`tests/rbs-player.spec.ts`, `tests/wasm-*.spec.ts`).
-8. **Pattern editing** — step edits patch the engine's working copy through `setStep` / `setPatternLength` and republish the graph ✅, with JS-side inverse-patch undo ✅. Remaining: arrangement editing (changing a bar's `PatternRef`) and a `.rbs` writer so `SAVE .RBS` can snapshot pattern edits *and* live knob moves.
+8. **Pattern editing** — step edits patch the engine's working copy through `setStep` / `setPatternLength` and republish the graph ✅, with JS-side inverse-patch undo ✅. Remaining: arrangement editing (changing a bar's `PatternRef`) and a `.rbs` writer so `SAVE .RBS` can snapshot pattern edits _and_ live knob moves.
 
 ## Audio thread architecture
 
@@ -165,6 +174,18 @@ to `CMakeLists.txt`, `Makefile`, or `build.sh` individually. `build.sh` is an
 cmake --build src/wasm/cpp/build --target rbs-inspect
 ./src/wasm/cpp/build/rbs-inspect src/wasm/test-fixtures/standard-rebirth.rbs
 ./src/wasm/cpp/build/rbs-inspect --pretty src/wasm/test-fixtures/blue-planet.rbs
+```
+
+**Re-serialise a song file** — `rbs-write` runs a file through `RbsWriter` and
+reloads the result before handing it over. The semantic round trip is the
+writer's gate, so the two dumps must match:
+
+```bash
+cmake --build src/wasm/cpp/build --target rbs-write
+./src/wasm/cpp/build/rbs-write --check src/wasm/test-fixtures/blue-planet.rbs
+./src/wasm/cpp/build/rbs-write src/wasm/test-fixtures/blue-planet.rbs /tmp/out.rbs
+diff <(./src/wasm/cpp/build/rbs-inspect src/wasm/test-fixtures/blue-planet.rbs) \
+     <(./src/wasm/cpp/build/rbs-inspect /tmp/out.rbs)
 ```
 
 #### What the native tests cover
@@ -338,7 +359,7 @@ src/wasm/
 │   ├── Makefile                 # Optional g++ wrapper (no CMake required)
 │   ├── main.cpp                 # Emscripten entry point + embind exports
 │   ├── build.sh                 # Thin emcmake wrapper + worklet/manifest post-process
-│   ├── tools/                   # rbs-inspect / rbm-inspect CLIs (JSON dumps)
+│   ├── tools/                   # rbs-inspect / rbm-inspect (JSON dumps), rbs-write
 │   ├── tests/                   # doctest unit tests (native only)
 │   ├── native_stubs/            # Emscripten-only APIs stubbed for the native build
 │   ├── third_party/doctest.h    # Vendored doctest 2.4.11

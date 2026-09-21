@@ -154,6 +154,28 @@ public:
   /** A pattern's play length, or 0 when the song has no such pattern. */
   uint8_t getPatternLength(uint8_t deviceId, uint8_t bank, uint8_t patternIndex) const;
 
+  // ── Saving (.rbs write-back) ──────────────────────────────────────
+
+  /**
+   * Serialise the engine's working copy back to `.rbs` bytes.
+   *
+   * This is a dump of C++ state, not a reconstruction from a JS object: the
+   * song the sequencer is playing — pattern edits from setStep() included —
+   * goes straight to RbsWriter, so `automation` (which never crosses Embind)
+   * is carried through untouched.
+   *
+   * The live transport tempo and the session's setDeviceParam() knob moves
+   * are folded into the saved copy, so the file matches what you hear rather
+   * than what was on disk. Output is always a ReBirth 2.x container.
+   *
+   * Main thread only. Returns an empty vector on failure — see
+   * lastSaveError().
+   */
+  std::vector<uint8_t> saveRbs();
+
+  /** Last saveRbs() error (empty on success). */
+  const std::string& lastSaveError() const { return m_lastSaveError; }
+
   /** Query whether the engine is currently playing. */
   bool isPlaying() const { return m_playing.load(std::memory_order_acquire); }
 
@@ -291,6 +313,7 @@ private:
   std::shared_ptr<const SamplePool> m_samplePool;
   ModLoadReport m_modReport;
   std::string m_lastParseError;
+  std::string m_lastSaveError;
 
   // Live knob moves, remembered so they survive a graph rebuild.
   //
