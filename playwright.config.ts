@@ -14,6 +14,7 @@ const preferPreviewSpecs = [
   '**/wasm-export.spec.ts',
   '**/wasm-automation.spec.ts',
   '**/wasm-heap-probe.spec.ts',
+  '**/wasm-step-edit.spec.ts',
 ];
 
 const wasmTestIgnore =
@@ -26,6 +27,7 @@ const wasmTestIgnore =
         'tests/wasm-export.spec.ts',
         'tests/wasm-automation.spec.ts',
         'tests/wasm-heap-probe.spec.ts',
+        'tests/wasm-step-edit.spec.ts',
       ]
     : [];
 

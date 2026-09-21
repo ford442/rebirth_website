@@ -125,6 +125,35 @@ public:
    */
   void setDeviceParam(uint8_t deviceId, uint8_t paramId, float value);
 
+  // ── Pattern editing (engine working copy) ─────────────────────────
+  //
+  // C++ owns the song. JavaScript sends one patch per edit — never a whole
+  // ParsedSong back through Embind, which cannot carry `automation` and
+  // would drop it on the first keystroke.
+  //
+  // Each setter mutates the main-thread working copy and republishes the
+  // render graph (same path as loadMod()). Nothing here runs on, or
+  // allocates for, the audio thread: it keeps playing the previous snapshot
+  // until the new pointer is published.
+  //
+  // Session-only, exactly like setDeviceParam(): the loaded `.rbs` bytes are
+  // never rewritten. Reloading the file from disk restores the original.
+
+  /** Overwrite one step. Creates the pattern if the song has no such slot. */
+  bool setStep(uint8_t deviceId, uint8_t bank, uint8_t patternIndex,
+               uint8_t stepIndex, const StepData& step);
+
+  /** Read one step back (an empty StepData for a slot the song does not have). */
+  StepData getStep(uint8_t deviceId, uint8_t bank, uint8_t patternIndex,
+                   uint8_t stepIndex) const;
+
+  /** Set a pattern's play length (1–16). Creates the pattern if absent. */
+  bool setPatternLength(uint8_t deviceId, uint8_t bank, uint8_t patternIndex,
+                        uint8_t length);
+
+  /** A pattern's play length, or 0 when the song has no such pattern. */
+  uint8_t getPatternLength(uint8_t deviceId, uint8_t bank, uint8_t patternIndex) const;
+
   /** Query whether the engine is currently playing. */
   bool isPlaying() const { return m_playing.load(std::memory_order_acquire); }
 
@@ -204,6 +233,10 @@ private:
   void drainCommands();
   void handleCommand(const EngineCommand& cmd);
   void republishGraph();
+  /** Locate a pattern in the working copy, appending an empty one if absent. */
+  Pattern* findOrCreatePattern(uint8_t deviceId, uint8_t bank, uint8_t patternIndex);
+  const Pattern* findPattern(uint8_t deviceId, uint8_t bank, uint8_t patternIndex) const;
+  static bool validSlot(uint8_t deviceId, uint8_t bank, uint8_t patternIndex);
   /** Rewind transport + graph for a bounce. Returns the snapshot, or null. */
   EngineSnapshot* prepareOfflineTransport();
   /** Single offline render path; writes floats, WAV bytes, or both. */
@@ -220,6 +253,14 @@ private:
 
   EngineConfig m_config{};
   bool m_initialised = false;
+
+  // Main-thread working copy of the loaded song — the editable master.
+  //
+  // The published snapshot holds a *copy*, so a graph rebuild must start
+  // from here rather than from the live snapshot: that is what makes a
+  // pattern edit survive a later loadMod() or knob replay.
+  ParsedSong m_song{};
+  bool m_hasSong = false;
 
   // Atomic state shared between main thread and audio thread.
   std::atomic<bool> m_playing{false};

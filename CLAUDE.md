@@ -139,8 +139,10 @@ WASM via Emscripten, CI-built and deployed). It parses v1/v1.5 and v2 `.rbs`,
 sequences the arrangement, synthesises TB-303 (ZDF ladder filter + PolyBLEP
 oscillators) and TR-808/TR-909 — procedurally or from `.rbm` mod samples —
 bounces offline to WAV (full mix or per-device stems), and exports `.mid` from
-TypeScript. It does **not** write `.rbs`, edit patterns, or render `.rbm` skins,
-and TRAK automation plays only through the `loadSongFromBytes` path. See
+TypeScript. Pattern steps are editable in the studio grid through
+`RbsAudioEngine::setStep` (one patch per click, session-only). It does **not**
+write `.rbs` or render `.rbm` skins, and TRAK automation plays only through the
+`loadSongFromBytes` path. See
 `src/wasm/README.md` for the full status and roadmap.
 
 ### Which language owns what

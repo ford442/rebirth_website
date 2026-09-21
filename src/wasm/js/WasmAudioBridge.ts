@@ -25,7 +25,7 @@ import type {
   RenderedFile,
 } from '../types/wasm-audio-engine';
 import type { ParsedMod } from '../types/wasm-audio-mod';
-import type { ParsedSong, PlayerStatus } from '../types/wasm-audio-song';
+import type { ParsedSong, PlayerStatus, WasmStepData } from '../types/wasm-audio-song';
 
 import { MASTER_BUS } from '../types/wasm-audio-engine';
 import { MOD_LOAD_STATUSES } from '../types/wasm-audio-mod';
@@ -545,6 +545,105 @@ export class WasmAudioBridge {
     // are never written back into the loaded song by the engine.
     this._paramOverrides.set(`${id}:${param}`, { deviceId: id, paramId: param, value: clamped });
     return true;
+  }
+
+  /**
+   * Toggle or rewrite one pattern step in the engine's working copy.
+   *
+   * One patch per edit — the whole point of the C++-side `setStep`. Nothing
+   * here sends a `ParsedSong` back across Embind: that copy cannot carry
+   * TRAK automation, so a round trip would drop it on the first click.
+   *
+   * Session-only, like `setDeviceParam`: the `.rbs` bytes are untouched, so
+   * reloading the file from disk restores the original pattern.
+   */
+  setStep(
+    deviceId: number,
+    bank: number,
+    patternIndex: number,
+    stepIndex: number,
+    step: WasmStepData
+  ): boolean {
+    if (!this.enginePtr || typeof this.enginePtr.setStep !== 'function') return false;
+    const coords = this._stepCoords(deviceId, bank, patternIndex, stepIndex);
+    if (!coords) return false;
+    return Boolean(
+      this.enginePtr.setStep(
+        coords.deviceId,
+        coords.bank,
+        coords.patternIndex,
+        coords.stepIndex,
+        {
+          active: Boolean(step.active),
+          note: Math.max(0, Math.min(127, Math.floor(step.note ?? 0))),
+          drumExtra: Math.max(0, Math.min(255, Math.floor(step.drumExtra ?? 0))),
+          accent: Boolean(step.accent),
+          slide: Boolean(step.slide),
+        }
+      )
+    );
+  }
+
+  /** Read a step back out of the engine's working copy, or null without an engine. */
+  getStep(
+    deviceId: number,
+    bank: number,
+    patternIndex: number,
+    stepIndex: number
+  ): WasmStepData | null {
+    if (!this.enginePtr || typeof this.enginePtr.getStep !== 'function') return null;
+    const coords = this._stepCoords(deviceId, bank, patternIndex, stepIndex);
+    if (!coords) return null;
+    return this.enginePtr.getStep(
+      coords.deviceId,
+      coords.bank,
+      coords.patternIndex,
+      coords.stepIndex
+    );
+  }
+
+  /** Set a pattern's play length (1–16) in the engine's working copy. */
+  setPatternLength(
+    deviceId: number,
+    bank: number,
+    patternIndex: number,
+    length: number
+  ): boolean {
+    if (!this.enginePtr || typeof this.enginePtr.setPatternLength !== 'function') return false;
+    const coords = this._stepCoords(deviceId, bank, patternIndex, 0);
+    if (!coords) return false;
+    const steps = Math.floor(length);
+    if (!Number.isFinite(steps) || steps < 1 || steps > 16) return false;
+    return Boolean(
+      this.enginePtr.setPatternLength(coords.deviceId, coords.bank, coords.patternIndex, steps)
+    );
+  }
+
+  /**
+   * Validate an edit coordinate before it crosses into WASM.
+   *
+   * The engine rejects out-of-range slots too, but `uint8_t` arguments wrap
+   * on the way in — so a stray 256 would silently become device 0 rather
+   * than being refused. Checking here keeps the boundary honest.
+   */
+  private _stepCoords(
+    deviceId: number,
+    bank: number,
+    patternIndex: number,
+    stepIndex: number
+  ): { deviceId: number; bank: number; patternIndex: number; stepIndex: number } | null {
+    const coords = {
+      deviceId: Math.floor(deviceId),
+      bank: Math.floor(bank),
+      patternIndex: Math.floor(patternIndex),
+      stepIndex: Math.floor(stepIndex),
+    };
+    if (!Object.values(coords).every((v) => Number.isFinite(v))) return null;
+    if (coords.deviceId < 0 || coords.deviceId > 3) return null;
+    if (coords.bank < 0 || coords.bank > 3) return null;
+    if (coords.patternIndex < 0 || coords.patternIndex > 7) return null;
+    if (coords.stepIndex < 0 || coords.stepIndex > 15) return null;
+    return coords;
   }
 
   setTempoMultiplier(multiplier: number): boolean {

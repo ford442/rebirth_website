@@ -33,7 +33,12 @@ import type {
   WasmModLoadReport,
   WasmModSampleReportEntry,
 } from '../types/wasm-audio-mod';
-import type { WasmDeviceId, WasmParsedSong, WasmSongFxSettings } from '../types/wasm-audio-song';
+import type {
+  WasmDeviceId,
+  WasmParsedSong,
+  WasmSongFxSettings,
+  WasmStepData,
+} from '../types/wasm-audio-song';
 
 import {
   MOD_LOAD_STATUSES,
@@ -159,6 +164,38 @@ class MockRbsAudioEngine implements RbsAudioEngineInstance {
   }
   setTempoMultiplier(_multiplier: number): void {}
   setDeviceParam(_deviceId: number, _paramId: number, _value: number): void {}
+
+  setStep(
+    _deviceId: number,
+    _bank: number,
+    _patternIndex: number,
+    _stepIndex: number,
+    _step: WasmStepData
+  ): boolean {
+    return true;
+  }
+
+  getStep(
+    _deviceId: number,
+    _bank: number,
+    _patternIndex: number,
+    _stepIndex: number
+  ): WasmStepData {
+    return { active: false, note: 0, drumExtra: 0, accent: false, slide: false };
+  }
+
+  setPatternLength(
+    _deviceId: number,
+    _bank: number,
+    _patternIndex: number,
+    _length: number
+  ): boolean {
+    return true;
+  }
+
+  getPatternLength(_deviceId: number, _bank: number, _patternIndex: number): number {
+    return 16;
+  }
 
   isPlaying(): boolean {
     return false;

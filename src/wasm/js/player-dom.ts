@@ -52,6 +52,15 @@ export interface PlayerDom {
   studioPattern: HTMLSelectElement | null;
   studioTabs: NodeListOf<HTMLButtonElement>;
   studioKnobs: NodeListOf<HTMLInputElement | HTMLSelectElement>;
+  /** The 16 editable pattern cells. */
+  studioSteps: NodeListOf<HTMLButtonElement>;
+  studioUndo: HTMLButtonElement | null;
+  /** Pitch written to a TB-303 step that is switched on. */
+  studioNote: HTMLSelectElement | null;
+  studioNoteWrap: HTMLElement | null;
+  /** Drum instrument whose bit a click toggles on the 808/909. */
+  studioDrum: HTMLSelectElement | null;
+  studioDrumWrap: HTMLElement | null;
 }
 
 export function queryPlayerDom(playerEl: HTMLElement): PlayerDom {
@@ -102,5 +111,11 @@ export function queryPlayerDom(playerEl: HTMLElement): PlayerDom {
     studioKnobs: playerEl.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
       '[data-studio-param]'
     ),
+    studioSteps: playerEl.querySelectorAll<HTMLButtonElement>('[data-studio-step]'),
+    studioUndo: playerEl.querySelector('#rbsStudioUndo'),
+    studioNote: playerEl.querySelector('#rbsStudioNote'),
+    studioNoteWrap: playerEl.querySelector('[data-studio-note-wrap]'),
+    studioDrum: playerEl.querySelector('#rbsStudioDrum'),
+    studioDrumWrap: playerEl.querySelector('[data-studio-drum-wrap]'),
   };
 }

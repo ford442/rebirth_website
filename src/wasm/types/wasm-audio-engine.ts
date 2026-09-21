@@ -11,7 +11,7 @@
  * side.
  */
 
-import type { DeviceId, WasmDeviceId, WasmParsedSong } from './wasm-audio-song';
+import type { DeviceId, WasmDeviceId, WasmParsedSong, WasmStepData } from './wasm-audio-song';
 import type { WasmModLoadReport } from './wasm-audio-mod';
 
 /** Runtime engine configuration passed from JS to WASM on init.
@@ -116,6 +116,28 @@ export interface RbsAudioEngineInstance {
   getTempo(): number;
   setTempoMultiplier(multiplier: number): void;
   setDeviceParam(deviceId: number, paramId: number, value: number): void;
+  /**
+   * Pattern edit, engine working copy. One step patch per call — never a
+   * whole `WasmParsedSong`, which cannot carry TRAK automation back across
+   * Embind. Session-only: the loaded `.rbs` bytes are not rewritten.
+   */
+  setStep(
+    deviceId: number,
+    bank: number,
+    patternIndex: number,
+    stepIndex: number,
+    step: WasmStepData
+  ): boolean;
+  /** Read a step back; an all-false `WasmStepData` for a slot the song lacks. */
+  getStep(deviceId: number, bank: number, patternIndex: number, stepIndex: number): WasmStepData;
+  setPatternLength(
+    deviceId: number,
+    bank: number,
+    patternIndex: number,
+    length: number
+  ): boolean;
+  /** Pattern play length, or 0 when the song has no such pattern. */
+  getPatternLength(deviceId: number, bank: number, patternIndex: number): number;
   isPlaying(): boolean;
   getProcessedBlockCount(): number;
   renderTestBlock(numFrames: number): number;

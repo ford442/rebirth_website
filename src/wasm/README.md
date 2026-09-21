@@ -20,11 +20,22 @@ mod samples (`RbsAudioEngine::loadMod` → `synth/SamplePool.*`, covered by
 per-device stems — via `renderOfflineToWav` on a dedicated Worker, and the TS
 side exports the loaded song as a Standard MIDI File (`src/lib/midi-smf.ts`).
 
+Pattern steps are editable in the studio grid. A click sends one patch —
+`RbsAudioEngine::setStep(deviceId, bank, patternIndex, stepIndex, StepData)` —
+which mutates the engine's main-thread working copy and republishes the render
+graph, the same atomic snapshot swap `loadMod()` uses. Undo lives in JavaScript
+(`js/player-step-edit.ts`) as a bounded stack of inverse patches. Nothing sends
+a `ParsedSong` back across Embind, and nothing allocates in `processBlock()`.
+
 ### What it does not do
 
-- **Write `.rbs`.** The parser is read-only; there is no serialiser.
-- **Edit patterns.** The studio view renders pattern and knob state; it does
-  not change the song.
+- **Write `.rbs`.** The parser is read-only; there is no serialiser, so every
+  edit — pattern steps and live knobs alike — is session-only. Reloading the
+  file from disk restores the original song.
+- **Persist knob moves in the working copy.** `setDeviceParam` replays onto a
+  rebuilt graph but does not rewrite `ParsedSong::devices`; only pattern edits
+  land in the engine's working copy today. A `SAVE .RBS` control would need to
+  snapshot both.
 - **Play TRAK automation from an archive file loaded through Embind.** The
   parser _stores_ every non-pattern TRAK event in `ParsedSong::automation` and
   `AutomationScheduler` applies it on the audio thread — but that vector is not
@@ -86,6 +97,7 @@ Pure-TS metadata parsing lives in `src/wasm/js/RbsMetadataSniffer.ts` (HEAD / GL
 5. **Offline bounce + MIDI export** — WAV mix and per-device stems on a Worker (`js/wasm-bounce.ts`), and `.mid` export from `src/lib/midi-smf.ts` ✅.
 6. **Fallback mode** — if WASM init fails, provide metadata sniffing + Web Audio sketch preview so the UI remains usable ✅.
 7. **End-to-end validation** — browser tests cover upload, demo loading, transport controls, mod loading and fallback behaviour ✅ (`tests/rbs-player.spec.ts`, `tests/wasm-*.spec.ts`).
+8. **Pattern editing** — step edits patch the engine's working copy through `setStep` / `setPatternLength` and republish the graph ✅, with JS-side inverse-patch undo ✅. Remaining: arrangement editing (changing a bar's `PatternRef`) and a `.rbs` writer so `SAVE .RBS` can snapshot pattern edits *and* live knob moves.
 
 ## Audio thread architecture
 
@@ -106,6 +118,7 @@ We use **Architecture A — Emscripten Wasm Audio Worklet**.
   - Mixes to planar stereo (L/R). Master volume uses WASM SIMD128 when compiled with Emscripten.
   - Publishes `bar`/`step` via atomic variables so the main thread can read them without locking.
   - The main thread builds a new snapshot (voices + mixer + song) and retires the old one once the audio epoch has advanced.
+  - The hazard handshake (`pinSnapshot` / `reclaimRetiredSnapshots`, `RbsAudioEngine.cpp`) is **sequentially consistent**, not release/acquire. Under release/acquire the audio thread's hazard store may be reordered past its validating load of `m_published`, so a concurrent reclaim can read a stale hazard and free the snapshot the callback is about to read. Pattern editing republishes on every click, which makes that window easy to hit; `tests/test_engine.cpp` stresses it from two threads.
 
 This keeps latency low (128-frame Web Audio quanta), avoids main-thread synthesis work, and matches the existing `-sAUDIO_WORKLET=1` / `-sWASM_WORKERS=1` build configuration.
 
@@ -371,6 +384,7 @@ src/wasm/
 │   ├── player-transport.ts      # Status, toasts, play/stop, volume, tempo
 │   ├── player-studio-view.ts    # Pattern grid + device knobs
 │   ├── player-studio.ts         # DeviceParam ids + knob mapping
+│   ├── player-step-edit.ts      # Step patch model + inverse-patch undo stack
 │   ├── player-test-hooks.ts     # window.* hooks for the Playwright specs
 │   ├── rbs-init-errors.ts       # Init failure classification
 │   ├── RbsMetadataSniffer.ts    # Pure-TS HEAD/GLOB/USRI sniffing (degraded mode)

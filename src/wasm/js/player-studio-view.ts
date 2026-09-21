@@ -6,15 +6,24 @@
  * mapping from `DeviceParam` (see `player-studio.ts`) to `bridge.setDeviceParam`.
  */
 
-import type { DeviceId, ParsedSong } from '../types/wasm-audio-song';
+import type { DeviceId, ParsedSong, WasmStepData } from '../types/wasm-audio-song';
 import {
   buildStepCells,
   defaultPatternCoords,
   DEVICE_INDEX,
   isAcidDevice,
   pickPattern,
+  pickPatternExact,
   STUDIO_DEVICE_LABEL,
 } from './player-studio';
+import {
+  applyStepToSong,
+  createEditHistory,
+  findDrumHit,
+  nextStepValue,
+  toWasmStep,
+  type StepEdit,
+} from './player-step-edit';
 import type { PlayerDom } from './player-dom';
 import type { PlayerBridge } from './player-transport';
 
@@ -27,6 +36,8 @@ export interface StudioViewDeps {
 
 export interface StudioView {
   setStudioLive(live: boolean): void;
+  /** Undo the most recent step edit. Returns false when the stack is empty. */
+  undoLastEdit(): boolean;
   renderMetadataPanel(song: ParsedSong): void;
   applyPatternPreview(song: ParsedSong): void;
   renderStudio(): void;
@@ -40,17 +51,131 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
   let selectedDevice: DeviceId = 'tb303-a';
   let selectedBank = 0;
   let selectedPatternIndex = 0;
+  let stepEditingLive = false;
+  const history = createEditHistory(64);
+
+  function selectedNote(): number {
+    const value = Number(dom.studioNote?.value);
+    return Number.isFinite(value) ? value : 48;
+  }
+
+  function selectedDrumHit() {
+    return findDrumHit(dom.studioDrum?.value ?? 'bd');
+  }
 
   function setStudioLive(live: boolean) {
+    stepEditingLive = live;
     dom.root.dataset.studioLive = live ? '1' : '0';
     dom.studioKnobs.forEach((el) => {
       el.disabled = !live;
     });
+    dom.studioSteps.forEach((cell) => {
+      cell.disabled = !live;
+    });
+    if (dom.studioNote) dom.studioNote.disabled = !live;
+    if (dom.studioDrum) dom.studioDrum.disabled = !live;
+    updateUndoButton();
     if (dom.studioHint) {
       dom.studioHint.textContent = live
-        ? 'Session knobs — cutoff, reso, decay, and mixer affect playback. Not saved to the file.'
-        : 'Live knobs need the WASM engine. Pattern grid still shows parsed steps when available.';
+        ? 'Click a step to edit it, shift-click to accent, UNDO to step back. Edits go into the ' +
+          'engine working copy and play from the next loop; knob moves stay session-only. ' +
+          'Nothing is saved to the .rbs file — reload it to get the original back.'
+        : 'Live knobs and step editing need the WASM engine. Pattern grid still shows parsed steps when available.';
     }
+  }
+
+  function updateUndoButton() {
+    if (!dom.studioUndo) return;
+    dom.studioUndo.disabled = !stepEditingLive || history.size === 0;
+  }
+
+  /** Current value of a step, preferring the engine's working copy. */
+  function readStep(stepIndex: number): WasmStepData {
+    const bridge = deps.getBridge();
+    if ('getStep' in bridge && typeof bridge.getStep === 'function') {
+      const fromEngine = bridge.getStep(
+        DEVICE_INDEX[selectedDevice],
+        selectedBank,
+        selectedPatternIndex,
+        stepIndex
+      );
+      if (fromEngine) return toWasmStep(fromEngine);
+    }
+    const song = deps.getLoadedSong();
+    const pattern = song
+      ? song.patterns.find(
+          (p) =>
+            p.deviceId === selectedDevice &&
+            p.bank === selectedBank &&
+            p.patternIndex === selectedPatternIndex
+        )
+      : null;
+    return toWasmStep(pattern?.steps[stepIndex]);
+  }
+
+  /** Send one patch to the engine and mirror it into the UI song summary. */
+  function commitStep(
+    device: DeviceId,
+    bank: number,
+    patternIndex: number,
+    stepIndex: number,
+    next: WasmStepData
+  ): boolean {
+    const bridge = deps.getBridge();
+    const ok =
+      'setStep' in bridge &&
+      typeof bridge.setStep === 'function' &&
+      bridge.setStep(DEVICE_INDEX[device], bank, patternIndex, stepIndex, next);
+    if (!ok) return false;
+    const song = deps.getLoadedSong();
+    if (song) applyStepToSong(song, device, bank, patternIndex, stepIndex, next);
+    return true;
+  }
+
+  function editStep(stepIndex: number, accentOnly: boolean) {
+    if (!stepEditingLive || deps.isDegradedMode()) return;
+    const previous = readStep(stepIndex);
+    const next = nextStepValue(previous, selectedDevice, {
+      accentOnly,
+      note: selectedNote(),
+      drumHit: selectedDrumHit(),
+    });
+    const edit: StepEdit = {
+      deviceId: selectedDevice,
+      bank: selectedBank,
+      patternIndex: selectedPatternIndex,
+      stepIndex,
+      previous,
+    };
+    if (!commitStep(selectedDevice, selectedBank, selectedPatternIndex, stepIndex, next)) return;
+    // Inverse patches only — a ParsedSong clone per keystroke would blow the
+    // JS heap alongside the fixed 64 MiB WASM one.
+    history.push(edit);
+    updateUndoButton();
+    renderStudio();
+  }
+
+  function undoLastEdit(): boolean {
+    const edit = history.pop();
+    updateUndoButton();
+    if (!edit) return false;
+    const restored = commitStep(
+      edit.deviceId,
+      edit.bank,
+      edit.patternIndex,
+      edit.stepIndex,
+      edit.previous
+    );
+    if (!restored) return false;
+    // Show the slot the undo actually touched, even after the user has
+    // navigated somewhere else.
+    selectedDevice = edit.deviceId;
+    selectedBank = edit.bank;
+    selectedPatternIndex = edit.patternIndex;
+    if (dom.studioBank) dom.studioBank.value = String(selectedBank);
+    if (dom.studioPattern) dom.studioPattern.value = String(selectedPatternIndex);
+    renderStudio();
+    return true;
   }
 
   function applyPatternPreview(song: ParsedSong) {
@@ -72,8 +197,11 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
   function renderStudio() {
     if (!dom.studioGrid) return;
     const loadedSong = deps.getLoadedSong();
+    // While the grid is editable it must show exactly the slot a click would
+    // write to; the forgiving fallback is only right for a read-only preview.
+    const lookup = stepEditingLive ? pickPatternExact : pickPattern;
     const pattern = loadedSong
-      ? pickPattern(loadedSong, selectedDevice, selectedBank, selectedPatternIndex)
+      ? lookup(loadedSong, selectedDevice, selectedBank, selectedPatternIndex)
       : null;
     const cells = buildStepCells(pattern, selectedDevice);
     dom.studioGrid.querySelectorAll<HTMLElement>('[data-studio-step]').forEach((cell) => {
@@ -81,6 +209,8 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
       const model = cells[index];
       if (!model) return;
       cell.classList.toggle('is-active', model.active);
+      cell.setAttribute('aria-pressed', model.active ? 'true' : 'false');
+      cell.classList.toggle('is-accent', model.accent);
       const label = cell.querySelector('[data-studio-label]');
       const flags = cell.querySelector('[data-studio-flags]');
       if (label) label.textContent = model.label;
@@ -100,6 +230,10 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
 
     const device = loadedSong?.devices.find((d) => d.deviceId === selectedDevice);
     const acid = isAcidDevice(selectedDevice);
+    // The edit controls are device-family specific: a note for the 303s, an
+    // instrument to toggle for the drum machines.
+    if (dom.studioNoteWrap) dom.studioNoteWrap.hidden = !acid;
+    if (dom.studioDrumWrap) dom.studioDrumWrap.hidden = acid;
     dom.root.querySelectorAll<HTMLElement>('[data-knob-wrap]').forEach((wrap) => {
       const key = wrap.dataset.knobWrap;
       const acidOnly =
@@ -169,6 +303,10 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
     }
 
     applyPatternPreview(song);
+    // A new song means the previous song's inverse patches no longer describe
+    // anything that exists.
+    history.clear();
+    updateUndoButton();
     const coords = defaultPatternCoords(song, selectedDevice);
     selectedBank = coords.bank;
     selectedPatternIndex = coords.patternIndex;
@@ -178,6 +316,18 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
   }
 
   function attachEvents() {
+    dom.studioSteps.forEach((cell) => {
+      cell.addEventListener('click', (event) => {
+        const index = Number(cell.dataset.studioStep);
+        if (!Number.isFinite(index)) return;
+        editStep(index, (event as MouseEvent).shiftKey);
+      });
+    });
+
+    dom.studioUndo?.addEventListener('click', () => {
+      undoLastEdit();
+    });
+
     dom.studioTabs.forEach((tab) => {
       tab.addEventListener('click', () => {
         const id = tab.dataset.studioDevice as DeviceId | undefined;
@@ -243,6 +393,7 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
 
   return {
     setStudioLive,
+    undoLastEdit,
     renderMetadataPanel,
     applyPatternPreview,
     renderStudio,

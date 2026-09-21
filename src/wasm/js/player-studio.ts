@@ -55,6 +55,26 @@ export function pickPattern(
   return song.patterns.find((p) => p.deviceId === deviceId) ?? null;
 }
 
+/**
+ * Strict slot lookup — no "first pattern for this device" fallback.
+ *
+ * The forgiving {@link pickPattern} is right for a read-only preview, but an
+ * editable grid must show the slot the click will write to: otherwise the
+ * user edits bank B pattern 5 while looking at bank A pattern 1.
+ */
+export function pickPatternExact(
+  song: ParsedSong,
+  deviceId: DeviceId,
+  bank: number,
+  patternIndex: number
+): Pattern | null {
+  return (
+    song.patterns.find(
+      (p) => p.deviceId === deviceId && p.bank === bank && p.patternIndex === patternIndex
+    ) ?? null
+  );
+}
+
 export function defaultPatternCoords(
   song: ParsedSong,
   deviceId: DeviceId

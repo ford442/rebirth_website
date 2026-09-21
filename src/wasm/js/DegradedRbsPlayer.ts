@@ -160,6 +160,21 @@ export class DegradedRbsPlayer {
   }
 
   /**
+   * Pattern edits need the WASM sequencer. Degraded mode plays a metronome
+   * sketch, so an accepted edit would be a lie — reported as refused so the
+   * grid stays read-only rather than appearing to change something.
+   */
+  setStep(
+    _deviceId: number,
+    _bank: number,
+    _patternIndex: number,
+    _stepIndex: number,
+    _step: unknown
+  ): boolean {
+    return false;
+  }
+
+  /**
    * Mods need the WASM sample engine, which is exactly what is missing in
    * degraded mode. Reported as unsupported so the UI can say so plainly
    * rather than appearing to load a mod that will never be heard.

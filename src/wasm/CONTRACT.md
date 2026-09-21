@@ -363,6 +363,10 @@ block; it does not create a JavaScript `rb338` namespace.
 | `float getTempo() const`                     | `getTempo`            | `() => number`                       |
 | `void setTempoMultiplier(float)`             | `setTempoMultiplier`  | `(multiplier: number) => void`       |
 | `void setDeviceParam(uint8_t,uint8_t,float)` | `setDeviceParam`      | `(deviceId, paramId, value) => void` |
+| `setStepWrapper(..., uint8_t x4, StepData)`  | `setStep`             | `(deviceId, bank, patternIndex, stepIndex, step: WasmStepData) => boolean` |
+| `StepData getStep(uint8_t,uint8_t,uint8_t,uint8_t) const` | `getStep` | `(deviceId, bank, patternIndex, stepIndex) => WasmStepData` |
+| `bool setPatternLength(uint8_t,uint8_t,uint8_t,uint8_t)` | `setPatternLength` | `(deviceId, bank, patternIndex, length) => boolean` |
+| `uint8_t getPatternLength(uint8_t,uint8_t,uint8_t) const` | `getPatternLength` | `(deviceId, bank, patternIndex) => number` |
 | `bool isPlaying() const`                     | `isPlaying`           | `() => boolean`                      |
 | `void getPlaybackPosition(...)` (wrapped)    | `getPlaybackPosition` | `() => PlaybackPosition`             |
 
@@ -371,6 +375,41 @@ C++ state. The browser archive path is `loadSongFromBytes`: parse on the
 engine, publish the snapshot (including `automation`), return a UI summary.
 `WasmAudioBridge.loadRbsFile` and `_createOfflineEngine` must not call
 `RbsParser.parse` then `loadSong`.
+
+### `RbsAudioEngine` — pattern editing
+
+`setStep` / `setPatternLength` are the **only** way the UI changes a pattern.
+They take one slot coordinate plus one `StepData` value object — never a
+`WasmParsedSong`. A `ParsedSong` sent back across Embind cannot carry
+`automation`, so round-tripping the song to edit a step would silently drop
+every TRAK event the file contains.
+
+Both mutate the engine's main-thread working copy (`RbsAudioEngine::m_song`)
+and then call `republishGraph()`, the same atomic snapshot swap `loadMod()`
+uses: the audio thread keeps rendering the previous snapshot until the new
+pointer is published, and nothing allocates inside `processBlock()`.
+
+Coordinate ranges — out of range is refused, not clamped:
+
+| Argument       | Range | C++ constant             |
+| -------------- | ----- | ------------------------ |
+| `deviceId`     | 0–3   | `NUM_DEVICES`            |
+| `bank`         | 0–3   | `MAX_BANKS`              |
+| `patternIndex` | 0–7   | `MAX_PATTERNS_PER_BANK`  |
+| `stepIndex`    | 0–15  | `MAX_STEPS`              |
+| `length`       | 1–16  | `MAX_STEPS`              |
+
+A slot the file never stored is materialised on first write (length 16, all
+steps off), so every bank/pattern coordinate above is editable.
+
+`slide` is a TB-303 concept: `setStep` clears it for the 808/909 so the
+working copy stays truthy for a future `.rbs` writer.
+
+**Session-only.** Like `setDeviceParam`, these never rewrite the loaded
+`.rbs` bytes. Reloading the file from disk restores the original song. Undo
+lives in JavaScript (`src/wasm/js/player-step-edit.ts`) as a bounded stack of
+inverse patches — `{deviceId, bank, patternIndex, stepIndex, previous}` —
+never as cloned songs.
 
 ### `RbsParser`
 

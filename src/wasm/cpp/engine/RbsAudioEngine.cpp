@@ -76,10 +76,13 @@ bool RbsAudioEngine::loadSong(const ParsedSong& song) {
   // Build the entire render graph on the main thread, then publish one pointer.
   // The audio thread never sees a half-loaded voice or mixer. Any loaded mod
   // carries across so changing songs does not silently drop its samples.
-  auto next = buildEngineSnapshot(song, m_config, m_samplePool);
+  m_song = song;
+  m_hasSong = true;
+
+  auto next = buildEngineSnapshot(m_song, m_config, m_samplePool);
   EngineSnapshot* raw = next.get();
   m_owned.push_back(std::move(next));
-  m_published.store(raw, std::memory_order_release);
+  m_published.store(raw, std::memory_order_seq_cst);
 
   m_bpm.store(std::clamp(song.bpm, 40.0f, 250.0f), std::memory_order_release);
   m_currentBar.store(1, std::memory_order_relaxed);
@@ -108,19 +111,22 @@ std::optional<ParsedSong> RbsAudioEngine::loadSongFromBytes(const uint8_t* data,
 }
 
 void RbsAudioEngine::republishGraph() {
-  // Rebuild the graph around the current song with whatever sample pool is
+  // Rebuild the graph around the working copy with whatever sample pool is
   // now current. Transport state lives on the engine, not the snapshot, so
   // playback position survives the swap.
-  EngineSnapshot* current = m_published.load(std::memory_order_acquire);
-  if (!current) return; // no song yet — the pool applies at the next loadSong()
+  //
+  // The rebuild starts from m_song, not from the live snapshot's copy: the
+  // working copy is the editable master, so a pattern edit made earlier is
+  // still there after a later mod load.
+  if (!m_hasSong) return; // no song yet — this applies at the next loadSong()
 
-  auto next = buildEngineSnapshot(current->song, m_config, m_samplePool);
+  auto next = buildEngineSnapshot(m_song, m_config, m_samplePool);
   // A rebuilt graph starts from the song's knob values, so replay the live
   // ones — otherwise loading a mod would silently undo every knob move.
   applyParamOverrides(next.get());
   EngineSnapshot* raw = next.get();
   m_owned.push_back(std::move(next));
-  m_published.store(raw, std::memory_order_release);
+  m_published.store(raw, std::memory_order_seq_cst);
   reclaimRetiredSnapshots();
 }
 
@@ -517,17 +523,29 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
 }
 
 EngineSnapshot* RbsAudioEngine::pinSnapshot() {
+  // Hazard pointer. Sequential consistency is load-bearing here, not
+  // decoration: with plain release/acquire the store to m_inUse may be
+  // reordered after the validating load of m_published, and then a reclaim
+  // running in between reads a stale hazard and frees the snapshot this
+  // thread just pinned.
+  //
+  // Under seq_cst the total order gives the guarantee the protocol needs: if
+  // this thread's validating load saw snapshot S published, its hazard store
+  // precedes that load, so any reclaim that publishes *after* S and then
+  // reads m_inUse observes S and keeps it alive.
   EngineSnapshot* snap = nullptr;
   do {
-    snap = m_published.load(std::memory_order_acquire);
-    m_inUse.store(snap, std::memory_order_release);
-  } while (snap != m_published.load(std::memory_order_acquire));
+    snap = m_published.load(std::memory_order_seq_cst);
+    m_inUse.store(snap, std::memory_order_seq_cst);
+  } while (snap != m_published.load(std::memory_order_seq_cst));
   return snap;
 }
 
 void RbsAudioEngine::reclaimRetiredSnapshots() {
-  EngineSnapshot* live = m_published.load(std::memory_order_acquire);
-  EngineSnapshot* used = m_inUse.load(std::memory_order_acquire);
+  // Must run *after* the new snapshot is published (see pinSnapshot), and
+  // must read the hazard with the same ordering.
+  EngineSnapshot* live = m_published.load(std::memory_order_seq_cst);
+  EngineSnapshot* used = m_inUse.load(std::memory_order_seq_cst);
   auto it = std::remove_if(
       m_owned.begin(), m_owned.end(),
       [&](const std::unique_ptr<EngineSnapshot>& graph) {
@@ -572,6 +590,85 @@ void RbsAudioEngine::renderSpan(EngineSnapshot& snap, uint32_t start, uint32_t c
     snap.mixer->process(spanVoices, left + start, right + start, count, bpm);
     applyMasterVolume(left + start, right + start, count, volume);
   }
+}
+
+bool RbsAudioEngine::validSlot(uint8_t deviceId, uint8_t bank, uint8_t patternIndex) {
+  return deviceId < NUM_DEVICES && bank < MAX_BANKS && patternIndex < MAX_PATTERNS_PER_BANK;
+}
+
+const Pattern* RbsAudioEngine::findPattern(uint8_t deviceId, uint8_t bank,
+                                           uint8_t patternIndex) const {
+  if (!m_hasSong || !validSlot(deviceId, bank, patternIndex)) return nullptr;
+  const auto device = static_cast<DeviceId>(deviceId);
+  for (const auto& pattern : m_song.patterns) {
+    if (pattern.deviceId == device && pattern.bank == bank &&
+        pattern.patternIndex == patternIndex) {
+      return &pattern;
+    }
+  }
+  return nullptr;
+}
+
+Pattern* RbsAudioEngine::findOrCreatePattern(uint8_t deviceId, uint8_t bank,
+                                             uint8_t patternIndex) {
+  if (!m_hasSong || !validSlot(deviceId, bank, patternIndex)) return nullptr;
+  const auto device = static_cast<DeviceId>(deviceId);
+  for (auto& pattern : m_song.patterns) {
+    if (pattern.deviceId == device && pattern.bank == bank &&
+        pattern.patternIndex == patternIndex) {
+      return &pattern;
+    }
+  }
+  // The parser only emits slots the file actually stores, so editing an
+  // untouched pattern has to materialise it first.
+  Pattern fresh;
+  fresh.deviceId = device;
+  fresh.bank = bank;
+  fresh.patternIndex = patternIndex;
+  fresh.length = MAX_STEPS;
+  m_song.patterns.push_back(fresh);
+  return &m_song.patterns.back();
+}
+
+bool RbsAudioEngine::setStep(uint8_t deviceId, uint8_t bank, uint8_t patternIndex,
+                             uint8_t stepIndex, const StepData& step) {
+  if (!m_initialised || stepIndex >= MAX_STEPS) return false;
+  Pattern* pattern = findOrCreatePattern(deviceId, bank, patternIndex);
+  if (!pattern) return false;
+
+  pattern->steps[stepIndex] = step;
+  // Slide is a TB-303 concept; a drum voice would just ignore it, but keeping
+  // the working copy honest means an eventual .rbs writer has nothing to undo.
+  if (deviceId != static_cast<uint8_t>(DeviceId::TB303_A) &&
+      deviceId != static_cast<uint8_t>(DeviceId::TB303_B)) {
+    pattern->steps[stepIndex].slide = false;
+  }
+  republishGraph();
+  return true;
+}
+
+StepData RbsAudioEngine::getStep(uint8_t deviceId, uint8_t bank, uint8_t patternIndex,
+                                 uint8_t stepIndex) const {
+  if (stepIndex >= MAX_STEPS) return StepData{};
+  const Pattern* pattern = findPattern(deviceId, bank, patternIndex);
+  if (!pattern) return StepData{};
+  return pattern->steps[stepIndex];
+}
+
+bool RbsAudioEngine::setPatternLength(uint8_t deviceId, uint8_t bank,
+                                      uint8_t patternIndex, uint8_t length) {
+  if (!m_initialised || length == 0 || length > MAX_STEPS) return false;
+  Pattern* pattern = findOrCreatePattern(deviceId, bank, patternIndex);
+  if (!pattern) return false;
+  pattern->length = length;
+  republishGraph();
+  return true;
+}
+
+uint8_t RbsAudioEngine::getPatternLength(uint8_t deviceId, uint8_t bank,
+                                         uint8_t patternIndex) const {
+  const Pattern* pattern = findPattern(deviceId, bank, patternIndex);
+  return pattern ? pattern->length : 0;
 }
 
 void RbsAudioEngine::applyDeviceParam(EngineSnapshot* snap, uint8_t deviceId,
