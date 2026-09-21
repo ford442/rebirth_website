@@ -11,7 +11,15 @@ npm run preview  # Preview production build locally
 npm run astro    # Run Astro CLI directly (e.g., npm run astro check)
 ```
 
-**No linting or testing tools configured.** TypeScript strict mode (`tsconfig.json: astro/tsconfigs/strict`) is the primary code safety mechanism.
+```bash
+npm run check          # astro check (TypeScript strict mode — the primary gate)
+npm run lint           # ESLint
+npm run format         # Prettier --check
+npm run contract:check # C++ ↔ TypeScript WASM contract
+npm run wasm:test      # Native C++ doctest suite
+npm test               # Playwright browser/E2E specs
+npm run ci             # check → contract:check → build → test
+```
 
 ## Architecture Overview
 
@@ -40,8 +48,8 @@ src/
     ├── CONTRACT.md           # C++ ↔ TypeScript field-for-field contract (SSOT)
     ├── README.md             # Architecture, build, status (PARTIAL ENGINE, SHIPPING PIPELINE)
     ├── cpp/                  # Parser, sequencer, mixer, TB-303/TR-808/TR-909 voices
-    ├── js/                   # WasmAudioBridge + player UI (dom/transport/studio-view split)
-    └── types/                # Shared TS types + WASM→UI mapping
+    ├── js/                   # WasmAudioBridge, bounce client, player UI (dom/transport/studio-view split)
+    └── types/                # wasm-audio-{song,engine,config,mod}.ts + WASM→UI mapping
 
 public/
 ├── archive/
@@ -126,13 +134,34 @@ Full guidelines in `README.md`.
 
 ## WebAssembly Audio Module
 
-`src/wasm/` is a **partially implemented** in-browser `.rbs` playback engine (C++ compiled to WASM via Emscripten, CI-built and shipped). The parser, sequencer, transport, and Phase-1 procedural TB-303/TR-808/TR-909 voices are implemented; `.rbm` sample playback is not wired up yet. See `src/wasm/README.md` for the full architecture, build instructions, and status matrix.
+`src/wasm/` is a **shipping** in-browser `.rbs` playback engine (C++ compiled to
+WASM via Emscripten, CI-built and deployed). It parses v1/v1.5 and v2 `.rbs`,
+sequences the arrangement, synthesises TB-303 (ZDF ladder filter + PolyBLEP
+oscillators) and TR-808/TR-909 — procedurally or from `.rbm` mod samples —
+bounces offline to WAV (full mix or per-device stems), and exports `.mid` from
+TypeScript. It does **not** write `.rbs`, edit patterns, or render `.rbm` skins,
+and TRAK automation plays only through the `loadSongFromBytes` path. See
+`src/wasm/README.md` for the full status and roadmap.
 
-Key points for anyone touching this code:
+### Which language owns what
 
-- **`src/wasm/CONTRACT.md` is the single source of truth** for the C++ ↔ TypeScript data contract (`main.cpp` Embind registrations ↔ `src/wasm/types/wasm-audio.ts`). Run `npm run contract:check` after changing either side — it fails CI on drift (struct fields, `DeviceParamId` values).
+| Language       | Owns                                                                                      | Must not do                                                   |
+| -------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| **C++**        | `.rbs`/`.rbm` parsing, DSP, sequencer, mixer, sample decode, WAV bytes, RT-safe snapshots | Skins, DOM, `fetch`, MIDI SMF writing (already TypeScript)    |
+| **TypeScript** | AudioContext, the Embind boundary, player UI, MiniSearch, SMF writer, download helpers    | Inner-loop DSP, owning PCM, growing WASM memory               |
+| **Astro**      | Markup, `BASE_URL` links, content collections                                             | Engine logic — `RbsPlayer.astro`'s `<script>` only bootstraps |
+
+New files land in the layer that owns the job; if a change does not fit the
+table, the split is wrong.
+
+### Key points for anyone touching this code
+
+- **`src/wasm/CONTRACT.md` is the single source of truth** for the C++ ↔ TypeScript data contract (`main.cpp` Embind registrations ↔ `src/wasm/types/wasm-audio-*.ts`). Run `npm run contract:check` after changing either side — it fails CI on drift (struct fields, `DeviceParamId` values).
+- The shared TS types are split one job per file: `wasm-audio-song.ts` (ParsedSong / devices / patterns), `wasm-audio-engine.ts` (the Embind surface and offline bounce), `wasm-audio-config.ts` (runtime module config), `wasm-audio-mod.ts` (`.rbm` enums and reports). There is no barrel — import from the file that owns the type.
 - Live device/mixer parameters flow through `RbsAudioEngine::setDeviceParam(deviceId, paramId, value)`, where `paramId` is the numeric `DeviceParamId` enum (`src/wasm/cpp/engine/EngineCommands.h`) — not a string. `Voice::setParameter(DeviceParamId, float)` has zero string comparisons on the audio thread.
-- The player UI is split into `src/wasm/js/player-dom.ts` (DOM lookup), `player-transport.ts` (status/toasts/play-stop/volume/tempo), `player-studio-view.ts` (pattern grid + device knobs), composed by `player-ui.ts`.
+- The C++ parser is split by seam: `RbsParser.cpp` (container + chunk decoding), `RbsTrak.cpp` (TRAK/STRAK events + arrangement), `RbsMidiContainer.cpp` (v1/v1.5), with `RbsByteStream.h` holding the shared bounds-checked reader. `sources.cmake` is the only source list — never add `.cpp` files to `CMakeLists.txt`, `Makefile`, or `build.sh`.
+- The player UI is split into `src/wasm/js/player-dom.ts` (DOM lookup), `player-transport.ts` (status/toasts/play-stop/volume/tempo), `player-studio-view.ts` (pattern grid + device knobs), composed by `player-ui.ts`. Offline bounce lives in `wasm-bounce.ts` (main thread) + `bounce-worker.ts` (second WASM instance).
+- Run `npm run wasm:native:configure` once after cloning so clangd can resolve `parser/` vs `native_stubs/` headers from `src/wasm/cpp/build/compile_commands.json`.
 - `npm run wasm:test` runs the native (non-Emscripten) C++ unit tests; `npm run wasm:build` builds the actual WASM binaries (requires Emscripten).
 
 Contributions from audio DSP or `.rbs`/`.rbm` binary format experts welcome — see `src/wasm/README.md`'s roadmap for what's left.

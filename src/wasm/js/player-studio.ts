@@ -3,7 +3,7 @@
  * Pure functions so Playwright/compile-time tests can assert mapping without WASM.
  */
 
-import type { DeviceId, ParsedSong, Pattern, StepData } from '../types/wasm-audio';
+import type { DeviceId, ParsedSong, Pattern, StepData } from '../types/wasm-audio-song';
 
 export const STUDIO_DEVICES: { id: DeviceId; label: string }[] = [
   { id: 'tb303-a', label: '303 A' },

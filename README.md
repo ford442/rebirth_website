@@ -108,7 +108,7 @@ Astro automatically reloads the page when you edit source files.
 │   └── wasm/
 │       ├── audio-module.config.ts  ← WASM runtime paths + feature flags
 │       ├── js/                     ← WasmAudioBridge, DegradedRbsPlayer, …
-│       ├── types/wasm-audio.ts
+│       ├── types/                   ← wasm-audio-{song,engine,config,mod}.ts
 │       ├── cpp/                    ← Emscripten C++ engine (build with npm run wasm:build)
 │       └── README.md
 ├── scripts/                    ← Python indexers and upload helpers

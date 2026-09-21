@@ -17,30 +17,30 @@
  */
 
 import { buildStepCells, pickPattern } from '../js/player-studio';
-import type { ParsedSong } from '../types/wasm-audio';
+import type { ParsedSong } from '../types/wasm-audio-song';
+import type { AudioContextDiagnostics } from '../types/wasm-audio-config';
 import type {
+  EmbindVector,
   EngineConfig,
+  EngineModule,
   PlaybackPosition,
-  WasmParsedSong,
-  WasmSongFxSettings,
-  WasmDeviceId,
+  RbmParserInstance,
   RbsAudioEngineInstance,
   RbsParserInstance,
-  RbmParserInstance,
+} from '../types/wasm-audio-engine';
+import type {
+  ParsedMod,
   WasmModLoadReport,
   WasmModSampleReportEntry,
-  EmbindVector,
-  ParsedMod,
-  EngineModule,
-  AudioContextDiagnostics,
-} from '../types/wasm-audio';
+} from '../types/wasm-audio-mod';
+import type { WasmDeviceId, WasmParsedSong, WasmSongFxSettings } from '../types/wasm-audio-song';
 
 import {
   MOD_LOAD_STATUSES,
-  MOD_SAMPLE_SLOTS,
   MOD_RESOURCE_KINDS,
+  MOD_SAMPLE_SLOTS,
   SAMPLE_DECODE_STATUSES,
-} from '../types/wasm-audio';
+} from '../types/wasm-audio-mod';
 
 import { wasmAudioConfig } from '../audio-module.config';
 

@@ -5,8 +5,7 @@ import ModBrowserCard from '../../components/ModBrowserCard.astro';
 import ArchiveEmptyState from '../../components/archive/ArchiveEmptyState.astro';
 import HardwarePanel from '../../components/ui/HardwarePanel.astro';
 import Led from '../../components/ui/Led.astro';
-import modsData from '../../data/mods-metadata.json';
-import fullIndex from '../../data/mods-full-index.json';
+import { documentedMods, indexedMods } from '../../data/mod-types';
 import {
   totalMods,
   documentedMods as totalDocumented,
@@ -14,8 +13,7 @@ import {
 } from '../../data/archive-stats';
 import { normalizeBase } from '../../lib/url';
 
-const documentedMods = modsData.mods || [];
-const allMods = fullIndex.mods || [];
+const allMods = indexedMods;
 const totalRaw = totalMods;
 
 // Group raw mods by first letter
@@ -137,7 +135,7 @@ const archiveStats = [
 
     <div id="modsGrid" class="mods-grid" role="main">
       {
-        documentedMods.map((mod: any) => (
+        documentedMods.map((mod) => (
           <ModBrowserCard
             filename={mod.filename}
             title={mod.title}
@@ -774,9 +772,9 @@ const archiveStats = [
 <script>
   /* ── Documented mods filter (existing) ───────────────────────── */
   const modSearch = document.getElementById('modSearch');
-  const tagFilters = document.querySelectorAll('.rb-tag-filter');
+  const tagFilters = document.querySelectorAll<HTMLElement>('.rb-tag-filter');
   const emptyState = document.getElementById('emptyState');
-  const modCards = document.querySelectorAll('.mod-card');
+  const modCards = document.querySelectorAll<HTMLElement>('.mod-card');
   const modsResultCount = document.getElementById('modsResultCount');
 
   function syncModUrl() {
@@ -813,8 +811,8 @@ const archiveStats = [
       const author = card.querySelector('.mod-card__author')?.textContent?.toLowerCase() ?? '';
       const description =
         card.querySelector('.mod-card__description')?.textContent?.toLowerCase() ?? '';
-      const tags = Array.from(card.querySelectorAll('.mod-tag')).map((t: any) =>
-        t.textContent.toLowerCase()
+      const tags = Array.from(card.querySelectorAll<HTMLElement>('.mod-tag')).map(
+        (t) => t.textContent?.toLowerCase() ?? ''
       );
 
       const matchesSearch =
@@ -849,7 +847,7 @@ const archiveStats = [
 
   tagFilters.forEach((btn) => {
     btn.addEventListener('click', () => {
-      tagFilters.forEach((b: any) => b.classList.remove('active'));
+      tagFilters.forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       filterMods();
       syncModUrl();

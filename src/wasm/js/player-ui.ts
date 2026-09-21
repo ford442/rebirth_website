@@ -14,12 +14,13 @@ import { DegradedRbsPlayer } from './DegradedRbsPlayer';
 import { classifyInitError, type InitFailureReason } from './rbs-init-errors';
 import type { LoadDemoDetail } from '../../lib/player-events';
 import { parsePlayerQuery, scrollToPlayer } from '../../lib/player-events';
-import type { ParsedSong } from '../types/wasm-audio';
+import type { ParsedSong } from '../types/wasm-audio-song';
 import { songToMidi } from '../../lib/midi-smf';
 import { canDownload, downloadBytes } from '../../lib/download-file';
 import { queryPlayerDom } from './player-dom';
 import { createTransportView, type PlayerBridge } from './player-transport';
 import { createStudioView } from './player-studio-view';
+import { installPlayerTestHooks } from './player-test-hooks';
 
 export type { PlayerBridge } from './player-transport';
 
@@ -37,6 +38,8 @@ export interface PlayerUIOptions {
 
 export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {}): void {
   const { demos = [], initialSrc = '', autoplay = false } = options;
+
+  installPlayerTestHooks();
 
   const dom = queryPlayerDom(playerEl);
 

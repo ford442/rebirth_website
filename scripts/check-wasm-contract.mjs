@@ -37,9 +37,21 @@ const ENGINE_COMMANDS_H = path.join(ROOT, 'src/wasm/cpp/engine/EngineCommands.h'
 const PLAYER_STUDIO_TS = path.join(ROOT, 'src/wasm/js/player-studio.ts');
 const MAIN_CPP = path.join(ROOT, 'src/wasm/cpp/main.cpp');
 const CONTRACT_MD = path.join(ROOT, 'src/wasm/CONTRACT.md');
-const WASM_AUDIO_TS = path.join(ROOT, 'src/wasm/types/wasm-audio.ts');
+/**
+ * The shared TS types are split by job (song / engine / config / mod). The
+ * checker reads them as one corpus so a type can move between files without
+ * breaking the contract check.
+ */
+const WASM_AUDIO_TS_FILES = [
+  'src/wasm/types/wasm-audio-song.ts',
+  'src/wasm/types/wasm-audio-engine.ts',
+  'src/wasm/types/wasm-audio-config.ts',
+  'src/wasm/types/wasm-audio-mod.ts',
+].map((p) => path.join(ROOT, p));
 
-/** C++ struct name -> TypeScript interface name in wasm-audio.ts. */
+const WASM_AUDIO_TS_LABEL = 'src/wasm/types/wasm-audio-*.ts';
+
+/** C++ struct name -> TypeScript interface name in the wasm-audio-*.ts types. */
 const STRUCT_TO_TS_INTERFACE = {
   EngineConfig: 'EngineConfig',
   HeapStats: 'HeapStats',
@@ -63,6 +75,11 @@ const errors = [];
 
 function read(file) {
   return readFileSync(file, 'utf8');
+}
+
+/** Concatenated source of every split wasm-audio type file. */
+function readWasmAudioTypes() {
+  return WASM_AUDIO_TS_FILES.map((f) => read(f)).join('\n');
 }
 
 function relative(file) {
@@ -214,7 +231,7 @@ function fieldNamesFromTsInterfaceBody(body) {
 function checkValueObjects() {
   const mainCppSrc = read(MAIN_CPP);
   const contractSrc = read(CONTRACT_MD);
-  const wasmAudioSrc = read(WASM_AUDIO_TS);
+  const wasmAudioSrc = readWasmAudioTypes();
 
   const embindObjects = parseEmbindValueObjects(mainCppSrc);
   if (embindObjects.size === 0) {
@@ -254,7 +271,7 @@ function checkValueObjects() {
     const tsBody = extractBracedInterfaceBody(wasmAudioSrc, tsInterfaceName);
     if (!tsBody) {
       fail(
-        `${relative(WASM_AUDIO_TS)}: missing "interface ${tsInterfaceName} { ... }" for the ` +
+        `${WASM_AUDIO_TS_LABEL}: missing "interface ${tsInterfaceName} { ... }" for the ` +
           `Embind-registered type "${structName}" (main.cpp).`
       );
       continue;
@@ -263,7 +280,7 @@ function checkValueObjects() {
     if (!sameSet(tsFields, embindFields)) {
       fail(
         `Field mismatch for "${structName}" / "${tsInterfaceName}": main.cpp Embind fields = ` +
-          `[${embindFields.join(', ')}], ${relative(WASM_AUDIO_TS)} interface fields = [${tsFields.join(', ')}].`
+          `[${embindFields.join(', ')}], ${WASM_AUDIO_TS_LABEL} interface fields = [${tsFields.join(', ')}].`
       );
     }
   }
@@ -312,10 +329,10 @@ function checkEngineFunctions() {
     }
   }
 
-  const tsSrc = read(WASM_AUDIO_TS);
+  const tsSrc = readWasmAudioTypes();
   const tsBody = extractBracedInterfaceBody(tsSrc, 'RbsAudioEngineInstance');
   if (!tsBody) {
-    fail(`${relative(WASM_AUDIO_TS)}: missing interface RbsAudioEngineInstance.`);
+    fail(`${WASM_AUDIO_TS_LABEL}: missing interface RbsAudioEngineInstance.`);
     return;
   }
   const tsMethods = [];
@@ -327,9 +344,7 @@ function checkEngineFunctions() {
   }
   for (const required of REQUIRED_ENGINE_EMBIND_FUNCTIONS) {
     if (!tsMethods.includes(required)) {
-      fail(
-        `RbsAudioEngineInstance is missing "${required}(...)" in ${relative(WASM_AUDIO_TS)}.`
-      );
+      fail(`RbsAudioEngineInstance is missing "${required}(...)" in ${WASM_AUDIO_TS_LABEL}.`);
     }
   }
 }

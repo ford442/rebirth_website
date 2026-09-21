@@ -7,29 +7,31 @@
  * mapping can be unit-tested / read without pulling in Web Audio APIs.
  */
 
+import type { EmbindVector } from './wasm-audio-engine';
+import type {
+  ModResourceInfo,
+  ParsedMod,
+  WasmModLoadReport,
+  WasmModSampleReportEntry,
+} from './wasm-audio-mod';
 import type {
   ArrangementStep,
   DeviceState,
-  EmbindVector,
-  ModResourceInfo,
-  Pattern,
-  ParsedMod,
   ParsedSong,
+  Pattern,
   PatternRef,
   WasmArrangementBar,
   WasmDeviceId,
   WasmDeviceState,
-  WasmModLoadReport,
-  WasmModSampleReportEntry,
   WasmParsedSong,
   WasmPattern,
-} from './wasm-audio';
+} from './wasm-audio-song';
 import {
   MOD_LOAD_STATUSES,
   MOD_RESOURCE_KINDS,
   MOD_SAMPLE_SLOTS,
   SAMPLE_DECODE_STATUSES,
-} from './wasm-audio';
+} from './wasm-audio-mod';
 
 /** Numeric `WasmDeviceId` -> UI-facing device id string. Must match `DeviceId` in C++ `main.cpp`. */
 export const WASM_DEVICE_ID_TO_UI: Record<WasmDeviceId, DeviceState['deviceId']> = {

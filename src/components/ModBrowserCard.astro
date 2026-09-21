@@ -6,7 +6,8 @@ export interface Props {
   filename: string;
   title: string;
   author?: string;
-  year?: number;
+  /** Release year; null when the archive entry has no established year. */
+  year?: number | null;
   description?: string;
   tags?: string[];
   downloadUrl?: string;

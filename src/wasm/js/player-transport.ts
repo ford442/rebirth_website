@@ -11,7 +11,7 @@ import { DegradedRbsPlayer } from './DegradedRbsPlayer';
 import { formatAudioContextDiagnostics } from './create-audio-context';
 import { INIT_FAILURE_MESSAGES, type InitFailureReason } from './rbs-init-errors';
 import type { ToastDetail, ToastVariant } from '../../lib/player-events';
-import type { PlayerStatus } from '../types/wasm-audio';
+import type { PlayerStatus } from '../types/wasm-audio-song';
 import type { PlayerDom } from './player-dom';
 
 /** Either the real WASM bridge or the degraded Web-Audio fallback player. */
