@@ -13,9 +13,51 @@ constexpr float kDenormalThreshold = 1e-15f;
 // in Mixer.h. The stale copies that used to sit here were unreferenced, and
 // tripped -Wunused-const-variable under Clang, which broke the Emscripten
 // build while GCC's native build stayed green.
-constexpr float kCompressorRatio = 4.0f;
-constexpr float kCompressorAttack = 0.003f;   // seconds
+// `ratio` and `attack` are now read from the song's COMP chunk (see
+// Mixer::setSongFx); only the release stays fixed, because the format has no
+// byte for it.
 constexpr float kCompressorRelease = 0.08f;   // seconds
+
+/**
+ * DEVL/DELY byte 1 (`time`) selects a tempo-sync subdivision, expressed here
+ * as a fraction of one beat. ReBirth's delay knob steps through musical
+ * divisions rather than free milliseconds, and the byte was previously
+ * parsed and then ignored — every song delayed by exactly one sixteenth.
+ */
+constexpr float kDelaySubdivisions[] = {
+    0.25f,   // sixteenth
+    0.375f,  // dotted sixteenth
+    0.5f,    // eighth triplet feel / eighth
+    0.5f,    // eighth
+    0.75f,   // dotted eighth
+    1.0f,    // quarter
+};
+constexpr size_t kNumDelaySubdivisions =
+    sizeof(kDelaySubdivisions) / sizeof(kDelaySubdivisions[0]);
+
+/**
+ * COMP byte 2 (`ratio`) — 0 is the gentlest squeeze the format can ask for,
+ * 127 the hardest. Mapped 1.5:1 … 12:1, which brackets the range the
+ * original's compressor covers without ever becoming a brick-wall limiter
+ * (the master limiter after the bus already does that job).
+ */
+float compressorRatioFromByte(uint8_t ratio) {
+  return 1.5f + (static_cast<float>(ratio) / 127.0f) * 10.5f;
+}
+
+/**
+ * COMP byte 3 (`attack`) — 0 is the fastest attack, 127 the slowest, mapped
+ * 0.5 ms … 50 ms exponentially so the fast end has usable resolution.
+ */
+float compressorAttackFromByte(uint8_t attack) {
+  const float norm = static_cast<float>(attack) / 127.0f;
+  return 0.0005f * std::exp2(norm * 6.64f); // 0.5 ms → ~50 ms
+}
+
+float subdivisionForByte(uint8_t time) {
+  const size_t index = static_cast<size_t>(time) * kNumDelaySubdivisions / 128u;
+  return kDelaySubdivisions[std::min(index, kNumDelaySubdivisions - 1)];
+}
 constexpr float kLimiterThreshold = 0.92f;
 constexpr float kLimiterRelease = 0.02f;      // seconds
 
@@ -44,11 +86,15 @@ float Mixer::diodeDistort(float x, float drive) {
   return -1.0f + std::exp(driven);
 }
 
+void Mixer::refreshCompressorCoefficients() {
+  m_compressorAttackCoeff =
+      std::exp(-1.0f / (std::max(m_compressorAttackSeconds, 1e-4f) * m_sampleRate));
+  m_compressorReleaseCoeff = std::exp(-1.0f / (kCompressorRelease * m_sampleRate));
+}
+
 float Mixer::compressSample(float x, float& envelope) const {
   const float absX = std::fabs(x);
-  const float attackCoeff = std::exp(-1.0f / (kCompressorAttack * m_sampleRate));
-  const float releaseCoeff = std::exp(-1.0f / (kCompressorRelease * m_sampleRate));
-  const float coeff = (absX > envelope) ? attackCoeff : releaseCoeff;
+  const float coeff = (absX > envelope) ? m_compressorAttackCoeff : m_compressorReleaseCoeff;
   envelope = absX + coeff * (envelope - absX);
 
   if (envelope <= m_compressorThreshold) {
@@ -56,22 +102,32 @@ float Mixer::compressSample(float x, float& envelope) const {
   }
 
   const float over = envelope - m_compressorThreshold;
-  const float gainReduction = m_compressorThreshold + over / kCompressorRatio;
+  const float gainReduction = m_compressorThreshold + over / m_compressorRatio;
   const float gain = (envelope > 1e-8f) ? gainReduction / envelope : 1.0f;
   return x * gain;
 }
 
 void Mixer::resetDspState() {
-  m_delayLine.fill(0.0f);
+  std::fill(m_delayLine.begin(), m_delayLine.end(), 0.0f);
   m_delayWritePos = 0;
   m_delayTapSamples = 0;
   m_limiterEnvelope = 0.0f;
   m_compressorEnvelopes.fill(0.0f);
-  m_pcfState.fill(0.0f);
+  for (auto& pcf : m_pcf) {
+    pcf.reset();
+  }
 }
 
 void Mixer::init(float sampleRate) {
   m_sampleRate = std::max(sampleRate, 1000.0f);
+  // One allocation, on the main thread. Sized so the slowest tempo-synced
+  // subdivision fits at this sample rate; process() only ever indexes it.
+  m_delayLine.assign(
+      static_cast<size_t>(MAX_DELAY_SECONDS * m_sampleRate) + 1u, 0.0f);
+  refreshCompressorCoefficients();
+  for (auto& pcf : m_pcf) {
+    pcf.prepare(m_sampleRate);
+  }
   resetDspState();
 
   for (auto& dev : m_devices) {
@@ -98,9 +154,14 @@ void Mixer::setSongFx(const SongFxSettings& fx) {
   m_distortionMix = std::clamp(fx.dist.mix / 127.0f, 0.0f, 1.0f);
   m_compressorOn = fx.comp.enabled;
   m_compressorThreshold = std::clamp(fx.comp.threshold / 127.0f, 0.0f, 1.0f);
+  m_compressorRatio = compressorRatioFromByte(fx.comp.ratio);
+  m_compressorAttackSeconds = compressorAttackFromByte(fx.comp.attack);
+  refreshCompressorCoefficients();
+  m_delayBeatFraction = subdivisionForByte(fx.delay.time);
   m_pcfOn = fx.pcf.enabled;
-  m_pcfCutoff = std::clamp(fx.pcf.cutoff / 127.0f, 0.01f, 1.0f);
-  m_pcfResonance = std::clamp(fx.pcf.resonance / 127.0f, 0.0f, 1.0f);
+  setPcfCutoff(std::clamp(fx.pcf.cutoff / 127.0f, 0.01f, 1.0f));
+  setPcfResonance(std::clamp(fx.pcf.resonance / 127.0f, 0.0f, 1.0f));
+  setPcfEnvAmount(std::clamp(fx.pcf.envAmount / 127.0f, 0.0f, 1.0f));
 }
 
 void Mixer::setDelayFeedback(float feedback) {
@@ -123,25 +184,41 @@ void Mixer::setCompressorThreshold(float threshold) {
   m_compressorThreshold = std::clamp(threshold, 0.0f, 1.0f);
 }
 
+void Mixer::setCompressorRatio(float ratio) {
+  m_compressorRatio = std::clamp(ratio, 1.0f, 20.0f);
+}
+
+void Mixer::setCompressorAttack(float attackSeconds) {
+  m_compressorAttackSeconds = std::clamp(attackSeconds, 0.0002f, 0.1f);
+  refreshCompressorCoefficients();
+}
+
 void Mixer::setPcfCutoff(float cutoff) {
   m_pcfCutoff = std::clamp(cutoff, 0.01f, 1.0f);
+  for (auto& pcf : m_pcf) {
+    pcf.setCutoff(m_pcfCutoff);
+  }
 }
 
 void Mixer::setPcfResonance(float resonance) {
   m_pcfResonance = std::clamp(resonance, 0.0f, 1.0f);
+  for (auto& pcf : m_pcf) {
+    pcf.setResonance(m_pcfResonance);
+  }
+}
+
+void Mixer::setPcfEnvAmount(float envAmount) {
+  m_pcfEnvAmount = std::clamp(envAmount, 0.0f, 1.0f);
+  for (auto& pcf : m_pcf) {
+    pcf.setEnvAmount(m_pcfEnvAmount);
+  }
 }
 
 float Mixer::processPcfSample(int deviceIndex, float input) {
   if (!m_pcfOn || !m_devices[static_cast<size_t>(deviceIndex)].pcf) {
     return input;
   }
-  const float cutoffHz = 200.0f + m_pcfCutoff * 7800.0f;
-  const float rc = 1.0f / (2.0f * 3.14159265358979323846f * cutoffHz);
-  const float alpha = 1.0f / (1.0f + rc * m_sampleRate);
-  float& state = m_pcfState[static_cast<size_t>(deviceIndex)];
-  state = state + alpha * (input - state);
-  const float resonant = input + (input - state) * m_pcfResonance * 2.0f;
-  return resonant * (1.0f - m_pcfResonance * 0.35f) + state * (m_pcfResonance * 0.35f);
+  return m_pcf[static_cast<size_t>(deviceIndex)].process(input);
 }
 
 void Mixer::setChannelLevel(int deviceIndex, float level) {
@@ -166,26 +243,27 @@ void Mixer::setChannelMuted(int deviceIndex, bool muted) {
 
 void Mixer::updateDelayTap(float bpm) {
   const float clampedBpm = std::clamp(bpm, 40.0f, 250.0f);
-  // One 16th-note step (ReBirth master step) — tempo-sync delay subdivision.
-  const float samplesPerStep = (60.0f / clampedBpm) * 0.25f * m_sampleRate;
-  const uint32_t tap = static_cast<uint32_t>(std::round(samplesPerStep));
-  m_delayTapSamples = std::clamp(tap, 1u, static_cast<uint32_t>(MAX_DELAY_SAMPLES - 1));
+  // Tempo-synced to the subdivision the song's DELY `time` byte selected.
+  const float samplesPerTap = (60.0f / clampedBpm) * m_delayBeatFraction * m_sampleRate;
+  const uint32_t tap = static_cast<uint32_t>(std::round(samplesPerTap));
+  const uint32_t capacity = static_cast<uint32_t>(m_delayLine.size());
+  m_delayTapSamples = (capacity < 2u) ? 0u : std::clamp(tap, 1u, capacity - 1u);
 }
 
 void Mixer::processDelaySample(float input, float& outL, float& outR) {
-  if (!m_delayOn || m_delayTapSamples == 0) {
+  if (!m_delayOn || m_delayTapSamples == 0 || m_delayLine.empty()) {
     outL = 0.0f;
     outR = 0.0f;
     return;
   }
 
-  const uint32_t readPos =
-      (m_delayWritePos + MAX_DELAY_SAMPLES - m_delayTapSamples) % MAX_DELAY_SAMPLES;
+  const uint32_t capacity = static_cast<uint32_t>(m_delayLine.size());
+  const uint32_t readPos = (m_delayWritePos + capacity - m_delayTapSamples) % capacity;
   const float delayed = m_delayLine[readPos];
 
   m_delayLine[m_delayWritePos] =
       flushDenormal(input + delayed * m_delayFeedback);
-  m_delayWritePos = (m_delayWritePos + 1) % MAX_DELAY_SAMPLES;
+  m_delayWritePos = (m_delayWritePos + 1) % capacity;
 
   const float wet = delayed * m_delayWet;
   outL = wet;

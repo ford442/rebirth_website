@@ -11,19 +11,29 @@ import {
   buildStepCells,
   defaultPatternCoords,
   DEVICE_INDEX,
+  DeviceParam,
   isAcidDevice,
   pickPattern,
   pickPatternExact,
   STUDIO_DEVICE_LABEL,
+  STUDIO_DEVICES,
 } from './player-studio';
 import {
   applyStepToSong,
   createEditHistory,
   findDrumHit,
   nextStepValue,
+  toggleDrumHit,
   toWasmStep,
   type StepEdit,
 } from './player-step-edit';
+import type { MidiAction } from './player-midi';
+import {
+  emptyPatch,
+  type PatchParam,
+  type PatchStep,
+  type StudioPatch,
+} from '../../lib/studio-patch';
 import type { PlayerDom } from './player-dom';
 import type { PlayerBridge } from './player-transport';
 
@@ -36,6 +46,19 @@ export interface StudioViewDeps {
 
 export interface StudioView {
   setStudioLive(live: boolean): void;
+  /**
+   * Apply one decoded WebMIDI action (see `player-midi.ts`).
+   *
+   * Returns false when nothing was written — the studio is not live, the
+   * action was a note-off, or the engine rejected the patch.
+   */
+  applyMidiAction(action: MidiAction): boolean;
+  /** Tell the grid where the sequencer is, so MIDI pads land on that step. */
+  setPlaybackStep(step: number): void;
+  /** Everything edited this session, as a shareable `?p=` patch. */
+  capturePatch(): StudioPatch;
+  /** Replay a decoded `?p=` patch into the engine. Returns how much stuck. */
+  applyPatch(patch: StudioPatch): number;
   /** Undo the most recent step edit. Returns false when the stack is empty. */
   undoLastEdit(): boolean;
   renderMetadataPanel(song: ParsedSong): void;
@@ -53,6 +76,92 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
   let selectedPatternIndex = 0;
   let stepEditingLive = false;
   const history = createEditHistory(64);
+
+  /**
+   * Where the next MIDI note is written.
+   *
+   * While the sequencer runs it tracks the playhead, so pads punch into the
+   * step you hear. Stopped, it is a step-record cursor that advances after
+   * each 303 note — the usual way to tap a line in without a mouse.
+   */
+  let playbackStep = 0;
+  let recordCursor = 0;
+
+  /**
+   * Session edits, keyed by slot so re-editing one step replaces its entry
+   * rather than growing the share link. This is the *current* state of every
+   * touched slot — not the undo stack, which is a list of inverse patches.
+   */
+  const editedSteps = new Map<string, PatchStep>();
+  const movedParams = new Map<string, PatchParam>();
+
+  function recordStepEdit(
+    device: DeviceId,
+    bank: number,
+    patternIndex: number,
+    stepIndex: number,
+    step: WasmStepData
+  ) {
+    const deviceIndex = DEVICE_INDEX[device];
+    editedSteps.set(`${deviceIndex}:${bank}:${patternIndex}:${stepIndex}`, {
+      deviceIndex,
+      bank,
+      patternIndex,
+      stepIndex,
+      note: step.note ?? 0,
+      drumExtra: step.drumExtra ?? 0,
+      active: Boolean(step.active),
+      accent: Boolean(step.accent),
+      slide: Boolean(step.slide),
+    });
+  }
+
+  function recordParamMove(deviceIndex: number, paramId: number, value: number) {
+    movedParams.set(`${deviceIndex}:${paramId}`, { deviceIndex, paramId, value });
+  }
+
+  function capturePatch(): StudioPatch {
+    const patch = emptyPatch();
+    patch.steps = Array.from(editedSteps.values());
+    patch.params = Array.from(movedParams.values());
+    return patch;
+  }
+
+  /**
+   * Replay a shared patch. Steps go through the same `setStep` path as a
+   * click, so a link can only reach state the UI could have produced.
+   */
+  function applyPatch(patch: StudioPatch): number {
+    const bridge = deps.getBridge();
+    let applied = 0;
+    for (const step of patch.steps) {
+      const device = STUDIO_DEVICES[step.deviceIndex]?.id;
+      if (!device) continue;
+      const next: WasmStepData = {
+        active: step.active,
+        note: step.note,
+        drumExtra: step.drumExtra,
+        accent: step.accent,
+        slide: step.slide,
+      };
+      if (commitStep(device, step.bank, step.patternIndex, step.stepIndex, next)) {
+        recordStepEdit(device, step.bank, step.patternIndex, step.stepIndex, next);
+        applied++;
+      }
+    }
+    for (const param of patch.params) {
+      const ok =
+        'setDeviceParam' in bridge &&
+        typeof bridge.setDeviceParam === 'function' &&
+        bridge.setDeviceParam(param.deviceIndex, param.paramId, param.value);
+      if (ok) {
+        recordParamMove(param.deviceIndex, param.paramId, param.value);
+        applied++;
+      }
+    }
+    if (applied > 0) renderStudio();
+    return applied;
+  }
 
   function selectedNote(): number {
     const value = Number(dom.studioNote?.value);
@@ -129,6 +238,7 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
     if (!ok) return false;
     const song = deps.getLoadedSong();
     if (song) applyStepToSong(song, device, bank, patternIndex, stepIndex, next);
+    recordStepEdit(device, bank, patternIndex, stepIndex, next);
     return true;
   }
 
@@ -155,6 +265,19 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
     renderStudio();
   }
 
+  /** Switch the visible device, following the song's default slot for it. */
+  function selectDevice(id: DeviceId) {
+    selectedDevice = id;
+    const loadedSong = deps.getLoadedSong();
+    if (loadedSong) {
+      const coords = defaultPatternCoords(loadedSong, selectedDevice);
+      selectedBank = coords.bank;
+      selectedPatternIndex = coords.patternIndex;
+      if (dom.studioBank) dom.studioBank.value = String(selectedBank);
+      if (dom.studioPattern) dom.studioPattern.value = String(selectedPatternIndex);
+    }
+  }
+
   function undoLastEdit(): boolean {
     const edit = history.pop();
     updateUndoButton();
@@ -176,6 +299,98 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
     if (dom.studioPattern) dom.studioPattern.value = String(selectedPatternIndex);
     renderStudio();
     return true;
+  }
+
+  function setPlaybackStep(step: number) {
+    if (Number.isFinite(step)) playbackStep = ((step % 16) + 16) % 16;
+  }
+
+  /** The step a MIDI event writes to. */
+  function midiTargetStep(): number {
+    return deps.getBridge().playerStatus === 'playing' ? playbackStep : recordCursor;
+  }
+
+  /**
+   * Write one step from MIDI, reusing the click path's undo history so a
+   * mis-hit pad is as recoverable as a mis-click.
+   */
+  function commitMidiStep(
+    device: DeviceId,
+    stepIndex: number,
+    next: WasmStepData,
+    previous: WasmStepData
+  ): boolean {
+    const edit: StepEdit = {
+      deviceId: device,
+      bank: selectedBank,
+      patternIndex: selectedPatternIndex,
+      stepIndex,
+      previous,
+    };
+    if (!commitStep(device, selectedBank, selectedPatternIndex, stepIndex, next)) return false;
+    history.push(edit);
+    updateUndoButton();
+    renderStudio();
+    return true;
+  }
+
+  function applyMidiAction(action: MidiAction): boolean {
+    if (!stepEditingLive || deps.isDegradedMode()) return false;
+
+    if (action.kind === 'param') {
+      const bridge = deps.getBridge();
+      const ok =
+        'setDeviceParam' in bridge &&
+        typeof bridge.setDeviceParam === 'function' &&
+        bridge.setDeviceParam(DEVICE_INDEX[selectedDevice], action.paramId, action.value);
+      if (!ok) return false;
+      // Mirror the controller move onto the on-screen knob, so the panel
+      // never disagrees with what the engine is doing.
+      recordParamMove(DEVICE_INDEX[selectedDevice], action.paramId, action.value);
+      const knob = action.paramId === DeviceParam.Cutoff ? 'cutoff' : 'resonance';
+      const el = dom.root.querySelector<HTMLInputElement>(`[data-studio-knob="${knob}"]`);
+      if (el) el.value = String(action.value);
+      const device = deps.getLoadedSong()?.devices.find((d) => d.deviceId === selectedDevice);
+      if (device) device.knobs[knob] = action.value;
+      return true;
+    }
+
+    // Note-offs carry no edit: a step is a latched state, not a gate.
+    if (!action.on) return false;
+
+    const stepIndex = midiTargetStep();
+
+    if (action.kind === 'acid-note') {
+      // The incoming channel picks the 303, so a two-channel controller can
+      // play both lines without touching the device tabs.
+      if (action.device !== selectedDevice) {
+        selectDevice(action.device);
+      }
+      const previous = readStep(stepIndex);
+      const next: WasmStepData = {
+        active: true,
+        note: action.note,
+        drumExtra: 0,
+        accent: action.accent,
+        slide: false,
+      };
+      const ok = commitMidiStep(action.device, stepIndex, next, previous);
+      if (ok && deps.getBridge().playerStatus !== 'playing') {
+        recordCursor = (stepIndex + 1) % 16;
+      }
+      return ok;
+    }
+
+    const hit = findDrumHit(action.drumKey);
+    if (!hit) return false;
+    // Pads target whichever drum machine is selected; the 808 is the default
+    // so a controller works before anyone touches the tabs.
+    const drumDevice: DeviceId = isAcidDevice(selectedDevice) ? 'tr808' : selectedDevice;
+    if (drumDevice !== selectedDevice) selectDevice(drumDevice);
+    const previous = readStep(stepIndex);
+    const next = toggleDrumHit(previous, hit);
+    if (action.accent && next.active) next.accent = true;
+    return commitMidiStep(drumDevice, stepIndex, next, previous);
   }
 
   function applyPatternPreview(song: ParsedSong) {
@@ -332,15 +547,7 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
       tab.addEventListener('click', () => {
         const id = tab.dataset.studioDevice as DeviceId | undefined;
         if (!id) return;
-        selectedDevice = id;
-        const loadedSong = deps.getLoadedSong();
-        if (loadedSong) {
-          const coords = defaultPatternCoords(loadedSong, selectedDevice);
-          selectedBank = coords.bank;
-          selectedPatternIndex = coords.patternIndex;
-          if (dom.studioBank) dom.studioBank.value = String(selectedBank);
-          if (dom.studioPattern) dom.studioPattern.value = String(selectedPatternIndex);
-        }
+        selectDevice(id);
         renderStudio();
       });
     });
@@ -373,6 +580,7 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
           'setDeviceParam' in bridge &&
           typeof bridge.setDeviceParam === 'function' &&
           bridge.setDeviceParam(deviceIndex, paramId, value);
+        if (ok) recordParamMove(deviceIndex, paramId, value);
         const loadedSong = deps.getLoadedSong();
         if (ok && loadedSong) {
           const device = loadedSong.devices.find((d) => d.deviceId === selectedDevice);
@@ -393,6 +601,10 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
 
   return {
     setStudioLive,
+    applyMidiAction,
+    setPlaybackStep,
+    capturePatch,
+    applyPatch,
     undoLastEdit,
     renderMetadataPanel,
     applyPatternPreview,
