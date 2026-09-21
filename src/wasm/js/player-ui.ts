@@ -11,7 +11,15 @@
 
 import { WasmAudioBridge } from './WasmAudioBridge';
 import { DegradedRbsPlayer } from './DegradedRbsPlayer';
-import { classifyInitError, type InitFailureReason } from './rbs-init-errors';
+import {
+  classifyInitError,
+  classifyLoadError,
+  RbsFetchError,
+  RbsParseError,
+  type InitFailureReason,
+} from './rbs-init-errors';
+import { createMidiInput, isWebMidiSupported, type MidiState } from './player-midi';
+import { buildShareUrl, readPatchFromSearch, type StudioPatch } from '../../lib/studio-patch';
 import type { LoadDemoDetail } from '../../lib/player-events';
 import { parsePlayerQuery, scrollToPlayer } from '../../lib/player-events';
 import type { ParsedSong } from '../types/wasm-audio-song';
@@ -85,8 +93,72 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
     },
   });
 
+  /**
+   * The position callback feeds both views: the transport paints the LCD and
+   * the step dots, the studio needs the playhead so MIDI pads land on the
+   * step you can hear.
+   */
+  function handlePosition(bar: number, step: number) {
+    transport.updatePositionVisuals(bar, step);
+    studio.setPlaybackStep(step);
+  }
+
   bridge.setStatusCallback(transport.setStatus);
-  bridge.setPositionCallback(transport.updatePositionVisuals);
+  bridge.setPositionCallback(handlePosition);
+
+  // ── Shareable studio URLs (?p=) ───────────────────────────────────
+  //
+  // The patch layers on top of whatever ?play= / ?src= already named: it
+  // carries the edits, never the song. It is applied once, after the
+  // deep-linked file has loaded.
+  let pendingPatch: StudioPatch | null = null;
+  let patchApplied = false;
+
+  function applySharedPatch() {
+    if (!pendingPatch || patchApplied || !songLoaded) return;
+    const applied = studio.applyPatch(pendingPatch);
+    patchApplied = true;
+    if (applied > 0) {
+      transport.showToast(`Shared patch applied — ${applied} change(s)`, 'success');
+    } else {
+      transport.showToast('Shared patch could not be applied to this song', 'error');
+    }
+  }
+
+  function shareStudioUrl() {
+    const result = buildShareUrl(window.location.href, studio.capturePatch());
+    if (!result.ok) {
+      const msg =
+        result.reason === 'too-large'
+          ? `Patch is too big for a link (${result.size} chars) — use SAVE .RBS instead.`
+          : 'Nothing edited yet — change a step or a knob first.';
+      setShareStatus(msg, 'error');
+      transport.showToast(msg, 'error');
+      return;
+    }
+    const url = result.url!;
+    // history.replaceState keeps the link visible in the address bar even if
+    // the clipboard write is blocked (iframes, insecure contexts).
+    window.history.replaceState(null, '', url);
+    const done = () => {
+      setShareStatus(`Link copied (${result.size} chars)`, 'done');
+      transport.showToast('Share link copied to the clipboard', 'success');
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(url).then(done, () => {
+        setShareStatus('Link is in the address bar — copy it from there', 'done');
+      });
+    } else {
+      setShareStatus('Link is in the address bar — copy it from there', 'done');
+    }
+  }
+
+  function setShareStatus(text: string, state: '' | 'done' | 'error') {
+    if (!dom.shareStatus) return;
+    dom.shareStatus.textContent = text;
+    if (state) dom.shareStatus.dataset.state = state;
+    else delete dom.shareStatus.dataset.state;
+  }
 
   function setExportStatus(text: string, state: '' | 'working' | 'done' | 'error') {
     if (!dom.exportStatus) return;
@@ -268,7 +340,8 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
       loadedSong = null;
       transport.updatePlayAvailability();
       updateExportAvailability();
-      const errMsg = `Failed to parse .rbs${sourceLabel ? ` (${sourceLabel})` : ''}`;
+      const failure = classifyLoadError(new RbsParseError(String(err)));
+      const errMsg = `${sourceLabel ? `${sourceLabel}: ` : ''}${failure.message}`;
       transport.setMessage(errMsg);
       transport.showToast(errMsg, 'error');
       transport.setStatus('error');
@@ -280,9 +353,10 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
     transport.setMessage(`Fetching demo: ${label}…`);
     try {
       const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw new RbsFetchError(res.status, url);
       const buf = await res.arrayBuffer();
       await loadFile(buf, label);
+      applySharedPatch();
       if (requestAutoplay) {
         if (userGestureGranted) {
           bridge.play();
@@ -293,12 +367,13 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
     } catch (err) {
       console.error('Failed to load preview demo:', err);
       transport.dismissLoadingToasts();
-      const isCors = err instanceof TypeError;
-      const errMsg = isCors
-        ? 'Preview blocked (CORS) — download the file or use a local copy'
-        : 'Preview fetch failed — try local file load';
+      // corp-blocked / 404 / parse are three different problems with three
+      // different fixes — say which one this was (see rbs-init-errors.ts).
+      const failure = classifyLoadError(err, url);
+      const errMsg = `${label}: ${failure.message}`;
+      playerEl.dataset.loadFailure = failure.reason;
       transport.setMessage(errMsg);
-      transport.showToast(errMsg, 'error');
+      transport.showToast(errMsg, 'error', failure.reason === 'corp-blocked' ? 0 : 4000);
       transport.setStatus('error');
       throw err;
     }
@@ -465,6 +540,48 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
     }
   });
 
+  dom.btnShare?.addEventListener('click', () => {
+    markUserGesture();
+    shareStudioUrl();
+  });
+
+  // ── WebMIDI input ─────────────────────────────────────────────────
+  //
+  // Feature-detected: `navigator.requestMIDIAccess` is absent on iOS and in
+  // insecure contexts, so the control is hidden rather than offered and then
+  // failing. The mapping itself lives in player-midi.ts; C++ never learns
+  // that MIDI exists.
+  const midiSupported = isWebMidiSupported();
+  if (dom.midiPanel) dom.midiPanel.hidden = !midiSupported;
+
+  function setMidiState(state: MidiState, detail: string) {
+    playerEl.dataset.midiState = state;
+    if (dom.midiStatus) dom.midiStatus.textContent = detail;
+    if (dom.btnMidiIn) {
+      dom.btnMidiIn.classList.toggle('is-on', state === 'connected');
+      dom.btnMidiIn.setAttribute('aria-pressed', state === 'connected' ? 'true' : 'false');
+      dom.btnMidiIn.disabled = state === 'connecting';
+    }
+  }
+
+  const midi = createMidiInput({
+    onAction: (action) => {
+      if (!studio.applyMidiAction(action)) return;
+      if (action.kind === 'param')
+        setMidiState('connected', `${action.label} ${Math.round(action.value * 127)}`);
+    },
+    onState: setMidiState,
+  });
+
+  if (midiSupported) {
+    setMidiState('idle', 'MIDI off — click to connect');
+    dom.btnMidiIn?.addEventListener('click', () => {
+      markUserGesture();
+      if (midi.state === 'connected') midi.disconnect();
+      else void midi.connect();
+    });
+  }
+
   transport.attachEvents();
   studio.attachEvents();
 
@@ -473,7 +590,7 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
     bridge = new DegradedRbsPlayer({ failureReason: reason });
     canSketch = bridge.canPlayAudio;
     bridge.setStatusCallback(transport.setStatus);
-    bridge.setPositionCallback(transport.updatePositionVisuals);
+    bridge.setPositionCallback(handlePosition);
     degradedMode = true;
     transport.showDegradedFallback(reason);
     setPlayerMode(canSketch ? 'degraded-sketch' : 'degraded-metadata');
@@ -526,6 +643,8 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
       if (!demos.length && dom.btnDemoLoad) dom.btnDemoLoad.disabled = true;
       if (!demos.length)
         transport.setMessage('No demos configured — drop an .rbs file to preview.');
+
+      pendingPatch = readPatchFromSearch(window.location.search);
 
       const query = parsePlayerQuery();
       const srcUrl = initialSrc || query.src;

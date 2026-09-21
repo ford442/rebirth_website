@@ -1,8 +1,10 @@
 #pragma once
 
 #include "../parser/RbsTypes.h"
+#include "../synth/dsp/Pcf.h"
 #include <array>
 #include <cstdint>
+#include <vector>
 
 namespace rb338 {
 
@@ -18,12 +20,28 @@ namespace rb338 {
  */
 class Mixer {
 public:
-  /** Maximum delay line length (~0.45 s @ 44.1 kHz). Allocated once in init(). */
-  static constexpr size_t MAX_DELAY_SAMPLES = 20000;
+  /**
+   * Longest delay tap the line must be able to hold, in seconds.
+   *
+   * The slowest subdivision we sync to is a dotted eighth, and the tempo
+   * floor is 40 BPM: (60/40) * 0.75 = 1.125 s. One extra sample of headroom
+   * keeps the read pointer strictly behind the write pointer.
+   *
+   * The line used to be a fixed 20000-sample array (~0.45 s @ 44.1 kHz),
+   * which silently truncated every tap longer than a sixteenth at slow
+   * tempos and would have clipped outright at 48/96 kHz.
+   */
+  static constexpr float MAX_DELAY_SECONDS = 1.125f;
 
   Mixer() = default;
 
-  /** Initialise internal delay lines, filter states, etc. (no heap alloc). */
+  /**
+   * Initialise internal delay lines, filter states, etc.
+   *
+   * Sizes the delay line for `MAX_DELAY_SECONDS` at `sampleRate`. This is
+   * the one allocation the mixer makes and it happens on the main thread;
+   * `process()` never resizes, so the audio callback stays alloc-free.
+   */
   void init(float sampleRate);
 
   /**
@@ -65,8 +83,11 @@ public:
   void setDistortionDrive(float drive);
   void setDistortionMix(float mix);
   void setCompressorThreshold(float threshold);
+  void setCompressorRatio(float ratio);
+  void setCompressorAttack(float attackSeconds);
   void setPcfCutoff(float cutoff);
   void setPcfResonance(float resonance);
+  void setPcfEnvAmount(float envAmount);
 
   void setDistortionEnabled(bool on) { m_distortionOn = on; }
   void setCompressorEnabled(bool on) { m_compressorOn = on; }
@@ -79,6 +100,7 @@ private:
   static float diodeDistort(float x, float drive);
   float compressSample(float x, float& envelope) const;
   void updateDelayTap(float bpm);
+  void refreshCompressorCoefficients();
   void processDelaySample(float input, float& outL, float& outR);
   float processPcfSample(int deviceIndex, float input);
 
@@ -93,11 +115,18 @@ private:
   float m_distortionDrive = 5.0f;
   float m_distortionMix = 0.65f;
   float m_compressorThreshold = 0.55f;
+  float m_compressorRatio = 4.0f;
+  float m_compressorAttackSeconds = 0.003f;
+  float m_compressorAttackCoeff = 0.0f;
+  float m_compressorReleaseCoeff = 0.0f;
   float m_pcfCutoff = 0.5f;
   float m_pcfResonance = 0.2f;
+  float m_pcfEnvAmount = 0.0f;
+  /** Delay subdivision as a fraction of a beat (0.25 = a sixteenth). */
+  float m_delayBeatFraction = 0.25f;
 
-  // Tempo-sync delay (fixed allocation in init, no heap in process).
-  std::array<float, MAX_DELAY_SAMPLES> m_delayLine{};
+  // Tempo-sync delay (sized once in init, never resized in process).
+  std::vector<float> m_delayLine;
   uint32_t m_delayWritePos = 0;
   uint32_t m_delayTapSamples = 0;
   float m_delayFeedback = 0.38f;
@@ -108,7 +137,9 @@ private:
 
   // Per-device compressor envelope followers (compressor-send path).
   std::array<float, NUM_DEVICES> m_compressorEnvelopes{};
-  std::array<float, NUM_DEVICES> m_pcfState{};
+
+  // Per-device PCF send filters.
+  std::array<dsp::Pcf, NUM_DEVICES> m_pcf{};
 };
 
 } // namespace rb338

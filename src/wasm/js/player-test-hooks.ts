@@ -18,6 +18,9 @@ import {
   resolveAudioContextConstructor,
 } from './create-audio-context';
 import { songToMidi } from '../../lib/midi-smf';
+import { mapMidiMessage } from './player-midi';
+import { buildShareUrl, decodeStudioPatch, encodeStudioPatch } from '../../lib/studio-patch';
+import { classifyLoadError, RbsFetchError, RbsParseError } from './rbs-init-errors';
 
 /** Shape added to `window` by {@link installPlayerTestHooks}. */
 export interface PlayerTestHooks {
@@ -27,6 +30,13 @@ export interface PlayerTestHooks {
   attachAudioContextLifecycle: typeof attachAudioContextLifecycle;
   resolveAudioContextConstructor: typeof resolveAudioContextConstructor;
   songToMidi: typeof songToMidi;
+  mapMidiMessage: typeof mapMidiMessage;
+  encodeStudioPatch: typeof encodeStudioPatch;
+  decodeStudioPatch: typeof decodeStudioPatch;
+  buildShareUrl: typeof buildShareUrl;
+  classifyLoadError: typeof classifyLoadError;
+  RbsFetchError: typeof RbsFetchError;
+  RbsParseError: typeof RbsParseError;
 }
 
 /** Idempotently exposes the engine entry points used by browser tests. */
@@ -38,4 +48,11 @@ export function installPlayerTestHooks(): void {
   target.attachAudioContextLifecycle = attachAudioContextLifecycle;
   target.resolveAudioContextConstructor = resolveAudioContextConstructor;
   target.songToMidi = songToMidi;
+  target.mapMidiMessage = mapMidiMessage;
+  target.encodeStudioPatch = encodeStudioPatch;
+  target.decodeStudioPatch = decodeStudioPatch;
+  target.buildShareUrl = buildShareUrl;
+  target.classifyLoadError = classifyLoadError;
+  target.RbsFetchError = RbsFetchError;
+  target.RbsParseError = RbsParseError;
 }

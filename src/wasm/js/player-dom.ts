@@ -30,7 +30,15 @@ export interface PlayerDom {
   btnStems: HTMLButtonElement | null;
   btnMidi: HTMLButtonElement | null;
   btnSaveRbs: HTMLButtonElement | null;
+  /** Copies a `?p=` share link for the current working copy. */
+  btnShare: HTMLButtonElement | null;
+  shareStatus: HTMLElement | null;
   exportStatus: HTMLElement | null;
+  /** Wrapper around the WebMIDI controls — hidden where the API is absent. */
+  midiPanel: HTMLElement | null;
+  /** The hardware-styled MIDI LED / connect toggle. */
+  btnMidiIn: HTMLButtonElement | null;
+  midiStatus: HTMLElement | null;
   volumeSlider: HTMLInputElement | null;
   volumeValue: HTMLElement | null;
   tempoSlider: HTMLInputElement | null;
@@ -88,7 +96,12 @@ export function queryPlayerDom(playerEl: HTMLElement): PlayerDom {
     btnStems: playerEl.querySelector('#rbsBtnStems'),
     btnMidi: playerEl.querySelector('#rbsBtnMidi'),
     btnSaveRbs: playerEl.querySelector('#rbsBtnSaveRbs'),
+    btnShare: playerEl.querySelector('#rbsBtnShare'),
+    shareStatus: playerEl.querySelector('#rbsShareStatus'),
     exportStatus: playerEl.querySelector('#rbsExportStatus'),
+    midiPanel: playerEl.querySelector('#rbsMidiPanel'),
+    btnMidiIn: playerEl.querySelector('#rbsBtnMidiIn'),
+    midiStatus: playerEl.querySelector('#rbsMidiStatus'),
     volumeSlider: playerEl.querySelector('#rbsVolume'),
     volumeValue: playerEl.querySelector('#rbsVolumeValue'),
     tempoSlider: playerEl.querySelector('#rbsTempo'),

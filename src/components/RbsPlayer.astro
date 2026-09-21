@@ -161,6 +161,36 @@ const DRUM_CHOICES = DRUM_HITS.map((hit) => ({ key: hit.key, label: hit.label })
       <span class="player-export-status" id="rbsExportStatus" aria-live="polite"></span>
     </div>
 
+    <!-- Share: a ?p= link that rebuilds this working copy on top of the song -->
+    <div class="player-export-controls">
+      <span class="player-control-label">SHARE</span>
+      <button
+        class="rb-pattern-btn"
+        id="rbsBtnShare"
+        type="button"
+        title="Copy a link that reproduces your edits on top of this song"
+      >
+        COPY LINK
+      </button>
+      <span class="player-export-status" id="rbsShareStatus" aria-live="polite"></span>
+    </div>
+
+    <!-- WebMIDI input: hidden where navigator.requestMIDIAccess is absent -->
+    <div class="player-midi-controls" id="rbsMidiPanel" hidden>
+      <span class="player-control-label">MIDI</span>
+      <button
+        class="rb-pattern-btn player-midi-led"
+        id="rbsBtnMidiIn"
+        type="button"
+        aria-pressed="false"
+        title="Connect a MIDI controller: notes on ch 1-2 write 303 steps, pads on ch 10 write drums, CC 74/71 sweep cutoff and resonance"
+      >
+        <span class="player-midi-lamp" aria-hidden="true"></span>
+        IN
+      </button>
+      <span class="player-mod-status" id="rbsMidiStatus" aria-live="polite">MIDI off</span>
+    </div>
+
     <section
       class="player-studio"
       id="rbsStudio"
@@ -723,6 +753,41 @@ const DRUM_CHOICES = DRUM_HITS.map((hit) => ({ key: hit.key, label: hit.label })
     gap: 0.5rem;
     align-items: center;
     margin-top: 0.5rem;
+  }
+
+  /* WebMIDI row — same rhythm as the export row, with a hardware lamp. */
+  .player-midi-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.5rem;
+  }
+
+  .player-midi-led {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .player-midi-lamp {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--rb-darkest, #111);
+    border: 1px solid var(--rb-silver-dim, #888);
+    box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.8);
+  }
+
+  .player-midi-led.is-on .player-midi-lamp {
+    background: var(--rb-green, #3f6);
+    box-shadow: 0 0 6px var(--rb-green, #3f6);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .player-midi-led.is-on .player-midi-lamp {
+      box-shadow: none;
+    }
   }
 
   .player-export-status {

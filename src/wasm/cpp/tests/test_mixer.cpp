@@ -278,3 +278,207 @@ TEST_CASE("Mixer: scalar process benchmark (smoke)") {
   MESSAGE("Mixer 4000x128 frames: ", us, " us");
   CHECK(peakPlanar(leftOut, kFrames) >= 0.0f);
 }
+
+// ─────────────────────────────────────────────────────────────────
+// Song-FX fidelity: every byte the parser reads must reach the DSP.
+// ─────────────────────────────────────────────────────────────────
+
+namespace {
+
+/** RMS of a planar channel — the yardstick for "this FX did something". */
+float rmsPlanar(const float* channel, uint32_t frames) {
+  double sum = 0.0;
+  for (uint32_t i = 0; i < frames; ++i) {
+    sum += static_cast<double>(channel[i]) * channel[i];
+  }
+  return static_cast<float>(std::sqrt(sum / frames));
+}
+
+/** A device wired into every send, so one song's FX bytes decide the sound. */
+std::array<DeviceState, NUM_DEVICES> allSendsOn() {
+  std::array<DeviceState, NUM_DEVICES> devices{};
+  devices[0].id = DeviceId::TB303_A;
+  devices[0].level = 1.0f;
+  devices[0].pan = 0.5f;
+  devices[0].dist = true;
+  devices[0].compressor = true;
+  devices[0].pcf = true;
+  devices[0].delaySend = 1.0f;
+  return devices;
+}
+
+/** A few seconds of a loud square wave — enough to trip every FX stage. */
+std::vector<float> makeSquare(uint32_t frames, float periodFrames, float amplitude) {
+  std::vector<float> buf(frames);
+  for (uint32_t i = 0; i < frames; ++i) {
+    const float phase = std::fmod(static_cast<float>(i), periodFrames) / periodFrames;
+    buf[i] = (phase < 0.5f) ? amplitude : -amplitude;
+  }
+  return buf;
+}
+
+/** Render `input` through a mixer configured with `fx`, in 128-frame blocks. */
+std::vector<float> renderWithFx(const SongFxSettings& fx, const std::vector<float>& input,
+                                float bpm) {
+  Mixer mixer;
+  mixer.init(44100.0f);
+  mixer.setDeviceStates(allSendsOn());
+  mixer.setSongFx(fx);
+
+  std::vector<float> left(input.size(), 0.0f);
+  std::vector<float> right(input.size(), 0.0f);
+  for (size_t offset = 0; offset < input.size(); offset += kFrames) {
+    const uint32_t block =
+        static_cast<uint32_t>(std::min<size_t>(kFrames, input.size() - offset));
+    const float* buffers[NUM_DEVICES] = {input.data() + offset, nullptr, nullptr, nullptr};
+    mixer.process(buffers, left.data() + offset, right.data() + offset, block, bpm);
+  }
+  return left;
+}
+
+SongFxSettings allFxOff() {
+  SongFxSettings fx{};
+  fx.masterLevel = 127;
+  fx.delay.enabled = false;
+  fx.dist.enabled = false;
+  fx.comp.enabled = false;
+  fx.pcf.enabled = false;
+  return fx;
+}
+
+} // namespace
+
+TEST_CASE("Mixer: a song with DIST/PCF/COMP enabled differs from all-FX-off") {
+  const auto input = makeSquare(44100, 120.0f, 0.6f);
+
+  SongFxSettings on = allFxOff();
+  on.dist.enabled = true;
+  on.dist.drive = 96;
+  on.dist.mix = 80;
+  on.pcf.enabled = true;
+  on.pcf.cutoff = 40;
+  on.pcf.resonance = 100;
+  on.pcf.envAmount = 90;
+  on.comp.enabled = true;
+  on.comp.threshold = 20;
+  on.comp.ratio = 120;
+  on.comp.attack = 0;
+
+  const auto dry = renderWithFx(allFxOff(), input, 120.0f);
+  const auto wet = renderWithFx(on, input, 120.0f);
+  REQUIRE(dry.size() == wet.size());
+
+  std::vector<float> difference(dry.size());
+  for (size_t i = 0; i < dry.size(); ++i) {
+    difference[i] = wet[i] - dry[i];
+  }
+
+  const float dryRms = rmsPlanar(dry.data(), static_cast<uint32_t>(dry.size()));
+  const float diffRms =
+      rmsPlanar(difference.data(), static_cast<uint32_t>(difference.size()));
+  CHECK(dryRms > 0.01f);
+  // Far above any rounding noise: the FX chain must be plainly audible.
+  CHECK(diffRms > dryRms * 0.1f);
+  CHECK(peakPlanar(wet.data(), static_cast<uint32_t>(wet.size())) >= 0.0f);
+}
+
+TEST_CASE("Mixer: PCF envAmount changes the sound") {
+  const auto input = makeSquare(22050, 200.0f, 0.7f);
+
+  SongFxSettings base = allFxOff();
+  base.pcf.enabled = true;
+  base.pcf.cutoff = 20;
+  base.pcf.resonance = 64;
+  base.pcf.envAmount = 0;
+
+  SongFxSettings swept = base;
+  swept.pcf.envAmount = 127;
+
+  const auto still = renderWithFx(base, input, 120.0f);
+  const auto moving = renderWithFx(swept, input, 120.0f);
+
+  // A closed filter opened by the envelope passes strictly more energy.
+  CHECK(rmsPlanar(moving.data(), static_cast<uint32_t>(moving.size())) >
+        rmsPlanar(still.data(), static_cast<uint32_t>(still.size())) * 1.05f);
+}
+
+TEST_CASE("Mixer: compressor ratio and attack bytes reach the DSP") {
+  const auto input = makeSquare(22050, 150.0f, 0.9f);
+
+  SongFxSettings gentle = allFxOff();
+  gentle.comp.enabled = true;
+  gentle.comp.threshold = 10;
+  gentle.comp.ratio = 0;   // ~1.5:1
+  gentle.comp.attack = 0;  // fastest
+
+  SongFxSettings hard = gentle;
+  hard.comp.ratio = 127; // ~12:1
+
+  const auto gentleOut = renderWithFx(gentle, input, 120.0f);
+  const auto hardOut = renderWithFx(hard, input, 120.0f);
+  CHECK(rmsPlanar(hardOut.data(), static_cast<uint32_t>(hardOut.size())) <
+        rmsPlanar(gentleOut.data(), static_cast<uint32_t>(gentleOut.size())));
+
+  SongFxSettings slow = gentle;
+  slow.comp.attack = 127; // ~50 ms — transients pass before gain reduction
+  const auto slowOut = renderWithFx(slow, input, 120.0f);
+  CHECK(rmsPlanar(slowOut.data(), static_cast<uint32_t>(slowOut.size())) >
+        rmsPlanar(gentleOut.data(), static_cast<uint32_t>(gentleOut.size())));
+}
+
+TEST_CASE("Mixer: a dotted-eighth tap at 80 BPM fits the delay line") {
+  // (60/80) * 0.75 = 0.5625 s = 24806 samples @ 44.1 kHz — past the old
+  // 20000-sample ceiling, which used to silently truncate the tap.
+  const uint32_t tapSamples = 24806;
+  const uint32_t frames = tapSamples + 8192;
+
+  SongFxSettings fx = allFxOff();
+  fx.delay.enabled = true;
+  fx.delay.time = 100; // dotted eighth
+  fx.delay.feedback = 90;
+  fx.delay.wet = 127;
+
+  std::vector<float> input(frames, 0.0f);
+  input[0] = 1.0f; // single impulse into the delay send
+
+  const auto out = renderWithFx(fx, input, 80.0f);
+
+  // Nothing between the impulse and the tap...
+  float beforeTap = 0.0f;
+  for (uint32_t i = 64; i < tapSamples - 512; ++i) {
+    beforeTap = std::max(beforeTap, std::fabs(out[i]));
+  }
+  CHECK(beforeTap < 1e-4f);
+
+  // ...and a clear echo around it.
+  float atTap = 0.0f;
+  for (uint32_t i = tapSamples - 256; i < tapSamples + 256 && i < frames; ++i) {
+    atTap = std::max(atTap, std::fabs(out[i]));
+  }
+  CHECK(atTap > 0.1f);
+}
+
+TEST_CASE("Mixer: the DELY time byte selects different subdivisions") {
+  const uint32_t frames = 44100;
+  std::vector<float> input(frames, 0.0f);
+  input[0] = 1.0f;
+
+  auto firstEchoIndex = [&](uint8_t time) {
+    SongFxSettings fx = allFxOff();
+    fx.delay.enabled = true;
+    fx.delay.time = time;
+    fx.delay.feedback = 0;
+    fx.delay.wet = 127;
+    const auto out = renderWithFx(fx, input, 120.0f);
+    for (uint32_t i = 64; i < frames; ++i) {
+      if (std::fabs(out[i]) > 0.1f) return i;
+    }
+    return frames;
+  };
+
+  const uint32_t sixteenth = firstEchoIndex(0);
+  const uint32_t quarter = firstEchoIndex(127);
+  CHECK(sixteenth < frames);
+  CHECK(quarter < frames);
+  CHECK(quarter > sixteenth * 3);
+}
