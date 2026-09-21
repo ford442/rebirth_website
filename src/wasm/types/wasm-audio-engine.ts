@@ -130,14 +130,17 @@ export interface RbsAudioEngineInstance {
   ): boolean;
   /** Read a step back; an all-false `WasmStepData` for a slot the song lacks. */
   getStep(deviceId: number, bank: number, patternIndex: number, stepIndex: number): WasmStepData;
-  setPatternLength(
-    deviceId: number,
-    bank: number,
-    patternIndex: number,
-    length: number
-  ): boolean;
+  setPatternLength(deviceId: number, bank: number, patternIndex: number, length: number): boolean;
   /** Pattern play length, or 0 when the song has no such pattern. */
   getPatternLength(deviceId: number, bank: number, patternIndex: number): number;
+  /**
+   * Serialise the engine's working copy back to `.rbs` bytes (always a
+   * ReBirth 2.x container). Empty when the save failed — see
+   * `lastSaveError()`.
+   */
+  saveRbs(): Uint8Array;
+  /** Last `saveRbs()` error, empty on success. */
+  lastSaveError(): string;
   isPlaying(): boolean;
   getProcessedBlockCount(): number;
   renderTestBlock(numFrames: number): number;

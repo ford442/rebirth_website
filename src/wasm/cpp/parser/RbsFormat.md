@@ -179,21 +179,21 @@ Each 12-byte mixer record:
 
 Observed payload bytes from `standard-rebirth.rbs`:
 
-| Chunk | Size | Offset | Field layout (bytes 0…) |
-| ----- | ---- | ------ | ------------------------- |
-| `DELY` | 8 | 0 | enabled, time, ?, feedback, wet, pad… |
-| `PCF ` | 12 | 0 | enabled, cutoff, resonance, envAmount, ?, pad… |
-| `DIST` | 8 | 0 | enabled, drive, mix, pad… |
-| `COMP` | 8 | 0 | enabled, ratio, threshold, pad… |
+| Chunk  | Size | Offset | Field layout (bytes 0…)                        |
+| ------ | ---- | ------ | ---------------------------------------------- |
+| `DELY` | 8    | 0      | enabled, time, ?, feedback, wet, pad…          |
+| `PCF ` | 12   | 0      | enabled, cutoff, resonance, envAmount, ?, pad… |
+| `DIST` | 8    | 0      | enabled, drive, mix, pad…                      |
+| `COMP` | 8    | 0      | enabled, ratio, threshold, pad…                |
 
 Example payloads (hex):
 
-| Chunk | Payload |
-| ----- | ------- |
-| `DELY` | `0103013e50000000` |
+| Chunk  | Payload                    |
+| ------ | -------------------------- |
+| `DELY` | `0103013e50000000`         |
 | `PCF ` | `014b4f401843010000000000` |
-| `DIST` | `01201d0000000000` |
-| `COMP` | `01207f7f00000000` |
+| `DIST` | `01201d0000000000`         |
+| `COMP` | `01207f7f00000000`         |
 
 All scalar fields are 0–127. The parser stores them on `ParsedSong.fx`
 (`SongFxSettings`) and the mixer reads them through `Mixer::setSongFx()`.
@@ -202,20 +202,21 @@ All scalar fields are 0–127. The parser stores them on `ParsedSong.fx`
 
 Total chunk size observed: **1097 bytes**.
 
-| Offset    | Size          | Field                 | Description         |
-| --------- | ------------- | --------------------- | ------------------- |
-| 0x00      | 1             | Tune                  | 0–127               |
-| 0x01      | 1             | Cutoff                | 0–127               |
-| 0x02      | 1             | Resonance             | 0–127               |
-| 0x03      | 1             | EnvMod                | 0–127               |
-| 0x04      | 1             | Decay                 | 0–127               |
-| 0x05      | 1             | Accent                | 0–127               |
-| 0x06      | 1             | Waveform              | 0 = saw, 1 = square |
-| 0x07      | 1             | Initial pattern bank  | 0–3                 |
-| 0x08      | 1             | Initial pattern index | 0–7                 |
-| 0x09      | 1             | ?                     | Unknown             |
-| 0x0a–0x08 | ?             | State padding         | To offset 9         |
-| 0x09      | 32 × 34 bytes | Pattern slots         | See below           |
+| Offset | Size          | Field            | Description                       |
+| ------ | ------------- | ---------------- | --------------------------------- |
+| 0x00   | 1             | Enabled          | `0` = muted                       |
+| 0x01   | 1             | Selected pattern | Flat slot 0–31 (`bank × 8 + idx`) |
+| 0x02   | 1             | Tune             | 0–127                             |
+| 0x03   | 1             | Cutoff           | 0–127                             |
+| 0x04   | 1             | Resonance        | 0–127                             |
+| 0x05   | 1             | EnvMod           | 0–127                             |
+| 0x06   | 1             | Decay            | 0–127                             |
+| 0x07   | 1             | Accent           | 0–127                             |
+| 0x08   | 1             | Waveform         | 0 = saw, 1 = square               |
+| 0x09   | 32 × 34 bytes | Pattern slots    | See below                         |
+
+The drum machines use the same first two bytes (enabled, selected pattern);
+the rest of their 30-/31-byte header is kit state the parser does not decode.
 
 Header size: **9 bytes**.
 Pattern slot size: **34 bytes**.
@@ -367,10 +368,12 @@ distributed RBS 4.2 format document and the independent
 - [x] Validate all parsed offsets and lengths (prevent buffer over-read)
 - [x] Parse v1 / v1.5 Propellerhead MIDI-container songs (`MThd` + SysEx payload)
 - [x] Decode `DELY` / `PCF` / `DIST` / `COMP` FX chunks into `SongFxSettings`
+- [x] Serialise a `ParsedSong` back to a v2.x container (§10, `RbsWriter`)
+- [ ] Write the v1 / v1.5 MIDI-SysEx container (read-only today)
 
 ---
 
-## 8. v1 / v1.5 MIDI-container songs
+## 9. v1 / v1.5 MIDI-container songs
 
 Legacy `.rbs` files (ReBirth 1.0–1.5) are Standard MIDI Files with a single
 Propellerhead SysEx payload. Detection rules:
@@ -384,13 +387,13 @@ The SysEx body is optionally wrapped in a MIDI 7-bit escape (`F0 81 … 30 …`)
 After stripping wrappers, song data begins with a fixed **309-byte header**
 followed by a DEVL-equivalent block:
 
-| DEVL offset | Content |
-| ----------- | ------- |
-| 0x00 | `MIXR` mixer (64 bytes) |
-| 0x40 | `DELY` (8), `PCF ` (12), `DIST` (8), `COMP` (8) |
-| 0x64 | `303 ` block ×2 (4681 bytes each) |
-| +9362 | `TR0\08` TR-808 block (6238 bytes) |
-| optional | `TR0\09` TR-909 block (6239 bytes) when present |
+| DEVL offset | Content                                         |
+| ----------- | ----------------------------------------------- |
+| 0x00        | `MIXR` mixer (64 bytes)                         |
+| 0x40        | `DELY` (8), `PCF ` (12), `DIST` (8), `COMP` (8) |
+| 0x64        | `303 ` block ×2 (4681 bytes each)               |
+| +9362       | `TR0\08` TR-808 block (6238 bytes)              |
+| optional    | `TR0\09` TR-909 block (6239 bytes) when present |
 
 v1 device blocks use ASCII labels (`303 `, `TR0\08`) before a compact state
 header. TB-303 pattern slots are **146 bytes** with length in byte 0; v2 slots
@@ -399,7 +402,73 @@ keep length in byte 1. Version is inferred from header byte 9 (`0x01` = v1.0,
 
 ---
 
-## 9. References
+## 10. Writing `.rbs` (`RbsWriter`)
+
+`cpp/parser/RbsWriter.cpp` is the inverse of this document: `ParsedSong` in,
+`.rbs` bytes out. It always emits the v2.x `CAT `/`RB40` container described
+above, in the documented chunk order —
+
+```
+CAT /RB40
+  HEAD  GLOB  USRI
+  CAT /DEVL   MIXR DELY PCF  DIST COMP 303  303  808  909
+  CAT /TRKL   TRAK ×9
+```
+
+— and is reached three ways: `RbsAudioEngine::saveRbs()` (Embind `saveRbs`,
+the SAVE .RBS button), the `rbs-write` CLI, and `cpp/tests/test_writer.cpp`.
+
+### The contract is semantic, not bitwise
+
+The gate is **parse → write → parse**, compared field for field: BPM, titles,
+per-device knobs, every `StepData`, arrangement `PatternRef`s, FX bytes and
+automation `(track, tick, controller, value)`. The bytes themselves differ
+from the original file, and deliberately so:
+
+- Fields this document marks `?` / unknown, and the drum machines' kit state,
+  are written as zero — the parser does not decode them, so nothing can
+  reconstruct them.
+- Loop points, shuffle, play mode, the vintage-mode flag and the mod FTP URL
+  are written as zero/empty for the same reason.
+- Chunks the parser skips on read are **dropped** on write. So is any chunk a
+  future ReBirth wrote that this parser does not recognise.
+- Chunk padding is recomputed, so chunk offsets shift.
+- `STRAK` (the 5-byte `TRAK` alias) is read but always written back as a
+  4-byte `TRAK`; the body layout is identical.
+
+### v1 / v1.5 songs are saved as v2.x
+
+The v1/v1.5 MIDI-SysEx container (§9) is read-only. A v1 song saved through
+`RbsWriter` comes back as a ReBirth 2.x file with all four device chunks —
+the devices the source did not have get empty patterns. The player labels the
+download `…-exported.rbs` and says "saved as ReBirth 2.x". Embedding `.rbm`
+mods is out of scope: a mod stays a separate file, and a saved song never
+grows a sample bank.
+
+### Arrangement → TRAK
+
+`arrangement` is projected back onto controller `0x01` events on tracks 1–4,
+one event per bar where that device's pattern changes, at
+`bar × TRAK_TICKS_PER_BAR`. Each device track also gets a terminal event on
+the final bar boundary: the parser derives the bar count from the highest
+TRAK position, so without it an arrangement whose last bars repeat a single
+pattern would come back short. That event sits past the last sampled bar, so
+it selects nothing.
+
+Automation events are written verbatim onto their own track and merged with
+the pattern events in tick order (stable, so parse order is preserved).
+
+### What the writer refuses
+
+It rejects what the parser would refuse to read back, rather than emitting an
+unloadable file — an arrangement `PatternRef` outside the 32 slots, an
+automation `trackIndex` beyond the nine TRAK tracks, or an automation event
+using controller `0x01` on a device track (which would come back as a pattern
+change, not automation). `lastError()` says which.
+
+---
+
+## 11. References
 
 - Propellerhead Software. _ReBirth RB-338 v2.01 Manual_ (PDF)
 - [ReBirth Museum](https://www.rebirthmuseum.com/) — abandonware download + history

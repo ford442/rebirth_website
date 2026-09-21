@@ -1,15 +1,22 @@
-// Internal parser helpers shared by the RbsParser translation units
-// (RbsParser.cpp chunk decoding, RbsTrak.cpp TRAK/STRAK decoding).
+// Internal byte helpers shared by the RbsParser and RbsWriter translation
+// units (RbsParser.cpp chunk decoding, RbsTrak.cpp TRAK/STRAK decoding,
+// RbsWriter.cpp chunk encoding).
+//
+// ByteStream reads; ByteSink writes the same primitives back. The two are
+// deliberately adjacent: a change to the VLQ or big-endian encoding has to
+// be made on both sides in one edit.
 //
 // Implementation detail of cpp/parser/ — not part of the public parser API.
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <limits>
 #include <span>
 #include <string>
+#include <vector>
 
 namespace rb338::detail {
 
@@ -87,6 +94,83 @@ public:
 private:
   std::span<const uint8_t> m_data;
   size_t m_pos;
+};
+
+// ── ByteSink — the write side of ByteStream ──────────────────────────
+class ByteSink {
+public:
+  ByteSink() = default;
+
+  size_t size() const { return m_bytes.size(); }
+  const std::vector<uint8_t>& bytes() const { return m_bytes; }
+  std::vector<uint8_t> take() { return std::move(m_bytes); }
+
+  void u8(uint8_t value) { m_bytes.push_back(value); }
+
+  void u16BE(uint16_t value) {
+    u8(static_cast<uint8_t>(value >> 8));
+    u8(static_cast<uint8_t>(value));
+  }
+
+  void u32BE(uint32_t value) {
+    u8(static_cast<uint8_t>(value >> 24));
+    u8(static_cast<uint8_t>(value >> 16));
+    u8(static_cast<uint8_t>(value >> 8));
+    u8(static_cast<uint8_t>(value));
+  }
+
+  void raw(const uint8_t* data, size_t n) { m_bytes.insert(m_bytes.end(), data, data + n); }
+
+  void raw(const std::vector<uint8_t>& data) { raw(data.data(), data.size()); }
+
+  /** Four-character chunk id (no terminator). */
+  void id(const char (&chunkId)[5]) {
+    raw(reinterpret_cast<const uint8_t*>(chunkId), 4);
+  }
+
+  void zeros(size_t n) { m_bytes.insert(m_bytes.end(), n, uint8_t{0}); }
+
+  /** Zero-fill until the sink is exactly `n` bytes long. */
+  void padTo(size_t n) {
+    if (m_bytes.size() < n) zeros(n - m_bytes.size());
+  }
+
+  /** IFF alignment: chunks start on even offsets. */
+  void padToEven() {
+    if (m_bytes.size() & 1u) u8(0);
+  }
+
+  /**
+   * Null-terminated string written into a fixed-width field. Longer strings
+   * are truncated so the terminator always fits.
+   */
+  void cStringField(const std::string& text, size_t fieldWidth) {
+    const size_t start = m_bytes.size();
+    const size_t copied = std::min(text.size(), fieldWidth - 1);
+    raw(reinterpret_cast<const uint8_t*>(text.data()), copied);
+    padTo(start + fieldWidth);
+  }
+
+  /** Null-terminated string with no fixed width. */
+  void cString(const std::string& text) {
+    raw(reinterpret_cast<const uint8_t*>(text.data()), text.size());
+    u8(0);
+  }
+
+  /** MIDI-style big-endian variable-length quantity (the readVlq inverse). */
+  void vlq(uint32_t value) {
+    uint8_t buffer[5];
+    int count = 0;
+    buffer[count++] = static_cast<uint8_t>(value & 0x7f);
+    while (value >= 0x80) {
+      value >>= 7;
+      buffer[count++] = static_cast<uint8_t>((value & 0x7f) | 0x80);
+    }
+    while (count > 0) u8(buffer[--count]);
+  }
+
+private:
+  std::vector<uint8_t> m_bytes;
 };
 
 // ── Chunk helpers ────────────────────────────────────────────────────

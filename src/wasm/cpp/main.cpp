@@ -109,6 +109,19 @@ val renderOfflineWavWrapper(RbsAudioEngine& self, uint32_t frames, uint8_t devic
 }
 
 /**
+ * Serialise the engine's working copy to `.rbs` bytes for download.
+ *
+ * Same copy-out rule as the WAV bounce: the Uint8Array must own its bytes
+ * before the C++ vector dies. An empty array means the save failed — read
+ * `lastSaveError()`.
+ */
+val saveRbsWrapper(RbsAudioEngine& self) {
+  const std::vector<uint8_t> rbs = self.saveRbs();
+  return val::global("Uint8Array")
+      .new_(val(typed_memory_view(rbs.size(), rbs.data())));
+}
+
+/**
  * Allocator accounting for the shipping fixed heap. `heapSize` is the mapped
  * WASM memory (INITIAL_MEMORY when growth is off). `usedBytes` is dlmalloc /
  * emmalloc `uordblks` — peak this across load/bounce steps in the heap probe.
@@ -407,6 +420,8 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .function("isPlaying", &RbsAudioEngine::isPlaying)
     .function("getProcessedBlockCount", &RbsAudioEngine::getProcessedBlockCount)
     .function("renderTestBlock", &RbsAudioEngine::renderTestBlock)
+    .function("saveRbs",   &saveRbsWrapper)
+    .function("lastSaveError", &RbsAudioEngine::lastSaveError)
     .function("renderOfflineToWav", &renderOfflineWavWrapper)
     .function("songLengthFrames", &RbsAudioEngine::songLengthFrames)
     .function("getPlaybackPosition", &getPlaybackPositionWrapper);

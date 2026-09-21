@@ -114,7 +114,7 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
       return;
     }
 
-    const buttons = [dom.btnBounce, dom.btnStems, dom.btnMidi];
+    const buttons = [dom.btnBounce, dom.btnStems, dom.btnMidi, dom.btnSaveRbs];
     buttons.forEach((b) => b && (b.disabled = true));
     setExportStatus(label, 'working');
 
@@ -157,6 +157,15 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
       dom.btnMidi.title = midiOk
         ? 'Export patterns as a Standard MIDI File'
         : 'Load a song to export MIDI';
+    }
+    // Saving dumps the C++ working copy, so it needs the WASM engine — but
+    // not the bounce path, since nothing is rendered.
+    const saveOk = songLoaded && bridge instanceof WasmAudioBridge;
+    if (dom.btnSaveRbs) {
+      dom.btnSaveRbs.disabled = !saveOk;
+      dom.btnSaveRbs.title = saveOk
+        ? 'Save the song as a ReBirth 2.x .rbs file'
+        : 'Saving needs the full WASM audio engine';
     }
   }
 
@@ -418,6 +427,19 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
       if (!result.ok) throw new Error(result.reason ?? 'Download failed');
       setExportStatus(`${name} (${bytes.byteLength} bytes)`, 'done');
       transport.showToast(`Exported ${name}`, 'success');
+    });
+  });
+
+  dom.btnSaveRbs?.addEventListener('click', () => {
+    markUserGesture();
+    void withExportBusy('Writing .rbs…', () => {
+      if (!(bridge instanceof WasmAudioBridge)) throw new Error('Nothing to save');
+      const file = bridge.saveRbs();
+      const result = downloadBytes(file.filename, file.bytes, file.mimeType);
+      if (!result.ok) throw new Error(result.reason ?? 'Download failed');
+      const kb = Math.round(file.bytes.byteLength / 1024);
+      setExportStatus(`${file.filename} (${kb} KB)`, 'done');
+      transport.showToast(`Saved ${file.filename} — ReBirth 2.x format`, 'success');
     });
   });
 

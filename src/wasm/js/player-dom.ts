@@ -29,6 +29,7 @@ export interface PlayerDom {
   btnBounce: HTMLButtonElement | null;
   btnStems: HTMLButtonElement | null;
   btnMidi: HTMLButtonElement | null;
+  btnSaveRbs: HTMLButtonElement | null;
   exportStatus: HTMLElement | null;
   volumeSlider: HTMLInputElement | null;
   volumeValue: HTMLElement | null;
@@ -86,6 +87,7 @@ export function queryPlayerDom(playerEl: HTMLElement): PlayerDom {
     btnBounce: playerEl.querySelector('#rbsBtnBounce'),
     btnStems: playerEl.querySelector('#rbsBtnStems'),
     btnMidi: playerEl.querySelector('#rbsBtnMidi'),
+    btnSaveRbs: playerEl.querySelector('#rbsBtnSaveRbs'),
     exportStatus: playerEl.querySelector('#rbsExportStatus'),
     volumeSlider: playerEl.querySelector('#rbsVolume'),
     volumeValue: playerEl.querySelector('#rbsVolumeValue'),

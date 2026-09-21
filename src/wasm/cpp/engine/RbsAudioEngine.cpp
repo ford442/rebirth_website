@@ -1,4 +1,5 @@
 #include "RbsAudioEngine.h"
+#include "../parser/RbsWriter.h"
 #include "../parser/RbmParser.h"
 #include "../parser/RbsParser.h"
 #include <algorithm>
@@ -669,6 +670,48 @@ uint8_t RbsAudioEngine::getPatternLength(uint8_t deviceId, uint8_t bank,
                                          uint8_t patternIndex) const {
   const Pattern* pattern = findPattern(deviceId, bank, patternIndex);
   return pattern ? pattern->length : 0;
+}
+
+std::vector<uint8_t> RbsAudioEngine::saveRbs() {
+  m_lastSaveError.clear();
+  if (!m_hasSong) {
+    m_lastSaveError = "No song loaded";
+    return {};
+  }
+
+  // Save what is playing, not what was on disk: the working copy already
+  // carries setStep() edits, so only the two pieces of session state held
+  // outside it — the transport tempo and the live knob moves — have to be
+  // folded in here.
+  ParsedSong song = m_song;
+  song.bpm = m_bpm.load(std::memory_order_acquire);
+  for (int device = 0; device < NUM_DEVICES; ++device) {
+    DeviceState& dev = song.devices[device];
+    for (size_t param = 0; param < NUM_DEVICE_PARAMS; ++param) {
+      if (!m_paramOverrideSet[device][param]) continue;
+      const float value = m_paramOverrides[device][param];
+      switch (static_cast<DeviceParamId>(param)) {
+        case DeviceParamId::Tune:      dev.tune = value; break;
+        case DeviceParamId::Cutoff:    dev.cutoff = value; break;
+        case DeviceParamId::Resonance: dev.resonance = value; break;
+        case DeviceParamId::EnvMod:    dev.envMod = value; break;
+        case DeviceParamId::Decay:     dev.decay = value; break;
+        case DeviceParamId::Accent:    dev.accent = value; break;
+        case DeviceParamId::Waveform:  dev.waveform = value >= 0.5f ? 1 : 0; break;
+        case DeviceParamId::Level:     dev.level = value; break;
+        case DeviceParamId::Pan:       dev.pan = value; break;
+        case DeviceParamId::Mute:      dev.muted = value >= 0.5f; break;
+      }
+    }
+  }
+
+  RbsWriter writer;
+  auto bytes = writer.write(song);
+  if (!bytes) {
+    m_lastSaveError = writer.lastError();
+    return {};
+  }
+  return std::move(*bytes);
 }
 
 void RbsAudioEngine::applyDeviceParam(EngineSnapshot* snap, uint8_t deviceId,

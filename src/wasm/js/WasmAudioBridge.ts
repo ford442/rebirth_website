@@ -440,6 +440,34 @@ export class WasmAudioBridge {
     return this._bounce.renderStems(this._bouncePayload(frames, MASTER_BUS), this._downloadStem());
   }
 
+  /**
+   * Save the engine's working copy as a `.rbs` file.
+   *
+   * Synchronous and heap-cheap next to `bounceToWav()` — there is no render,
+   * so this runs on the live engine rather than a Worker, and the bytes come
+   * straight out of the C++ song the sequencer is playing (pattern edits,
+   * the live tempo and knob moves included). Always a ReBirth 2.x container,
+   * whatever the loaded file was.
+   */
+  saveRbs(): RenderedFile {
+    const engine = this.enginePtr;
+    if (!engine) {
+      throw { code: 'PARSE_ERROR', message: 'Nothing to save' } satisfies EngineError;
+    }
+    const bytes = engine.saveRbs();
+    if (bytes.byteLength === 0) {
+      throw {
+        code: 'PARSE_ERROR',
+        message: engine.lastSaveError() || 'Could not write the song',
+      } satisfies EngineError;
+    }
+    return {
+      filename: `${this._downloadStem()}-exported.rbs`,
+      bytes,
+      mimeType: 'application/octet-stream',
+    };
+  }
+
   /** Frames covering the whole arrangement, for a default bounce length. */
   songLengthFrames(): number {
     return this.enginePtr?.songLengthFrames() ?? 0;
@@ -568,19 +596,13 @@ export class WasmAudioBridge {
     const coords = this._stepCoords(deviceId, bank, patternIndex, stepIndex);
     if (!coords) return false;
     return Boolean(
-      this.enginePtr.setStep(
-        coords.deviceId,
-        coords.bank,
-        coords.patternIndex,
-        coords.stepIndex,
-        {
-          active: Boolean(step.active),
-          note: Math.max(0, Math.min(127, Math.floor(step.note ?? 0))),
-          drumExtra: Math.max(0, Math.min(255, Math.floor(step.drumExtra ?? 0))),
-          accent: Boolean(step.accent),
-          slide: Boolean(step.slide),
-        }
-      )
+      this.enginePtr.setStep(coords.deviceId, coords.bank, coords.patternIndex, coords.stepIndex, {
+        active: Boolean(step.active),
+        note: Math.max(0, Math.min(127, Math.floor(step.note ?? 0))),
+        drumExtra: Math.max(0, Math.min(255, Math.floor(step.drumExtra ?? 0))),
+        accent: Boolean(step.accent),
+        slide: Boolean(step.slide),
+      })
     );
   }
 
@@ -603,12 +625,7 @@ export class WasmAudioBridge {
   }
 
   /** Set a pattern's play length (1–16) in the engine's working copy. */
-  setPatternLength(
-    deviceId: number,
-    bank: number,
-    patternIndex: number,
-    length: number
-  ): boolean {
+  setPatternLength(deviceId: number, bank: number, patternIndex: number, length: number): boolean {
     if (!this.enginePtr || typeof this.enginePtr.setPatternLength !== 'function') return false;
     const coords = this._stepCoords(deviceId, bank, patternIndex, 0);
     if (!coords) return false;

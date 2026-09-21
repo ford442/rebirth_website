@@ -140,8 +140,10 @@ sequences the arrangement, synthesises TB-303 (ZDF ladder filter + PolyBLEP
 oscillators) and TR-808/TR-909 — procedurally or from `.rbm` mod samples —
 bounces offline to WAV (full mix or per-device stems), and exports `.mid` from
 TypeScript. Pattern steps are editable in the studio grid through
-`RbsAudioEngine::setStep` (one patch per click, session-only). It does **not**
-write `.rbs` or render `.rbm` skins, and TRAK automation plays only through the
+`RbsAudioEngine::setStep`, and the edited working copy saves back to a v2.x
+`.rbs` through `RbsWriter` / `RbsAudioEngine::saveRbs`. It does **not** write
+the v1/v1.5 MIDI container (a v1 song is exported as 2.x), embed `.rbm` mods in
+a saved song, or render `.rbm` skins, and TRAK automation plays only through the
 `loadSongFromBytes` path. See
 `src/wasm/README.md` for the full status and roadmap.
 
@@ -161,7 +163,7 @@ table, the split is wrong.
 - **`src/wasm/CONTRACT.md` is the single source of truth** for the C++ ↔ TypeScript data contract (`main.cpp` Embind registrations ↔ `src/wasm/types/wasm-audio-*.ts`). Run `npm run contract:check` after changing either side — it fails CI on drift (struct fields, `DeviceParamId` values).
 - The shared TS types are split one job per file: `wasm-audio-song.ts` (ParsedSong / devices / patterns), `wasm-audio-engine.ts` (the Embind surface and offline bounce), `wasm-audio-config.ts` (runtime module config), `wasm-audio-mod.ts` (`.rbm` enums and reports). There is no barrel — import from the file that owns the type.
 - Live device/mixer parameters flow through `RbsAudioEngine::setDeviceParam(deviceId, paramId, value)`, where `paramId` is the numeric `DeviceParamId` enum (`src/wasm/cpp/engine/EngineCommands.h`) — not a string. `Voice::setParameter(DeviceParamId, float)` has zero string comparisons on the audio thread.
-- The C++ parser is split by seam: `RbsParser.cpp` (container + chunk decoding), `RbsTrak.cpp` (TRAK/STRAK events + arrangement), `RbsMidiContainer.cpp` (v1/v1.5), with `RbsByteStream.h` holding the shared bounds-checked reader. `sources.cmake` is the only source list — never add `.cpp` files to `CMakeLists.txt`, `Makefile`, or `build.sh`.
+- The C++ parser is split by seam: `RbsParser.cpp` (container + chunk decoding), `RbsTrak.cpp` (TRAK/STRAK events + arrangement), `RbsMidiContainer.cpp` (v1/v1.5), with `RbsByteStream.h` holding the shared bounds-checked reader and the `ByteSink` its inverse, `RbsWriter.cpp`, writes through. A `.rbs` write is graded on parse → write → parse being _semantically_ identical (`tests/test_writer.cpp`, `rbs-write --check`), never on bitwise identity — `parser/RbsFormat.md` §10 lists what a save drops. `sources.cmake` is the only source list — never add `.cpp` files to `CMakeLists.txt`, `Makefile`, or `build.sh`.
 - The player UI is split into `src/wasm/js/player-dom.ts` (DOM lookup), `player-transport.ts` (status/toasts/play-stop/volume/tempo), `player-studio-view.ts` (pattern grid + device knobs), composed by `player-ui.ts`. Offline bounce lives in `wasm-bounce.ts` (main thread) + `bounce-worker.ts` (second WASM instance).
 - Run `npm run wasm:native:configure` once after cloning so clangd can resolve `parser/` vs `native_stubs/` headers from `src/wasm/cpp/build/compile_commands.json`.
 - `npm run wasm:test` runs the native (non-Emscripten) C++ unit tests; `npm run wasm:build` builds the actual WASM binaries (requires Emscripten).

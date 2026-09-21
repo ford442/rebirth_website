@@ -95,6 +95,9 @@ if(NOT EMSCRIPTEN)
   add_executable(rbs-inspect ${RB338_INSPECT_SOURCES})
   target_link_libraries(rbs-inspect PRIVATE rb338_parser)
 
+  add_executable(rbs-write ${RB338_WRITE_SOURCES})
+  target_link_libraries(rbs-write PRIVATE rb338_parser)
+
   # Links the engine, not just the parser: --samples decodes through the same
   # SamplePool the audio engine uses.
   add_executable(rbm-inspect ${RB338_RBM_INSPECT_SOURCES})

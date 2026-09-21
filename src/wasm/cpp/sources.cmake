@@ -3,6 +3,7 @@
 
 set(RB338_PARSER_SOURCES
   parser/RbsParser.cpp
+  parser/RbsWriter.cpp
   parser/RbsTrak.cpp
   parser/RbsMidiContainer.cpp
   parser/ParsedSongJson.cpp
@@ -46,6 +47,7 @@ set(RB338_WASM_MAIN
 set(RB338_TEST_SOURCES
   tests/test_main.cpp
   tests/test_parser.cpp
+  tests/test_writer.cpp
   tests/test_sequencer.cpp
   tests/test_engine.cpp
   tests/test_drums.cpp
@@ -62,6 +64,10 @@ set(RB338_TEST_SOURCES
 
 set(RB338_INSPECT_SOURCES
   tools/rbs-inspect.cpp
+)
+
+set(RB338_WRITE_SOURCES
+  tools/rbs-write.cpp
 )
 
 set(RB338_RBM_INSPECT_SOURCES
