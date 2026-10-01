@@ -49,9 +49,11 @@ test.describe('WASM studio step editing', () => {
       const undone = bridge.setStep(0, 0, 0, 0, before);
       const restored = bridge.getStep(0, 0, 0, 0);
 
-      // A slot the file never stored is materialised on first write.
+      // A v2.x file stores all 32 slots per device (RbsFormat.md), so a far
+      // slot keeps its stored length when edited. Materialising a slot the
+      // song never stored is covered natively in test_engine.cpp.
       const lengthBefore = bridge.enginePtr?.getPatternLength?.(2, 3, 7) ?? -1;
-      bridge.setStep(2, 3, 7, 5, {
+      const farAccepted = bridge.setStep(2, 3, 7, 5, {
         active: true,
         note: 0x02,
         drumExtra: 0,
@@ -59,6 +61,7 @@ test.describe('WASM studio step editing', () => {
         slide: false,
       });
       const lengthAfter = bridge.enginePtr?.getPatternLength?.(2, 3, 7) ?? -1;
+      const farStep = bridge.getStep(2, 3, 7, 5);
 
       // Out-of-range coordinates are refused, never wrapped into slot 0.
       const rejected = bridge.setStep(9, 0, 0, 0, before);
@@ -76,6 +79,8 @@ test.describe('WASM studio step editing', () => {
         blocksAfterEdit,
         lengthBefore,
         lengthAfter,
+        farAccepted,
+        farNote: farStep.note,
         rejected,
       };
     }, WASM_FIXTURE_URL);
@@ -90,7 +95,9 @@ test.describe('WASM studio step editing', () => {
     expect(result.undone).toBe(true);
     expect(result.restoredActive).toBe(result.beforeActive);
 
-    expect(result.lengthBefore).toBe(0);
+    expect(result.lengthBefore).toBe(16);
+    expect(result.farAccepted).toBe(true);
+    expect(result.farNote).toBe(0x02);
     expect(result.lengthAfter).toBe(16);
 
     expect(result.rejected).toBe(false);
@@ -111,12 +118,16 @@ test.describe('WASM studio step editing', () => {
     const cell = page.locator('[data-studio-step="0"]');
     await expect(cell).toBeEnabled();
     const pressedBefore = (await cell.getAttribute('aria-pressed')) ?? 'false';
+    const flagsBefore = (await cell.locator('[data-studio-flags]').textContent()) ?? '';
 
     await page.locator('#rbsBtnPlay').click();
 
-    // The 303 cycle is off -> note-on -> accent -> slide -> off, so a step
-    // that already sounds needs three clicks to reach silence.
-    const clicks = pressedBefore === 'true' ? 3 : 1;
+    // The 303 cycle is off -> note-on -> accent -> slide -> off, so the clicks
+    // to flip a sounding step to silence depend on where it starts.
+    let clicks = 1;
+    if (pressedBefore === 'true' && !flagsBefore.includes('S')) {
+      clicks = flagsBefore.includes('A') ? 2 : 3;
+    }
     for (let i = 0; i < clicks; i++) await cell.click();
 
     await expect(cell).toHaveAttribute('aria-pressed', pressedBefore === 'true' ? 'false' : 'true');
