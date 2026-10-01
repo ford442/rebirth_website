@@ -1,11 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import {
-  fixturePayloads,
-  runHeapProbeInPage,
-  slackLimit,
-} from '../scripts/wasm-heap-probe.mjs';
+import { fixturePayloads, runHeapProbeInPage, slackLimit } from '../scripts/wasm-heap-probe.mjs';
 
 const MANIFEST = path.join(process.cwd(), 'public/wasm/wasm-build.json');
 

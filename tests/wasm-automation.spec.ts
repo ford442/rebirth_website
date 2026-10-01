@@ -21,48 +21,51 @@ test.describe('TRAK automation through WasmAudioBridge', () => {
       timeout: 5000,
     });
 
-    const result = await page.evaluate(async ({ songBytes }) => {
-      const WasmAudioBridge = (window as any).WasmAudioBridge;
-      const bridge = new WasmAudioBridge();
-      await bridge.init();
+    const result = await page.evaluate(
+      async ({ songBytes }) => {
+        const WasmAudioBridge = (window as any).WasmAudioBridge;
+        const bridge = new WasmAudioBridge();
+        await bridge.init();
 
-      const audioContext = bridge.ctx;
-      if (!audioContext) throw new Error('Audio context not exposed');
-      await audioContext.suspend();
+        const audioContext = bridge.ctx;
+        if (!audioContext) throw new Error('Audio context not exposed');
+        await audioContext.suspend();
 
-      const buffer = new Uint8Array(songBytes).buffer;
-      await bridge.loadRbsFile(buffer);
+        const buffer = new Uint8Array(songBytes).buffer;
+        await bridge.loadRbsFile(buffer);
 
-      const sampleRate = audioContext.sampleRate;
-      const bpm = bridge.enginePtr.getTempo();
-      const framesPerBar = Math.round(sampleRate * (60 / bpm) * 4);
-      const frames = framesPerBar * 10;
-      const bounced = await bridge.bounceToWav(frames);
-      if (!bounced) throw new Error('bounceToWav returned null');
+        const sampleRate = audioContext.sampleRate;
+        const bpm = bridge.enginePtr.getTempo();
+        const framesPerBar = Math.round(sampleRate * (60 / bpm) * 4);
+        const frames = framesPerBar * 10;
+        const bounced = await bridge.bounceToWav(frames);
+        if (!bounced) throw new Error('bounceToWav returned null');
 
-      const decoded = await audioContext.decodeAudioData(bounced.bytes.buffer.slice(0));
-      const left = decoded.getChannelData(0);
+        const decoded = await audioContext.decodeAudioData(bounced.bytes.buffer.slice(0));
+        const left = decoded.getChannelData(0);
 
-      const rmsOf = (start: number, count: number) => {
-        let sumSq = 0;
-        const end = Math.min(start + count, left.length);
-        for (let i = start; i < end; i += 1) sumSq += left[i] * left[i];
-        return Math.sqrt(sumSq / Math.max(1, end - start));
-      };
+        const rmsOf = (start: number, count: number) => {
+          let sumSq = 0;
+          const end = Math.min(start + count, left.length);
+          for (let i = start; i < end; i += 1) sumSq += left[i] * left[i];
+          return Math.sqrt(sumSq / Math.max(1, end - start));
+        };
 
-      const early = rmsOf(0, framesPerBar);
-      const late = rmsOf(framesPerBar * 8, framesPerBar);
+        const early = rmsOf(0, framesPerBar);
+        const late = rmsOf(framesPerBar * 8, framesPerBar);
 
-      bridge.dispose();
-      return {
-        bpm,
-        early,
-        late,
-        ratio: late === 0 ? (early === 0 ? 1 : Infinity) : early / late,
-        frames,
-        decodedFrames: left.length,
-      };
-    }, { songBytes: SONG_FIXTURE });
+        bridge.dispose();
+        return {
+          bpm,
+          early,
+          late,
+          ratio: late === 0 ? (early === 0 ? 1 : Infinity) : early / late,
+          frames,
+          decodedFrames: left.length,
+        };
+      },
+      { songBytes: SONG_FIXTURE }
+    );
 
     expect(result.decodedFrames).toBeGreaterThan(0);
     expect(result.early).toBeGreaterThan(0);

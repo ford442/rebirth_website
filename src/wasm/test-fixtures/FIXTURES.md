@@ -5,10 +5,10 @@ this website. They are included only for parser regression testing.
 
 ## v2.x IFF fixtures (`CAT `/`RB40HEAD`)
 
-| File                   | Source URL                                                                                         | Size     | Notes                                        |
-| ---------------------- | -------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------- |
-| `standard-rebirth.rbs` | `https://test.1ink.us/rb338/archive/rbs-songs/By_Source/Rebirth_2.0/Complete/%23008.rbs`           | 24,904 B | HEAD marker `0x01`; nine `TRAK` chunks, no 5-byte `STRAK` |
-| `blue-planet.rbs`      | `https://test.1ink.us/rb338/archive/rbs-songs/By_Source/Archives/Hotline%20Archive/%23hardv~1.rbs` | 21,864 B | HEAD marker `0x02`; nine `TRAK` chunks, no 5-byte `STRAK` |
+| File                   | Source URL                                                                                         | Size     | Notes                                                                                                                                               |
+| ---------------------- | -------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `standard-rebirth.rbs` | `https://test.1ink.us/rb338/archive/rbs-songs/By_Source/Rebirth_2.0/Complete/%23008.rbs`           | 24,904 B | HEAD marker `0x01`; nine `TRAK` chunks, no 5-byte `STRAK`                                                                                           |
+| `blue-planet.rbs`      | `https://test.1ink.us/rb338/archive/rbs-songs/By_Source/Archives/Hotline%20Archive/%23hardv~1.rbs` | 21,864 B | HEAD marker `0x02`; nine `TRAK` chunks, no 5-byte `STRAK`                                                                                           |
 | `no-remorse.rbs`       | `https://test.1ink.us/rb338/archive/rbs-songs/By_Source/Archives/Hotline%20Archive/%23primate.rbs` | 21,282 B | HEAD marker `0x02`; nine `TRAK` chunks. The substring `STRAK` at a chunk boundary is event byte `0x53` plus the next `TRAK` id, not a 5-byte chunk. |
 
 All three are v2.x format files using the Propellerhead `CAT `/`RB40HEAD` chunk
@@ -40,14 +40,14 @@ Source for the official packs:
 
 https://archive.org/details/rebirth-rb338-songpacks
 
-| File | Pack origin | Version string | Size | Role |
-| ---- | ----------- | -------------- | ---- | ---- |
-| `v1/just-15.rbs` | RBSongPack 09 / `Just 15.RBS` | 3.1.0 | 19,705 B | v1 golden |
-| `v1/retrograde.rbs` | RBSongPack 02 / `Retrograde.RBS` | 3.1.0 | 20,029 B | v1 golden |
-| `v15/gurkensalat.rbs` | RBSongPack 37 / `Gurkensalat.RBS` | 3.2.0 | 19,349 B | v1.5 golden |
-| `v15/hermetico-absoluto.rbs` | RBSongPack 18 / `Hermetico Absoluto.RBS` | 3.2.0 | 20,082 B | v1.5 golden |
-| `v15/cavey-3-acid.rbs` | archive `Artists/Cavey/3_acid.rbs` | 3.2.0 | 27,163 B | community v1.5 golden |
-| `reject/generic-smf.mid` | synthetic empty Type-1 SMF | (none) | 26 B | MIDI rejection fixture |
+| File                         | Pack origin                              | Version string | Size     | Role                   |
+| ---------------------------- | ---------------------------------------- | -------------- | -------- | ---------------------- |
+| `v1/just-15.rbs`             | RBSongPack 09 / `Just 15.RBS`            | 3.1.0          | 19,705 B | v1 golden              |
+| `v1/retrograde.rbs`          | RBSongPack 02 / `Retrograde.RBS`         | 3.1.0          | 20,029 B | v1 golden              |
+| `v15/gurkensalat.rbs`        | RBSongPack 37 / `Gurkensalat.RBS`        | 3.2.0          | 19,349 B | v1.5 golden            |
+| `v15/hermetico-absoluto.rbs` | RBSongPack 18 / `Hermetico Absoluto.RBS` | 3.2.0          | 20,082 B | v1.5 golden            |
+| `v15/cavey-3-acid.rbs`       | archive `Artists/Cavey/3_acid.rbs`       | 3.2.0          | 27,163 B | community v1.5 golden  |
+| `reject/generic-smf.mid`     | synthetic empty Type-1 SMF               | (none)         | 26 B     | MIDI rejection fixture |
 
 The raw bytes are vendored as `*.b64` next to each fixture (GitHub text-safe).
 Materialize the binary files with:

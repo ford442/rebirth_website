@@ -15,7 +15,8 @@ An `.rbm` (ReBirth Mod) is a resource bundle packed by Propellerhead
 and sometimes a bundled demo `.rbs`.
 
 Typical size: **130 KB** (sample-only test mods) to **several MB** (full skins
-+ every drum). Large files are usually JPEGs, not audio.
+
+- every drum). Large files are usually JPEGs, not audio.
 
 The AudioWorklet must **never** decode skin graphics. Skins are listed by the
 parser and extracted later by the mirror pipeline onto `public/archive/`.
@@ -24,11 +25,11 @@ parser and extracted later by the mirror pipeline onto `public/archive/`.
 
 ## 2. Root container
 
-| Offset | Size | Field         | Description                                      |
-| ------ | ---- | ------------- | ------------------------------------------------ |
-| 0x00   | 4    | Chunk ID      | `"CAT "` (0x43 0x41 0x54 0x20)                   |
-| 0x04   | 4    | Chunk Size    | Big-endian uint32 — body size after this field   |
-| 0x08   | 4    | Format marker | `"PRBM"` (Propellerhead ReBirth Mod)             |
+| Offset | Size | Field         | Description                                    |
+| ------ | ---- | ------------- | ---------------------------------------------- |
+| 0x00   | 4    | Chunk ID      | `"CAT "` (0x43 0x41 0x54 0x20)                 |
+| 0x04   | 4    | Chunk Size    | Big-endian uint32 — body size after this field |
+| 0x08   | 4    | Format marker | `"PRBM"` (Propellerhead ReBirth Mod)           |
 
 This is the `.rbs` layout with `PRBM` instead of `RB40`.
 
@@ -42,11 +43,11 @@ Unknown chunks are skipped.
 
 Observed top-level chunks (inside the root `CAT `/`PRBM`):
 
-| ID     | Purpose                                                |
-| ------ | ------------------------------------------------------ |
-| `HEAD` | 256-byte header + copyright                            |
-| `EMBF` | One embedded file (name + payload)                     |
-| `INFO` | 1280-byte Pascal-ish text block (title / description)  |
+| ID     | Purpose                                               |
+| ------ | ----------------------------------------------------- |
+| `HEAD` | 256-byte header + copyright                           |
+| `EMBF` | One embedded file (name + payload)                    |
+| `INFO` | 1280-byte Pascal-ish text block (title / description) |
 
 No nested `CAT ` lists have been required to parse the study set; every
 `EMBF` sits directly under the root `PRBM` list.
@@ -86,14 +87,14 @@ significant.
 
 ### Payload kinds (by extension)
 
-| Extension        | Kind   | Notes                                      |
-| ---------------- | ------ | ------------------------------------------ |
-| `.aif` / `.aiff` | sample | IFF `FORM` / `AIFF` (big-endian PCM)       |
-| `.wav`           | sample | RIFF WAVE (rare in the study set)          |
-| `.jpg` / `.jpeg` | skin   | Photoshop-written UI stills                |
-| `.png` / `.gif`  | skin   | later community packs                      |
-| `.rbs`           | song   | bundled demo song (`CAT ` / `RB40`)        |
-| other            | other  | keep name + bytes, do not invent a slot    |
+| Extension        | Kind   | Notes                                   |
+| ---------------- | ------ | --------------------------------------- |
+| `.aif` / `.aiff` | sample | IFF `FORM` / `AIFF` (big-endian PCM)    |
+| `.wav`           | sample | RIFF WAVE (rare in the study set)       |
+| `.jpg` / `.jpeg` | skin   | Photoshop-written UI stills             |
+| `.png` / `.gif`  | skin   | later community packs                   |
+| `.rbs`           | song   | bundled demo song (`CAT ` / `RB40`)     |
+| other            | other  | keep name + bytes, do not invent a slot |
 
 Phase 1 stores payload bytes as-is. AIFF/WAV decode is a later sample-voice
 step.
@@ -108,20 +109,20 @@ equivalent.
 
 ### TR-808
 
-| Name tokens        | Slot (maps to `DrumHit` / `DrumExtra`) |
-| ------------------ | -------------------------------------- |
-| `bd`               | kick (`DrumHit::BD`)                   |
-| `sd`               | snare (`DrumHit::SD`)                  |
-| `lt`               | low tom (`DrumHit::LT`)                |
-| `mt`               | mid tom (`DrumHit::MT`)                |
-| `ht`               | high tom (`DrumHit::HT`)               |
-| `ch` / `hh`        | closed hat (`DrumHit::CH`)             |
-| `oh`               | open hat (`DrumHit::OH`)               |
-| `rs`               | rimshot (`DrumExtra::RS`)              |
-| `cp`               | clap (`DrumExtra::CP`)                 |
-| `cb` / `cl`        | clave / cl (`DrumHit::CL`)             |
-| `cy`               | cymbal (extra; no Phase-1 bit)         |
-| `ma`               | maracas (`DrumExtra::MA`)              |
+| Name tokens | Slot (maps to `DrumHit` / `DrumExtra`) |
+| ----------- | -------------------------------------- |
+| `bd`        | kick (`DrumHit::BD`)                   |
+| `sd`        | snare (`DrumHit::SD`)                  |
+| `lt`        | low tom (`DrumHit::LT`)                |
+| `mt`        | mid tom (`DrumHit::MT`)                |
+| `ht`        | high tom (`DrumHit::HT`)               |
+| `ch` / `hh` | closed hat (`DrumHit::CH`)             |
+| `oh`        | open hat (`DrumHit::OH`)               |
+| `rs`        | rimshot (`DrumExtra::RS`)              |
+| `cp`        | clap (`DrumExtra::CP`)                 |
+| `cb` / `cl` | clave / cl (`DrumHit::CL`)             |
+| `cy`        | cymbal (extra; no Phase-1 bit)         |
+| `ma`        | maracas (`DrumExtra::MA`)              |
 
 ### TR-909
 
@@ -131,10 +132,10 @@ recorded as slots so Phase 2 can play them.
 
 ### TB-303
 
-| Name tokens        | Slot        |
-| ------------------ | ----------- |
-| `303saw` / `saw`   | 303 saw     |
-| `303sqr` / `square`| 303 square  |
+| Name tokens         | Slot       |
+| ------------------- | ---------- |
+| `303saw` / `saw`    | 303 saw    |
+| `303sqr` / `square` | 303 square |
 
 A file named `tr808bd.aif` is an 808 kick. `TR808MT.AIF` is an 808 mid tom.
 Ambiguous short names (`bd.aif`) default to **808**.
@@ -195,4 +196,4 @@ reverse-engineered; contributions welcome.
 - Not ZIP / deflate — **do not vendor miniz** for `.rbm`.
 - Not a Mac resource fork (`Rsrc`). Flattened Windows/Mac data-fork copies
   in the archive are still `CAT `/`PRBM`.
-- Not an `.rbs` song (`RB40`). A bundled song lives *inside* an `EMBF`.
+- Not an `.rbs` song (`RB40`). A bundled song lives _inside_ an `EMBF`.
