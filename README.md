@@ -310,7 +310,7 @@ Locally you can mirror the main CI pipeline:
 
 ```bash
 npm ci
-npm run ci          # check + build + playwright (dev server locally)
+npm run ci          # check + contract + lint + format + build + playwright (mirrors ci.yml)
 bash scripts/check-no-secrets.sh
 python3 scripts/check-mod-metadata.py --priority   # optional warning
 ```

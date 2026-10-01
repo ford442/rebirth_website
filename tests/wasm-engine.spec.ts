@@ -38,9 +38,9 @@ test.describe('WASM audio engine', () => {
     }
     expect(audioInfo.sampleRate).toBeGreaterThan(0);
     expect(audioInfo.diagnosticsSampleRate).toBe(audioInfo.sampleRate);
-    expect(
-      audioInfo.requestedSampleRate === 44100 || audioInfo.requestedSampleRate === null
-    ).toBe(true);
+    expect(audioInfo.requestedSampleRate === 44100 || audioInfo.requestedSampleRate === null).toBe(
+      true
+    );
   });
 
   test('retries AudioContext without sampleRate when preferred rate is rejected', async ({
@@ -108,7 +108,10 @@ test.describe('WASM audio engine', () => {
     const result = await page.evaluate(() => {
       const resolve = (window as any).resolveAudioContextConstructor as () => typeof AudioContext;
       const Ctor = resolve();
-      return { usedStandard: Ctor === window.AudioContext, webkitUsed: (window as any).__webkitUsed };
+      return {
+        usedStandard: Ctor === window.AudioContext,
+        webkitUsed: (window as any).__webkitUsed,
+      };
     });
     expect(result.usedStandard).toBe(true);
     expect(result.webkitUsed).toBe(false);
