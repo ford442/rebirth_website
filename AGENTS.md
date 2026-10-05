@@ -462,8 +462,8 @@ knowledge are welcome — see the roadmap in `src/wasm/README.md`.
 
 ## Testing Strategy
 
-`npm run ci` runs the whole gate: `astro check` → `contract:check` → `build` →
-Playwright.
+`npm run ci` runs the same gate as `ci.yml`: `astro check` → `contract:check` →
+`lint` → `format` → `build` → Playwright.
 
 | Layer              | Command                          | Covers                                                                                               |
 | ------------------ | -------------------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -539,5 +539,5 @@ Single service: an Astro static site. Standard commands live in `package.json` (
 - Dev server: `npm run dev` serves under the base path — open `http://localhost:4321/rebirth_website/`, NOT `http://localhost:4321/`. The bare root returns 404 because `base: '/rebirth_website'` is set in `astro.config.mjs`.
 - Playwright `webServer` auto-starts `npm run dev` and reuses an already-running dev server locally, so tests do not need a separate server.
 - Test suite state (as of setup): most tests in `tests/` are pre-existing failures unrelated to environment. They assert on an outdated `.rb-panel` class (the markup now uses `rb-rack` / `rb-panel__*` / `rb-panel--*`), and `tests/rbs-player.spec.ts` targets the wrong port (`localhost:3000` instead of `4321`). Do not treat these as environment breakage.
-- WASM tests (`tests/wasm-*.spec.ts`) require generated artifacts under `public/wasm/` (e.g. `rbsParser.js/.wasm`, `rbsWorklet.js`). CI builds them with pinned Emscripten 6.0.3; locally, run `npm run build:ship` with that toolchain active before setting `WASM_BUILT=1`.
+- WASM tests (`tests/wasm-*.spec.ts`) require generated artifacts under `public/wasm/` (e.g. `rbsParser.js/.wasm`, `rbsWorklet.js`). CI builds them with pinned Emscripten 6.0.3; locally, run `npm run build:ship` with that toolchain active before setting `WASM_BUILT=1`. With `WASM_BUILT=1` set locally, Playwright also starts a production `astro preview` server on port 4322 for the cross-origin-isolated `wasm-preview` project; the dev server stays on 4321. Which project runs each WASM spec is decided by `previewSpecs` / `wasmArtifactSpecs` in `playwright.config.ts`.
 - Type safety is the primary check: `npm run astro check` passes with 0 errors (only lint-style hints). There is no ESLint/Prettier.

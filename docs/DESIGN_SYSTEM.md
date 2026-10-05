@@ -583,10 +583,10 @@ Both are `pointer-events: none` and `z-index: 9998–9999`.
 
 ## 8. File Locations
 
-| System            | Path                                                  |
-| ----------------- | ----------------------------------------------------- |
+| System            | Path                                                                    |
+| ----------------- | ----------------------------------------------------------------------- |
 | Global CSS (SSOT) | `public/styles/rebirth-theme.css` (aggregator) + `public/styles/theme/` |
-| CSS layering note | `src/styles/global.css` (pointer only — not imported) |
-| UI components     | `src/components/ui/`                                  |
-| Component types   | `src/components/ui/types.ts`                          |
-| This document     | `docs/DESIGN_SYSTEM.md`                               |
+| CSS layering note | `src/styles/global.css` (pointer only — not imported)                   |
+| UI components     | `src/components/ui/`                                                    |
+| Component types   | `src/components/ui/types.ts`                                            |
+| This document     | `docs/DESIGN_SYSTEM.md`                                                 |

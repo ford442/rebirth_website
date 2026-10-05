@@ -242,41 +242,44 @@ test.describe('Studio export', () => {
     await page.goto('/rebirth_website/');
     await page.waitForFunction(() => !!(window as any).WasmAudioBridge, null, { timeout: 5000 });
 
-    const result = await page.evaluate(async ({ fixtureUrl }) => {
-      const WasmAudioBridge = (window as any).WasmAudioBridge;
-      const bridge = new WasmAudioBridge();
-      await bridge.init();
+    const result = await page.evaluate(
+      async ({ fixtureUrl }) => {
+        const WasmAudioBridge = (window as any).WasmAudioBridge;
+        const bridge = new WasmAudioBridge();
+        await bridge.init();
 
-      const audioContext = bridge.ctx;
-      if (!audioContext) throw new Error('Audio context not exposed');
+        const audioContext = bridge.ctx;
+        if (!audioContext) throw new Error('Audio context not exposed');
 
-      const songBuffer = await (await fetch(fixtureUrl)).arrayBuffer();
-      await bridge.loadRbsFile(songBuffer);
-      bridge.play();
+        const songBuffer = await (await fetch(fixtureUrl)).arrayBuffer();
+        await bridge.loadRbsFile(songBuffer);
+        bridge.play();
 
-      let paints = 0;
-      let raf = 0;
-      const tick = () => {
-        paints += 1;
+        let paints = 0;
+        let raf = 0;
+        const tick = () => {
+          paints += 1;
+          raf = requestAnimationFrame(tick);
+        };
         raf = requestAnimationFrame(tick);
-      };
-      raf = requestAnimationFrame(tick);
 
-      const frames = Math.round(audioContext.sampleRate);
-      const bounced = await bridge.bounceToWav(frames);
-      cancelAnimationFrame(raf);
+        const frames = Math.round(audioContext.sampleRate);
+        const bounced = await bridge.bounceToWav(frames);
+        cancelAnimationFrame(raf);
 
-      const decoded = await audioContext.decodeAudioData(bounced.bytes.buffer.slice(0));
-      const channel = decoded.getChannelData(0);
-      let sumSq = 0;
-      for (let i = 0; i < channel.length; i += 1) sumSq += channel[i] * channel[i];
-      const rms = Math.sqrt(sumSq / channel.length);
-      const status = bridge.playerStatus;
+        const decoded = await audioContext.decodeAudioData(bounced.bytes.buffer.slice(0));
+        const channel = decoded.getChannelData(0);
+        let sumSq = 0;
+        for (let i = 0; i < channel.length; i += 1) sumSq += channel[i] * channel[i];
+        const rms = Math.sqrt(sumSq / channel.length);
+        const status = bridge.playerStatus;
 
-      bridge.stop();
-      bridge.dispose();
-      return { paints, rms, status, riff: String.fromCharCode(...bounced.bytes.slice(0, 4)) };
-    }, { fixtureUrl: WASM_FIXTURE_URL });
+        bridge.stop();
+        bridge.dispose();
+        return { paints, rms, status, riff: String.fromCharCode(...bounced.bytes.slice(0, 4)) };
+      },
+      { fixtureUrl: WASM_FIXTURE_URL }
+    );
 
     expect(result.riff).toBe('RIFF');
     expect(result.paints).toBeGreaterThan(1);

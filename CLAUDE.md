@@ -18,7 +18,7 @@ npm run format         # Prettier --check
 npm run contract:check # C++ ↔ TypeScript WASM contract
 npm run wasm:test      # Native C++ doctest suite
 npm test               # Playwright browser/E2E specs
-npm run ci             # check → contract:check → build → test
+npm run ci             # check → contract:check → lint → format → build → test (mirrors ci.yml)
 ```
 
 ## Architecture Overview

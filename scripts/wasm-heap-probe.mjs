@@ -9,6 +9,8 @@
  * Exit 1 if usedBytes exceeds INITIAL_MEMORY - 8 MiB.
  */
 
+/* global window, atob -- the page.evaluate / waitForFunction callbacks run in the browser */
+
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -187,7 +189,10 @@ async function main() {
     frames: result.frames,
     peaks: result.peaks,
   };
-  writeFileSync(path.join(ROOT, 'public/wasm/wasm-heap-probe.json'), `${JSON.stringify(report, null, 2)}\n`);
+  writeFileSync(
+    path.join(ROOT, 'public/wasm/wasm-heap-probe.json'),
+    `${JSON.stringify(report, null, 2)}\n`
+  );
   console.log(JSON.stringify(report, null, 2));
 
   // Shipping path is Worker bounce: gate the live heap. Also fail if even the

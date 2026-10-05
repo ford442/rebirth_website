@@ -16,10 +16,10 @@ linker flags, stack sizes, and heap policy must be explicit and documented.
 
 ## WASM build variants
 
-| Variant | Linker profile | Host requirement | Use case |
-| ------- | -------------- | ---------------- | -------- |
+| Variant                | Linker profile                                | Host requirement               | Use case                  |
+| ---------------------- | --------------------------------------------- | ------------------------------ | ------------------------- |
 | **pthread** (shipping) | `-pthread -sWASM_WORKERS=1 -sAUDIO_WORKLET=1` | `crossOriginIsolated === true` | Real-time archive preview |
-| **fallback** | Not shipped in v1 | No SAB / no COI SW | Degraded JS player only |
+| **fallback**           | Not shipped in v1                             | No SAB / no COI SW             | Degraded JS player only   |
 
 ### Non-pthread AudioWorklet spike (Emscripten 6.0.3)
 
@@ -44,12 +44,12 @@ main-thread offline `renderTestBlock`-only preview without a worklet.
 
 ### Shipping audio binary (current)
 
-| Setting | Release | Debug |
-| ------- | ------- | ----- |
-| `INITIAL_MEMORY` | 64 MiB (`67108864`) | 32 MiB |
-| `ALLOW_MEMORY_GROWTH` | `0` (disabled) | `1` (cap 128 MiB) |
-| `STACK_SIZE` (module linear stack) | 128 KiB | 128 KiB |
-| AudioWorklet pthread stack | 64 KiB (`AUDIO_THREAD_STACK_SIZE`) | 64 KiB |
+| Setting                            | Release                            | Debug             |
+| ---------------------------------- | ---------------------------------- | ----------------- |
+| `INITIAL_MEMORY`                   | 64 MiB (`67108864`)                | 32 MiB            |
+| `ALLOW_MEMORY_GROWTH`              | `0` (disabled)                     | `1` (cap 128 MiB) |
+| `STACK_SIZE` (module linear stack) | 128 KiB                            | 128 KiB           |
+| AudioWorklet pthread stack         | 64 KiB (`AUDIO_THREAD_STACK_SIZE`) | 64 KiB            |
 
 Release keeps growth disabled so the audio callback never triggers a heap resize.
 

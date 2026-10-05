@@ -4,6 +4,7 @@
 #include <cmath>
 #include <array>
 #include <atomic>
+#include <chrono>
 #include <cstdint>
 #include <cstring>
 #include <thread>
@@ -12,6 +13,19 @@
 using namespace rb338;
 
 namespace {
+
+// Yield until the audio thread has rendered at least `target` blocks, so a
+// stress loop provably overlaps processBlock() instead of racing past it
+// before the thread is scheduled. Bounded so a wedged audio thread fails the
+// test rather than hanging it.
+bool waitForBlocks(const std::atomic<uint32_t>& blocks, uint32_t target) {
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+  while (blocks.load(std::memory_order_relaxed) < target) {
+    if (std::chrono::steady_clock::now() > deadline) return false;
+    std::this_thread::yield();
+  }
+  return true;
+}
 
 ParsedSong makeSong(float bpm) {
   ParsedSong song;
@@ -246,8 +260,13 @@ TEST_CASE("Engine: two-thread command/process stress") {
     }
   });
 
+  CHECK(waitForBlocks(blocks, 1));
+
   ParsedSong song = makeSong(140.0f);
   for (int i = 0; i < 200; ++i) {
+    if (i % 10 == 0) {
+      CHECK(waitForBlocks(blocks, blocks.load(std::memory_order_relaxed) + 1));
+    }
     eng.play();
     eng.setVolume(0.5f + (i % 5) * 0.1f);
     eng.setTempo(80.0f + static_cast<float>(i % 40));
@@ -265,7 +284,6 @@ TEST_CASE("Engine: two-thread command/process stress") {
 
   running.store(false, std::memory_order_relaxed);
   audio.join();
-  CHECK(blocks.load() > 0);
 }
 
 TEST_CASE("DeviceParamId: numeric values are 0..9, matching player-studio.ts DeviceParam") {
@@ -437,12 +455,17 @@ TEST_CASE("Engine: step edits stress the snapshot handoff while audio runs") {
     }
   });
 
+  CHECK(waitForBlocks(blocks, 1));
+
   eng.play();
   StepData on;
   on.active = true;
   on.note = 0x01;
   StepData off;
   for (int i = 0; i < 400; ++i) {
+    if (i % 20 == 0) {
+      CHECK(waitForBlocks(blocks, blocks.load(std::memory_order_relaxed) + 1));
+    }
     const auto step = static_cast<uint8_t>(i % MAX_STEPS);
     CHECK(eng.setStep(3, 0, 0, step, (i % 2) ? on : off));
     if (i % 13 == 0) CHECK(eng.setPatternLength(3, 0, 0, 1 + (i % MAX_STEPS)));
@@ -450,5 +473,4 @@ TEST_CASE("Engine: step edits stress the snapshot handoff while audio runs") {
 
   running.store(false, std::memory_order_relaxed);
   audio.join();
-  CHECK(blocks.load() > 0);
 }
