@@ -657,6 +657,8 @@ const pageTitle = `${folderName} — ${sectionName}`;
 </style>
 
 <script>
+  import { filterByFilename } from '../../../scripts/file-filter';
+
   /* ── Folder file table: search & sort ─────────────────────────── */
   const searchInput = document.getElementById('folderSearch') as HTMLInputElement | null;
   const countLabel = document.getElementById('folderCount');
@@ -671,25 +673,12 @@ const pageTitle = `${folderName} — ${sectionName}`;
   }
 
   function filterRows() {
-    const term = searchInput?.value.toLowerCase() ?? '';
-    const rows = getRows();
-    let visible = 0;
-
-    rows.forEach((row) => {
-      const filename = row.getAttribute('data-filename') ?? '';
-      const isVisible = !term || filename.includes(term);
-      row.style.display = isVisible ? '' : 'none';
-      if (isVisible) visible++;
+    return filterByFilename({
+      term: searchInput?.value ?? '',
+      items: getRows(),
+      countLabel,
+      emptyState,
     });
-
-    if (countLabel) {
-      countLabel.textContent = term ? `${visible} of ${rows.length} files` : `${rows.length} files`;
-    }
-    if (emptyState) {
-      emptyState.classList.toggle('is-hidden', visible > 0);
-    }
-
-    return rows.filter((r) => r.style.display !== 'none');
   }
 
   function sortRows(col: string) {

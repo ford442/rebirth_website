@@ -816,6 +816,8 @@ const archiveStats = [
 </style>
 
 <script>
+  import { filterByFilename } from '../../scripts/file-filter';
+
   /* ── Documented mods filter (existing) ───────────────────────── */
   const modSearch = document.getElementById('modSearch');
   const tagFilters = document.querySelectorAll<HTMLElement>('.rb-tag-filter');
@@ -919,40 +921,19 @@ const archiveStats = [
 
   /* ── Raw index filter ────────────────────────────────────────── */
   const rawSearch = document.getElementById('rawSearch');
-  const rawItems = document.querySelectorAll('.raw-item');
-  const rawGroups = document.querySelectorAll('.raw-group');
+  const rawItems = document.querySelectorAll<HTMLElement>('.raw-item');
+  const rawGroups = document.querySelectorAll<HTMLElement>('.raw-group');
   const rawEmpty = document.getElementById('rawEmpty');
   const rawCount = document.getElementById('rawCount');
 
   function filterRaw() {
-    const term = (rawSearch as HTMLInputElement | null)?.value.toLowerCase() ?? '';
-    let visibleFiles = 0;
-    let visibleGroups = 0;
-
-    rawGroups.forEach((group) => {
-      let groupVisible = 0;
-      const items = group.querySelectorAll('.raw-item');
-      items.forEach((item) => {
-        const filename = item.getAttribute('data-filename') ?? '';
-        const isVisible = !term || filename.includes(term);
-        (item as HTMLElement).style.display = isVisible ? '' : 'none';
-        if (isVisible) {
-          groupVisible++;
-          visibleFiles++;
-        }
-      });
-      (group as HTMLElement).style.display = groupVisible > 0 ? '' : 'none';
-      if (groupVisible > 0) visibleGroups++;
+    filterByFilename({
+      term: (rawSearch as HTMLInputElement | null)?.value ?? '',
+      items: rawItems,
+      groups: rawGroups,
+      countLabel: rawCount,
+      emptyState: rawEmpty,
     });
-
-    if (rawCount) {
-      rawCount.textContent = term
-        ? `${visibleFiles} of ${rawItems.length} files`
-        : `${rawItems.length} files`;
-    }
-    if (rawEmpty) {
-      rawEmpty.classList.toggle('is-hidden', visibleFiles > 0);
-    }
   }
 
   if (rawSearch) {
