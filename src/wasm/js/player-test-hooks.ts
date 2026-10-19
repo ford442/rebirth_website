@@ -1,13 +1,22 @@
 /**
- * Public integration hooks for the shipping-engine browser checks.
+ * Integration hooks for the shipping-engine browser checks.
  *
  * `tests/wasm-engine.spec.ts` and friends drive the real engine classes from
  * the page context, so they need them on `window`. Keeping that here (rather
  * than in `RbsPlayer.astro`) leaves the Astro component's client script a
  * bootstrap one-liner and keeps engine wiring in TypeScript.
  *
- * These classes hold no credentials or private state — the player uses the
- * same exports internally.
+ * The hooks are **opt-in**: a visitor to the production site gets none of
+ * them. They are installed only when
+ *
+ *  - the dev server is running (`import.meta.env.DEV`),
+ *  - the page URL carries `?test`, or
+ *  - `localStorage['rb-test-hooks'] === '1'` — how `playwright.config.ts`
+ *    switches them on for every spec without touching the specs, since CI
+ *    runs against the production preview build.
+ *
+ * Pure TypeScript (the patch codec, the SMF writer, the MIDI map, error
+ * classification) is tested with Vitest and needs no hook at all.
  */
 
 import { WasmAudioBridge } from './WasmAudioBridge';
@@ -18,9 +27,12 @@ import {
   resolveAudioContextConstructor,
 } from './create-audio-context';
 import { songToMidi } from '../../lib/midi-smf';
-import { mapMidiMessage } from './player-midi';
-import { buildShareUrl, decodeStudioPatch, encodeStudioPatch } from '../../lib/studio-patch';
-import { classifyLoadError, RbsFetchError, RbsParseError } from './rbs-init-errors';
+
+/** `localStorage` key that turns the hooks on. */
+export const TEST_HOOKS_STORAGE_KEY = 'rb-test-hooks';
+
+/** Query parameter that turns the hooks on for a single page load. */
+export const TEST_HOOKS_QUERY_PARAM = 'test';
 
 /** Shape added to `window` by {@link installPlayerTestHooks}. */
 export interface PlayerTestHooks {
@@ -30,17 +42,31 @@ export interface PlayerTestHooks {
   attachAudioContextLifecycle: typeof attachAudioContextLifecycle;
   resolveAudioContextConstructor: typeof resolveAudioContextConstructor;
   songToMidi: typeof songToMidi;
-  mapMidiMessage: typeof mapMidiMessage;
-  encodeStudioPatch: typeof encodeStudioPatch;
-  decodeStudioPatch: typeof decodeStudioPatch;
-  buildShareUrl: typeof buildShareUrl;
-  classifyLoadError: typeof classifyLoadError;
-  RbsFetchError: typeof RbsFetchError;
-  RbsParseError: typeof RbsParseError;
 }
 
-/** Idempotently exposes the engine entry points used by browser tests. */
-export function installPlayerTestHooks(): void {
+/** Whether this page load asked for the test hooks. */
+export function testHooksEnabled(): boolean {
+  if (import.meta.env.DEV) return true;
+  if (typeof window === 'undefined') return false;
+  try {
+    if (new URLSearchParams(window.location.search).has(TEST_HOOKS_QUERY_PARAM)) return true;
+  } catch {
+    /* fall through to storage */
+  }
+  try {
+    return window.localStorage.getItem(TEST_HOOKS_STORAGE_KEY) === '1';
+  } catch {
+    // Storage can throw (private windows, blocked site data).
+    return false;
+  }
+}
+
+/**
+ * Exposes the engine entry points used by browser tests, when they were
+ * asked for. Idempotent. Returns whether the hooks are installed.
+ */
+export function installPlayerTestHooks(): boolean {
+  if (!testHooksEnabled()) return false;
   const target = window as Window & Partial<PlayerTestHooks>;
   target.WasmAudioBridge = WasmAudioBridge;
   target.DegradedRbsPlayer = DegradedRbsPlayer;
@@ -48,11 +74,5 @@ export function installPlayerTestHooks(): void {
   target.attachAudioContextLifecycle = attachAudioContextLifecycle;
   target.resolveAudioContextConstructor = resolveAudioContextConstructor;
   target.songToMidi = songToMidi;
-  target.mapMidiMessage = mapMidiMessage;
-  target.encodeStudioPatch = encodeStudioPatch;
-  target.decodeStudioPatch = decodeStudioPatch;
-  target.buildShareUrl = buildShareUrl;
-  target.classifyLoadError = classifyLoadError;
-  target.RbsFetchError = RbsFetchError;
-  target.RbsParseError = RbsParseError;
+  return true;
 }

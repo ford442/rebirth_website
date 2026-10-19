@@ -38,6 +38,9 @@ export const DeviceParam = {
   Mute: 9,
 } as const;
 
+/** Highest `DeviceParam` id — what the bridge clamps an incoming id to. */
+export const MAX_DEVICE_PARAM_ID = Math.max(...Object.values(DeviceParam));
+
 export function isAcidDevice(id: DeviceId): boolean {
   return id === 'tb303-a' || id === 'tb303-b';
 }

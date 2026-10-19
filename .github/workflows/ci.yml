@@ -40,6 +40,9 @@ jobs:
       - name: Prettier
         run: npm run format
 
+      - name: Unit tests (Vitest)
+        run: npm run test:unit
+
       - name: Production build
         run: npm run build
 

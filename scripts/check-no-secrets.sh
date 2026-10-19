@@ -8,7 +8,7 @@ cd "$ROOT"
 echo "Scanning for forbidden deploy scripts and hardcoded secrets..."
 
 if [[ -f deploy_old.py ]]; then
-  echo "::error::deploy_old.py must not be committed (use deploy.py with env-based credentials)"
+  echo "::error::deploy_old.py must not be committed (read credentials from the environment instead)"
   exit 1
 fi
 
@@ -31,7 +31,6 @@ scan_file() {
   )
 }
 
-scan_file deploy.py
 for script in scripts/*.py; do
   scan_file "$script"
 done
@@ -45,7 +44,7 @@ while IFS= read -r match; do
   echo "::error::${match}"
   FAIL=1
 done < <(
-  grep -rnE 'password\s*=\s*["'"'"'][^"'"'"']{4,}["'"'"']' deploy.py scripts/ --include='*.py' || true
+  grep -rnE 'password\s*=\s*["'"'"'][^"'"'"']{4,}["'"'"']' scripts/ --include='*.py' || true
 )
 
 if [[ "$FAIL" -ne 0 ]]; then

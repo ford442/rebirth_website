@@ -28,7 +28,6 @@ import type { ParsedMod } from '../types/wasm-audio-mod';
 import type { ParsedSong, PlayerStatus, WasmStepData } from '../types/wasm-audio-song';
 
 import { MASTER_BUS } from '../types/wasm-audio-engine';
-import { MOD_LOAD_STATUSES } from '../types/wasm-audio-mod';
 
 import { wasmAudioConfig } from '../audio-module.config';
 import type { AudioContextDiagnostics } from '../types/wasm-audio-config';
@@ -40,8 +39,10 @@ import {
   type AudioContextLifecycle,
 } from './create-audio-context';
 import { waitForCrossOriginIsolation } from '../../scripts/coi-bootstrap';
+import { fileSlug } from '../../lib/file-names';
+import { MAX_DEVICE_PARAM_ID } from './player-studio';
 import { locateWasmAsset } from './wasm-locate-file';
-import { mallocCopy } from './wasm-engine-io';
+import { mallocCopy, modLoadError } from './wasm-engine-io';
 import { BounceClient, type BouncePayload } from './wasm-bounce';
 
 /** Callback invoked when playback position changes (bar, step). */
@@ -65,6 +66,8 @@ export class WasmAudioBridge {
   private _audioDiagnostics: AudioContextDiagnostics | null = null;
   private _audioLifecycle: AudioContextLifecycle | null = null;
   private _bounce = new BounceClient();
+  /** The in-flight or settled init; null before the first call and after a failure or dispose. */
+  private _initPromise: Promise<void> | null = null;
 
   // Kept so an offline bounce can rebuild exactly what is playing: the source
   // files plus any live knob moves, which the engine treats as session-only.
@@ -126,8 +129,24 @@ export class WasmAudioBridge {
    *   4. Register the Emscripten "rbs-player" worklet via C++ — do not call
    *      audioWorklet.addModule() with a second processor of the same name
    *   5. Create RbsAudioEngine instance in WASM
+   *
+   * Idempotent: concurrent and repeated calls share one init, so a second
+   * call can never create a second AudioContext or engine. A failed init
+   * releases everything it created and clears the memo, so the bridge is
+   * back to its pristine state and `init()` may be tried again.
    */
-  async init(): Promise<void> {
+  init(): Promise<void> {
+    if (!this._initPromise) {
+      const attempt = this._init();
+      this._initPromise = attempt;
+      attempt.catch(() => {
+        if (this._initPromise === attempt) this._initPromise = null;
+      });
+    }
+    return this._initPromise;
+  }
+
+  private async _init(): Promise<void> {
     this._setStatus('loading');
 
     try {
@@ -246,17 +265,17 @@ export class WasmAudioBridge {
       // Sync engine master volume with the UI default.
       this.enginePtr.setVolume(this.volume);
 
-      // 7. Start position polling loop
-      this._startPositionPolling();
-
+      // Position polling starts with play() and ends when playback does.
       this._setStatus('ready');
     } catch (err) {
       console.error('[WasmAudioBridge] init failed:', err);
-      this._setStatus('error');
-      if (err instanceof WasmInitError) throw err;
+      // Describe the failure before the release drops the diagnostics.
       const diag = this._audioDiagnostics
         ? ` [${this._audioDiagnostics.sampleRate} Hz, hint=${this._audioDiagnostics.latencyHint}]`
         : '';
+      this._release();
+      this._setStatus('error');
+      if (err instanceof WasmInitError) throw err;
       throw new WasmInitError({
         reason: 'engine-init-failed',
         message: INIT_FAILURE_MESSAGES['engine-init-failed'] + diag,
@@ -357,13 +376,8 @@ export class WasmAudioBridge {
       const status = this.enginePtr.loadMod(ptr, byteLength);
       const report = toUiParsedMod(this.enginePtr.getModReport());
 
-      if (report.loadedSlots === 0) {
-        const err: EngineError = {
-          code: 'MOD_LOAD_ERROR',
-          message: this._modStatusMessage(MOD_LOAD_STATUSES[status] ?? 'no-samples'),
-        };
-        throw err;
-      }
+      const loadError = modLoadError(status, report);
+      if (loadError) throw loadError;
 
       // Kept so an offline bounce loads the same samples you are hearing.
       this._modBuffer = buffer.slice(0);
@@ -475,12 +489,7 @@ export class WasmAudioBridge {
 
   /** Filesystem-safe base name for downloads, from the song title. */
   private _downloadStem(): string {
-    const title = (this._songTitle || 'rebirth-song').toLowerCase();
-    const slug = title
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .slice(0, 48);
-    return slug || 'rebirth-song';
+    return fileSlug(this._songTitle);
   }
 
   /** Drop mod samples and return every voice to procedural synthesis. */
@@ -500,12 +509,14 @@ export class WasmAudioBridge {
     this._audioLifecycle?.resumeIfNeeded();
     this.enginePtr.play();
     this._setStatus('playing');
+    this._startPositionPolling();
   }
 
   /** Pause playback. */
   pause(): void {
     if (!this.enginePtr) return;
     this.enginePtr.pause();
+    this._stopPositionPolling();
     this._setStatus('ready');
   }
 
@@ -513,6 +524,7 @@ export class WasmAudioBridge {
   stop(): void {
     if (!this.enginePtr) return;
     this.enginePtr.stop();
+    this._stopPositionPolling();
     this._setStatus('ready');
   }
 
@@ -555,17 +567,13 @@ export class WasmAudioBridge {
   }
 
   /**
-   * Set a tempo multiplier (e.g. 0.5 = half speed, 2.0 = double speed).
-   * Returns false when the engine is not available.
-   */
-  /**
    * Live device/mixer parameter (0–1). Session-only; no file write.
    * deviceId: 0=303A 1=303B 2=808 3=909
    */
   setDeviceParam(deviceId: number, paramId: number, value: number): boolean {
     if (!this.enginePtr || typeof this.enginePtr.setDeviceParam !== 'function') return false;
     const id = Math.max(0, Math.min(3, Math.floor(deviceId)));
-    const param = Math.max(0, Math.min(9, Math.floor(paramId)));
+    const param = Math.max(0, Math.min(MAX_DEVICE_PARAM_ID, Math.floor(paramId)));
     const clamped = Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
     this.enginePtr.setDeviceParam(id, param, clamped);
     // Remembered so an offline bounce reproduces what you are hearing, not
@@ -663,6 +671,10 @@ export class WasmAudioBridge {
     return coords;
   }
 
+  /**
+   * Set a tempo multiplier (e.g. 0.5 = half speed, 2.0 = double speed).
+   * Returns false when the engine is not available.
+   */
   setTempoMultiplier(multiplier: number): boolean {
     if (!this.enginePtr) return false;
     const safeMultiplier = Math.max(
@@ -676,59 +688,62 @@ export class WasmAudioBridge {
   /** Clean up resources. */
   dispose(): void {
     this.stop();
-    this._audioLifecycle?.dispose();
-    this._audioLifecycle = null;
     this._bounce.dispose('Bridge disposed');
-    if (this.positionPollId != null) {
-      cancelAnimationFrame(this.positionPollId);
-      this.positionPollId = null;
-    }
-    this.workletNode?.disconnect();
-    this.gainNode?.disconnect();
-    void this.audioContext?.close();
-    this.enginePtr?.delete();
-    this.enginePtr = null;
-    this.module = null;
+    this._release();
     this._setStatus('idle');
   }
 
   // ── Private helpers ─────────────────────────────────────────────
+
+  /**
+   * Give back everything init() may have created, in whatever state it got
+   * to: the poll, the audio graph, the AudioContext, the engine and the
+   * module. Safe on a half-built or already-released bridge, and leaves it
+   * ready for a fresh init().
+   */
+  private _release(): void {
+    this._stopPositionPolling();
+    this._audioLifecycle?.dispose();
+    this._audioLifecycle = null;
+    this.workletNode?.disconnect();
+    this.workletNode = null;
+    this.gainNode?.disconnect();
+    this.gainNode = null;
+    // close() rejects on a context that is already closed; nothing to do then.
+    this.audioContext?.close().catch(() => {});
+    this.audioContext = null;
+    this._audioDiagnostics = null;
+    this.enginePtr?.delete();
+    this.enginePtr = null;
+    this.module = null;
+    this._initPromise = null;
+  }
 
   private _setStatus(s: PlayerStatus) {
     this.status = s;
     this.onStatus?.(s);
   }
 
+  /**
+   * Poll the engine's position once per frame — but only while playing.
+   * The loop ends itself when playback does, so a stopped or idle player
+   * costs no frames.
+   */
   private _startPositionPolling() {
-    if (this.positionPollId != null) {
-      cancelAnimationFrame(this.positionPollId);
-      this.positionPollId = null;
-    }
+    if (this.positionPollId != null) return;
     const poll = () => {
       this.positionPollId = null;
-      if (!this.enginePtr) {
-        return;
-      }
-      if (this.status === 'playing') {
-        const pos: PlaybackPosition = this.enginePtr.getPlaybackPosition();
-        this.onPosition?.(pos.bar, pos.step);
-      }
+      if (!this.enginePtr || this.status !== 'playing') return;
+      const pos: PlaybackPosition = this.enginePtr.getPlaybackPosition();
+      this.onPosition?.(pos.bar, pos.step);
       this.positionPollId = requestAnimationFrame(poll);
     };
     this.positionPollId = requestAnimationFrame(poll);
   }
 
-  /** Human-readable copy for a failed mod load, for the LCD / toast. */
-  private _modStatusMessage(status: string): string {
-    switch (status) {
-      case 'arena-exhausted':
-        return 'Mod is too large for the sample memory budget.';
-      case 'no-samples':
-        return 'No playable samples in this mod (it may be skins only).';
-      case 'not-initialised':
-        return 'Audio engine is not ready yet.';
-      default:
-        return 'Mod could not be loaded.';
-    }
+  private _stopPositionPolling() {
+    if (this.positionPollId == null) return;
+    cancelAnimationFrame(this.positionPollId);
+    this.positionPollId = null;
   }
 }

@@ -1,3 +1,4 @@
+import { existsSync, readdirSync } from 'node:fs';
 import { defineConfig, devices } from '@playwright/test';
 
 const isCI = !!process.env.CI;
@@ -21,6 +22,23 @@ const previewSpecs = [
 /** Specs that need built WASM artifacts but run against either server. */
 const wasmArtifactSpecs = ['**/wasm-assets.spec.ts', '**/wasm-engine.spec.ts'];
 
+/**
+ * Every `tests/wasm-*.spec.ts` must be routed above. A spec in neither list
+ * would run under the plain `chromium` project, where the engine is missing
+ * or the page is not cross-origin isolated, and fail for the wrong reason (or
+ * pass without exercising anything) — which is how `wasm-save-rbs` slipped.
+ */
+const unroutedWasmSpecs = (existsSync('./tests') ? readdirSync('./tests') : []).filter(
+  (file) =>
+    /^wasm-.*\.spec\.ts$/.test(file) &&
+    ![...previewSpecs, ...wasmArtifactSpecs].some((pattern) => pattern.endsWith(`/${file}`))
+);
+if (unroutedWasmSpecs.length > 0) {
+  throw new Error(
+    `playwright.config.ts: add ${unroutedWasmSpecs.join(', ')} to previewSpecs or wasmArtifactSpecs.`
+  );
+}
+
 /** ci.yml builds the site without Emscripten; wasm.yml sets WASM_BUILT=1. */
 const wasmTestIgnore = isCI && !wasmBuilt ? [...previewSpecs, ...wasmArtifactSpecs] : [];
 
@@ -34,6 +52,16 @@ const mainURL = 'http://127.0.0.1:4321';
 const separatePreview = !isCI && wasmBuilt;
 const previewURL = separatePreview ? 'http://127.0.0.1:4322' : mainURL;
 
+/**
+ * The player only exposes its `window.*` engine hooks when asked to (see
+ * `src/wasm/js/player-test-hooks.ts`), so production visitors get none.
+ * Specs ask through localStorage, per origin, instead of each adding `?test`.
+ */
+const withTestHooks = (origin: string) => ({
+  cookies: [],
+  origins: [{ origin, localStorage: [{ name: 'rb-test-hooks', value: '1' }] }],
+});
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
@@ -43,6 +71,7 @@ export default defineConfig({
   reporter: isCI ? [['github'], ['html', { open: 'never' }]] : 'html',
   use: {
     baseURL: mainURL,
+    storageState: withTestHooks(mainURL),
     trace: 'on-first-retry',
     serviceWorkers: 'block',
     launchOptions: {
@@ -65,6 +94,7 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         baseURL: previewURL,
+        storageState: withTestHooks(previewURL),
         serviceWorkers: 'allow',
       },
     },

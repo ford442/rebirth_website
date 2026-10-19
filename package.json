@@ -34,32 +34,43 @@
     "archive:check": "python3 scripts/check-archive-integrity.py",
     "archive:linkrot": "python3 scripts/check-link-rot.py",
     "test": "playwright test",
-    "ci": "npm run check && npm run contract:check && npm run lint && npm run format && npm run build && npm test",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "ci:data": "bash scripts/check-no-secrets.sh && python3 scripts/check-song-discovery.py && python3 scripts/check-archive-integrity.py",
+    "ci": "npm run check && npm run contract:check && npm run lint && npm run format && npm run test:unit && npm run build && npm run ci:data && npm run wasm:test && npm test",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
-    "test:responsive": "playwright test tests/responsive.spec.ts"
+    "test:responsive": "playwright test tests/responsive.spec.ts",
+    "hooks:install": "simple-git-hooks"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.8",
     "astro": "^6.0.4",
     "fflate": "^0.8.3",
     "minisearch": "^7.2.0"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.8",
     "@eslint/js": "^9.39.2",
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.9.3",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-astro": "^1.5.0",
+    "happy-dom": "^21.0.3",
     "prettier": "^3.6.2",
     "prettier-plugin-astro": "^0.14.1",
+    "simple-git-hooks": "^2.14.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.2",
-    "vite-plugin-pwa": "^1.3.0"
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^5.0.5",
+    "workbox-build": "^7.4.1"
   },
   "engines": {
     "node": ">=22.0.0 <23",
     "npm": ">=10.0.0"
+  },
+  "simple-git-hooks": {
+    "pre-push": "npm run check && npm run lint && npm run format && npm run test:unit"
   }
 }

@@ -138,6 +138,8 @@ export interface LoadFailure {
   reason: LoadFailureReason;
   message: string;
   status?: number;
+  /** Engine error code (`PARSE_ERROR`, …) when the failure came from the WASM side. */
+  code?: string;
 }
 
 /** User-facing copy for each load failure, in the LCD's clipped register. */
@@ -169,11 +171,49 @@ export class RbsFetchError extends Error {
 
 /** Thrown when the bytes arrived but the parser rejected them. */
 export class RbsParseError extends Error {
-  constructor(message: string) {
+  /** The engine's own error code, when there was one. */
+  readonly code?: string;
+
+  constructor(message: string, code?: string) {
     super(message);
     this.name = 'RbsParseError';
+    this.code = code;
   }
 }
+
+/**
+ * The readable text of anything a load can throw.
+ *
+ * The WASM engine rejects with plain `{ code, message }` objects
+ * (`EngineError`), not `Error`s, so `String(err)` would print
+ * `[object Object]` and lose the one sentence that says what went wrong.
+ */
+export function errorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === 'string') return err;
+  if (err && typeof err === 'object' && 'message' in err) {
+    const message = (err as { message: unknown }).message;
+    if (typeof message === 'string') return message;
+  }
+  return '';
+}
+
+/**
+ * Wrap whatever a bridge threw while loading song bytes as an
+ * {@link RbsParseError}, keeping the engine's message and code so
+ * {@link classifyLoadError} can show them.
+ */
+export function asParseError(err: unknown): RbsParseError {
+  if (err instanceof RbsParseError) return err;
+  const code =
+    err && typeof err === 'object' && 'code' in err && typeof err.code === 'string'
+      ? err.code
+      : undefined;
+  return new RbsParseError(errorMessage(err), code);
+}
+
+/** Longest engine detail we put on the LCD. */
+const MAX_DETAIL_LENGTH = 160;
 
 /**
  * Tell a CORP block apart from an ordinary offline failure.
@@ -184,7 +224,14 @@ export class RbsParseError extends Error {
  */
 export function classifyLoadError(err: unknown, url?: string): LoadFailure {
   if (err instanceof RbsParseError) {
-    return { reason: 'parse', message: LOAD_FAILURE_MESSAGES.parse };
+    // The engine's sentence ("Not enough WASM heap for a 900 KB song.") is
+    // the useful part; the generic copy is only for a parse error with none.
+    const detail = err.message.trim().slice(0, MAX_DETAIL_LENGTH);
+    return {
+      reason: 'parse',
+      message: detail ? `Could not load this .rbs: ${detail}` : LOAD_FAILURE_MESSAGES.parse,
+      ...(err.code ? { code: err.code } : {}),
+    };
   }
   if (err instanceof RbsFetchError) {
     const reason: LoadFailureReason = err.status === 404 ? 'not-found' : 'http-error';

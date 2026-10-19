@@ -142,7 +142,6 @@ All internal links must use `${import.meta.env.BASE_URL}` because the site is de
 - **Site**: Deployed to GitHub Pages at `https://ford442.github.io/rebirth_website`
 - **Base path**: `/rebirth_website` (configured in `astro.config.mjs`)
 - **Build output**: `dist/` directory (ignored in git)
-- **Manual deployment**: `deploy.py` script uses SFTP to upload `dist/` to `test.1ink.us/rb338`
 
 ## Contributing Workflow
 

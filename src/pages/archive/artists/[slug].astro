@@ -24,7 +24,6 @@ interface ArtistsIndexFile {
   artists: ArtistRow[];
 }
 
-const artistsIndex = artistsIndexRaw as ArtistsIndexFile;
 const allSongs = enrichSongs((fullIndexRaw as { songs: SongIndexEntry[] }).songs || []);
 
 export function getStaticPaths() {

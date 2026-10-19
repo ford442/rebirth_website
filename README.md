@@ -103,8 +103,6 @@ Astro automatically reloads the page when you edit source files.
 │   │       ├── songs.astro     ← /archive/songs
 │   │       ├── songs/[...slug].astro
 │   │       └── mods.astro      ← /archive/mods
-│   ├── styles/
-│   │   └── global.css          ← Layering pointer (not imported; see rebirth-theme.css)
 │   └── wasm/
 │       ├── audio-module.config.ts  ← WASM runtime paths + feature flags
 │       ├── js/                     ← WasmAudioBridge, DegradedRbsPlayer, …
@@ -260,29 +258,41 @@ The production site is served from **GitHub Pages** at
 The repository administrator must select **Settings → Pages → Source: GitHub Actions**
 before the first workflow deployment.
 
-For manual publishing there is `deploy.py`, which zips the `dist/` build and
-uploads it as a single bundle to the storage manager.
+Changes reach `main` through a pull request, never by pushing to it directly.
+Run `npm run ci` locally to exercise the same gates the workflows do; the
+optional pre-push hook (`npm run hooks:install`) runs the fast ones for you.
+
+### Branch protection (repository setting)
+
+This lives in **Settings → Rules → Rulesets** (or **Branches**), not in the code.
+For `main`, require a pull request and these status checks, which are the _job_
+names:
+
+| Workflow                                             | Required check                                                        |
+| ---------------------------------------------------- | --------------------------------------------------------------------- |
+| [`ci.yml`](.github/workflows/ci.yml)                 | `Lint, build, and test`                                               |
+| [`wasm.yml`](.github/workflows/wasm.yml)             | `Build shipping site and test WASM`                                   |
+| [`native-cpp.yml`](.github/workflows/native-cpp.yml) | `CMake none`, `CMake no-exceptions`, `CMake asan-ubsan`, `CMake tsan` |
+
+`wasm.yml` and `native-cpp.yml` only run on pull requests that touch their
+`paths:`. GitHub leaves a required check that never ran as "Expected", which
+blocks the PR — so drop the `paths:` filter from their `pull_request` triggers
+before making them required (at the cost of an Emscripten and a sanitizer build
+on every PR), or require only the checks that always run.
 
 > **Secrets never live in the repository.** All credentials are read from the
 > environment. Copy `.env.example` to `.env` (which is git-ignored) and fill in
 > your own values — do **not** paste secrets into any tracked file.
 
 ```bash
-# 1. Configure credentials once (see .env.example for the full list)
+# Configure credentials once (see .env.example for the full list)
 cp .env.example .env
 $EDITOR .env
 set -a; source .env; set +a   # export the variables into your shell
-
-# 2. Build, then deploy
-npm run build
-python3 deploy.py
 ```
 
 | Variable                             | Used by      | Purpose                                                             |
 | ------------------------------------ | ------------ | ------------------------------------------------------------------- |
-| `DEPLOY_TOKEN`                       | `deploy.py`  | Auth token for the storage endpoint (if required)                   |
-| `CONTABO_BASE_URL`                   | `deploy.py`  | Override the storage endpoint URL                                   |
-| `DEPLOY_FOLDER`                      | `deploy.py`  | Override the remote target folder                                   |
 | `SFTP_HOST` / `SFTP_USER`            | SFTP tooling | Host + user for SFTP uploads (e.g. `scripts/rebirth_mod_upload.py`) |
 | `SFTP_PASSWORD` _or_ `SFTP_KEY_FILE` | SFTP tooling | Password **or** (preferred) private-key path                        |
 
@@ -298,8 +308,8 @@ from the working tree does not remove it from history.
 ## Continuous Integration
 
 GitHub Actions runs on every pull request and push to `main`. **No repository
-secrets are required** for public CI — deploy credentials are only needed locally
-for `deploy.py` and SFTP upload scripts.
+secrets are required** for public CI — credentials are only needed locally for
+the SFTP upload scripts.
 
 | Workflow                                 | Triggers                                                   | What it checks                                                                                     |
 | ---------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
@@ -324,7 +334,7 @@ WASM builds require pinned Emscripten 6.0.3 on your machine (`npm run build:ship
 
 - **Astro** components use `.astro` file extension
 - **TypeScript** strict mode is enabled; avoid `any`
-- **CSS** single source of truth: `public/styles/rebirth-theme.css` (aggregator linked in `BaseLayout.astro`) plus modules in `public/styles/theme/`. `src/styles/global.css` is a layering pointer only — do not import it.
+- **CSS** single source of truth: `public/styles/rebirth-theme.css` (aggregator linked in `BaseLayout.astro`) plus modules in `public/styles/theme/`. Page-specific rules go in scoped `<style>` blocks in the `.astro` file.
 - **Internal links** must use `normalizeBase(import.meta.env.BASE_URL)` from `src/lib/url.ts`
 - **Linting**: `npm run lint` (ESLint flat config) and `npm run format` (Prettier) cover Astro/TS sources
 - Keep the **retro-industrial aesthetic**: dark background, amber/green palette, monospace

@@ -142,6 +142,20 @@ export function encodeStudioPatch(patch: StudioPatch): string {
   return toBase64Url(deflateSync(json, { level: 9 }));
 }
 
+/** `value` if it is an array, else nothing — `for…of` over junk would throw. */
+function asList(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+/** True for an array of at least `length` entries that are all finite numbers. */
+function isNumberTuple(tuple: unknown, length: number): tuple is number[] {
+  return (
+    Array.isArray(tuple) &&
+    tuple.length >= length &&
+    tuple.slice(0, length).every((n) => typeof n === 'number' && Number.isFinite(n))
+  );
+}
+
 export function decodeStudioPatch(encoded: string): StudioPatch | null {
   if (!encoded) return null;
   const bytes = fromBase64Url(encoded);
@@ -156,8 +170,10 @@ export function decodeStudioPatch(encoded: string): StudioPatch | null {
 
   const patch = emptyPatch();
   if (typeof wire.b === 'number' && Number.isFinite(wire.b)) patch.bpm = wire.b;
-  for (const tuple of wire.s ?? []) {
-    if (!Array.isArray(tuple) || tuple.length < 7) continue;
+  // A link can be hand-edited, so every layer is checked: lists must be
+  // arrays and tuples must be plain finite numbers, or they are skipped.
+  for (const tuple of asList(wire.s)) {
+    if (!isNumberTuple(tuple, 7)) continue;
     const [deviceIndex, bank, patternIndex, stepIndex, note, drumExtra, flags] = tuple;
     if (deviceIndex < 0 || deviceIndex > 3) continue;
     if (stepIndex < 0 || stepIndex > 15) continue;
@@ -173,11 +189,10 @@ export function decodeStudioPatch(encoded: string): StudioPatch | null {
       slide: (flags & STEP_FLAG_SLIDE) !== 0,
     });
   }
-  for (const tuple of wire.k ?? []) {
-    if (!Array.isArray(tuple) || tuple.length < 3) continue;
+  for (const tuple of asList(wire.k)) {
+    if (!isNumberTuple(tuple, 3)) continue;
     const [deviceIndex, paramId, value] = tuple;
     if (deviceIndex < 0 || deviceIndex > 3) continue;
-    if (!Number.isFinite(value)) continue;
     patch.params.push({ deviceIndex, paramId, value });
   }
   return patch;
