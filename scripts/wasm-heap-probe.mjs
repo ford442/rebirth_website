@@ -163,7 +163,10 @@ async function main() {
 
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  await page.goto(url, { waitUntil: 'networkidle' });
+  // The window.* engine hooks are opt-in (see player-test-hooks.ts): ?test asks for them.
+  const probeUrl = new URL(url);
+  probeUrl.searchParams.set('test', '1');
+  await page.goto(probeUrl.href, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => !!window.WasmAudioBridge, null, { timeout: 15000 });
 
   const result = await runHeapProbeInPage(page, fixturePayloads());

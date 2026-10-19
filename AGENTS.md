@@ -89,8 +89,6 @@ npm run astro check
 │   │   ├── songs-full-index.json← All catalogued .rbs files with metadata
 │   │   ├── song-collections.ts ← Shared collection section definitions
 │   │   └── archive-stats.ts    ← Single source of truth for archive stats
-│   ├── styles/
-│   │   └── global.css          ← CSS layering pointer (SSOT is rebirth-theme.css)
 │   ├── wasm/
 │   │   ├── cpp/
 │   │   │   ├── main.cpp                 # Emscripten entry point + embind exports
@@ -107,7 +105,7 @@ npm run astro check
 │   │   │   ├── player-transport.ts      # Status/toasts/position/play-stop/volume/tempo
 │   │   │   ├── player-studio-view.ts    # Pattern grid + device knob panel
 │   │   │   ├── player-studio.ts         # Pure mapping helpers (pattern/knob math, no DOM)
-│   │   │   ├── player-test-hooks.ts     # window.* hooks the Playwright specs drive
+│   │   │   ├── player-test-hooks.ts     # opt-in window.* hooks (?test / dev / localStorage) the Playwright specs drive
 │   │   │   ├── wasm-bounce.ts           # Offline bounce client (owns the render Worker)
 │   │   │   └── bounce-worker.ts         # Worker: second WASM instance, no AudioWorklet
 │   │   ├── types/                       # One job per file — see src/wasm/README.md
@@ -130,7 +128,6 @@ npm run astro check
 │   └── peff_rbm_filenames.txt  ← Filename list for wayback downloader
 ├── astro.config.mjs            ← Astro configuration
 ├── tsconfig.json               ← TypeScript strict config
-├── deploy.py                   ← Manual bundle-upload deploy script (env-based creds)
 └── package.json
 ```
 
@@ -420,12 +417,6 @@ after updating metadata so the mod browser badges and coverage bar stay in sync.
 python3 scripts/sync-mod-metadata.py
 ```
 
-### `deploy.py`
-
-Manual deployment script that zips the `dist/` build and uploads it as a single bundle to the storage manager (`CONTABO_BASE_URL`, default `https://storage.noahcohn.com`).
-
-**Credentials come from the environment — never hardcode secrets.** Set `DEPLOY_TOKEN` (and optionally `CONTABO_BASE_URL` / `DEPLOY_FOLDER`) via your shell or a git-ignored `.env` file. See `.env.example` and the [Deployment](README.md#deployment) section of the README. The legacy `deploy_old.py` (direct SFTP with an inline password) has been removed.
-
 ## WebAssembly Audio Module
 
 `src/wasm/` is a **shipping** in-browser `.rbs` playback engine: C++ compiled to
@@ -462,13 +453,15 @@ knowledge are welcome — see the roadmap in `src/wasm/README.md`.
 
 ## Testing Strategy
 
-`npm run ci` runs the same gate as `ci.yml`: `astro check` → `contract:check` →
-`lint` → `format` → `build` → Playwright.
+`npm run ci` runs the same gates as `ci.yml` and `native-cpp.yml`: `astro check`
+→ `contract:check` → `lint` → `format` → `test:unit` → `build` → data checks →
+`wasm:test` → Playwright.
 
 | Layer              | Command                          | Covers                                                                                               |
 | ------------------ | -------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | TypeScript / Astro | `npm run check`                  | `astro check` in strict mode — the primary type gate                                                 |
 | C++ ↔ TS contract  | `npm run contract:check`         | Embind struct fields and `DeviceParamId` values (`scripts/check-wasm-contract.mjs`)                  |
+| TS unit tests      | `npm run test:unit`              | Vitest specs in `src/**/*.test.ts` — pure modules (patch codec, SMF writer, MIDI map, error classes) |
 | Native C++ units   | `npm run wasm:test`              | doctest suite in `src/wasm/cpp/tests/` (parser, sequencer, engine, DSP, mods)                        |
 | Browser / E2E      | `npm test`                       | Playwright specs in `tests/` — routes, responsive, player, WASM engine, `.rbm` loading, bounce, heap |
 | Lint / format      | `npm run lint`, `npm run format` | ESLint + Prettier                                                                                    |
@@ -476,10 +469,14 @@ knowledge are welcome — see the roadmap in `src/wasm/README.md`.
 CI also runs a native sanitizer matrix
 ([`.github/workflows/native-cpp.yml`](.github/workflows/native-cpp.yml)).
 
-There is no unit-test layer for the Astro/TS UI code itself — that gap is
-covered indirectly by Playwright.
+Pure TypeScript belongs in the Vitest layer; reserve Playwright for behaviour
+that needs a browser (AudioContext, AudioWorklet, the DOM, cross-origin
+isolation).
 
-Before opening a PR, at minimum: `npm run check && npm run contract:check && npm run build`.
+Before opening a PR, at minimum: `npm run check && npm run test:unit && npm run build`.
+Changes reach `main` through a PR, never by pushing to it directly; see
+[README → Branch protection](README.md#branch-protection-repository-setting) for
+the checks to require.
 
 ## Deployment
 
@@ -488,11 +485,6 @@ Before opening a PR, at minimum: `npm run check && npm run contract:check && npm
 - Auto-deploys from the `main` branch
 - Site: `https://ford442.github.io/rebirth_website`
 - Base path `/rebirth_website` is baked into `astro.config.mjs`
-
-### Manual bundle upload (secondary)
-
-- `deploy.py` zips `dist/` and uploads it to the storage manager (`CONTABO_BASE_URL`).
-- Requires `requests`. Credentials (`DEPLOY_TOKEN`, etc.) are read from the environment / `.env` — never hardcoded.
 
 ## Security Considerations
 

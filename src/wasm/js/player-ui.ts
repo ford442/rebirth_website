@@ -12,10 +12,11 @@
 import { WasmAudioBridge } from './WasmAudioBridge';
 import { DegradedRbsPlayer } from './DegradedRbsPlayer';
 import {
+  asParseError,
   classifyInitError,
   classifyLoadError,
+  errorMessage,
   RbsFetchError,
-  RbsParseError,
   type InitFailureReason,
 } from './rbs-init-errors';
 import { createMidiInput, isWebMidiSupported, type MidiState } from './player-midi';
@@ -25,6 +26,7 @@ import { parsePlayerQuery, scrollToPlayer } from '../../lib/player-events';
 import type { ParsedSong } from '../types/wasm-audio-song';
 import { songToMidi } from '../../lib/midi-smf';
 import { canDownload, downloadBytes } from '../../lib/download-file';
+import { classifyDroppedFile, fileSlug } from '../../lib/file-names';
 import { queryPlayerDom } from './player-dom';
 import { createTransportView, type PlayerBridge } from './player-transport';
 import { createStudioView } from './player-studio-view';
@@ -62,6 +64,18 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
   let pendingAutoplay = false;
   let userGestureGranted = false;
   let loadedSong: ParsedSong | null = null;
+
+  /**
+   * Settles once the first init attempt is over — the WASM bridge is live or
+   * has been swapped for the degraded player. A song can be requested before
+   * that (an `rb:load-demo` from the page, a file dropped while the engine is
+   * still loading); loads wait here instead of hitting a bridge that has no
+   * engine yet and reporting that as a corrupt file.
+   */
+  let markEngineReady: () => void = () => {};
+  const engineReady = new Promise<void>((resolve) => {
+    markEngineReady = resolve;
+  });
 
   function setPlayerMode(mode: 'wasm' | 'degraded-sketch' | 'degraded-metadata') {
     playerEl.dataset.playerMode = mode;
@@ -195,12 +209,7 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
       await run();
     } catch (err) {
       console.error('Export failed:', err);
-      const message =
-        err instanceof Error
-          ? err.message
-          : err && typeof err === 'object' && 'message' in err
-            ? String((err as { message: unknown }).message)
-            : 'Export failed';
+      const message = errorMessage(err) || 'Export failed';
       setExportStatus(message, 'error');
       transport.showToast(`Export failed: ${message}`, 'error');
     } finally {
@@ -301,6 +310,7 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
   }
 
   async function loadModFile(buffer: ArrayBuffer, sourceLabel?: string) {
+    await engineReady;
     if (!modsSupported() || !(bridge instanceof WasmAudioBridge)) {
       const msg = 'Mods need the full WASM engine — not available in preview mode.';
       transport.setMessage(msg);
@@ -331,10 +341,7 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
     } catch (err) {
       transport.dismissLoadingToasts();
       console.error('Failed to load .rbm:', err);
-      const detail =
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message: unknown }).message)
-          : '';
+      const detail = errorMessage(err);
       const msg = `Failed to load mod${sourceLabel ? ` (${sourceLabel})` : ''}${
         detail ? `: ${detail}` : ''
       }`;
@@ -346,6 +353,7 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
   }
 
   async function loadFile(buffer: ArrayBuffer, sourceLabel?: string) {
+    await engineReady;
     try {
       transport.setMessage(degradedMode ? 'Sniffing .rbs header…' : 'Parsing .rbs payload…');
       const song = await bridge.loadRbsFile(buffer);
@@ -372,15 +380,20 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
       loadedSong = null;
       transport.updatePlayAvailability();
       updateExportAvailability();
-      const failure = classifyLoadError(new RbsParseError(String(err)));
+      // Engine errors are `{ code, message }` objects, not Errors: keep the
+      // message (e.g. the heap-budget one) instead of "[object Object]".
+      const failure = classifyLoadError(asParseError(err));
       const errMsg = `${sourceLabel ? `${sourceLabel}: ` : ''}${failure.message}`;
+      // The status change writes its own generic LCD line, so it goes first:
+      // the reason has to be the last word, or it never reaches the screen.
+      transport.setStatus('error');
       transport.setMessage(errMsg);
       transport.showToast(errMsg, 'error');
-      transport.setStatus('error');
     }
   }
 
   async function loadDemoSong(url: string, label: string, requestAutoplay = false) {
+    await engineReady;
     transport.showToast(`Fetching: ${label}…`, 'loading', 0);
     transport.setMessage(`Fetching demo: ${label}…`);
     try {
@@ -404,9 +417,9 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
       const failure = classifyLoadError(err, url);
       const errMsg = `${label}: ${failure.message}`;
       playerEl.dataset.loadFailure = failure.reason;
+      transport.setStatus('error');
       transport.setMessage(errMsg);
       transport.showToast(errMsg, 'error', failure.reason === 'corp-blocked' ? 0 : 4000);
-      transport.setStatus('error');
       throw err;
     }
   }
@@ -470,10 +483,15 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
       dom.dropZone!.classList.remove('drag-over');
       const file = e.dataTransfer?.files[0];
       if (!file) return;
-      if (file.name.endsWith('.rbs')) {
+      const kind = classifyDroppedFile(file.name);
+      if (kind === 'rbs') {
         file.arrayBuffer().then((buffer) => loadFile(buffer, file.name));
-      } else if (file.name.endsWith('.rbm')) {
+      } else if (kind === 'rbm') {
         file.arrayBuffer().then((buffer) => loadModFile(buffer, file.name));
+      } else {
+        const msg = `${file.name}: drop a .rbs song or a .rbm mod.`;
+        transport.setMessage(msg);
+        transport.showToast(msg, 'error');
       }
     });
   }
@@ -523,13 +541,7 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
     void withExportBusy('Writing MIDI…', () => {
       if (!loadedSong) throw new Error('No song loaded');
       const bytes = songToMidi(loadedSong, { bars: 4 });
-      const name = `${
-        (loadedSong.title || 'rebirth-song')
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-+|-+$/g, '')
-          .slice(0, 48) || 'rebirth-song'
-      }.mid`;
+      const name = `${fileSlug(loadedSong.title)}.mid`;
       const result = downloadBytes(name, bytes, 'audio/midi');
       if (!result.ok) throw new Error(result.reason ?? 'Download failed');
       setExportStatus(`${name} (${bytes.byteLength} bytes)`, 'done');
@@ -642,7 +654,12 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
       transport.setMessage('Degraded mode — drop an .rbs file to inspect metadata.');
   }
 
-  async function bootstrap() {
+  /**
+   * Bring the engine up, or fall back to the degraded player. Never throws
+   * for an init failure — that is what the fallback is for — so everything
+   * after it can rely on `bridge` being usable in one mode or the other.
+   */
+  async function initEngine() {
     try {
       transport.setMessage('Initialising audio engine…');
       await bridge.init();
@@ -678,34 +695,43 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
         transport.setMessage('No demos configured — drop an .rbs file to preview.');
 
       pendingPatch = readPatchFromSearch(window.location.search);
-
-      const query = parsePlayerQuery();
-      const srcUrl = initialSrc || query.src;
-      const shouldAutoplay = autoplay || query.autoplay;
-
-      if (srcUrl) {
-        const label = query.label || 'linked preview';
-        await loadDemoSong(srcUrl, label, shouldAutoplay);
-        if (query.src || query.playPath || initialSrc) scrollToPlayer();
-      } else if (demos[0] && dom.demoSelect) {
-        dom.demoSelect.value = demos[0].src;
-      }
     } catch (err) {
       console.error('WASM init failed:', err);
       const failure = classifyInitError(err);
       await activateDegradedMode(failure.reason);
-
-      const query = parsePlayerQuery();
-      const srcUrl = initialSrc || query.src;
-      if (srcUrl) {
-        try {
-          await loadDemoSong(srcUrl, query.label || 'linked preview', autoplay || query.autoplay);
-        } catch {
-          /* handled */
-        }
-      }
     }
   }
 
-  void bootstrap();
+  /**
+   * Load the `?play=` / `?src=` deep link, if the page has one.
+   *
+   * Runs after init has settled and has its own error handling: a missing or
+   * unreachable file is a load failure to report, not an engine failure — it
+   * must never tear down a working WASM bridge.
+   */
+  async function loadDeepLink() {
+    const query = parsePlayerQuery();
+    const srcUrl = initialSrc || query.src;
+    if (srcUrl) {
+      try {
+        await loadDemoSong(srcUrl, query.label || 'linked preview', autoplay || query.autoplay);
+      } catch {
+        /* loadDemoSong already put the reason on the LCD */
+      }
+      if (query.src || query.playPath || initialSrc) scrollToPlayer();
+    } else if (!degradedMode && demos[0] && dom.demoSelect) {
+      dom.demoSelect.value = demos[0].src;
+    }
+  }
+
+  async function bootstrap() {
+    try {
+      await initEngine();
+    } finally {
+      markEngineReady();
+    }
+    await loadDeepLink();
+  }
+
+  bootstrap().catch((err) => console.error('Player bootstrap failed:', err));
 }

@@ -16,9 +16,10 @@ npm run check          # astro check (TypeScript strict mode — the primary gat
 npm run lint           # ESLint
 npm run format         # Prettier --check
 npm run contract:check # C++ ↔ TypeScript WASM contract
+npm run test:unit      # Vitest: pure TS modules, colocated as src/**/*.test.ts (~1 s)
 npm run wasm:test      # Native C++ doctest suite
 npm test               # Playwright browser/E2E specs
-npm run ci             # check → contract:check → lint → format → build → test (mirrors ci.yml)
+npm run ci             # check → contract:check → lint → format → test:unit → build → ci:data → wasm:test → test (mirrors ci.yml + native-cpp.yml)
 ```
 
 ## Architecture Overview
@@ -42,8 +43,6 @@ src/
 ├── content/
 │   ├── config.ts             # Content collection schema (docs)
 │   └── docs/                 # Historical markdown documentation
-├── styles/
-│   └── (legacy, consolidated into public/styles/rebirth-theme.css)
 └── wasm/                     # In-browser .rbs playback engine (C++ compiled to WASM)
     ├── CONTRACT.md           # C++ ↔ TypeScript field-for-field contract (SSOT)
     ├── README.md             # Architecture, build, status (SHIPPING ENGINE, PARTIAL FEATURE SET)

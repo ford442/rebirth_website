@@ -407,7 +407,7 @@ src/wasm/
 │   ├── player-studio.ts         # DeviceParam ids + knob mapping
 │   ├── player-step-edit.ts      # Step patch model + inverse-patch undo stack
 │   ├── player-midi.ts           # WebMIDI decode → setStep / setDeviceParam
-│   ├── player-test-hooks.ts     # window.* hooks for the Playwright specs
+│   ├── player-test-hooks.ts     # opt-in window.* hooks (?test / dev / localStorage) for the Playwright specs
 │   ├── rbs-init-errors.ts       # Init + catalog-fetch failure classification
 │   ├── RbsMetadataSniffer.ts    # Pure-TS HEAD/GLOB/USRI sniffing (degraded mode)
 │   └── DegradedRbsPlayer.ts     # Web Audio sketch preview (no WASM)

@@ -4,7 +4,8 @@
  */
 
 import type { EngineError, EngineModule, RbsAudioEngineInstance } from '../types/wasm-audio-engine';
-import { toUiParsedSong } from '../types/wasm-audio-mapping';
+import { MOD_LOAD_STATUSES, type ParsedMod } from '../types/wasm-audio-mod';
+import { toUiParsedMod, toUiParsedSong } from '../types/wasm-audio-mapping';
 
 export function mallocCopy(module: EngineModule, bytes: Uint8Array): number {
   const ptr = module._malloc(bytes.byteLength);
@@ -40,6 +41,37 @@ export function loadSongIntoEngine(
   }
 }
 
+/** Human-readable copy for a failed mod load, for the LCD / toast. */
+export function modStatusMessage(status: string): string {
+  switch (status) {
+    case 'arena-exhausted':
+      return 'Mod is too large for the sample memory budget.';
+    case 'no-samples':
+      return 'No playable samples in this mod (it may be skins only).';
+    case 'not-initialised':
+      return 'Audio engine is not ready yet.';
+    default:
+      return 'Mod could not be loaded.';
+  }
+}
+
+/**
+ * The error a finished mod load amounts to, or null when it is usable.
+ *
+ * `loadMod` returns a status instead of throwing, so something has to read
+ * it. A mod that supplies at least one sample is usable (slots it leaves out
+ * keep their procedural voices); one that supplies none is a failure, and
+ * the live bridge and the bounce Worker must agree on that — otherwise a
+ * bounce quietly renders procedural drums for a kit you can hear playing.
+ */
+export function modLoadError(status: number, report: ParsedMod): EngineError | null {
+  if (report.loadedSlots > 0) return null;
+  return {
+    code: 'MOD_LOAD_ERROR',
+    message: modStatusMessage(MOD_LOAD_STATUSES[status] ?? 'no-samples'),
+  };
+}
+
 export function loadModIntoEngine(
   module: EngineModule,
   engine: RbsAudioEngineInstance,
@@ -53,8 +85,8 @@ export function loadModIntoEngine(
     };
   }
   try {
-    engine.loadMod(ptr, modBytes.byteLength);
-    return null;
+    const status = engine.loadMod(ptr, modBytes.byteLength);
+    return modLoadError(status, toUiParsedMod(engine.getModReport()));
   } finally {
     module._free(ptr);
   }
