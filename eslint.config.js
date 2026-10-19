@@ -11,7 +11,6 @@ export default tseslint.config(
       'public/wasm/**',
       'public/coi-serviceworker.js',
       'src/wasm/cpp/**',
-      'redesign_content/**',
       '.astro/**',
     ],
   },
