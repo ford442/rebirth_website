@@ -1,0 +1,228 @@
+---
+// src/pages/openrb338.astro — OpenRB-338 modern reimplementation
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import HardwarePanel from '../components/ui/HardwarePanel.astro';
+import { normalizeBase } from '../lib/url';
+
+const base = normalizeBase(import.meta.env.BASE_URL);
+---
+
+<BaseLayout
+  title="OpenRB-338"
+  description="OpenRB-338 is a free, open-source reimplementation of Propellerhead ReBirth RB-338 that runs on modern macOS, Windows, and Linux. Bit-accurate audio, .rbs song support, and no original software required."
+>
+  <div class="openrb-page">
+    <div class="container">
+      <Breadcrumbs
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'OpenRB-338', href: '/openrb338' },
+        ]}
+      />
+
+      <HardwarePanel
+        variant="rackmount-chassis"
+        animate
+        title="OPENRB-338"
+        ledStatus="online"
+        ledLabel="MODERN REIMPLEMENTATION"
+        class="rb-panel--center-header rb-panel--padded-body"
+      >
+        <p class="openrb-subtitle">
+          A free, open-source reimplementation of ReBirth RB-338 for today's computers.
+        </p>
+        <p class="openrb-lead">
+          OpenRB-338 (by pingw33n) recreates the classic Propellerhead software groovebox —
+          twin TB-303-style bass lines, TR-808, and TR-909 — with a bit-accurate audio engine.
+          It opens original <code>.rbs</code> song files and plays ReBirth mods, without needing
+          the original software or an old computer.
+        </p>
+        <div class="openrb-actions">
+          <a
+            class="rb-pattern-btn"
+            href="https://github.com/pingw33n/openrb-338"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub Repository →
+          </a>
+          <a
+            class="rb-mix-btn"
+            href="https://github.com/pingw33n/openrb-338/releases"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Download Latest Release
+          </a>
+        </div>
+      </HardwarePanel>
+
+      <HardwarePanel
+        variant="rackmount-module"
+        animate
+        title="KEY FEATURES"
+        ledStatus="online"
+        ledLabel="BIT-ACCURATE"
+      >
+        <ul class="openrb-features">
+          <li>
+            <strong>Bit-perfect audio</strong> — the engine was rebuilt from ReBirth 2.01 so exported
+            loops match the original byte-for-byte (tested on 1,000+ songs).
+          </li>
+          <li>
+            <strong>Song support</strong> — opens ReBirth 1.x and 2.x <code>.rbs</code> files (RBS 4.0–4.2)
+            and can save RBS 4.2 files the original can open.
+          </li>
+          <li>
+            <strong>Mods</strong> — plays drum samples from ReBirth <code>.rbm</code> mods (standard kit
+            is built-in; other mods need a one-time recrypt step).
+          </li>
+          <li>
+            <strong>Modern platforms</strong> — native apps for macOS (Apple Silicon &amp; Intel),
+            Windows (x64 &amp; ARM64), and Linux (x86_64 &amp; ARM64).
+          </li>
+          <li>
+            <strong>Command-line tool</strong> — <code>orb</code> can render songs to WAV/FLAC/Ogg far
+            faster than real-time, inspect metadata, and work with mods.
+          </li>
+          <li>
+            <strong>Open source</strong> — GPL-3.0-only. Independent project, not affiliated with
+            Propellerhead / Reason Studios.
+          </li>
+        </ul>
+      </HardwarePanel>
+
+      <HardwarePanel
+        variant="rackmount"
+        animate
+        title="WHY IT MATTERS FOR THE ARCHIVE"
+        ledStatus="online"
+        ledLabel="PLAY YOUR .RBS FILES"
+      >
+        <div class="history-prose">
+          <p>
+            This community archive preserves thousands of <code>.rbs</code> songs and <code>.rbm</code>
+            mods from the late 1990s through the early 2000s. Until now, playing them usually meant
+            keeping an old Windows or Mac machine (or a virtual machine) with the original ReBirth
+            software.
+          </p>
+          <p>
+            OpenRB-338 changes that. Download the song files from this archive, open them in the
+            modern app, and hear the original patterns, automation, and mod sounds on current
+            hardware — no vintage OS required.
+          </p>
+          <p>
+            Combined with the in-browser WASM player on this site, there are now multiple ways to
+            experience the ReBirth catalog without relying solely on 25-year-old binaries.
+          </p>
+        </div>
+      </HardwarePanel>
+
+      <HardwarePanel
+        variant="rackmount-module"
+        animate
+        title="GETTING STARTED"
+        ledStatus="online"
+        ledLabel="QUICK START"
+      >
+        <ol class="openrb-steps">
+          <li>
+            Download the latest release for your platform from the
+            <a href="https://github.com/pingw33n/openrb-338/releases" target="_blank" rel="noopener noreferrer">
+              GitHub Releases
+            </a>
+            page.
+          </li>
+          <li>
+            Browse and download <code>.rbs</code> songs from the
+            <a href={`${base}/archive/songs`}>song archive</a> on this site.
+          </li>
+          <li>Open the song in OpenRB-338. The standard drum kit is already included.</li>
+          <li>
+            For third-party mods, use the included <code>orb mod recrypt</code> tool (see the
+            project README) so the samples load correctly.
+          </li>
+        </ol>
+        <p class="openrb-note">
+          MIDI, VST, and ReWire are not implemented — OpenRB-338 is a standalone application.
+        </p>
+      </HardwarePanel>
+
+      <p class="openrb-disclaimer">
+        OpenRB-338 is an independent community project. It is not affiliated with, endorsed by, or
+        connected to Propellerhead Software or Reason Studios. The original ReBirth RB-338 software
+        and its assets remain the property of their respective owners.
+      </p>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .openrb-subtitle {
+    font-size: 1.15rem;
+    color: var(--rb-amber, #ffb000);
+    margin: 0.5rem 0 1rem;
+    text-align: center;
+  }
+
+  .openrb-lead {
+    max-width: 42rem;
+    margin: 0 auto 1.5rem;
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  .openrb-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  .openrb-actions a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0.5rem 1.25rem;
+    text-decoration: none;
+  }
+
+  .openrb-features,
+  .openrb-steps {
+    margin: 0.5rem 0 0;
+    padding-left: 1.25rem;
+    line-height: 1.65;
+  }
+
+  .openrb-features li,
+  .openrb-steps li {
+    margin-bottom: 0.65rem;
+  }
+
+  .openrb-note {
+    margin-top: 1.25rem;
+    font-size: 0.9rem;
+    color: var(--rb-silver-dim, #888);
+    font-style: italic;
+  }
+
+  .openrb-disclaimer {
+    margin-top: 2rem;
+    padding: 1rem;
+    border: 1px solid #333;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 600px) {
+    .openrb-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+</style>
