@@ -1,3 +1,4 @@
+#include "../parser/DrumKit.h"
 #include "../parser/ParsedSongJson.h"
 #include "../parser/RbsParser.h"
 #include "../third_party/doctest.h"
@@ -368,4 +369,112 @@ TEST_CASE("reject/generic-smf.mid is rejected as standard MIDI") {
   const auto song = parser.parse(buffer.data(), buffer.size());
   CHECK(!song);
   CHECK(parser.lastError().find("Standard MIDI file") != std::string::npos);
+}
+
+// ── GLOB / USRI transport and groove fields (RbsFormat.md §4, §5) ─────
+
+TEST_CASE("GLOB decodes play mode, loop locators, shuffle, vintage and the mod FTP URL") {
+  const auto standard = parseFixture("standard-rebirth.rbs");
+  CHECK(standard.playMode == PlayMode::Song);
+  CHECK(standard.loopEnabled);
+  CHECK(standard.loopStart == 0);
+  CHECK(standard.loopEnd == 142 * GLOB_TICKS_PER_BAR);
+  CHECK(standard.shuffle == 56);
+  CHECK_FALSE(standard.vintage);
+  CHECK(standard.modFtpUrl == "ftp.propellerheads.se");
+
+  const auto blue = parseFixture("blue-planet.rbs");
+  CHECK(blue.shuffle == 42);
+  CHECK(blue.loopStart == 529 * GLOB_TICKS_PER_BAR);
+  CHECK(blue.loopEnd == 530 * GLOB_TICKS_PER_BAR);
+  CHECK(blue.modFtpUrl.empty());
+}
+
+TEST_CASE("USRI byte 0x21f is the show-info-on-open flag") {
+  for (const char* name : {"standard-rebirth.rbs", "blue-planet.rbs", "no-remorse.rbs"}) {
+    CAPTURE(name);
+    CHECK(parseFixture(name).showInfoOnOpen);
+  }
+}
+
+TEST_CASE("Pattern slot byte 0 is the per-pattern shuffle flag") {
+  const auto song = parseFixture("standard-rebirth.rbs");
+  // 303-A slots A1–A3 are flagged, A4 is not; the 909's first slots of
+  // no-remorse are flagged too (RbsFormat.md §6e).
+  CHECK(findPattern(song, DeviceId::TB303_A, 0, 0)->shuffle);
+  CHECK(findPattern(song, DeviceId::TB303_A, 0, 2)->shuffle);
+  CHECK_FALSE(findPattern(song, DeviceId::TB303_A, 0, 3)->shuffle);
+  const auto noRemorse = parseFixture("no-remorse.rbs");
+  CHECK_FALSE(findPattern(noRemorse, DeviceId::TR909, 0, 0)->shuffle);
+  CHECK(findPattern(noRemorse, DeviceId::TR909, 0, 1)->shuffle);
+}
+
+TEST_CASE("MIXR bytes 1 and 2 name the compressor and PCF insert devices") {
+  // blue-planet: both on 303-B (id 3); no-remorse: compressor on the 909.
+  const auto blue = parseFixture("blue-planet.rbs");
+  CHECK(blue.fx.comp.target == FX_TARGET_FIRST_DEVICE + 1);
+  CHECK(blue.fx.pcf.target == FX_TARGET_FIRST_DEVICE + 1);
+  const auto noRemorse = parseFixture("no-remorse.rbs");
+  CHECK(noRemorse.fx.comp.target == FX_TARGET_FIRST_DEVICE + 3);
+  CHECK(noRemorse.fx.pcf.target == FX_TARGET_NONE);
+}
+
+TEST_CASE("808 / 909 headers decode the accent knob and the named kit") {
+  const auto song = parseFixture("standard-rebirth.rbs");
+  const DeviceState& tr808 = song.devices[2];
+  const DeviceState& tr909 = song.devices[3];
+  REQUIRE(tr808.hasKit);
+  REQUIRE(tr909.hasKit);
+  // 808 header: 00 0d 24 7f 40 40 7f 63 2e 7f 40 01 …
+  CHECK(tr808.accent == doctest::Approx(0x24 / 127.0f));
+  CHECK(tr808.kit[kitIndex(Kit808::BassLevel)] == 0x7f);
+  CHECK(tr808.kit[kitIndex(Kit808::SnareTone)] == 0x63);
+  CHECK(tr808.kit[kitIndex(Kit808::SnareSnappy)] == 0x2e);
+  CHECK(tr808.kit[kitIndex(Kit808::LowTomSelector)] == 1);
+  CHECK(tr808.kit[kitIndex(Kit808::ClosedHatLevel)] == 0x7f);
+  // 909 header: 01 00 20 64 40 40 7f 64 40 40 40 64 …, flam 0x40 at byte 29.
+  CHECK(tr909.accent == doctest::Approx(0x20 / 127.0f));
+  CHECK(tr909.kit[kitIndex(Kit909::BassLevel)] == 0x64);
+  CHECK(tr909.kit[kitIndex(Kit909::BassDecay)] == 0x7f);
+  CHECK(tr909.kit[kitIndex(Kit909::FlamInterval)] == 0x40);
+  CHECK(tr909.kit[kitIndex(Kit909::Unknown1e)] == 0x64);
+}
+
+TEST_CASE("Drum rows are accent first; the 909 stores accents and flams per hit") {
+  const auto blue = parseFixture("blue-planet.rbs");
+  int strong = 0;
+  int flams = 0;
+  for (const Pattern& p : blue.patterns) {
+    for (const StepData& s : p.steps) {
+      if (p.deviceId == DeviceId::TR909) {
+        strong += __builtin_popcount(s.drumAccent);
+        flams += __builtin_popcount(s.drumFlam);
+        // Dynamics only ever mark instruments the step actually hits.
+        const unsigned hits = s.note | (s.drumExtra << 8u);
+        CHECK((s.drumAccent & ~hits) == 0);
+        CHECK((s.drumFlam & ~hits) == 0);
+      } else {
+        CHECK(s.drumAccent == 0);
+        CHECK(s.drumFlam == 0);
+      }
+    }
+  }
+  CHECK(strong == 297);
+  CHECK(flams == 3);
+
+  // blue-planet's 808 (at mixer level 0) has 64 AC-row hits, 43 of them on
+  // steps with no instrument: kept as inactive accents rather than read as
+  // kicks (RbsFormat.md §6e).
+  int accents = 0;
+  int accentOnly = 0;
+  for (const Pattern& p : blue.patterns) {
+    if (p.deviceId != DeviceId::TR808) continue;
+    for (const StepData& s : p.steps) {
+      if (s.accent) ++accents;
+      if (s.accent && !s.active) ++accentOnly;
+    }
+  }
+  CHECK(accents == 64);
+  CHECK(accentOnly == 43);
+  CHECK(blue.devices[2].level == 0.0f);
 }

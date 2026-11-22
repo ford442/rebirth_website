@@ -61,6 +61,7 @@ set(RB338_TEST_SOURCES
   tests/test_mixer.cpp
   tests/test_rbm_parser.cpp
   tests/test_correctness.cpp
+  tests/test_fidelity.cpp
 )
 
 set(RB338_INSPECT_SOURCES
