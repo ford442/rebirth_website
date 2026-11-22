@@ -272,6 +272,12 @@ headers, so an editor shows errors the real build does not have. `npm run
 wasm:test` regenerates it as a side effect. The database is git-ignored — it
 records absolute paths from your machine.
 
+`main.cpp` and `worklet/` exist only in the Emscripten target, so the native
+database has no entry for them. A second `.clangd` fragment (`If: PathMatch`)
+points those files at `src/wasm/cpp/build-wasm/compile_commands.json`, which
+CMake exports on every `npm run wasm:build` — run that once (with the pinned
+Emscripten active) to get Embind flags and completions in `main.cpp`.
+
 ### Emitted files
 
 Emscripten produces `rbsParser.js` and `rbsParser.wasm`. `build.sh` copies the
