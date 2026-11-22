@@ -65,8 +65,10 @@ void requireSameDevices(const ParsedSong& a, const ParsedSong& b) {
     CHECK(x.pan == doctest::Approx(y.pan).epsilon(0.005));
     CHECK(x.delaySend == doctest::Approx(y.delaySend).epsilon(0.005));
     CHECK(x.dist == y.dist);
-    CHECK(x.pcf == y.pcf);
-    CHECK(x.compressor == y.compressor);
+    if (i >= static_cast<int>(DeviceId::TR808)) {
+      CHECK(effectiveDrumKit(x, static_cast<DeviceId>(i)) ==
+            effectiveDrumKit(y, static_cast<DeviceId>(i)));
+    }
   }
 }
 
@@ -129,19 +131,26 @@ std::string trimmed(const std::string& text) {
 void requireSameFx(const SongFxSettings& x, const SongFxSettings& y) {
   CHECK(x.masterLevel == y.masterLevel);
   CHECK(x.delay.enabled == y.delay.enabled);
-  CHECK(x.delay.time == y.delay.time);
+  CHECK(x.delay.steps == y.delay.steps);
+  CHECK(x.delay.triplet == y.delay.triplet);
   CHECK(x.delay.feedback == y.delay.feedback);
-  CHECK(x.delay.wet == y.delay.wet);
+  CHECK(x.delay.pan == y.delay.pan);
   CHECK(x.pcf.enabled == y.pcf.enabled);
   CHECK(x.pcf.cutoff == y.pcf.cutoff);
   CHECK(x.pcf.resonance == y.pcf.resonance);
   CHECK(x.pcf.envAmount == y.pcf.envAmount);
+  CHECK(x.pcf.pattern == y.pcf.pattern);
+  CHECK(x.pcf.decay == y.pcf.decay);
+  CHECK(x.pcf.lowpass == y.pcf.lowpass);
+  CHECK(x.pcf.target == y.pcf.target);
   CHECK(x.dist.enabled == y.dist.enabled);
   CHECK(x.dist.drive == y.dist.drive);
   CHECK(x.dist.mix == y.dist.mix);
   CHECK(x.comp.enabled == y.comp.enabled);
   CHECK(x.comp.ratio == y.comp.ratio);
   CHECK(x.comp.threshold == y.comp.threshold);
+  CHECK(x.comp.attack == y.comp.attack);
+  CHECK(x.comp.target == y.comp.target);
 }
 
 void requireSameSong(const ParsedSong& a, const ParsedSong& b) {

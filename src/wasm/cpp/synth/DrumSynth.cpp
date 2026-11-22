@@ -27,6 +27,7 @@ void DrumVoiceChannel::reset() {
   m_age = 0;
   m_length = 0;
   m_phase = 0.0f;
+  m_phase2 = 0.0f;
   m_env = 0.0f;
   m_velocity = 1.0f;
   m_clapBurstsLeft = 0;
@@ -43,33 +44,50 @@ void DrumVoiceChannel::reset() {
 
 void DrumVoiceChannel::trigger(DrumVoiceId id, float velocity, bool accent,
                                const DrumParams& params, bool is909) {
+  DrumHitParams hit;
+  hit.gain = velocity * drumAccentGain(params, accent);
+  hit.pitchMul = drumPitchMul(params);
+  hit.decay = params.decay;
+  trigger(id, hit, is909);
+}
+
+void DrumVoiceChannel::choke() {
+  if (!m_active) return;
+  // A 3 ms fade rather than a hard cut, which would click.
+  const auto fade = static_cast<uint32_t>(m_sampleRate * 0.003f) + 1u;
+  m_length = std::min(m_length, m_age + fade);
+  m_envCoeff = std::min(m_envCoeff, decayCoeff(fade));
+}
+
+void DrumVoiceChannel::trigger(DrumVoiceId id, const DrumHitParams& hit, bool is909) {
   m_active = true;
   m_id = id;
   m_is909 = is909;
   m_age = 0;
   m_phase = 0.0f;
-  m_velocity = velocity;
+  m_phase2 = 0.0f;
+  m_velocity = hit.gain;
+  m_pitchMul = std::max(0.05f, hit.pitchMul);
+  m_tone = std::clamp(hit.tone, 0.0f, 1.0f);
+  m_snappy = std::clamp(hit.snappy, 0.0f, 1.0f);
+  m_attack = std::clamp(hit.attack, 0.0f, 1.0f);
+  m_clapBurstsLeft = 0;
 
-  // Device knobs → per-hit scaling (shared with the mod sample player).
-  m_pitchMul = drumPitchMul(params);
-  m_decayMul = lerp(0.55f, 1.85f, params.decay);
-
-  m_velocity *= drumAccentGain(params, accent);
-
+  const float decay = std::clamp(hit.decay, 0.0f, 1.0f);
   const float sr = m_sampleRate;
 
   switch (id) {
     case DrumVoiceId::Kick:
-      m_length = static_cast<uint32_t>(sr * lerp(0.32f, 0.55f, params.decay));
+      m_length = static_cast<uint32_t>(sr * lerp(0.32f, 0.55f, decay));
       break;
     case DrumVoiceId::Snare:
-      m_length = static_cast<uint32_t>(sr * lerp(0.12f, 0.22f, params.decay));
+      m_length = static_cast<uint32_t>(sr * lerp(0.12f, 0.22f, decay));
       break;
     case DrumVoiceId::ClosedHat:
-      m_length = static_cast<uint32_t>(sr * lerp(0.025f, 0.055f, params.decay));
+      m_length = static_cast<uint32_t>(sr * lerp(0.025f, 0.055f, decay));
       break;
     case DrumVoiceId::OpenHat:
-      m_length = static_cast<uint32_t>(sr * lerp(0.12f, 0.28f, params.decay));
+      m_length = static_cast<uint32_t>(sr * lerp(0.12f, 0.28f, decay));
       break;
     case DrumVoiceId::Rimshot:
       m_length = static_cast<uint32_t>(sr * 0.035f);
@@ -86,29 +104,45 @@ void DrumVoiceChannel::trigger(DrumVoiceId id, float velocity, bool accent,
       m_length = static_cast<uint32_t>(sr * 0.025f);
       break;
     case DrumVoiceId::Maracas:
-      m_length = static_cast<uint32_t>(sr * lerp(0.08f, 0.16f, params.decay));
+      m_length = static_cast<uint32_t>(sr * lerp(0.08f, 0.16f, decay));
       break;
     case DrumVoiceId::Crash:
-      m_length = static_cast<uint32_t>(sr * lerp(0.35f, 0.75f, params.decay));
+      m_length = static_cast<uint32_t>(sr * lerp(0.35f, 0.75f, decay));
       break;
     case DrumVoiceId::Ride:
-      m_length = static_cast<uint32_t>(sr * lerp(0.25f, 0.55f, params.decay));
+      m_length = static_cast<uint32_t>(sr * lerp(0.25f, 0.55f, decay));
       break;
     case DrumVoiceId::LowTom:
-      m_length = static_cast<uint32_t>(sr * lerp(0.18f, 0.32f, params.decay));
+      m_length = static_cast<uint32_t>(sr * lerp(0.18f, 0.32f, decay));
       break;
     case DrumVoiceId::MidTom:
-      m_length = static_cast<uint32_t>(sr * lerp(0.16f, 0.28f, params.decay));
+      m_length = static_cast<uint32_t>(sr * lerp(0.16f, 0.28f, decay));
       break;
     case DrumVoiceId::HighTom:
-      m_length = static_cast<uint32_t>(sr * lerp(0.14f, 0.24f, params.decay));
+      m_length = static_cast<uint32_t>(sr * lerp(0.14f, 0.24f, decay));
+      break;
+    case DrumVoiceId::Cowbell:
+      m_length = static_cast<uint32_t>(sr * 0.16f);
+      break;
+    case DrumVoiceId::Cymbal:
+      m_length = static_cast<uint32_t>(sr * lerp(0.30f, 1.10f, decay));
+      break;
+    case DrumVoiceId::LowConga:
+    case DrumVoiceId::MidConga:
+    case DrumVoiceId::HighConga:
+      m_length = static_cast<uint32_t>(sr * lerp(0.10f, 0.18f, decay));
       break;
   }
+  m_length = std::max(m_length, 1u);
 
   m_envGain = 1.0f;
   m_envCoeff = decayCoeff(m_length);
   m_burstEnvGain = 1.0f;
   m_burstEnvCoeff = decayCoeff(m_clapBurstLen);
+}
+
+float drumTuneMul(uint8_t tune) {
+  return std::exp2((static_cast<float>(std::min<uint8_t>(tune, 127)) - 64.0f) / 128.0f);
 }
 
 float DrumVoiceChannel::nextNoise() {
@@ -129,20 +163,33 @@ float DrumVoiceChannel::nextNoise() {
 
 float DrumVoiceChannel::renderKick() {
   const float t = static_cast<float>(m_age) / static_cast<float>(std::max(1u, m_length));
-  const float startHz = (m_is909 ? 180.0f : 165.0f) * m_pitchMul;
+  // 808 TONE brightens the start of the sweep; the 909 has a TUNE knob
+  // (pitchMul) and an ATTACK knob for the beater click instead.
+  const float sweep = m_is909 ? 1.0f : (0.75f + 0.5f * m_tone);
+  const float startHz = (m_is909 ? 180.0f : 165.0f) * m_pitchMul * sweep;
   const float endHz = (m_is909 ? 48.0f : 42.0f) * m_pitchMul;
   const float freq = lerp(startHz, endHz, t * t);
   m_phase += 2.0f * kPi * freq / m_sampleRate;
   const float env = m_envGain;
-  return std::sin(m_phase) * env * m_velocity * 0.95f;
+  float out = std::sin(m_phase) * env * 0.95f;
+  if (m_is909) {
+    // Beater click: a 2 ms decaying noise burst, scaled by ATTACK.
+    const float clickLen = m_sampleRate * 0.002f;
+    const float age = static_cast<float>(m_age);
+    if (age < clickLen) {
+      out += nextNoise() * (1.0f - age / clickLen) * 0.5f * m_attack;
+    }
+  }
+  return out * m_velocity;
 }
 
 float DrumVoiceChannel::renderSnare() {
   const float env = m_envGain;
-  const float toneHz = (m_is909 ? 210.0f : 185.0f) * m_pitchMul;
+  // TONE moves the drum-head pitch, SNAPPY the level of the snare wires.
+  const float toneHz = (m_is909 ? 210.0f : 185.0f) * m_pitchMul * (0.8f + 0.4f * m_tone);
   m_phase += 2.0f * kPi * toneHz / m_sampleRate;
   const float tone = std::sin(m_phase) * 0.35f;
-  const float noise = nextNoise() * 0.65f;
+  const float noise = nextNoise() * 0.65f * (0.4f + 1.2f * m_snappy);
   return (tone + noise) * env * m_velocity * 0.75f;
 }
 
@@ -203,14 +250,14 @@ float DrumVoiceChannel::renderCrash() {
   const float env = m_envGain;
   const float n0 = nextNoise();
   const float n1 = nextNoise();
-  m_phase += 2.0f * kPi * 4200.0f / m_sampleRate;
+  m_phase += 2.0f * kPi * 4200.0f * m_pitchMul / m_sampleRate;
   const float ring = std::sin(m_phase) * 0.08f;
   return ((n0 - n1) * 0.55f + ring) * env * m_velocity * 0.62f;
 }
 
 float DrumVoiceChannel::renderRide() {
   const float env = m_envGain;
-  m_phase += 2.0f * kPi * 6800.0f / m_sampleRate;
+  m_phase += 2.0f * kPi * 6800.0f * m_pitchMul / m_sampleRate;
   const float tone = std::sin(m_phase) * 0.35f;
   const float n0 = nextNoise();
   const float n1 = nextNoise();
@@ -223,6 +270,35 @@ float DrumVoiceChannel::renderTom(float baseHz) {
   m_phase += 2.0f * kPi * freq / m_sampleRate;
   const float env = m_envGain;
   return std::sin(m_phase) * env * m_velocity * 0.7f;
+}
+
+float DrumVoiceChannel::renderConga(float baseHz) {
+  // Congas: higher, purer and shorter than the toms, with almost no sweep.
+  const float t = static_cast<float>(m_age) / static_cast<float>(std::max(1u, m_length));
+  const float freq = baseHz * m_pitchMul * lerp(1.04f, 1.0f, t);
+  m_phase += 2.0f * kPi * freq / m_sampleRate;
+  return std::sin(m_phase) * m_envGain * m_velocity * 0.6f;
+}
+
+float DrumVoiceChannel::renderCowbell() {
+  // Two detuned pulse oscillators (~540 / 800 Hz), as on the 808.
+  m_phase += 540.0f * m_pitchMul / m_sampleRate;
+  m_phase2 += 800.0f * m_pitchMul / m_sampleRate;
+  m_phase -= std::floor(m_phase);
+  m_phase2 -= std::floor(m_phase2);
+  const float a = m_phase < 0.5f ? 1.0f : -1.0f;
+  const float b = m_phase2 < 0.5f ? 1.0f : -1.0f;
+  return (a + b) * 0.18f * m_envGain * m_velocity;
+}
+
+float DrumVoiceChannel::renderCymbal808() {
+  // Metallic noise; TONE trades the low ring for top-end sizzle.
+  const float n0 = nextNoise();
+  const float n1 = nextNoise();
+  m_phase += 2.0f * kPi * 3400.0f * m_pitchMul / m_sampleRate;
+  const float ring = std::sin(m_phase) * 0.12f * (1.0f - m_tone);
+  const float hiss = (n0 - n1) * (0.35f + 0.35f * m_tone);
+  return (ring + hiss) * m_envGain * m_velocity * 0.55f;
 }
 
 float DrumVoiceChannel::render() {
@@ -268,6 +344,21 @@ float DrumVoiceChannel::render() {
       break;
     case DrumVoiceId::HighTom:
       sample = renderTom(175.0f);
+      break;
+    case DrumVoiceId::Cowbell:
+      sample = renderCowbell();
+      break;
+    case DrumVoiceId::Cymbal:
+      sample = renderCymbal808();
+      break;
+    case DrumVoiceId::LowConga:
+      sample = renderConga(170.0f);
+      break;
+    case DrumVoiceId::MidConga:
+      sample = renderConga(250.0f);
+      break;
+    case DrumVoiceId::HighConga:
+      sample = renderConga(370.0f);
       break;
   }
 

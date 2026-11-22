@@ -15,14 +15,14 @@ constexpr float kOutputGain = 0.3f;
 // Coarse-transposition tune range (see Tb303Voice.h for rationale).
 constexpr float kTuneRangeSemitones = 12.0f;
 
-// TB-303 portamento is a fixed hardware time constant, not a knob; the
-// current DeviceState / TRAK schema has no per-device slide-time field to
-// read instead, so we use the commonly documented ~60 ms figure.
-constexpr float kSlideTimeSeconds = 0.06f;
-
-// Accent circuit: short, fixed decay independent of the DECAY knob.
-constexpr float kAccentDecaySeconds = 0.18f;
-constexpr float kAccentCutoffBump = 0.55f;   // extra normalised cutoff sweep
+// Accent circuit. The capacitor charges from the VCF envelope in ~30 ms and
+// drains in ~180 ms, so accents a sixteenth or two apart stack; its charge
+// opens the cutoff by up to kAccentCutoffBump (normalised), more at high
+// resonance. The VCA boost is a separate short one-shot.
+constexpr float kAccentChargeSeconds = 0.03f;
+constexpr float kAccentDrainSeconds = 0.18f;
+constexpr float kAccentCutoffBump = 0.55f;
+constexpr float kAccentVcaDecaySeconds = 0.18f;
 constexpr float kAccentVcaBoost = 1.1f;      // extra VCA gain at full accent
 
 constexpr float kMinCutoffHz = 120.0f;
@@ -45,9 +45,15 @@ float cutoffNormToHz(float norm) {
 
 void Tb303Voice::init(float sampleRate) {
   m_sampleRate = sampleRate;
+  // The time constants are in seconds, so they hold at any device rate.
   m_glideCoeff = 1.0f - std::exp(-1.0f / (kSlideTimeSeconds * sampleRate));
   m_smoothK = smoothCoeff(sampleRate); // was an exp() of a constant per sample
-  m_accentDecayCoeff = std::exp(-1.0f / (kAccentDecaySeconds * sampleRate));
+  m_vcaDecayCoeff = std::exp(-1.0f / (kVcaDecaySeconds * sampleRate));
+  m_vcaReleaseCoeff = std::exp(-1.0f / (kVcaReleaseSeconds * sampleRate));
+  m_vcfAccentDecayCoeff = std::exp(-1.0f / (kVcfDecayMinSeconds * sampleRate));
+  m_accentChargeCoeff = 1.0f - std::exp(-1.0f / (kAccentChargeSeconds * sampleRate));
+  m_accentDrainCoeff = std::exp(-1.0f / (kAccentDrainSeconds * sampleRate));
+  m_accentVcaDecayCoeff = std::exp(-1.0f / (kAccentVcaDecaySeconds * sampleRate));
   reset();
 }
 
@@ -70,10 +76,14 @@ void Tb303Voice::load(const DeviceState& state) {
 }
 
 void Tb303Voice::updateDecayCoeffs() {
-  // Map decay knob to envelope time constants (roughly 80 ms – 2.5 s).
-  const float decaySeconds = lerp(0.08f, 2.5f, m_decayKnob);
-  m_decayCoeff = std::exp(-1.0f / (decaySeconds * m_sampleRate));
-  m_releaseCoeff = std::exp(-1.0f / (0.04f * m_sampleRate));
+  // DECAY sets the VCF envelope only, exponentially across 200 ms – 2 s.
+  const float decaySeconds =
+      kVcfDecayMinSeconds * std::pow(kVcfDecayMaxSeconds / kVcfDecayMinSeconds, m_decayKnob);
+  m_vcfDecayCoeff = std::exp(-1.0f / (decaySeconds * m_sampleRate));
+}
+
+float Tb303Voice::currentPitchHz() const {
+  return std::exp2(m_currentLogPitch);
 }
 
 float Tb303Voice::midiToHz(uint8_t midiNote) const {
@@ -113,29 +123,39 @@ float Tb303Voice::renderSample() {
                         : dsp::polyBlepSquare(m_phase, phaseInc);
   }
 
-  // Main envelope: instant attack while gate is open, exponential decay.
-  if (m_gateOpen) {
-    m_envelope = std::max(m_envelope * m_decayCoeff, 0.0001f);
+  // VCA envelope: fixed decay while the gate is open, fast release after.
+  m_vcaEnv = dsp::flushDenormal(m_vcaEnv * (m_gateOpen ? m_vcaDecayCoeff : m_vcaReleaseCoeff));
+
+  // VCF envelope: free-running decay, the accent's at its shortest setting.
+  m_vcfEnv = dsp::flushDenormal(m_vcfEnv * (m_noteAccented ? m_vcfAccentDecayCoeff
+                                                           : m_vcfDecayCoeff));
+
+  // Accent capacitor: charges towards the VCF envelope while the note is
+  // accented, drains otherwise. Charge left over from the previous accent is
+  // where the next one starts, so a run of accents climbs.
+  if (m_noteAccented) {
+    m_accentCap += (m_vcfEnv - m_accentCap) * m_accentChargeCoeff;
   } else {
-    m_envelope = dsp::flushDenormal(m_envelope * m_releaseCoeff);
+    m_accentCap = dsp::flushDenormal(m_accentCap * m_accentDrainCoeff);
   }
+  m_accentVca = dsp::flushDenormal(m_accentVca * m_accentVcaDecayCoeff);
 
-  // Accent one-shot: fixed short decay, independent of the main envelope.
-  m_accentEnvelope = dsp::flushDenormal(m_accentEnvelope * m_accentDecayCoeff);
-
-  // Filter cutoff: base knob + envelope modulation + accent cutoff bump.
-  // Control rate — the pow + tan used to run every sample; the envelope and
-  // knob smoothing it follows move far slower than 16 samples. A new note
-  // resets the counter so its attack lands on the very first sample.
+  // Filter cutoff: base knob + VCF envelope + accent sweep. Control rate —
+  // the pow + tan used to run every sample; the envelopes and knob
+  // smoothing it follows move far slower than 16 samples. A new note resets
+  // the counter so its attack lands on the very first sample.
   if ((m_controlPhase++ & dsp::kControlRateMask) == 0) {
-    const float envCutoff = m_envModKnob * m_envelope;
-    const float accentCutoff = m_accentEnvelope * m_accentKnob * kAccentCutoffBump;
+    const float envCutoff = m_envModKnob * m_vcfEnv;
+    // Higher resonance, bigger sweep: on the hardware the resonance pot is
+    // ganged into the accent circuit.
+    const float accentCutoff = m_accentCap * m_accentKnob * kAccentCutoffBump *
+                               (0.5f + m_smoothedResonance);
     const float modCutoffNorm = clamp01(m_smoothedCutoff + envCutoff + accentCutoff);
     m_filter.setCoeffs(cutoffNormToHz(modCutoffNorm), m_smoothedResonance, m_sampleRate);
   }
 
-  // VCA: main envelope with an accent-driven extra transient on top.
-  const float vcaGain = m_envelope * (1.0f + m_accentEnvelope * m_accentKnob * kAccentVcaBoost);
+  // VCA: its envelope with the accent's short extra transient on top.
+  const float vcaGain = m_vcaEnv * (1.0f + m_accentVca * m_accentKnob * kAccentVcaBoost);
   const float input = osc * vcaGain;
 
   const float out = m_filter.process(input);
@@ -154,7 +174,9 @@ void Tb303Voice::triggerStep(uint8_t stepIndex, const StepData& step) {
   (void)stepIndex;
 
   if (!step.active) {
+    // A rest closes the gate, ending a held (slid) note.
     m_gateOpen = false;
+    m_noteAccented = false;
     m_prevStepActive = false;
     m_prevStepSlide = false;
     return;
@@ -164,21 +186,24 @@ void Tb303Voice::triggerStep(uint8_t stepIndex, const StepData& step) {
   m_controlPhase = 0;
   m_targetLogPitch = std::log2(midiToHz(step.note));
 
-  if (step.accent) {
-    m_accentEnvelope = 1.0f;
-  }
-
   if (slideFromPrev) {
-    // Portamento without retriggering the envelope.
+    // Portamento: the gate stays open and neither envelope retriggers.
     m_gateOpen = true;
   } else {
     m_currentLogPitch = m_targetLogPitch;
-    m_envelope = 1.0f;
+    m_vcaEnv = 1.0f;
+    m_vcfEnv = 1.0f;
     m_gateOpen = true;
+    m_noteAccented = step.accent;
+    if (step.accent) m_accentVca = 1.0f;
   }
 
   m_prevStepActive = true;
   m_prevStepSlide = step.slide;
+}
+
+void Tb303Voice::releaseGate() {
+  m_gateOpen = false;
 }
 
 void Tb303Voice::setParameter(DeviceParamId param, float value) {
@@ -221,8 +246,11 @@ void Tb303Voice::setSamplePool(const SamplePool* pool) {
 void Tb303Voice::reset() {
   m_controlPhase = 0;
   m_phase = 0.0f;
-  m_envelope = 0.0f;
-  m_accentEnvelope = 0.0f;
+  m_vcaEnv = 0.0f;
+  m_vcfEnv = 0.0f;
+  m_accentCap = 0.0f;
+  m_accentVca = 0.0f;
+  m_noteAccented = false;
   m_gateOpen = false;
   m_currentLogPitch = std::log2(440.0f);
   m_targetLogPitch = m_currentLogPitch;

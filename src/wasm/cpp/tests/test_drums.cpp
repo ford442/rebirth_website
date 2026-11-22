@@ -148,12 +148,16 @@ TEST_CASE("Tr808Voice: tom hits produce audio") {
 TEST_CASE("Tr808Voice: clave and clap are distinct voices") {
   Tr808Voice voice;
   voice.init(44100.0f);
+  // The 808's RS/CL selector set to CLAVES puts the RS row on the claves.
   DeviceState state{};
+  state.kit = defaultDrumKit(DeviceId::TR808);
+  state.kit[kitIndex(Kit808::RimShotSelector)] = 0;
+  state.hasKit = true;
   voice.load(state);
 
   StepData claveStep{};
   claveStep.active = true;
-  claveStep.note = DrumHit::CL;
+  claveStep.drumExtra = DrumExtra::RS;
   voice.triggerStep(0, claveStep);
   const float clavePeak = renderPeak(voice);
 

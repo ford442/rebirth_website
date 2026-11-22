@@ -14,12 +14,17 @@ namespace rb338 {
  *   - Zero-delay-feedback 4-pole diode-ladder low-pass (see dsp/ZdfLadder.h),
  *     resonance woven into the filter's coefficient path rather than
  *     applied as a bolt-on feedback scalar
- *   - Accent coupled into both the filter envelope (cutoff bump) and the
- *     VCA (extra gain), each with its own short decay — not a flat
- *     `1 + accent * knob` multiply
+ *   - Two envelopes, as on the hardware: the VCA envelope has a fixed decay
+ *     and is cut by the gate, while the VCF ("MEG") envelope follows the
+ *     DECAY knob — forced to its shortest setting on an accented note
+ *   - Gate: the sequencer closes it half a step after the trigger
+ *     (releaseGate()); a sliding step holds it into the next note
+ *   - Accent sweep: each accented note charges a one-pole "accent
+ *     capacitor" from the VCF envelope; the charge feeds the cutoff, scaled
+ *     up with resonance, and it does not drain between closely spaced
+ *     accents — so a run of accents climbs, the 303's "wow"
  *   - Slide: portamento in the log-frequency (semitone) domain, matching a
- *     CV slew circuit, without retriggering the envelope
- *   - Decay envelope (attack is instantaneous)
+ *     CV slew circuit, without retriggering the envelopes
  *
  * Tune range: ReBirth's software 303 tune knob is documented as a coarse
  * transposition control, wider than a hardware 303's fine-pitch trim. We
@@ -30,6 +35,16 @@ namespace rb338 {
  */
 class Tb303Voice : public Voice {
 public:
+  /** Portamento time constant (63 % of the interval), in seconds. */
+  static constexpr float kSlideTimeSeconds = 0.06f;
+  /** VCA envelope decay time constant — fixed, not the DECAY knob. */
+  static constexpr float kVcaDecaySeconds = 1.0f;
+  /** VCA release once the gate closes. */
+  static constexpr float kVcaReleaseSeconds = 0.008f;
+  /** VCF envelope decay range across the DECAY knob, and on an accent. */
+  static constexpr float kVcfDecayMinSeconds = 0.2f;
+  static constexpr float kVcfDecayMaxSeconds = 2.0f;
+
   Tb303Voice() = default;
   ~Tb303Voice() override = default;
 
@@ -37,9 +52,19 @@ public:
   void load(const DeviceState& state) override;
   void render(float* output, uint32_t numFrames) override;
   void triggerStep(uint8_t stepIndex, const StepData& step) override;
+  void releaseGate() override;
   void setParameter(DeviceParamId param, float value) override;
   void setSamplePool(const SamplePool* pool) override;
   void reset() override;
+
+  // ── Probes (tests) ──
+  /** Oscillator pitch right now, in Hz (slide included). */
+  float currentPitchHz() const;
+  /** Accent-capacitor charge, 0–1. */
+  float accentCharge() const { return m_accentCap; }
+  float vcaEnvelope() const { return m_vcaEnv; }
+  float vcfEnvelope() const { return m_vcfEnv; }
+  bool gateOpen() const { return m_gateOpen; }
 
 private:
   float m_sampleRate = 44100.0f;
@@ -64,18 +89,25 @@ private:
 
   dsp::ZdfLadder m_filter;
 
-  // Amplitude envelope (instant attack, exponential decay). Drives both the
-  // VCA and (scaled by envMod) the filter cutoff sweep.
-  float m_envelope = 0.0f;
-  float m_decayCoeff = 0.9995f;
-  float m_releaseCoeff = 0.995f;
+  // VCA envelope: instant attack, fixed decay while the gate is open, fast
+  // release once it closes.
+  float m_vcaEnv = 0.0f;
+  float m_vcaDecayCoeff = 0.99998f;
+  float m_vcaReleaseCoeff = 0.997f;
   bool m_gateOpen = false;
 
-  // Accent one-shot: fixed short decay, independent of the DECAY knob,
-  // coupled into both cutoff (bump) and VCA (extra gain) — the 303's
-  // accent sweep circuit rather than a flat level multiply.
-  float m_accentEnvelope = 0.0f;
-  float m_accentDecayCoeff = 0.999f;
+  // VCF envelope: instant attack, DECAY-knob decay (shortest on accents).
+  float m_vcfEnv = 0.0f;
+  float m_vcfDecayCoeff = 0.9999f;
+  float m_vcfAccentDecayCoeff = 0.9998f;
+  bool m_noteAccented = false;
+
+  // Accent: the capacitor that sweeps the cutoff, and a short VCA boost.
+  float m_accentCap = 0.0f;
+  float m_accentChargeCoeff = 0.0f;
+  float m_accentDrainCoeff = 0.0f;
+  float m_accentVca = 0.0f;
+  float m_accentVcaDecayCoeff = 0.999f;
 
   // Pitch (log2-Hz domain, i.e. semitone-linear) with portamento, matching
   // a CV slew circuit rather than a linear-in-Hz ramp.

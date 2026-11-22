@@ -3,6 +3,7 @@
 #include "../engine/RbsAudioEngine.h"
 #include "../parser/RbsParser.h"
 #include "../third_party/doctest.h"
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
@@ -33,6 +34,25 @@ ParsedSong parseSongFixture(const std::string& name) {
   auto song = parser.parse(bytes.data(), bytes.size());
   if (!song) throw std::runtime_error("Parse failed: " + parser.lastError());
   return *song;
+}
+
+/**
+ * `song` with every device switched on for the whole song. Device-track
+ * controller 0 is the arrangement's on/off switch, and standard-rebirth
+ * keeps its 303-B and 909 off for the first 16–24 bars; the tests that use
+ * this are about stems and knob plumbing, which need every device audible
+ * from the first bar.
+ */
+ParsedSong withAllDevicesOn(ParsedSong song) {
+  auto& events = song.automation;
+  events.erase(std::remove_if(events.begin(), events.end(),
+                              [](const AutomationEvent& ev) {
+                                return ev.trackIndex >= 1 && ev.trackIndex <= NUM_DEVICES &&
+                                       ev.controller == 0x00;
+                              }),
+               events.end());
+  for (DeviceState& dev : song.devices) dev.muted = false;
+  return song;
 }
 
 EngineConfig testConfig() {
@@ -161,7 +181,7 @@ TEST_CASE("Offline: renderOffline restarts from bar 1 every time") {
 }
 
 TEST_CASE("Offline: stems isolate one device and restore mute state") {
-  const ParsedSong song = parseSongFixture("standard-rebirth.rbs");
+  const ParsedSong song = withAllDevicesOn(parseSongFixture("standard-rebirth.rbs"));
 
   RbsAudioEngine eng;
   REQUIRE(eng.init(testConfig()));
@@ -213,19 +233,57 @@ TEST_CASE("Offline: an out-of-range stem index renders nothing") {
   CHECK(eng.renderOffline(buffer.data(), 0) == 0);
 }
 
-TEST_CASE("Offline: song length covers the arrangement") {
-  const ParsedSong song = parseSongFixture("standard-rebirth.rbs");
+TEST_CASE("Offline: song length covers one pass of the song") {
+  ParsedSong song = parseSongFixture("standard-rebirth.rbs");
+  const auto lengthSeconds = [](const ParsedSong& s) {
+    RbsAudioEngine eng;
+    REQUIRE(eng.init(testConfig()));
+    REQUIRE(eng.loadSong(s));
+    return static_cast<double>(eng.songLengthFrames()) / 44100.0;
+  };
+  const double secondsPerBar = 4.0 * 60.0 / static_cast<double>(song.bpm);
+
+  // The song's loop (bars 0–142 of 144) jumps back before the last two bars
+  // are ever reached, so one pass ends at the loop end.
+  REQUIRE(song.loopEnabled);
+  CHECK(lengthSeconds(song) == doctest::Approx(142 * secondsPerBar).epsilon(0.001));
+
+  // Loop off: the whole arrangement, then the song stops.
+  song.loopEnabled = false;
+  CHECK(lengthSeconds(song) ==
+        doctest::Approx(static_cast<double>(song.arrangement.size()) * secondsPerBar)
+            .epsilon(0.001));
+
+  // Pattern mode never ends; a bounce takes four bars.
+  song.playMode = PlayMode::Pattern;
+  CHECK(lengthSeconds(song) == doctest::Approx(4 * secondsPerBar).epsilon(0.001));
+}
+
+TEST_CASE("Offline: song mode stops at the end of the arrangement") {
+  ParsedSong song = parseSongFixture("no-remorse.rbs");
+  // no-remorse's loop (bars 416–417) starts inside its 429-bar song; turn it
+  // off and cut the song to its first 8 bars so the render stays short.
+  song.loopEnabled = false;
+  song.arrangement.resize(8);
   RbsAudioEngine eng;
   REQUIRE(eng.init(testConfig()));
   REQUIRE(eng.loadSong(song));
 
-  const uint32_t frames = eng.songLengthFrames();
-  const double seconds = static_cast<double>(frames) / 44100.0;
-  const double bars = static_cast<double>(song.arrangement.size());
-  const double expected = bars * 4.0 * (60.0 / static_cast<double>(eng.getTempo()));
+  const uint32_t length = eng.songLengthFrames();
+  const double expected = 8.0 * 4.0 * 60.0 / static_cast<double>(song.bpm) * 44100.0;
+  CHECK(static_cast<double>(length) == doctest::Approx(expected).epsilon(1e-4));
 
-  CHECK(frames > 0);
-  CHECK(seconds == doctest::Approx(expected).epsilon(0.01));
+  // Render two seconds past the end: everything after the end (± one block)
+  // is the tail of the last notes and the delay, then silence; nothing new.
+  const uint32_t extra = 2u * 44100u;
+  std::vector<float> out(static_cast<size_t>(length + extra) * 2u, 0.0f);
+  eng.renderOffline(out.data(), length + extra);
+  CHECK_FALSE(eng.isPlaying());
+  float last = 0.0f;
+  for (size_t i = static_cast<size_t>(length + 128u) * 2u; i < out.size(); ++i) {
+    last = std::max(last, std::fabs(out[i]));
+  }
+  CHECK(last == 0.0f);
 }
 
 // ── WAV writer ───────────────────────────────────────────────────
@@ -324,7 +382,7 @@ TEST_CASE("WavWriter: streaming builder matches the one-shot writer") {
 }
 
 TEST_CASE("WavWriter: stem bounce differs from the master and stays valid") {
-  const ParsedSong song = parseSongFixture("standard-rebirth.rbs");
+  const ParsedSong song = withAllDevicesOn(parseSongFixture("standard-rebirth.rbs"));
   RbsAudioEngine eng;
   REQUIRE(eng.init(testConfig()));
   REQUIRE(eng.loadSong(song));
@@ -358,7 +416,7 @@ TEST_CASE("Offline: live knob moves survive into the bounce") {
   // setDeviceParam() is session-only and never touches the loaded song, while
   // a bounce resets the graph to that song. Without replaying the overrides,
   // a bounce would render knob values the listener is not hearing.
-  const ParsedSong song = parseSongFixture("standard-rebirth.rbs");
+  const ParsedSong song = withAllDevicesOn(parseSongFixture("standard-rebirth.rbs"));
   RbsAudioEngine eng;
   REQUIRE(eng.init(testConfig()));
   REQUIRE(eng.loadSong(song));
@@ -394,7 +452,7 @@ TEST_CASE("Offline: live knob moves survive into the bounce") {
 }
 
 TEST_CASE("Offline: knob moves survive loading a mod") {
-  const ParsedSong song = parseSongFixture("standard-rebirth.rbs");
+  const ParsedSong song = withAllDevicesOn(parseSongFixture("standard-rebirth.rbs"));
   RbsAudioEngine eng;
   REQUIRE(eng.init(testConfig()));
   REQUIRE(eng.loadSong(song));

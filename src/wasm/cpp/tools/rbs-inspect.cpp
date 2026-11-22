@@ -69,12 +69,21 @@ void printStep303(const StepData& step) {
 
 void printStepDrum(const StepData& step) {
   if (!step.active) {
-    std::cout << " . ";
+    std::cout << (step.accent ? " ^ " : " . ");
     return;
   }
-  const char labels[] = {'B', 'S', 'L', 'M', 'H', 'C', 'O', 'R'};
-  for (int i = 0; i < 8; ++i) {
-    std::cout << ((step.note & (1 << i)) ? labels[i] : '.');
+  // BD SD LT MT HT CH OH CB | CP CY RS; upper case = 909 accented hit,
+  // '~' = flam, '^' prefix = AC row.
+  const char labels[] = {'b', 's', 'l', 'm', 'h', 'c', 'o', 'k', 'p', 'y', 'r'};
+  const uint32_t hits = static_cast<uint32_t>(step.note) |
+                        (static_cast<uint32_t>(step.drumExtra) << 8);
+  if (step.accent) std::cout << '^';
+  for (int i = 0; i < 11; ++i) {
+    const uint32_t bit = 1u << i;
+    if (!(hits & bit)) continue;
+    if (step.drumFlam & bit) std::cout << '~';
+    const char c = labels[i];
+    std::cout << static_cast<char>((step.drumAccent & bit) ? c - 32 : c);
   }
   std::cout << " ";
 }
@@ -90,6 +99,14 @@ void printPretty(const ParsedSong& song) {
   std::cout << "HEAD marker:  0x" << std::hex << static_cast<int>(song.headVersion) << std::dec << "\n";
   std::cout << "GLOB marker:  0x" << std::hex << static_cast<int>(song.globSubFormat) << std::dec << "\n";
   std::cout << "Show info:    " << (song.showInfoOnOpen ? "yes" : "no") << "\n";
+  std::cout << "Play mode:    " << (song.playMode == PlayMode::Song ? "song" : "pattern") << "\n";
+  std::cout << "Loop:         " << (song.loopEnabled ? "on" : "off") << " bars "
+            << song.loopStart / GLOB_TICKS_PER_BAR << "–" << song.loopEnd / GLOB_TICKS_PER_BAR
+            << "\n";
+  std::cout << "Shuffle:      " << static_cast<int>(song.shuffle) << "\n";
+  std::cout << "Vintage:      " << (song.vintage ? "yes" : "no") << "\n";
+  std::cout << "Compressor:   target " << static_cast<int>(song.fx.comp.target)
+            << "  PCF: target " << static_cast<int>(song.fx.pcf.target) << "\n";
 
   std::cout << "\n── Devices ───────────────────────────────────────────────────\n";
   for (const auto& dev : song.devices) {
@@ -109,9 +126,12 @@ void printPretty(const ParsedSong& song) {
               << " level=" << static_cast<int>(dev.level * 127)
               << " pan=" << static_cast<int>(dev.pan * 127)
               << " dist=" << (dev.dist ? "yes" : "no")
-              << " pcf=" << (dev.pcf ? "yes" : "no")
-              << " comp=" << (dev.compressor ? "yes" : "no")
               << "\n";
+    if (dev.id == DeviceId::TR808 || dev.id == DeviceId::TR909) {
+      std::cout << "  kit=";
+      for (uint8_t b : effectiveDrumKit(dev, dev.id)) std::cout << static_cast<int>(b) << ' ';
+      std::cout << "\n";
+    }
   }
 
   std::cout << "\n── Patterns ──────────────────────────────────────────────────\n";

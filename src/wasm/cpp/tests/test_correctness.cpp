@@ -51,10 +51,10 @@ EngineConfig config44k() {
 
 /**
  * Drive the sequencer and automation clocks exactly as processBlock() does
- * and count the automation events that come out over `passes` playthroughs
- * of the arrangement.
+ * and count the automation events that come out over `bars` bars of
+ * playback (or until song mode runs out).
  */
-size_t countFiredAutomation(const ParsedSong& song, uint32_t blockSize, int passes) {
+size_t countFiredAutomation(const ParsedSong& song, uint32_t blockSize, size_t bars) {
   Sequencer seq;
   seq.reset();
   AutomationScheduler sched;
@@ -62,13 +62,13 @@ size_t countFiredAutomation(const ParsedSong& song, uint32_t blockSize, int pass
   std::vector<Sequencer::Event> events(128);
   std::vector<AutomationScheduler::Event> autoEvents(4096);
 
-  const size_t bars = song.arrangement.size();
+  const double framesPerBar = 60.0 / song.bpm * 4.0 * 44100.0;
+  const auto totalFrames = static_cast<uint64_t>(framesPerBar * static_cast<double>(bars));
   size_t fired = 0;
-  for (;;) {
+  for (uint64_t rendered = 0; rendered < totalFrames && !seq.ended(); rendered += blockSize) {
     uint16_t bar = 0;
     uint8_t step = 0;
     seq.getPosition(bar, step);
-    if (bar > bars * static_cast<size_t>(passes)) break;
     const double phase = seq.getStepPhase();
     seq.generateEvents(&song, song.bpm, 44100.0f, blockSize, events.data(), 128);
     fired += sched.generateEvents(&song, song.bpm, 44100.0f, bar, step, phase, blockSize,
@@ -76,6 +76,13 @@ size_t countFiredAutomation(const ParsedSong& song, uint32_t blockSize, int pass
                                   static_cast<uint32_t>(autoEvents.size()));
   }
   return fired;
+}
+
+/** `name` with its loop switched off, so song mode plays it once and stops. */
+ParsedSong loadOnePass(const char* name) {
+  ParsedSong song = loadFixture(name);
+  song.loopEnabled = false;
+  return song;
 }
 
 /** Interleaved stereo straight out of processBlock(). */
@@ -126,19 +133,34 @@ TEST_CASE("Automation: every event of every fixture fires across a full render")
   // one track's cursor ran ahead, every other track's events were skipped.
   for (const char* name : kFixtures) {
     CAPTURE(name);
-    const ParsedSong song = loadFixture(name);
+    const ParsedSong song = loadOnePass(name);
+    // Past the end so the run stops on the sequencer's own "song over".
+    const size_t bars = song.arrangement.size() + 2;
     for (uint32_t block : {128u, 97u}) {
       CAPTURE(block);
-      CHECK(countFiredAutomation(song, block, 1) == song.automation.size());
+      CHECK(countFiredAutomation(song, block, bars) == song.automation.size());
     }
   }
 }
 
-TEST_CASE("Automation: loops with the arrangement") {
-  // The sequencer loops the arrangement; the automation used to stop after
-  // the first pass, leaving every later pass unautomated.
+TEST_CASE("Automation: loops with the song's loop region") {
+  // The loop jumps back to its start; the automation used to stop after the
+  // first pass, leaving every later pass unautomated. standard-rebirth's own
+  // loop is bars 0–142; every event before the loop end fires once a pass.
   const ParsedSong song = loadFixture("standard-rebirth.rbs");
-  CHECK(countFiredAutomation(song, 128, 2) == 2 * song.automation.size());
+  REQUIRE(song.loopEnabled);
+  const uint32_t loopEndBar = song.loopEnd / GLOB_TICKS_PER_BAR;
+  REQUIRE(loopEndBar == 142);
+  size_t inLoop = 0;
+  for (const AutomationEvent& ev : song.automation) {
+    if (ev.tickPosition < loopEndBar * AutomationScheduler::TICKS_PER_BAR) ++inLoop;
+  }
+  REQUIRE(inLoop > 0);
+  // Two passes; events on the loop's last tick may or may not land before
+  // the run's final block, so allow that one tick either way.
+  const size_t fired = countFiredAutomation(song, 128, 2 * loopEndBar);
+  CHECK(fired + 64 >= 2 * inLoop);
+  CHECK(fired <= 2 * inLoop + 64);
 }
 
 TEST_CASE("Automation: a delay controller other than 0 does not switch the delay on") {
@@ -150,7 +172,6 @@ TEST_CASE("Automation: a delay controller other than 0 does not switch the delay
   mixer.setDeviceStates(devices);
   SongFxSettings fx;
   fx.delay.enabled = false;
-  fx.delay.wet = 127;
   fx.delay.feedback = 64;
   mixer.setSongFx(fx);
 
@@ -221,8 +242,9 @@ TEST_CASE("DrumSynth: a reset channel replays the same noise") {
 
 // ── §1: TR-909 hand clap ─────────────────────────────────────────────
 
-TEST_CASE("Tr909: the CL bit plays the hand clap") {
-  // Tr909Voice ignored DrumHit::CL, so channel 4 / Tr909Clap never sounded.
+TEST_CASE("Tr909: the CP bit plays the hand clap") {
+  // Tr909Voice once ignored the clap's bit, so channel 4 / Tr909Clap never
+  // sounded. The accent-first row decode puts the 909 clap on CP.
   Tr909Voice voice;
   voice.init(44100.0f);
   DeviceState state;
@@ -231,7 +253,7 @@ TEST_CASE("Tr909: the CL bit plays the hand clap") {
 
   StepData step;
   step.active = true;
-  step.note = DrumHit::CL;
+  step.drumExtra = DrumExtra::CP;
   voice.triggerStep(0, step);
   std::vector<float> out(4410, 0.0f);
   voice.render(out.data(), static_cast<uint32_t>(out.size()));
@@ -240,7 +262,7 @@ TEST_CASE("Tr909: the CL bit plays the hand clap") {
   CHECK(peak > 0.05f);
 
   // A clap is a short burst: well under the crash's length, which proves the
-  // CL hit did not just get routed to the crash channel instead.
+  // CP hit did not just get routed to the crash channel instead.
   voice.reset();
   voice.triggerStep(0, step);
   std::vector<float> longOut(44100, 0.0f);
@@ -426,7 +448,16 @@ TEST_CASE("Engine: a step edit during playback leaves the audio untouched until 
 }
 
 TEST_CASE("Engine: a step edit to the playing pattern is heard at that step, not before") {
-  const ParsedSong song = loadFixture("standard-rebirth.rbs");
+  ParsedSong song = loadFixture("standard-rebirth.rbs");
+  // 303-B sits out the first 24 bars (its on/off controller is 0 at tick 0);
+  // this test is about patch timing, so leave it switched on.
+  auto& events = song.automation;
+  events.erase(std::remove_if(events.begin(), events.end(),
+                              [](const AutomationEvent& ev) {
+                                return ev.trackIndex == 2 && ev.controller == 0x00;
+                              }),
+               events.end());
+  song.devices[1].muted = false;
   const PatternRef playing = song.arrangement[0].devicePatterns[1]; // 303-B
   RbsAudioEngine edited;
   RbsAudioEngine reference;

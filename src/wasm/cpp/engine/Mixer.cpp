@@ -19,24 +19,7 @@ constexpr float kDenormalThreshold = 1e-15f;
 constexpr float kCompressorRelease = 0.08f;   // seconds
 
 /**
- * DEVL/DELY byte 1 (`time`) selects a tempo-sync subdivision, expressed here
- * as a fraction of one beat. ReBirth's delay knob steps through musical
- * divisions rather than free milliseconds, and the byte was previously
- * parsed and then ignored — every song delayed by exactly one sixteenth.
- */
-constexpr float kDelaySubdivisions[] = {
-    0.25f,   // sixteenth
-    0.375f,  // dotted sixteenth
-    0.5f,    // eighth triplet feel / eighth
-    0.5f,    // eighth
-    0.75f,   // dotted eighth
-    1.0f,    // quarter
-};
-constexpr size_t kNumDelaySubdivisions =
-    sizeof(kDelaySubdivisions) / sizeof(kDelaySubdivisions[0]);
-
-/**
- * COMP byte 2 (`ratio`) — 0 is the gentlest squeeze the format can ask for,
+ * COMP byte 1 (`ratio`) — 0 is the gentlest squeeze the format can ask for,
  * 127 the hardest. Mapped 1.5:1 … 12:1, which brackets the range the
  * original's compressor covers without ever becoming a brick-wall limiter
  * (the master limiter after the bus already does that job).
@@ -54,10 +37,6 @@ float compressorAttackFromByte(uint8_t attack) {
   return 0.0005f * std::exp2(norm * 6.64f); // 0.5 ms → ~50 ms
 }
 
-float subdivisionForByte(uint8_t time) {
-  const size_t index = static_cast<size_t>(time) * kNumDelaySubdivisions / 128u;
-  return kDelaySubdivisions[std::min(index, kNumDelaySubdivisions - 1)];
-}
 constexpr float kLimiterThreshold = 0.92f;
 constexpr float kLimiterRelease = 0.08f;      // seconds (attack is instant)
 
@@ -78,12 +57,13 @@ float Mixer::constantPowerPanRight(float pan) {
   return std::sin(angle);
 }
 
-float Mixer::diodeDistort(float x, float drive) {
-  const float driven = x * drive;
-  if (driven >= 0.0f) {
-    return 1.0f - std::exp(-driven);
-  }
-  return -1.0f + std::exp(driven);
+float Mixer::delaySeconds(uint8_t steps, bool triplet, float bpm) {
+  // A step is a sixteenth, or a sixteenth triplet (two thirds of one).
+  const float clampedBpm = std::clamp(bpm, MIN_BPM, MAX_BPM);
+  const float sixteenth = (60.0f / clampedBpm) * 0.25f;
+  const float clampedSteps =
+      static_cast<float>(std::clamp<uint8_t>(steps, 1, MAX_DELAY_STEPS));
+  return clampedSteps * sixteenth * (triplet ? (2.0f / 3.0f) : 1.0f);
 }
 
 void Mixer::refreshCompressorCoefficients() {
@@ -107,6 +87,21 @@ float Mixer::compressSample(float x, float& envelope) const {
   return x * gain;
 }
 
+void Mixer::compressStereo(float& left, float& right) {
+  // Stereo-linked: one envelope on the louder side, one gain for both, so
+  // the image does not wander under compression.
+  const float level = std::max(std::fabs(left), std::fabs(right));
+  const float coeff = (level > m_masterCompressorEnvelope) ? m_compressorAttackCoeff
+                                                           : m_compressorReleaseCoeff;
+  m_masterCompressorEnvelope = level + coeff * (m_masterCompressorEnvelope - level);
+  const float env = m_masterCompressorEnvelope;
+  if (env <= m_compressorThreshold || env <= 1e-8f) return;
+  const float target = m_compressorThreshold + (env - m_compressorThreshold) / m_compressorRatio;
+  const float gain = target / env;
+  left *= gain;
+  right *= gain;
+}
+
 void Mixer::resetDspState() {
   if (m_delayLine) std::fill_n(m_delayLine.get(), m_delayCapacity, 0.0f);
   m_delayWritePos = 0;
@@ -115,9 +110,16 @@ void Mixer::resetDspState() {
   // the first ~50 ms of every bounce and every snapshot rebuild.
   m_limiterEnvelope = 1.0f;
   m_compressorEnvelopes.fill(0.0f);
+  m_masterCompressorEnvelope = 0.0f;
   for (auto& pcf : m_pcf) {
     pcf.reset();
   }
+  for (auto& pcf : m_pcfMaster) {
+    pcf.reset();
+  }
+  m_distShaper.reset();
+  for (auto& line : m_distComp) line.fill(0.0f);
+  m_distCompPos = 0;
 }
 
 void Mixer::init(float sampleRate) {
@@ -132,6 +134,10 @@ void Mixer::init(float sampleRate) {
   for (auto& pcf : m_pcf) {
     pcf.prepare(m_sampleRate);
   }
+  for (auto& pcf : m_pcfMaster) {
+    pcf.prepare(m_sampleRate);
+  }
+  m_distShaper.prepare();
   resetDspState();
 
   for (auto& dev : m_devices) {
@@ -139,7 +145,6 @@ void Mixer::init(float sampleRate) {
     dev.pan = 0.5f;
     dev.muted = false;
     dev.dist = false;
-    dev.compressor = false;
     dev.delaySend = 0.0f;
   }
 }
@@ -152,7 +157,9 @@ void Mixer::setSongFx(const SongFxSettings& fx) {
   m_masterLevel = std::clamp(fx.masterLevel / 127.0f, 0.0f, 1.0f);
   m_delayOn = fx.delay.enabled;
   m_delayFeedback = std::clamp(fx.delay.feedback / 127.0f, 0.0f, 1.0f);
-  m_delayWet = std::clamp(fx.delay.wet / 127.0f, 0.0f, 1.0f);
+  setDelaySteps(fx.delay.steps);
+  m_delayTriplet = fx.delay.triplet;
+  setDelayPan(std::min<uint8_t>(fx.delay.pan, 127) / 127.0f);
   m_distortionOn = fx.dist.enabled;
   m_distortionDrive = 1.0f + (fx.dist.drive / 127.0f) * 9.0f;
   m_distortionMix = std::clamp(fx.dist.mix / 127.0f, 0.0f, 1.0f);
@@ -161,19 +168,36 @@ void Mixer::setSongFx(const SongFxSettings& fx) {
   m_compressorRatio = compressorRatioFromByte(fx.comp.ratio);
   m_compressorAttackSeconds = compressorAttackFromByte(fx.comp.attack);
   refreshCompressorCoefficients();
-  m_delayBeatFraction = subdivisionForByte(fx.delay.time);
+  setCompressorTarget(fx.comp.target);
   m_pcfOn = fx.pcf.enabled;
   setPcfCutoff(std::clamp(fx.pcf.cutoff / 127.0f, 0.01f, 1.0f));
   setPcfResonance(std::clamp(fx.pcf.resonance / 127.0f, 0.0f, 1.0f));
   setPcfEnvAmount(std::clamp(fx.pcf.envAmount / 127.0f, 0.0f, 1.0f));
+  setPcfDecay(std::min<uint8_t>(fx.pcf.decay, 127) / 127.0f);
+  setPcfLowpass(fx.pcf.lowpass);
+  setPcfTarget(fx.pcf.target);
+}
+
+void Mixer::setMasterLevel(float level) {
+  m_masterLevel = std::clamp(level, 0.0f, 1.0f);
+}
+
+void Mixer::setDelaySteps(uint8_t steps) {
+  m_delaySteps = std::clamp<uint8_t>(steps, 1, MAX_DELAY_STEPS);
+}
+
+void Mixer::setDelayTriplet(bool triplet) {
+  m_delayTriplet = triplet;
 }
 
 void Mixer::setDelayFeedback(float feedback) {
   m_delayFeedback = std::clamp(feedback, 0.0f, 1.0f);
 }
 
-void Mixer::setDelayWet(float wet) {
-  m_delayWet = std::clamp(wet, 0.0f, 1.0f);
+void Mixer::setDelayPan(float pan) {
+  const float p = std::clamp(pan, 0.0f, 1.0f);
+  m_delayPanL = constantPowerPanLeft(p);
+  m_delayPanR = constantPowerPanRight(p);
 }
 
 void Mixer::setDistortionDrive(float drive) {
@@ -192,6 +216,28 @@ void Mixer::setCompressorRatio(float ratio) {
   m_compressorRatio = std::clamp(ratio, 1.0f, 20.0f);
 }
 
+void Mixer::setCompressorRatioByte(uint8_t ratio) {
+  m_compressorRatio = compressorRatioFromByte(std::min<uint8_t>(ratio, 127));
+}
+
+void Mixer::setCompressorTarget(uint8_t target) {
+  m_compressorTarget = target <= FX_TARGET_MAX ? target : FX_TARGET_NONE;
+}
+
+void Mixer::setPcfTarget(uint8_t target) {
+  m_pcfTarget = target <= FX_TARGET_MAX ? target : FX_TARGET_NONE;
+}
+
+void Mixer::setPcfDecay(float decay) {
+  for (auto& pcf : m_pcf) pcf.setDecay(decay);
+  for (auto& pcf : m_pcfMaster) pcf.setDecay(decay);
+}
+
+void Mixer::setPcfLowpass(bool lowpass) {
+  for (auto& pcf : m_pcf) pcf.setLowpass(lowpass);
+  for (auto& pcf : m_pcfMaster) pcf.setLowpass(lowpass);
+}
+
 void Mixer::setCompressorAttack(float attackSeconds) {
   m_compressorAttackSeconds = std::clamp(attackSeconds, 0.0002f, 0.1f);
   refreshCompressorCoefficients();
@@ -199,30 +245,20 @@ void Mixer::setCompressorAttack(float attackSeconds) {
 
 void Mixer::setPcfCutoff(float cutoff) {
   m_pcfCutoff = std::clamp(cutoff, 0.01f, 1.0f);
-  for (auto& pcf : m_pcf) {
-    pcf.setCutoff(m_pcfCutoff);
-  }
+  for (auto& pcf : m_pcf) pcf.setCutoff(m_pcfCutoff);
+  for (auto& pcf : m_pcfMaster) pcf.setCutoff(m_pcfCutoff);
 }
 
 void Mixer::setPcfResonance(float resonance) {
   m_pcfResonance = std::clamp(resonance, 0.0f, 1.0f);
-  for (auto& pcf : m_pcf) {
-    pcf.setResonance(m_pcfResonance);
-  }
+  for (auto& pcf : m_pcf) pcf.setResonance(m_pcfResonance);
+  for (auto& pcf : m_pcfMaster) pcf.setResonance(m_pcfResonance);
 }
 
 void Mixer::setPcfEnvAmount(float envAmount) {
   m_pcfEnvAmount = std::clamp(envAmount, 0.0f, 1.0f);
-  for (auto& pcf : m_pcf) {
-    pcf.setEnvAmount(m_pcfEnvAmount);
-  }
-}
-
-float Mixer::processPcfSample(int deviceIndex, float input) {
-  if (!m_pcfOn || !m_devices[static_cast<size_t>(deviceIndex)].pcf) {
-    return input;
-  }
-  return m_pcf[static_cast<size_t>(deviceIndex)].process(input);
+  for (auto& pcf : m_pcf) pcf.setEnvAmount(m_pcfEnvAmount);
+  for (auto& pcf : m_pcfMaster) pcf.setEnvAmount(m_pcfEnvAmount);
 }
 
 void Mixer::setChannelLevel(int deviceIndex, float level) {
@@ -233,6 +269,16 @@ void Mixer::setChannelLevel(int deviceIndex, float level) {
 void Mixer::setChannelPan(int deviceIndex, float pan) {
   if (deviceIndex < 0 || deviceIndex >= NUM_DEVICES) return;
   m_devices[static_cast<size_t>(deviceIndex)].pan = std::clamp(pan, 0.0f, 1.0f);
+}
+
+void Mixer::setChannelDelaySend(int deviceIndex, float send) {
+  if (deviceIndex < 0 || deviceIndex >= NUM_DEVICES) return;
+  m_devices[static_cast<size_t>(deviceIndex)].delaySend = std::clamp(send, 0.0f, 1.0f);
+}
+
+void Mixer::setChannelDistortion(int deviceIndex, bool on) {
+  if (deviceIndex < 0 || deviceIndex >= NUM_DEVICES) return;
+  m_devices[static_cast<size_t>(deviceIndex)].dist = on;
 }
 
 bool Mixer::channelMuted(int deviceIndex) const {
@@ -246,19 +292,15 @@ void Mixer::setChannelMuted(int deviceIndex, bool muted) {
 }
 
 void Mixer::updateDelayTap(float bpm) {
-  const float clampedBpm = std::clamp(bpm, MIN_BPM, MAX_BPM);
-  // Tempo-synced to the subdivision the song's DELY `time` byte selected.
-  const float samplesPerTap = (60.0f / clampedBpm) * m_delayBeatFraction * m_sampleRate;
+  const float samplesPerTap = delaySeconds(m_delaySteps, m_delayTriplet, bpm) * m_sampleRate;
   const uint32_t tap = static_cast<uint32_t>(std::round(samplesPerTap));
   const uint32_t capacity = m_delayCapacity;
   m_delayTapSamples = (capacity < 2u) ? 0u : std::clamp(tap, 1u, capacity - 1u);
 }
 
-void Mixer::processDelaySample(float input, float& outL, float& outR) {
+float Mixer::processDelaySample(float input) {
   if (!m_delayOn || m_delayTapSamples == 0 || !m_delayLine) {
-    outL = 0.0f;
-    outR = 0.0f;
-    return;
+    return 0.0f;
   }
 
   const uint32_t capacity = m_delayCapacity;
@@ -266,13 +308,9 @@ void Mixer::processDelaySample(float input, float& outL, float& outR) {
   const uint32_t readPos = (m_delayWritePos + capacity - m_delayTapSamples) % capacity;
   const float delayed = line[readPos];
 
-  line[m_delayWritePos] =
-      flushDenormal(input + delayed * m_delayFeedback);
+  line[m_delayWritePos] = flushDenormal(input + delayed * m_delayFeedback);
   m_delayWritePos = (m_delayWritePos + 1) % capacity;
-
-  const float wet = delayed * m_delayWet;
-  outL = wet;
-  outR = wet;
+  return delayed;
 }
 
 void Mixer::process(const float* const* deviceBuffers, float* leftOut, float* rightOut,
@@ -290,6 +328,10 @@ void Mixer::process(const float* const* deviceBuffers, float* leftOut, float* ri
   std::array<float, NUM_DEVICES> gainR{};
   std::array<float, NUM_DEVICES> levels{};
   std::array<float, NUM_DEVICES> sends{};
+  std::array<bool, NUM_DEVICES> toDist{};
+  std::array<bool, NUM_DEVICES> pcfHere{};
+  std::array<bool, NUM_DEVICES> compHere{};
+  bool anyDist = false;
   for (int d = 0; d < NUM_DEVICES; ++d) {
     const DeviceState& dev = m_devices[static_cast<size_t>(d)];
     const float pan = std::clamp(dev.pan, 0.0f, 1.0f);
@@ -297,68 +339,82 @@ void Mixer::process(const float* const* deviceBuffers, float* leftOut, float* ri
     gainR[d] = constantPowerPanRight(pan);
     levels[d] = std::clamp(dev.level, 0.0f, 1.0f);
     sends[d] = std::clamp(dev.delaySend, 0.0f, 1.0f);
+    toDist[d] = m_distortionOn && dev.dist && !dev.muted;
+    anyDist = anyDist || toDist[d];
+    pcfHere[d] = m_pcfOn && insertOn(m_pcfTarget, d);
+    compHere[d] = m_compressorOn && insertOn(m_compressorTarget, d);
   }
+  const bool masterPcf = m_pcfOn && m_pcfTarget == FX_TARGET_MASTER;
+  const bool masterComp = m_compressorOn && m_compressorTarget == FX_TARGET_MASTER;
+  constexpr uint32_t kCompMask = kDistCompSize - 1u;
+  const uint32_t latency = m_distOversampling ? dsp::OversampledShaper::kLatency : 0u;
 
   for (uint32_t frame = 0; frame < numFrames; ++frame) {
     float dryL = 0.0f;
     float dryR = 0.0f;
     float distBus = 0.0f;
     float delayBus = 0.0f;
+    const uint32_t writePos = m_distCompPos;
+    const uint32_t readPos = (writePos + kDistCompSize - latency) & kCompMask;
 
     for (int d = 0; d < NUM_DEVICES; ++d) {
       const float* src = deviceBuffers[d];
-      if (!src) continue;
-      if (m_devices[d].muted) continue;
+      if (!src || m_devices[d].muted) {
+        m_distComp[d][writePos] = 0.0f;
+        continue;
+      }
 
+      // Insert chain: PCF, then level, then compressor — each only on the
+      // device MIXR picked for it.
       float sample = flushDenormal(src[frame]);
-      sample = processPcfSample(d, sample);
-      const float level = levels[d];
+      if (pcfHere[d]) sample = m_pcf[static_cast<size_t>(d)].process(sample);
+      sample *= levels[d];
+      if (compHere[d]) sample = compressSample(sample, m_compressorEnvelopes[d]);
 
-      if (m_compressorOn && m_devices[d].compressor) {
-        // Per-device compressor send — gentle bus compression before pan.
-        sample = compressSample(sample * level, m_compressorEnvelopes[d]);
-      } else {
-        sample *= level;
-      }
+      // A channel feeding the distortion is heard dry kLatency samples
+      // late, in step with its distorted copy.
+      m_distComp[d][writePos] = sample;
+      const float dry = toDist[d] ? m_distComp[d][readPos] : sample;
+      dryL += dry * gainL[d];
+      dryR += dry * gainR[d];
 
-      dryL += sample * gainL[d];
-      dryR += sample * gainR[d];
-
-      if (m_distortionOn && m_devices[d].dist) {
-        distBus += sample;
-      }
-
-      if (m_delayOn) {
-        const float send = sends[d];
-        if (send > 0.0f) {
-          delayBus += sample * send;
-        }
-      }
+      if (toDist[d]) distBus += sample;
+      if (m_delayOn && sends[d] > 0.0f) delayBus += sample * sends[d];
     }
+    m_distCompPos = (writePos + 1u) & kCompMask;
 
     float wetL = 0.0f;
     float wetR = 0.0f;
 
-    if (m_distortionOn && std::fabs(distBus) > kDenormalThreshold) {
-      const float distorted = diodeDistort(distBus, m_distortionDrive);
+    if (anyDist) {
+      // Oversampled + ADAA (see OversampledShaper); the plain shaper is the
+      // pre-oversampling behaviour, kept as a test reference.
+      const float distorted = m_distOversampling
+                                  ? m_distShaper.process(distBus, m_distortionDrive)
+                                  : dsp::OversampledShaper::shape(distBus, m_distortionDrive);
       const float wet = distorted * m_distortionMix;
       wetL += wet;
       wetR += wet;
     }
 
     if (m_delayOn) {
-      float delayL = 0.0f;
-      float delayR = 0.0f;
-      processDelaySample(delayBus, delayL, delayR);
-      wetL += delayL;
-      wetR += delayR;
+      const float delayed = processDelaySample(delayBus);
+      wetL += delayed * m_delayPanL;
+      wetR += delayed * m_delayPanR;
     }
 
-    float outL = flushDenormal((dryL + wetL) * m_masterLevel);
-    float outR = flushDenormal((dryR + wetR) * m_masterLevel);
+    float outL = dryL + wetL;
+    float outR = dryR + wetR;
+    if (masterPcf) {
+      outL = m_pcfMaster[0].process(outL);
+      outR = m_pcfMaster[1].process(outR);
+    }
+    if (masterComp) compressStereo(outL, outR);
+    outL = flushDenormal(outL * m_masterLevel);
+    outR = flushDenormal(outR * m_masterLevel);
 
     // Master peak limiter — always on, whatever the song's COMP switch says
-    // (that switch is the per-device compressor send above). The gain drops
+    // (that switch is the compressor insert above). The gain drops
     // instantly to whatever keeps this sample under the ceiling, then
     // recovers smoothly. Attack and release used to share one 20 ms
     // coefficient, so a transient was half through before the gain moved and

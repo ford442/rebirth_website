@@ -47,6 +47,12 @@ public:
   /** Trigger a step (called by Sequencer inside audio callback). */
   virtual void triggerStep(uint8_t stepIndex, const StepData& step) = 0;
 
+  /**
+   * Close the note's gate (the sequencer's TB-303 gate-off, half a step
+   * after a trigger that does not slide). Drum voices ignore it.
+   */
+  virtual void releaseGate() {}
+
   /** Set device state knobs (for real-time automation). */
   virtual void setParameter(DeviceParamId param, float value) = 0;
 

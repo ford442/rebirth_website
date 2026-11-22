@@ -2,12 +2,13 @@
 //
 // Every layout constant here is the mirror of a read in RbsParser.cpp /
 // RbsTrak.cpp; the two files are edited together. Where the on-disk field is
-// one the parser does not decode (reserved bytes, loop points, the drum
-// machines' kit state) the writer emits zeros: the round trip is semantic,
-// not bitwise. RbsFormat.md §10 documents exactly what is dropped.
+// one the parser does not decode (reserved bytes, the MIXR per-channel tail)
+// the writer emits zeros: the round trip is semantic, not bitwise. RbsFormat.md §10 documents exactly what is dropped.
 
 #include "RbsWriter.h"
+#include "DrumKit.h"
 #include "RbsByteStream.h"
+#include "RbsDrumRow.h"
 
 #include <algorithm>
 #include <array>
@@ -32,8 +33,8 @@ constexpr size_t PCF_SIZE = 12;
 constexpr size_t DIST_SIZE = 8;
 constexpr size_t COMP_SIZE = 8;
 constexpr size_t TB303_HEADER_SIZE = 9;
-constexpr size_t TR808_HEADER_SIZE = 30;
-constexpr size_t TR909_HEADER_SIZE = 31;
+constexpr size_t TR808_HEADER_SIZE = Kit808::kHeaderBytes;
+constexpr size_t TR909_HEADER_SIZE = Kit909::kHeaderBytes;
 constexpr size_t TB303_SLOT_SIZE = 34;
 constexpr size_t DRUM_SLOT_SIZE = 194;
 constexpr size_t PATTERN_SLOTS = 32;
@@ -44,6 +45,14 @@ constexpr size_t GLOB_TITLE_WIDTH = 65;
 constexpr size_t GLOB_FTP_URL_OFFSET = 0x50;
 constexpr size_t GLOB_URL_WIDTH = 201;
 constexpr size_t GLOB_WEB_URL_OFFSET = 0x119;
+constexpr size_t GLOB_VINTAGE_OFFSET = 0x1e2;
+
+// USRI layout (RbsParser.cpp): author, info, web page, show-info flag.
+constexpr size_t USRI_SIZE = 712;
+constexpr size_t USRI_AUTHOR_WIDTH = 41;
+constexpr size_t USRI_INFO_OFFSET = 41;
+constexpr size_t USRI_INFO_WIDTH = 401;
+constexpr size_t USRI_SHOW_INFO_OFFSET = 0x21f;
 
 // TRAK track indices, in the order the nine chunks are written.
 constexpr uint8_t TRACK_MIXER = 0;
@@ -117,34 +126,45 @@ std::vector<uint8_t> buildHead(const ParsedSong& song) {
 
 std::vector<uint8_t> buildGlob(const ParsedSong& song) {
   ByteSink glob;
-  // 0x00 play mode: song when there is an arrangement to play.
-  glob.u8(song.arrangement.empty() ? 0 : 1);
-  glob.u8(song.showInfoOnOpen ? 1 : 0);
+  glob.u8(song.playMode == PlayMode::Pattern ? 0 : 1);
+  glob.u8(song.loopEnabled ? 1 : 0);
   // 0x02 tempo ×1000. `globSubFormat` is byte 0x03, i.e. a byte *of* this
   // field — it is a read-side diagnostic, never written independently.
   glob.u32BE(static_cast<uint32_t>(std::lround(song.bpm * 1000.0f)));
-  // 0x06 loop start, 0x0a loop end, 0x0e shuffle — not parsed, left zero.
+  glob.u32BE(song.loopStart);
+  glob.u32BE(song.loopEnd);
+  glob.u8(song.shuffle);
   glob.padTo(GLOB_TITLE_OFFSET);
   glob.cStringField(song.title, GLOB_TITLE_WIDTH);
   glob.padTo(GLOB_FTP_URL_OFFSET);
-  glob.cStringField(std::string(), GLOB_URL_WIDTH);
+  glob.cStringField(song.modFtpUrl, GLOB_URL_WIDTH);
   glob.padTo(GLOB_WEB_URL_OFFSET);
   glob.cStringField(song.creatorUrl, GLOB_URL_WIDTH);
+  glob.padTo(GLOB_VINTAGE_OFFSET);
+  glob.u8(song.vintage ? 1 : 0);
   glob.padTo(GLOB_SIZE);
   return glob.take();
 }
 
 std::vector<uint8_t> buildUsri(const ParsedSong& song) {
+  // The fixed 712-byte layout every archive file uses. Each string is cut
+  // to its field (the parser reads only within the field), so a long
+  // author or info text loses its tail rather than shifting the flag.
   ByteSink usri;
-  usri.cString(utf8ToLatin1(song.author));
-  usri.cString(utf8ToLatin1(song.infoText));
-  // The parser needs at least 2 bytes; two empty strings already give that.
+  usri.cStringField(utf8ToLatin1(song.author), USRI_AUTHOR_WIDTH);
+  usri.padTo(USRI_INFO_OFFSET);
+  usri.cStringField(utf8ToLatin1(song.infoText), USRI_INFO_WIDTH);
+  usri.padTo(USRI_SHOW_INFO_OFFSET);
+  usri.u8(song.showInfoOnOpen ? 1 : 0);
+  usri.padTo(USRI_SIZE);
   return usri.take();
 }
 
 std::vector<uint8_t> buildMixr(const ParsedSong& song) {
   ByteSink mixr;
   mixr.u8(song.fx.masterLevel);
+  mixr.u8(song.fx.comp.target);
+  mixr.u8(song.fx.pcf.target);
   mixr.padTo(MIXR_DEVICE_OFFSET);
   for (int i = 0; i < NUM_DEVICES; ++i) {
     const DeviceState& dev = song.devices[i];
@@ -154,9 +174,7 @@ std::vector<uint8_t> buildMixr(const ParsedSong& song) {
     mixr.u8(toMidiByte(dev.pan));
     mixr.u8(toMidiByte(dev.delaySend));
     mixr.u8(dev.dist ? 1 : 0);
-    mixr.u8(dev.pcf ? 1 : 0);
-    mixr.u8(dev.compressor ? 1 : 0);
-    mixr.padTo(start + MIXR_DEVICE_STRIDE);
+    mixr.padTo(start + MIXR_DEVICE_STRIDE); // bytes 5–11 reserved
   }
   mixr.padTo(MIXR_SIZE);
   return mixr.take();
@@ -165,10 +183,10 @@ std::vector<uint8_t> buildMixr(const ParsedSong& song) {
 std::vector<uint8_t> buildDely(const SongFxSettings& fx) {
   ByteSink sink;
   sink.u8(fx.delay.enabled ? 1 : 0);
-  sink.u8(fx.delay.time);
-  sink.u8(0); // observed byte 2 is not decoded
+  sink.u8(fx.delay.steps);
+  sink.u8(fx.delay.triplet ? 0 : 1);
   sink.u8(fx.delay.feedback);
-  sink.u8(fx.delay.wet);
+  sink.u8(fx.delay.pan);
   sink.padTo(DELY_SIZE);
   return sink.take();
 }
@@ -179,6 +197,9 @@ std::vector<uint8_t> buildPcf(const SongFxSettings& fx) {
   sink.u8(fx.pcf.cutoff);
   sink.u8(fx.pcf.resonance);
   sink.u8(fx.pcf.envAmount);
+  sink.u8(fx.pcf.pattern);
+  sink.u8(fx.pcf.decay);
+  sink.u8(fx.pcf.lowpass ? 1 : 0);
   sink.padTo(PCF_SIZE);
   return sink.take();
 }
@@ -197,6 +218,7 @@ std::vector<uint8_t> buildComp(const SongFxSettings& fx) {
   sink.u8(fx.comp.enabled ? 1 : 0);
   sink.u8(fx.comp.ratio);
   sink.u8(fx.comp.threshold);
+  sink.u8(fx.comp.attack);
   sink.padTo(COMP_SIZE);
   return sink.take();
 }
@@ -215,7 +237,7 @@ const Pattern* findPattern(const ParsedSong& song, DeviceId device, int slot) {
 
 void write303Slot(ByteSink& sink, const Pattern* pattern) {
   const size_t start = sink.size();
-  sink.u8(0); // per-pattern shuffle flag
+  sink.u8(pattern && pattern->shuffle ? 1 : 0);
   sink.u8(pattern ? std::min<uint8_t>(pattern->length, MAX_STEPS) : MAX_STEPS);
   for (int step = 0; step < MAX_STEPS; ++step) {
     if (!pattern) {
@@ -229,34 +251,34 @@ void write303Slot(ByteSink& sink, const Pattern* pattern) {
   sink.padTo(start + TB303_SLOT_SIZE);
 }
 
-void writeDrumSlot(ByteSink& sink, const Pattern* pattern) {
+void writeDrumSlot(ByteSink& sink, const Pattern* pattern, bool is909) {
+  using namespace detail;
+  const auto& rowMap = is909 ? kDrumRow909 : kDrumRow808;
   const size_t start = sink.size();
-  sink.u8(0);
+  sink.u8(pattern && pattern->shuffle ? 1 : 0);
   sink.u8(pattern ? std::min<uint8_t>(pattern->length, MAX_STEPS) : MAX_STEPS);
   for (int step = 0; step < MAX_STEPS; ++step) {
-    if (!pattern) {
-      sink.zeros(12);
-      continue;
+    std::array<uint8_t, DRUM_ROW_BYTES> row{};
+    if (pattern) {
+      const StepData& data = pattern->steps[static_cast<size_t>(step)];
+      // The AC row is written whatever `active` says: an accent-only step
+      // is real data in many archive patterns.
+      row[DRUM_ROW_ACCENT] = data.accent ? (is909 ? DRUM_ROW_ACCENTED : DRUM_ROW_HIT) : 0;
+      const uint32_t hits = data.active
+          ? (static_cast<uint32_t>(data.note) | (static_cast<uint32_t>(data.drumExtra) << 8))
+          : 0u;
+      for (size_t hit = 0; hit < DRUM_ROW_HITS; ++hit) {
+        if (!(hits & hitBit(hit))) continue;
+        uint8_t value = DRUM_ROW_HIT;
+        if (is909 && (data.drumFlam & hitBit(hit))) {
+          value = DRUM_ROW_FLAM;
+        } else if (is909 && (data.drumAccent & hitBit(hit))) {
+          value = DRUM_ROW_ACCENTED;
+        }
+        row[rowMap[hit]] = value;
+      }
     }
-    const StepData& data = pattern->steps[static_cast<size_t>(step)];
-    const uint8_t hits = data.active ? data.note : 0;
-    const uint8_t extra = data.active ? data.drumExtra : 0;
-    const bool bassDrum = (hits & 0x01) != 0;
-    sink.u8(bassDrum ? 1 : 0);
-    // Byte 1 is the BD tweak/velocity the parser reads back as `accent`, and
-    // it doubles as a BD indicator — so an accent is only meaningful on a
-    // step that actually hits the bass drum.
-    sink.u8((bassDrum && data.accent) ? 1 : 0);
-    sink.u8((hits & 0x02) ? 1 : 0); // SD
-    sink.u8((hits & 0x04) ? 1 : 0); // LT
-    sink.u8((hits & 0x08) ? 1 : 0); // MT
-    sink.u8((hits & 0x10) ? 1 : 0); // HT
-    sink.u8((hits & 0x20) ? 1 : 0); // CH
-    sink.u8((hits & 0x40) ? 1 : 0); // OH
-    sink.u8((hits & 0x80) ? 1 : 0); // CL
-    sink.u8((extra & 0x01) ? 1 : 0); // CP
-    sink.u8((extra & 0x02) ? 1 : 0); // MA
-    sink.u8((extra & 0x04) ? 1 : 0); // RS
+    sink.raw(row.data(), row.size());
   }
   sink.padTo(start + DRUM_SLOT_SIZE);
 }
@@ -284,8 +306,11 @@ std::vector<uint8_t> buildDeviceChunk(const ParsedSong& song, DeviceId device) {
     sink.u8(toMidiByte(dev.decay));
     sink.u8(toMidiByte(dev.accent));
     sink.u8(dev.waveform ? 1 : 0);
+  } else {
+    sink.u8(toMidiByte(dev.accent));
+    const auto kit = effectiveDrumKit(dev, device);
+    sink.raw(kit.data(), kitBytesFor(device));
   }
-  // The drum machines' remaining kit state is not decoded by the parser.
   sink.padTo(headerSize);
 
   for (int slot = 0; slot < static_cast<int>(PATTERN_SLOTS); ++slot) {
@@ -293,7 +318,7 @@ std::vector<uint8_t> buildDeviceChunk(const ParsedSong& song, DeviceId device) {
     if (is303) {
       write303Slot(sink, pattern);
     } else {
-      writeDrumSlot(sink, pattern);
+      writeDrumSlot(sink, pattern, device == DeviceId::TR909);
     }
   }
   return sink.take();

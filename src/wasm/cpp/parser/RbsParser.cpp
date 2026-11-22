@@ -1,5 +1,7 @@
 #include "RbsParser.h"
+#include "DrumKit.h"
 #include "RbsByteStream.h"
+#include "RbsDrumRow.h"
 #include <algorithm>
 #include <array>
 #include <cctype>
@@ -40,8 +42,16 @@ std::string latin1ToUtf8(const std::string& s) {
 // ── GLOB fixed-width strings ─────────────────────────────────────────
 constexpr size_t GLOB_TITLE_OFFSET = 0x0f;
 constexpr size_t GLOB_TITLE_WIDTH = 65;
+constexpr size_t GLOB_FTP_URL_OFFSET = 0x50;
 constexpr size_t GLOB_WEB_URL_OFFSET = 0x119;
 constexpr size_t GLOB_URL_WIDTH = 201;
+constexpr size_t GLOB_VINTAGE_OFFSET = 0x1e2;
+
+// ── USRI fixed-width fields (712-byte chunk in every archive file) ───
+constexpr size_t USRI_AUTHOR_WIDTH = 41;
+constexpr size_t USRI_INFO_OFFSET = 41;
+constexpr size_t USRI_INFO_WIDTH = 401;
+constexpr size_t USRI_SHOW_INFO_OFFSET = 0x21f;
 
 /**
  * The null-terminated string in the `width`-byte field at `offset`, never
@@ -87,37 +97,39 @@ std::array<StepData, MAX_STEPS> decode303Pattern(const uint8_t* data,
   return steps;
 }
 
-std::array<StepData, MAX_STEPS> decodeDrumPattern(const uint8_t* data,
-                                                   uint8_t length) {
+/**
+ * One 808 / 909 pattern. Rows are accent first (RbsDrumRow.h): byte 0 is the
+ * AC (total accent) row, bytes 1–11 one instrument each. The 808 stores 0/1;
+ * the 909 stores 1 = hit, 2 = accented hit, 3 = flam.
+ */
+std::array<StepData, MAX_STEPS> decodeDrumPattern(const uint8_t* data, uint8_t length,
+                                                   bool is909) {
+  using namespace detail;
+  const auto& rowMap = is909 ? kDrumRow909 : kDrumRow808;
   std::array<StepData, MAX_STEPS> steps{};
   uint8_t numSteps = std::min<uint8_t>(length, MAX_STEPS);
   for (uint8_t s = 0; s < numSteps; ++s) {
-    const uint8_t* row = data + s * 12;
-    uint8_t hits = 0;
-    // Pack the eight primary drum voices into a single byte. The observed
-    // 12-byte row layout is:
-    //   [0] BD / BD flag, [1] BD velocity/accent/tweak, [2] SD, [3] LT,
-    //   [4] MT, [5] HT, [6] CH, [7] OH, [8] CL, [9] CP, [10] MA, [11] RS.
-    // Both byte 0 and byte 1 are treated as BD indicators because 808 patterns
-    // store BD hits in byte 1 while 909 patterns use byte 0.
-    if (row[0] != 0 || row[1] != 0) hits |= 0x01; // BD
-    if (row[2] != 0) hits |= 0x02; // SD
-    if (row[3] != 0) hits |= 0x04; // LT
-    if (row[4] != 0) hits |= 0x08; // MT
-    if (row[5] != 0) hits |= 0x10; // HT
-    if (row[6] != 0) hits |= 0x20; // CH
-    if (row[7] != 0) hits |= 0x40; // OH
-    if (row[8] != 0) hits |= 0x80; // CL
-    uint8_t extra = 0;
-    if (row[9] != 0) extra |= 0x01;  // CP
-    if (row[10] != 0) extra |= 0x02; // MA
-    if (row[11] != 0) extra |= 0x04; // RS
+    const uint8_t* row = data + s * DRUM_ROW_BYTES;
+    uint32_t hits = 0;
+    uint16_t strong = 0;
+    uint16_t flam = 0;
+    for (size_t hit = 0; hit < DRUM_ROW_HITS; ++hit) {
+      const uint8_t value = row[rowMap[hit]];
+      if (value == DRUM_ROW_OFF) continue;
+      hits |= hitBit(hit);
+      if (!is909) continue;
+      if (value == DRUM_ROW_ACCENTED) strong |= static_cast<uint16_t>(hitBit(hit));
+      if (value == DRUM_ROW_FLAM) flam |= static_cast<uint16_t>(hitBit(hit));
+    }
     StepData& step = steps[s];
-    step.note = hits;
-    step.drumExtra = extra;
-    step.active = (hits != 0 || extra != 0);
-    // Treat the BD tweak byte as a generic accent flag for this step.
-    step.accent = (row[1] != 0);
+    step.note = static_cast<uint8_t>(hits & 0xffu);
+    step.drumExtra = static_cast<uint8_t>(hits >> 8);
+    step.active = hits != 0;
+    // An AC-only step (no instrument) is kept as an inactive accent: it
+    // sounds like nothing, and a save writes the accent back.
+    step.accent = row[DRUM_ROW_ACCENT] != 0;
+    step.drumAccent = strong;
+    step.drumFlam = flam;
   }
   return steps;
 }
@@ -357,7 +369,10 @@ bool RbsParser::parseGlob(const uint8_t* data, size_t size, ParsedSong& song) {
   }
 
   song.globSubFormat = data[0x03];
-  song.showInfoOnOpen = (data[0x01] != 0);
+  // Bytes 0x00/0x01 are the play mode and the loop switch (RBS 4.2). Byte
+  // 0x01 used to be read as "show info on open", which lives in USRI.
+  song.playMode = data[0x00] == 0 ? PlayMode::Pattern : PlayMode::Song;
+  song.loopEnabled = data[0x01] != 0;
 
   // Propellerhead's RBS 4.2 specification stores tempo as a big-endian
   // unsigned integer at offset 2, scaled by 1000.
@@ -373,6 +388,13 @@ bool RbsParser::parseGlob(const uint8_t* data, size_t size, ParsedSong& song) {
     return false;
   }
   song.bpm = bpm;
+
+  ByteStream loopStream(data + 0x06, size - 0x06);
+  if (!loopStream.readU32BE(song.loopStart) || !loopStream.readU32BE(song.loopEnd)) {
+    m_error = "Truncated GLOB loop locators";
+    return false;
+  }
+  song.shuffle = data[0x0e];
 
   // Title is a null-terminated string in the 65-byte field at 0x0f. It is
   // read only within that field: an unterminated title used to run on into
@@ -392,10 +414,16 @@ bool RbsParser::parseGlob(const uint8_t* data, size_t size, ParsedSong& song) {
 
   // Creator URL fields are fixed offsets within GLOB; read if present, and
   // only within the 201-byte field (see the title above).
+  if (size > GLOB_FTP_URL_OFFSET) {
+    song.modFtpUrl = trim(fixedCString(data, size, GLOB_FTP_URL_OFFSET, GLOB_URL_WIDTH));
+  }
   if (size > GLOB_WEB_URL_OFFSET) {
     const std::string url = fixedCString(data, size, GLOB_WEB_URL_OFFSET, GLOB_URL_WIDTH);
     if (!url.empty()) song.creatorUrl = trim(url);
   }
+  // Bytes past the documented fields hold uninitialised memory in many
+  // files, so only the vintage byte itself is read.
+  song.vintage = size > GLOB_VINTAGE_OFFSET && data[GLOB_VINTAGE_OFFSET] != 0;
 
   return true;
 }
@@ -406,25 +434,25 @@ bool RbsParser::parseUsri(const uint8_t* data, size_t size, ParsedSong& song) {
     return false;
   }
 
-  ByteStream stream(data, size);
-
-  // Author/creator is the first null-terminated string.
-  std::string author;
-  if (!stream.readCString(author)) {
-    m_error = "Failed to read author from USRI";
-    return false;
-  }
-  song.author = trim(latin1ToUtf8(author));
-
-  // Info text follows after the author null. Skip any padding zeros, then
-  // read the next null-terminated Latin-1 string.
-  while (!stream.atEnd() && stream.data()[stream.pos()] == 0) {
-    stream.skip(1);
-  }
+  // Fixed fields: author at 0 (41 bytes), info text at 41 (401 bytes), a
+  // web page at 442 (101 bytes, not decoded) and the show-on-open flag at
+  // 0x21f. Each string is read only within its field, as the writer bounds
+  // it. A short chunk (an older save) keeps the sequential layout: author,
+  // padding zeros, info text.
+  song.author = trim(latin1ToUtf8(fixedCString(data, size, 0, USRI_AUTHOR_WIDTH)));
 
   std::string info;
-  stream.readCString(info); // may be empty if no info text
+  if (size >= USRI_INFO_OFFSET + USRI_INFO_WIDTH) {
+    info = fixedCString(data, size, USRI_INFO_OFFSET, USRI_INFO_WIDTH);
+  } else {
+    // Past the author's terminator, then past any padding.
+    size_t pos = 0;
+    while (pos < size && data[pos] != 0) ++pos;
+    while (pos < size && data[pos] == 0) ++pos;
+    info = fixedCString(data, size, pos, USRI_INFO_WIDTH);
+  }
   song.infoText = trim(latin1ToUtf8(info));
+  song.showInfoOnOpen = size > USRI_SHOW_INFO_OFFSET && data[USRI_SHOW_INFO_OFFSET] != 0;
 
   return true;
 }
@@ -436,6 +464,10 @@ bool RbsParser::parseMixr(const uint8_t* data, size_t size, ParsedSong& song) {
   }
 
   song.fx.masterLevel = data[0];
+  // The compressor and the PCF are single inserts: bytes 1 and 2 name the
+  // device each one sits on (0 none, 1 master, 2–5 the four devices).
+  song.fx.comp.target = data[1];
+  song.fx.pcf.target = data[2];
 
   // Per-device records begin at offset 0x10, 12 bytes each.
   for (int i = 0; i < NUM_DEVICES; ++i) {
@@ -446,11 +478,11 @@ bool RbsParser::parseMixr(const uint8_t* data, size_t size, ParsedSong& song) {
     dev.muted = (data[off] == 0);
     dev.level = knobFromByte(data[off + 1]);
     dev.pan = knobFromByte(data[off + 2]);
-    // Offsets 3-7 contain sends/flags; decode the ones we are confident about.
     dev.delaySend = knobFromByte(data[off + 3]);
     dev.dist = (data[off + 4] != 0);
-    dev.pcf = (data[off + 5] != 0);
-    dev.compressor = (data[off + 6] != 0);
+    // Bytes 5–11 are reserved. 5 and 6 used to be read as PCF / compressor
+    // sends, but they are zero in all but 2 of 772 records in the corpus;
+    // the inserts are chosen by bytes 1 and 2 above.
   }
 
   return true;
@@ -461,11 +493,15 @@ bool RbsParser::parseDely(const uint8_t* data, size_t size, ParsedSong& song) {
     m_error = "DELY chunk too small";
     return false;
   }
+  // enabled, steps (1–32), step unit (0 = triplet, 1 = straight), feedback,
+  // pan. Bytes 1 and 4 used to be read as a subdivision index and a wet
+  // level.
   auto& fx = song.fx.delay;
   fx.enabled = (data[0] != 0);
-  fx.time = data[1];
+  fx.steps = data[1];
+  fx.triplet = (data[2] == 0);
   fx.feedback = data[3];
-  fx.wet = data[4];
+  fx.pan = data[4];
   return true;
 }
 
@@ -474,11 +510,16 @@ bool RbsParser::parsePcf(const uint8_t* data, size_t size, ParsedSong& song) {
     m_error = "PCF  chunk too small";
     return false;
   }
+  // enabled, frequency, Q, amount, trigger pattern (0–54), decay, filter
+  // type (0 = band-pass, 1 = low-pass).
   auto& fx = song.fx.pcf;
   fx.enabled = (data[0] != 0);
   fx.cutoff = data[1];
   fx.resonance = data[2];
   fx.envAmount = data[3];
+  fx.pattern = data[4];
+  fx.decay = data[5];
+  fx.lowpass = (data[6] != 0);
   return true;
 }
 
@@ -495,7 +536,7 @@ bool RbsParser::parseDist(const uint8_t* data, size_t size, ParsedSong& song) {
 }
 
 bool RbsParser::parseComp(const uint8_t* data, size_t size, ParsedSong& song) {
-  if (size < 3) {
+  if (size < 4) {
     m_error = "COMP chunk too small";
     return false;
   }
@@ -503,6 +544,7 @@ bool RbsParser::parseComp(const uint8_t* data, size_t size, ParsedSong& song) {
   fx.enabled = (data[0] != 0);
   fx.ratio = data[1];
   fx.threshold = data[2];
+  fx.attack = data[3];
   return true;
 }
 
@@ -526,7 +568,9 @@ bool RbsParser::parseDeviceChunk(DeviceId primaryId, DeviceId secondaryId,
 
   const bool is303 = (targetId == DeviceId::TB303_A ||
                       targetId == DeviceId::TB303_B);
-  const size_t headerSize = is303 ? 9 : ((targetId == DeviceId::TR808) ? 30 : 31);
+  const bool is909 = targetId == DeviceId::TR909;
+  const size_t headerSize =
+      is303 ? 9 : (is909 ? Kit909::kHeaderBytes : Kit808::kHeaderBytes);
   const size_t slotSize   = is303 ? 34 : 194;
 
   if (size < headerSize + 32 * slotSize) {
@@ -556,6 +600,16 @@ bool RbsParser::parseDeviceChunk(DeviceId primaryId, DeviceId secondaryId,
     dev.decay = knobFromByte(data[6]);
     dev.accent = knobFromByte(data[7]);
     dev.waveform = data[8];
+  } else {
+    // Drum machines: byte 2 is the ACCENT knob, the rest the per-instrument
+    // kit (DrumKit.h). Bytes are kept raw so a save writes them back as is.
+    dev.accent = knobFromByte(data[KIT_ACCENT_CONTROLLER]);
+    dev.kit = defaultDrumKit(targetId);
+    const size_t kitBytes = kitBytesFor(targetId);
+    for (size_t i = 0; i < kitBytes; ++i) {
+      dev.kit[i] = data[KIT_FIRST_CONTROLLER + i];
+    }
+    dev.hasKit = true;
   }
 
   const uint8_t* slotData = data + headerSize;
@@ -571,11 +625,12 @@ bool RbsParser::parseDeviceChunk(DeviceId primaryId, DeviceId secondaryId,
     pattern.bank = static_cast<uint8_t>(slot / MAX_PATTERNS_PER_BANK);
     pattern.patternIndex = static_cast<uint8_t>(slot % MAX_PATTERNS_PER_BANK);
     pattern.length = std::min<uint8_t>(length, MAX_STEPS);
+    pattern.shuffle = slotPtr[0] != 0;
 
     if (is303) {
       pattern.steps = decode303Pattern(slotPtr + 2, pattern.length);
     } else {
-      pattern.steps = decodeDrumPattern(slotPtr + 2, pattern.length);
+      pattern.steps = decodeDrumPattern(slotPtr + 2, pattern.length, is909);
     }
 
     song.patterns.push_back(pattern);
@@ -665,7 +720,8 @@ bool RbsParser::parseV1DeviceChunk(DeviceId primaryId, DeviceId secondaryId,
     if (is303) {
       pattern.steps = decode303Pattern(stepData, pattern.length);
     } else {
-      pattern.steps = decodeDrumPattern(stepData, pattern.length);
+      pattern.steps = decodeDrumPattern(stepData, pattern.length,
+                                        targetId == DeviceId::TR909);
     }
 
     song.patterns.push_back(pattern);

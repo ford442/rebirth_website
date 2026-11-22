@@ -307,20 +307,31 @@ TEST_CASE("standard-rebirth.rbs 808 has non-empty drum patterns") {
 TEST_CASE("standard-rebirth.rbs FX chunks decode into SongFxSettings") {
   const auto song = parseFixture("standard-rebirth.rbs");
   CHECK(song.fx.masterLevel == 100);
+  // DELY 01 03 01 3e 50: on, 3 steps, straight, feedback, pan.
   CHECK(song.fx.delay.enabled);
-  CHECK(song.fx.delay.time == 3);
+  CHECK(song.fx.delay.steps == 3);
+  CHECK_FALSE(song.fx.delay.triplet);
   CHECK(song.fx.delay.feedback == 0x3e);
-  CHECK(song.fx.delay.wet == 0x50);
+  CHECK(song.fx.delay.pan == 0x50);
+  // PCF 01 4b 4f 40 18 43 01: on, freq, Q, amount, pattern, decay, LP.
   CHECK(song.fx.pcf.enabled);
   CHECK(song.fx.pcf.cutoff == 0x4b);
   CHECK(song.fx.pcf.resonance == 0x4f);
   CHECK(song.fx.pcf.envAmount == 0x40);
+  CHECK(song.fx.pcf.pattern == 0x18);
+  CHECK(song.fx.pcf.decay == 0x43);
+  CHECK(song.fx.pcf.lowpass);
   CHECK(song.fx.dist.enabled);
   CHECK(song.fx.dist.drive == 0x20);
   CHECK(song.fx.dist.mix == 0x1d);
+  // COMP 01 20 7f 7f: on, ratio, threshold, attack.
   CHECK(song.fx.comp.enabled);
   CHECK(song.fx.comp.ratio == 0x20);
   CHECK(song.fx.comp.threshold == 0x7f);
+  CHECK(song.fx.comp.attack == 0x7f);
+  // MIXR bytes 1/2: neither insert is placed in this song.
+  CHECK(song.fx.comp.target == FX_TARGET_NONE);
+  CHECK(song.fx.pcf.target == FX_TARGET_NONE);
 }
 
 ParsedSong parseFixturePath(const std::string& path) {
