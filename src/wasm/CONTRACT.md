@@ -24,14 +24,10 @@ C++ struct (`src/wasm/cpp/engine/RbsAudioEngine.h`):
 ```cpp
 struct EngineConfig {
   float sampleRate = 44100.0f;
-  uint32_t bufferSize = 128;
   bool enableTb303A = true;
   bool enableTb303B = true;
   bool enableTr808 = true;
   bool enableTr909 = true;
-  bool enableDistortion = true;
-  bool enableCompressor = true;
-  bool enableDelay = true;
 };
 ```
 
@@ -40,18 +36,24 @@ TypeScript interface (`src/wasm/types/wasm-audio-engine.ts`):
 ```ts
 export interface EngineConfig {
   sampleRate: number;
-  bufferSize: number;
   enableTb303A: boolean;
   enableTb303B: boolean;
   enableTr808: boolean;
   enableTr909: boolean;
-  enableDistortion: boolean;
-  enableCompressor: boolean;
-  enableDelay: boolean;
 }
 ```
 
 **Rule:** The bridge must flatten the `EngineFeatures` helper object from `audio-module.config.ts` into these flat fields before calling `RbsAudioEngine.init()`.
+
+`sampleRate` is the live AudioContext's rate — by default the output device's
+own (`preferredSampleRate: null`), so the browser never resamples — and
+`offlineSampleRate` (44.1 kHz) for a bounce. There used to be `bufferSize` and
+`enable{Distortion,Compressor,Delay}` fields too; nothing read the first, and
+the song's own FX settings overwrote the rest, so all four were removed.
+
+The tempo range is shared: `MIN_BPM` / `MAX_BPM` (20–500) in `RbsTypes.h` and
+`TEMPO_MIN_BPM` / `TEMPO_MAX_BPM` in `wasm-audio-config.ts`. `npm run
+contract:check` fails if they disagree.
 
 ### `HeapStats`
 
@@ -246,12 +248,17 @@ export interface WasmPattern {
 }
 ```
 
-### `ParsedSong`
+### `SongSummary`
 
-C++:
+What `loadSongFromBytes` (and `RbsParser.parse`) return: metadata, device
+knobs, FX and a slot map — never the whole song. Converting every pattern and
+bar to JS objects on each load was the bulk of the Embind traffic; patterns
+and the arrangement are fetched on demand with `getPattern` / `getArrangement`.
+
+C++ (`src/wasm/cpp/parser/RbsTypes.h`, built by `summariseSong()`):
 
 ```cpp
-struct ParsedSong {
+struct SongSummary {
   std::string title;
   std::string author;
   std::string infoText;
@@ -262,16 +269,16 @@ struct ParsedSong {
   uint8_t globSubFormat = 0;
   bool showInfoOnOpen = false;
   std::array<DeviceState, NUM_DEVICES> devices;
-  std::vector<Pattern> patterns;
-  std::vector<ArrangementBar> arrangement;
   SongFxSettings fx;
+  uint32_t barCount = 0;
+  std::array<uint32_t, NUM_DEVICES> patternSlots;
 };
 ```
 
-TypeScript (`WasmParsedSong`):
+TypeScript (`WasmSongSummary`):
 
 ```ts
-export interface WasmParsedSong {
+export interface WasmSongSummary {
   title: string;
   author: string;
   infoText: string;
@@ -282,16 +289,19 @@ export interface WasmParsedSong {
   globSubFormat: number;
   showInfoOnOpen: boolean;
   devices: WasmDeviceState[];
-  patterns: WasmPattern[];
-  arrangement: WasmArrangementBar[];
   fx: WasmSongFxSettings;
+  barCount: number;
+  patternSlots: number[];
 }
 ```
 
-`AutomationEvent` / `ParsedSong.automation` remain C++-only and are **not**
-exported through Embind. Archive loads must call `loadSongFromBytes` so parse
-and `loadSong` happen on the WASM heap; `loadSong(WasmParsedSong)` from JS
-drops the vector. Native tests may still call `loadSong(const ParsedSong&)`.
+`patternSlots[device]` has bit `bank * 8 + index` set for every slot the song
+stores. `toUiParsedSong(summary, engine)` walks it, calling `getPattern` for
+each set bit, and reads the arrangement once with `getArrangement`.
+
+`ParsedSong` itself (and its `automation`) is C++-only: it has no Embind
+registration, so no JS object can carry a song back into the engine.
+Native tests still call `loadSong(const ParsedSong&)` directly.
 
 ### `SongFxSettings`
 
@@ -351,13 +361,12 @@ block; it does not create a JavaScript `rb338` namespace.
 | C++ API                                                   | Embind name           | TS signature                                                               |
 | --------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------- |
 | `bool init(const EngineConfig&)`                          | `init`                | `(config: EngineConfig) => boolean`                                        |
-| `bool loadSong(const ParsedSong&)`                        | `loadSong`            | `(song: WasmParsedSong) => boolean`                                        |
-| `loadSongFromBytesWrapper(..., uintptr_t, size_t)`        | `loadSongFromBytes`   | `(ptr: number, size: number) => WasmParsedSong \| undefined`               |
+| `loadSongFromBytesWrapper(..., uintptr_t, size_t)`        | `loadSongFromBytes`   | `(ptr: number, size: number) => WasmSongSummary \| undefined`              |
 | `const std::string& lastParseError() const`               | `lastParseError`      | `() => string`                                                             |
-| `void play()`                                             | `play`                | `() => void`                                                               |
-| `void pause()`                                            | `pause`               | `() => void`                                                               |
-| `void stop()`                                             | `stop`                | `() => void`                                                               |
-| `void seek(uint16_t)`                                     | `seek`                | `(bar: number) => void`                                                    |
+| `bool play()`                                             | `play`                | `() => boolean`                                                            |
+| `bool pause()`                                            | `pause`               | `() => boolean`                                                            |
+| `bool stop()`                                             | `stop`                | `() => boolean`                                                            |
+| `bool seek(uint16_t)`                                     | `seek`                | `(bar: number) => boolean`                                                 |
 | `void setVolume(float)`                                   | `setVolume`           | `(volume: number) => void`                                                 |
 | `void setTempo(float)`                                    | `setTempo`            | `(bpm: number) => void`                                                    |
 | `float getTempo() const`                                  | `getTempo`            | `() => number`                                                             |
@@ -367,16 +376,30 @@ block; it does not create a JavaScript `rb338` namespace.
 | `StepData getStep(uint8_t,uint8_t,uint8_t,uint8_t) const` | `getStep`             | `(deviceId, bank, patternIndex, stepIndex) => WasmStepData`                |
 | `bool setPatternLength(uint8_t,uint8_t,uint8_t,uint8_t)`  | `setPatternLength`    | `(deviceId, bank, patternIndex, length) => boolean`                        |
 | `uint8_t getPatternLength(uint8_t,uint8_t,uint8_t) const` | `getPatternLength`    | `(deviceId, bank, patternIndex) => number`                                 |
+| `std::optional<Pattern> getPattern(uint8_t x3) const`     | `getPattern`          | `(deviceId, bank, patternIndex) => WasmPattern \| undefined`               |
+| `getArrangementWrapper(const RbsAudioEngine&)`            | `getArrangement`      | `() => EmbindVector<WasmArrangementBar>` (caller deletes)                  |
 | `saveRbsWrapper(RbsAudioEngine&)`                         | `saveRbs`             | `() => Uint8Array`                                                         |
 | `const std::string& lastSaveError() const`                | `lastSaveError`       | `() => string`                                                             |
 | `bool isPlaying() const`                                  | `isPlaying`           | `() => boolean`                                                            |
 | `void getPlaybackPosition(...)` (wrapped)                 | `getPlaybackPosition` | `() => PlaybackPosition`                                                   |
 
-`loadSong` remains bound for an in-process writer/editor that already holds
-C++ state. The browser archive path is `loadSongFromBytes`: parse on the
-engine, publish the snapshot (including `automation`), return a UI summary.
-`WasmAudioBridge.loadRbsFile` and `_createOfflineEngine` must not call
-`RbsParser.parse` then `loadSong`.
+The only song-load path is `loadSongFromBytes`: parse on the engine, publish
+the snapshot (including `automation`), return a `SongSummary`. The old
+`loadSong(ParsedSong)` binding — which silently dropped `automation`, since
+it never crosses Embind — is gone; `loadSong` is native-only.
+
+**Transport commands and continuous values.** `play` / `pause` / `stop` /
+`seek` (and pattern patches) go through a 64-entry lock-free queue drained at
+the top of each audio block, and return `false` if it is full — only possible
+while the audio callback is not running, e.g. a suspended AudioContext.
+`setVolume`, `setTempo`, `setTempoMultiplier` and `setDeviceParam` never use
+the queue: each writes an atomic "latest value" slot the audio thread reads
+once per block, so any number of knob moves coalesce and can never crowd out
+a Stop.
+
+`stop` and `seek(bar)` also rewind knob and mixer state: the song's own
+values, then every TRAK automation event before `bar` in order, then the
+session's knob moves — so a jump lands where playback would have been.
 
 ### `RbsAudioEngine` — pattern editing
 
@@ -387,9 +410,12 @@ They take one slot coordinate plus one `StepData` value object — never a
 every TRAK event the file contains.
 
 Both mutate the engine's main-thread working copy (`RbsAudioEngine::m_song`)
-and then call `republishGraph()`, the same atomic snapshot swap `loadMod()`
-uses: the audio thread keeps rendering the previous snapshot until the new
-pointer is published, and nothing allocates inside `processBlock()`.
+and then send the audio thread a `PatchStep` / `PatchLength` command that
+rewrites the same pattern in the live snapshot in place, at a block
+boundary. Nothing is rebuilt, so held 303 notes, filter state, the delay tail
+and automated knob values all carry on through the edit (the old path rebuilt
+every voice and the mixer per click). Only a brand-new slot the live snapshot
+does not hold yet, or a full queue, falls back to `republishGraph()`.
 
 Coordinate ranges — out of range is refused, not clamped:
 
@@ -479,7 +505,7 @@ the same reason: the song has to be written from C++ state, because
 `ParsedSong.automation` never crosses Embind, so a writer fed a
 `WasmParsedSong` would drop every TRAK event in the file.
 
-The returned array is a **copy**, like `renderOfflineToWav`. An **empty**
+The returned array is a **copy**, like `renderOfflineChunk`. An **empty**
 array means the save failed — read `lastSaveError()`. The call is synchronous
 and runs on the live engine: nothing is rendered and the sequencer is not
 advanced, so unlike a bounce it does not need a throwaway offline engine.
@@ -492,23 +518,37 @@ for what a save drops.
 
 ### `RbsAudioEngine` — offline bounce
 
-| C++ API                                                       | Embind name          | TS signature                          |
-| ------------------------------------------------------------- | -------------------- | ------------------------------------- |
-| `renderOfflineWavWrapper(RbsAudioEngine&, uint32_t, uint8_t)` | `renderOfflineToWav` | `(frames, deviceIndex) => Uint8Array` |
-| `uint32_t songLengthFrames() const`                           | `songLengthFrames`   | `() => number`                        |
+| C++ API                                                | Embind name          | TS signature                       |
+| ------------------------------------------------------ | -------------------- | ---------------------------------- |
+| `bool beginOfflineRender(uint8_t deviceIndex)`         | `beginOfflineRender` | `(deviceIndex: number) => boolean` |
+| `renderOfflineChunkWrapper(RbsAudioEngine&, uint32_t)` | `renderOfflineChunk` | `(frames: number) => Uint8Array`   |
+| `void endOfflineRender()`                              | `endOfflineRender`   | `() => void`                       |
+| `uint32_t songLengthFrames() const`                    | `songLengthFrames`   | `() => number`                     |
 
 `deviceIndex` is a stem index 0-3, or `MASTER_BUS` (255) for the full mix.
-The returned array is a **copy** (`new Uint8Array(view)`), not a view into the
-WASM heap — a bare `typed_memory_view` would dangle as soon as the C++ vector
-went out of scope.
+
+The bounce is **chunked**: `beginOfflineRender` rewinds (and solos a stem),
+each `renderOfflineChunk(n)` renders up to `OFFLINE_CHUNK_FRAMES` (2^16)
+more frames as interleaved little-endian 16-bit stereo with no header, and
+`endOfflineRender` restores the mutes and frees the chunk buffer. The WASM
+heap only ever holds one 256 KiB chunk — the old whole-file
+`renderOfflineToWav` reserved ~10.6 MiB per minute up front and aborted the
+worker on anything longer than four or five minutes against the fixed
+64 MiB heap. `bounce-worker.ts` posts each chunk as a transferable buffer and
+`wav-assembler.ts` writes the RIFF header and body on the JavaScript side.
+
+Each returned array is a **copy** (`new Uint8Array(view)`), not a view into
+the WASM heap — the next chunk overwrites the buffer. Native code can still
+call `renderOfflineWav()` for a whole file; it is not bound.
 
 **Rule — never bounce on the live engine.** `renderOffline*` advances the
 sequencer on the calling thread. The AudioWorklet advances the same sequencer
 from its own thread, so calling these on the engine the worklet is driving is
-a data race. `WasmAudioBridge` builds a second, throwaway engine for every
-bounce (`_createOfflineEngine`), which also means the listener hears no gap
-while a file is written. That offline engine must `loadSongFromBytes` (and
-`loadMod`) from the retained file buffers — never `parser.parse` → `loadSong`.
+a data race. Every bounce runs on a separate engine in a second WASM instance
+(`bounce-worker.ts`), which also means the listener hears no gap while a file
+is written. That engine `loadSongFromBytes` (and `loadMod`) from the retained
+file buffers — or from a `saveRbs()` of the live working copy once the user
+has edited patterns, so the bounce includes the edits.
 
 Offline output is bit-identical to the worklet's, and
 `cpp/tests/test_offline.cpp` pins the properties that make that true:
@@ -517,9 +557,15 @@ needs no AudioContext.
 
 **Rule — live knob moves are sticky.** `setDeviceParam()` is session-only and
 never writes back into the loaded song, but the engine now remembers each
-value and replays it whenever the graph is rebuilt (loading a mod, or
-rewinding for a bounce). Without that, a bounce would render the song's
+value and replays it whenever the graph is rebuilt or rewound (loading a mod,
+stop/seek, a bounce). Without that, a bounce would render the song's
 untouched knobs rather than what the user is hearing.
+
+**Rule — a moved knob owns its automation.** Every song writes an initial
+value for every TRAK controller at tick 0, so once automation actually fired
+it undid any knob move the moment playback or a bounce restarted. A knob the
+user has moved now masks that knob's automation for the rest of the session.
+Loading a new song clears every override.
 
 ### `RbsAudioEngine` — mod methods
 
@@ -648,8 +694,8 @@ The processor name `"rbs-player"` is registered on the worklet thread via
 `emscripten_create_wasm_audio_worklet_processor_async`. **JavaScript must not**
 call `audioWorklet.addModule()` with a second processor of the same name.
 
-For click-free parameter ramps, prefer the lock-free `EngineCommandQueue` over
-`AudioParam` — mixing both is error-prone.
+Live parameters reach the audio thread through the engine's atomic parameter
+slots (see `setDeviceParam`), not `AudioParam` — mixing both is error-prone.
 
 ## Cross-origin isolation and remote `.rbs` fetches
 

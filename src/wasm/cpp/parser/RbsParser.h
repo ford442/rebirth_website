@@ -54,8 +54,17 @@ public:
   /** Reset internal error state. */
   void clearError() { m_error.clear(); }
 
+  /**
+   * Deepest `CAT ` nesting accepted. Real files nest two levels (root →
+   * DEVL / TRKL); each level is one native stack frame, and in WASM the
+   * 128 KiB stack sits in linear memory with no overflow check in Release,
+   * so a crafted file could otherwise recurse into the heap.
+   */
+  static constexpr int MAX_CAT_DEPTH = 8;
+
 private:
   std::string m_error;
+  int m_catDepth = 0;
   bool m_seenTb303A = false;
   size_t m_trakIndex = 0;
   uint32_t m_maxTrakPosition = 0;
@@ -85,17 +94,6 @@ private:
                           bool is303, bool lengthAtZero = false);
   bool parseTrak(const uint8_t* data, size_t size, ParsedSong& song);
   bool buildArrangement(ParsedSong& song);
-
-  // ── Legacy stubs (kept so existing call sites compile) ──
-  bool validateHeader(const uint8_t* data, size_t size);
-  bool readMetadata(const uint8_t* data, size_t size, size_t& offset,
-                    ParsedSong& out);
-  bool readDeviceStates(const uint8_t* data, size_t size, size_t& offset,
-                        ParsedSong& out);
-  bool readPatterns(const uint8_t* data, size_t size, size_t& offset,
-                    ParsedSong& out);
-  bool readArrangement(const uint8_t* data, size_t size, size_t& offset,
-                       ParsedSong& out);
 };
 
 } // namespace rb338

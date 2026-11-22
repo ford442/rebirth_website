@@ -37,6 +37,37 @@ std::string latin1ToUtf8(const std::string& s) {
 
 // Skip the chunk body and any odd-alignment padding byte.
 
+// ── GLOB fixed-width strings ─────────────────────────────────────────
+constexpr size_t GLOB_TITLE_OFFSET = 0x0f;
+constexpr size_t GLOB_TITLE_WIDTH = 65;
+constexpr size_t GLOB_WEB_URL_OFFSET = 0x119;
+constexpr size_t GLOB_URL_WIDTH = 201;
+
+/**
+ * The null-terminated string in the `width`-byte field at `offset`, never
+ * reading past the field. The last byte is the terminator slot — the writer
+ * stores at most width - 1 characters — so it is never part of the string.
+ */
+std::string fixedCString(const uint8_t* data, size_t size, size_t offset, size_t width) {
+  if (offset >= size) return std::string();
+  const size_t limit = std::min(width - 1, size - offset);
+  const auto* begin = reinterpret_cast<const char*>(data + offset);
+  size_t len = 0;
+  while (len < limit && begin[len] != '\0') ++len;
+  return std::string(begin, len);
+}
+
+// ── Knob decoding ────────────────────────────────────────────────────
+/**
+ * A 0–127 knob byte as 0–1. Bytes past 127 are clamped: every knob in the
+ * format is a MIDI-range value, the writer can only store 0–127, and an
+ * unclamped 255 became a 2.0 level that changed on save (found by
+ * fuzz_rbs_roundtrip).
+ */
+float knobFromByte(uint8_t byte) {
+  return static_cast<float>(byte > 127 ? 127 : byte) / 127.0f;
+}
+
 // ── Pattern decoding helpers ─────────────────────────────────────────
 std::array<StepData, MAX_STEPS> decode303Pattern(const uint8_t* data,
                                                   uint8_t length) {
@@ -116,6 +147,7 @@ std::optional<ParsedSong> RbsParser::parse(const uint8_t* data, size_t size) {
 std::optional<ParsedSong> RbsParser::parse(std::span<const uint8_t> buffer) {
   clearError();
   m_seenTb303A = false;
+  m_catDepth = 0;
   m_trakIndex = 0;
   m_maxTrakPosition = 0;
   for (auto& changes : m_patternChanges) changes.clear();
@@ -147,7 +179,10 @@ std::optional<ParsedSong> RbsParser::parse(std::span<const uint8_t> buffer) {
   }
 
   // Sanity checks after parsing
-  if (song.title.empty()) {
+  // Judged on the trimmed title: the v1 container keeps padding, the v2 GLOB
+  // reader trims it, so a whitespace-only v1 title used to be accepted here
+  // and then rejected once saved as v2 (found by fuzz_rbs_roundtrip).
+  if (trim(song.title).empty()) {
     m_error = "Parsed song has no title (GLOB chunk missing or malformed)";
     return std::nullopt;
   }
@@ -273,9 +308,17 @@ bool RbsParser::parseNestedCat(const uint8_t* data, size_t size,
     return false;
   }
 
+  if (m_catDepth >= MAX_CAT_DEPTH) {
+    m_error = "Nested CAT containers exceed the supported depth";
+    return false;
+  }
+
   // The marker identifies the list; chunks follow immediately after it.
-  return parseContainer(stream.data() + stream.pos(),
-                        stream.remaining(), song, false);
+  ++m_catDepth;
+  const bool ok = parseContainer(stream.data() + stream.pos(),
+                                 stream.remaining(), song, false);
+  --m_catDepth;
+  return ok;
 }
 
 // ═════════════════════════════════════════════════════════════════════
@@ -325,32 +368,33 @@ bool RbsParser::parseGlob(const uint8_t* data, size_t size, ParsedSong& song) {
     return false;
   }
   const float bpm = static_cast<float>(tempoTimes1000) / 1000.0f;
-  if (bpm < 20.0f || bpm > 500.0f) {
+  if (bpm < MIN_BPM || bpm > MAX_BPM) {
     m_error = "GLOB tempo is outside ReBirth's 20-500 BPM range";
     return false;
   }
   song.bpm = bpm;
 
-  // Title is a null-terminated ASCII string starting at offset 0x0f.
-  ByteStream stream(data, size);
-  if (!stream.skip(0x0f)) {
+  // Title is a null-terminated string in the 65-byte field at 0x0f. It is
+  // read only within that field: an unterminated title used to run on into
+  // the FTP URL field, which the writer (correctly) truncates on save — so a
+  // title could change, or vanish, in a round trip (found by
+  // fuzz_rbs_roundtrip).
+  if (size <= GLOB_TITLE_OFFSET) {
     m_error = "GLOB chunk too small for title";
     return false;
   }
-  std::string title;
-  if (!stream.readCString(title)) {
+  const std::string title = fixedCString(data, size, GLOB_TITLE_OFFSET, GLOB_TITLE_WIDTH);
+  if (title.empty()) {
     m_error = "Failed to read song title from GLOB";
     return false;
   }
   song.title = trim(title);
 
-  // Creator URL fields are fixed offsets within GLOB; read if present.
-  if (size > 0x119) {
-    ByteStream urlStream(data + 0x119, size - 0x119);
-    std::string url;
-    if (urlStream.readCString(url) && !url.empty()) {
-      song.creatorUrl = trim(url);
-    }
+  // Creator URL fields are fixed offsets within GLOB; read if present, and
+  // only within the 201-byte field (see the title above).
+  if (size > GLOB_WEB_URL_OFFSET) {
+    const std::string url = fixedCString(data, size, GLOB_WEB_URL_OFFSET, GLOB_URL_WIDTH);
+    if (!url.empty()) song.creatorUrl = trim(url);
   }
 
   return true;
@@ -400,10 +444,10 @@ bool RbsParser::parseMixr(const uint8_t* data, size_t size, ParsedSong& song) {
     DeviceState& dev = song.devices[i];
     dev.id = static_cast<DeviceId>(i);
     dev.muted = (data[off] == 0);
-    dev.level = static_cast<float>(data[off + 1]) / 127.0f;
-    dev.pan = static_cast<float>(data[off + 2]) / 127.0f;
+    dev.level = knobFromByte(data[off + 1]);
+    dev.pan = knobFromByte(data[off + 2]);
     // Offsets 3-7 contain sends/flags; decode the ones we are confident about.
-    dev.delaySend = static_cast<float>(data[off + 3]) / 127.0f;
+    dev.delaySend = knobFromByte(data[off + 3]);
     dev.dist = (data[off + 4] != 0);
     dev.pcf = (data[off + 5] != 0);
     dev.compressor = (data[off + 6] != 0);
@@ -505,12 +549,12 @@ bool RbsParser::parseDeviceChunk(DeviceId primaryId, DeviceId secondaryId,
   dev.initialPatternIndex = static_cast<uint8_t>(selectedPattern % 8);
 
   if (is303) {
-    dev.tune = static_cast<float>(data[2]) / 127.0f;
-    dev.cutoff = static_cast<float>(data[3]) / 127.0f;
-    dev.resonance = static_cast<float>(data[4]) / 127.0f;
-    dev.envMod = static_cast<float>(data[5]) / 127.0f;
-    dev.decay = static_cast<float>(data[6]) / 127.0f;
-    dev.accent = static_cast<float>(data[7]) / 127.0f;
+    dev.tune = knobFromByte(data[2]);
+    dev.cutoff = knobFromByte(data[3]);
+    dev.resonance = knobFromByte(data[4]);
+    dev.envMod = knobFromByte(data[5]);
+    dev.decay = knobFromByte(data[6]);
+    dev.accent = knobFromByte(data[7]);
     dev.waveform = data[8];
   }
 
@@ -567,19 +611,19 @@ bool RbsParser::parseV1DeviceChunk(DeviceId primaryId, DeviceId secondaryId,
   if (is303) {
     if (hdr[0] <= 1 && hdr[1] > 31) {
       dev.muted = (hdr[0] == 0);
-      dev.tune = static_cast<float>(hdr[1]) / 127.0f;
+      dev.tune = knobFromByte(hdr[1]);
       selectedPattern = hdr[2];
-      dev.cutoff = static_cast<float>(hdr[3]) / 127.0f;
+      dev.cutoff = knobFromByte(hdr[3]);
       if (headerSize >= 5) {
-        dev.resonance = static_cast<float>(hdr[4]) / 127.0f;
+        dev.resonance = knobFromByte(hdr[4]);
       }
     } else {
       dev.muted = false;
-      dev.tune = static_cast<float>(hdr[0]) / 127.0f;
+      dev.tune = knobFromByte(hdr[0]);
       selectedPattern = hdr[1];
-      dev.cutoff = static_cast<float>(hdr[2]) / 127.0f;
+      dev.cutoff = knobFromByte(hdr[2]);
       if (headerSize >= 5) {
-        dev.resonance = static_cast<float>(hdr[3]) / 127.0f;
+        dev.resonance = knobFromByte(hdr[3]);
         dev.waveform = hdr[4] <= 1 ? hdr[4] : 0;
       }
     }
@@ -631,35 +675,5 @@ bool RbsParser::parseV1DeviceChunk(DeviceId primaryId, DeviceId secondaryId,
 }
 
 // TRAK / STRAK decoding and arrangement projection live in RbsTrak.cpp.
-
-// Stubbed helpers kept for future phases
-bool RbsParser::readMetadata(const uint8_t* data, size_t size,
-                             size_t& offset, ParsedSong& out) {
-  (void)data; (void)size; (void)offset; (void)out;
-  return true;
-}
-
-bool RbsParser::readDeviceStates(const uint8_t* data, size_t size,
-                                 size_t& offset, ParsedSong& out) {
-  (void)data; (void)size; (void)offset; (void)out;
-  return true;
-}
-
-bool RbsParser::readPatterns(const uint8_t* data, size_t size,
-                             size_t& offset, ParsedSong& out) {
-  (void)data; (void)size; (void)offset; (void)out;
-  return true;
-}
-
-bool RbsParser::readArrangement(const uint8_t* data, size_t size,
-                                size_t& offset, ParsedSong& out) {
-  (void)data; (void)size; (void)offset; (void)out;
-  return true;
-}
-
-bool RbsParser::validateHeader(const uint8_t* data, size_t size) {
-  (void)data; (void)size;
-  return true;
-}
 
 } // namespace rb338

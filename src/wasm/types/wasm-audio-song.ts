@@ -12,8 +12,6 @@
  * `npm run contract:check`.
  */
 
-import type { EmbindVector } from './wasm-audio-engine';
-
 /** Top-level status of the in-browser player UI */
 export type PlayerStatus = 'idle' | 'loading' | 'ready' | 'playing' | 'error';
 
@@ -183,8 +181,14 @@ export interface WasmSongFxSettings {
   comp: WasmCompSettings;
 }
 
-/** Parsed song as encoded in C++ `ParsedSong` */
-export interface WasmParsedSong {
+/**
+ * Load-time song summary, as encoded in C++ `SongSummary` (RbsTypes.h).
+ *
+ * Patterns and the arrangement are not in it: fetch them with
+ * `RbsAudioEngineInstance.getPattern()` / `getArrangement()`. TRAK
+ * automation never crosses Embind at all.
+ */
+export interface WasmSongSummary {
   title: string;
   author: string;
   infoText: string;
@@ -195,7 +199,9 @@ export interface WasmParsedSong {
   globSubFormat: number;
   showInfoOnOpen: boolean;
   devices: WasmDeviceState[];
-  patterns: EmbindVector<WasmPattern>;
-  arrangement: EmbindVector<WasmArrangementBar>;
   fx: WasmSongFxSettings;
+  /** Bars in the arrangement (0 when the song has none). */
+  barCount: number;
+  /** Per device: bit `bank * 8 + index` set when the song stores that slot. */
+  patternSlots: number[];
 }

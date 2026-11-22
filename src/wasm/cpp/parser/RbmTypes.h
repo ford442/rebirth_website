@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -59,7 +60,13 @@ struct EmbeddedResource {
   std::string name;
   ModResourceKind kind = ModResourceKind::Other;
   ModSampleSlot slot = ModSampleSlot::Unknown;
-  std::vector<uint8_t> bytes;
+  /**
+   * The payload, borrowed from the buffer handed to RbmParser::parse — not a
+   * copy. It is valid only while that buffer is. Copying every EMBF payload
+   * (skins included) used to double a multi-megabyte mod in the fixed WASM
+   * heap for the length of the load.
+   */
+  std::span<const uint8_t> bytes;
 };
 
 struct ParsedMod {

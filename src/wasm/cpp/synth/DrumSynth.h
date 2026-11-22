@@ -46,6 +46,9 @@ inline float drumAccentGain(const DrumParams& params, bool accent) {
  */
 class DrumVoiceChannel {
 public:
+  /** Seed restored by reset(), so a replay draws the same noise. */
+  static constexpr uint32_t kNoiseSeed = 0x9e3779b9u;
+
   void init(float sampleRate);
   void reset();
 
@@ -67,7 +70,14 @@ private:
   float m_velocity = 1.0f;
   float m_pitchMul = 1.0f;
   float m_decayMul = 1.0f;
-  float m_noiseState = 0.0f;
+  // exp(-5 t) envelope, advanced by one multiply per sample instead of an
+  // exp() per sample. m_envGain = exp(-5 * age / length).
+  float m_envGain = 1.0f;
+  float m_envCoeff = 1.0f;
+  float m_burstEnvGain = 1.0f;   // the same for the current clap burst
+  float m_burstEnvCoeff = 1.0f;
+  /** xorshift32 state; never zero (zero is xorshift's fixed point). */
+  uint32_t m_noiseState = kNoiseSeed;
 
   // Clap: staggered noise bursts.
   uint8_t m_clapBurstsLeft = 0;
@@ -75,7 +85,11 @@ private:
   uint32_t m_clapBurstLen = 0;
   uint32_t m_clapGap = 0;
 
+public:
+  /** White noise in [-1, 1). Public for the spectral tests. */
   float nextNoise();
+
+private:
   float renderKick();
   float renderSnare();
   float renderHat(bool open);

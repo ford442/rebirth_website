@@ -19,17 +19,22 @@
 
 namespace rb338 {
 
+/**
+ * Discrete transport and edit commands. Continuous values (volume, tempo,
+ * device knobs) do not travel through the queue: they are atomic
+ * "latest value" slots on RbsAudioEngine, so a burst of knob moves coalesces
+ * instead of filling the queue and crowding out a Stop.
+ */
 enum class EngineCommandType : uint8_t {
   None = 0,
   Play,
   Pause,
   Stop,
   Seek,
-  SetVolume,
-  SetTempo,
-  SetTempoMultiplier,
-  LoadSong,
-  SetDeviceParam,
+  /** param1 = pattern index | stepIndex << 16, param2 = packStep(step). */
+  PatchStep,
+  /** param1 = pattern index, param2 = new length (1–16). */
+  PatchLength,
 };
 
 /** Live knob / mixer params pushed from the UI (session-only). */
@@ -46,10 +51,13 @@ enum class DeviceParamId : uint8_t {
   Mute,
 };
 
+/** Number of DeviceParamId values (Tune..Mute). */
+constexpr uint8_t NUM_DEVICE_PARAMS = 10;
+
 struct EngineCommand {
   EngineCommandType type = EngineCommandType::None;
-  uint32_t param1 = 0;  // bar, tempo, or raw float bits
-  uint32_t param2 = 0;  // reserved for future use
+  uint32_t param1 = 0;  // bar, or pattern index (+ step index)
+  uint32_t param2 = 0;  // packed step, or pattern length
 };
 
 class EngineCommandQueue {

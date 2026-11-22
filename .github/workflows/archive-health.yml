@@ -2,7 +2,10 @@ name: Archive health
 
 on:
   schedule:
+    # Weekly: integrity + link rot.
     - cron: '0 6 * * 1'
+    # Nightly: fuzzing + full-corpus conformance sweep.
+    - cron: '23 3 * * *'
   workflow_dispatch:
 
 concurrency:
@@ -12,6 +15,7 @@ concurrency:
 jobs:
   integrity:
     name: Verify local-core hashes
+    if: github.event_name != 'schedule' || github.event.schedule == '0 6 * * 1'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,6 +24,7 @@ jobs:
 
   link-rot:
     name: HEAD-sweep remote URLs
+    if: github.event_name != 'schedule' || github.event.schedule == '0 6 * * 1'
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -48,3 +53,124 @@ jobs:
           else
             gh issue create --title "Archive link rot detected" --body "$body"
           fi
+
+  # ── Nightly ──────────────────────────────────────────────────────────
+
+  fuzz:
+    name: Fuzz the parsers and decoders (10 min)
+    if: github.event_name != 'schedule' || github.event.schedule == '23 3 * * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang runtimes (libFuzzer, ASan, UBSan)
+        run: sudo apt-get update -q && sudo apt-get install -y -q clang-18 libclang-rt-18-dev
+
+      - name: Restore the fuzz corpus
+        uses: actions/cache@v4
+        with:
+          path: fuzz-corpus
+          key: fuzz-corpus-${{ github.run_id }}
+          restore-keys: fuzz-corpus-
+
+      - name: Build the fuzz targets
+        run: |
+          cmake -S src/wasm/cpp -B build-fuzz -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_CXX_COMPILER=clang++-18 -DRB338_FUZZ=ON
+          cmake --build build-fuzz --parallel --target \
+            fuzz_rbs_parser fuzz_rbm_parser fuzz_sample_decoder fuzz_rbs_roundtrip
+
+      - name: Seed corpora from the test fixtures
+        run: |
+          mkdir -p fuzz-corpus/rbs fuzz-corpus/rbm fuzz-corpus/samples crashes
+          find src/wasm/test-fixtures -name '*.rbs' -exec cp {} fuzz-corpus/rbs/ \;
+          cp src/wasm/test-fixtures/reject/* fuzz-corpus/rbs/ 2>/dev/null || true
+          cp src/wasm/test-fixtures/mods/*.rbm fuzz-corpus/rbm/
+          cp src/wasm/test-fixtures/fuzz/*.wav fuzz-corpus/samples/ 2>/dev/null || true
+          # Every AIFF / WAV payload embedded in the fixture mods.
+          python3 - <<'PY'
+          import glob
+          n = 0
+          for fn in glob.glob('src/wasm/test-fixtures/mods/*.rbm'):
+              d = open(fn, 'rb').read(); off = 12
+              while off + 8 <= len(d):
+                  cid, sz = d[off:off+4], int.from_bytes(d[off+4:off+8], 'big')
+                  body = d[off+8:off+8+sz]; off += 8 + sz + (sz & 1)
+                  if cid == b'EMBF' and 0 in body:
+                      payload = body[body.index(0) + 1:]
+                      if payload[:4] in (b'FORM', b'RIFF'):
+                          open(f'fuzz-corpus/samples/seed-{n}.bin', 'wb').write(payload); n += 1
+          print(n, 'sample seeds')
+          PY
+
+      - name: Fuzz (150 s per target)
+        run: |
+          status=0
+          for pair in rbs_parser:rbs rbm_parser:rbm sample_decoder:samples rbs_roundtrip:rbs; do
+            target=${pair%%:*}; corpus=${pair##*:}
+            echo "::group::fuzz_$target"
+            ./build-fuzz/fuzz_$target fuzz-corpus/$corpus -max_total_time=150 -max_len=65536 \
+              -timeout=10 -rss_limit_mb=2048 -artifact_prefix=crashes/$target- || status=1
+            echo "::endgroup::"
+          done
+          exit $status
+
+      - name: Upload crashing inputs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-crashes
+          path: crashes/
+
+  corpus-conformance:
+    name: Full-corpus parse/write/render sweep
+    if: github.event_name != 'schedule' || github.event.schedule == '23 3 * * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore the content-addressed mirror (ADR 0001)
+        uses: actions/cache@v4
+        with:
+          path: .mirror
+          key: archive-mirror-${{ hashFiles('src/data/archive-integrity.json') }}
+          restore-keys: archive-mirror-
+
+      - name: Install Python requests
+        run: python3 -m pip install --quiet requests
+
+      - name: Mirror the full .rbs corpus
+        # Already-mirrored blobs are skipped, so a warm cache makes this quick.
+        run: python3 scripts/mirror-archive.py --scope all --kind rbs --output /tmp/archive-integrity.json
+
+      - name: Build rbs-conformance
+        run: |
+          cmake -S src/wasm/cpp -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++
+          cmake --build build --parallel --target rbs-conformance
+
+      - name: Sweep every unique song
+        # Blobs are unique by content, so duplicates across archive paths
+        # are swept once. Fails below 99% semantic round trip, or on any
+        # non-finite or clipping render.
+        run: |
+          ./build/rbs-conformance --min-roundtrip 0.99 --out conformance.json .mirror/blobs \
+            > /dev/null
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          r = json.load(open('conformance.json'))
+          print('## Corpus conformance\n')
+          print(f"{r['roundtripped']}/{r['parsed']} parsed songs round-trip "
+                f"({r['roundtripRate'] * 100:.2f}%), {r['files']} unique files\n")
+          print('| result | songs |\n| --- | --- |')
+          for name, count in sorted(r['histogram'].items()):
+              print(f'| {name} | {count} |')
+          PY
+
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: corpus-conformance
+          path: conformance.json

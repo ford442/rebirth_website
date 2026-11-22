@@ -431,7 +431,8 @@ WASM with Emscripten, built and deployed by CI.
   AudioWorkletProcessor → Web Audio API.
 - **It does**: parse v1/v1.5 and v2 `.rbs`, load `.rbm` drum samples
   (`loadMod`), synthesise TB-303 (ZDF ladder + PolyBLEP) and TR-808/909,
-  bounce offline to WAV mix or stems (`renderOfflineToWav`), and export `.mid`
+  bounce offline to WAV mix or stems (chunked: `beginOfflineRender` /
+  `renderOfflineChunk`), and export `.mid`
   from TypeScript (`src/lib/midi-smf.ts`).
 - **It does not**: write `.rbs`, edit patterns, or render `.rbm` skins. TRAK
   automation plays only via `loadSongFromBytes` — it is not part of the Embind

@@ -13,13 +13,13 @@ constexpr uint8_t MT = 0x08;
 constexpr uint8_t HT = 0x10;
 constexpr uint8_t CH = 0x20;
 constexpr uint8_t OH = 0x40;
-constexpr uint8_t CL = 0x80;
+constexpr uint8_t CL = 0x80; // byte 8 — claves (808) / hand clap (909)
 } // namespace DrumHit
 
 /** Secondary drum hits packed into `StepData.drumExtra` (bits 0–2). */
 namespace DrumExtra {
-constexpr uint8_t CP = 0x01; // byte 9 — clap / crash
-constexpr uint8_t MA = 0x02; // byte 10 — maracas / ride (Phase 2)
+constexpr uint8_t CP = 0x01; // byte 9 — clap (808) / crash (909)
+constexpr uint8_t MA = 0x02; // byte 10 — maracas (808) / ride (909)
 constexpr uint8_t RS = 0x04; // byte 11 — rimshot
 } // namespace DrumExtra
 

@@ -1,2 +1,11 @@
 CompileFlags:
   CompilationDatabase: src/wasm/cpp/build
+---
+# main.cpp and the worklet exist only in the Emscripten target, so the native
+# database (above) has no entry for them and Embind code gets no flags or
+# completions. Point them at the emcmake build's database instead — CMake
+# already exports it to src/wasm/cpp/build-wasm/ on every `npm run wasm:build`.
+If:
+  PathMatch: src/wasm/cpp/(main\.cpp|worklet/.*)
+CompileFlags:
+  CompilationDatabase: src/wasm/cpp/build-wasm

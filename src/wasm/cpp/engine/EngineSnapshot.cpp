@@ -3,7 +3,6 @@
 #include "../synth/Tb303Voice.h"
 #include "../synth/Tr808Voice.h"
 #include "../synth/Tr909Voice.h"
-#include <vector>
 
 namespace rb338 {
 
@@ -20,9 +19,6 @@ std::unique_ptr<EngineSnapshot> buildEngineSnapshot(
   snap->mixer = std::make_unique<Mixer>();
 
   snap->mixer->init(config.sampleRate);
-  snap->mixer->setDistortionEnabled(config.enableDistortion);
-  snap->mixer->setCompressorEnabled(config.enableCompressor);
-  snap->mixer->setDelayEnabled(config.enableDelay);
   for (size_t i = 0; i < snap->voices.size(); ++i) {
     if (!snap->voices[i]) continue;
     snap->voices[i]->init(config.sampleRate);
@@ -42,14 +38,7 @@ void applySongStateToSnapshot(EngineSnapshot& snap) {
   }
 
   for (size_t i = 0; i < snap.voices.size(); ++i) {
-    if (!snap.voices[i]) continue;
-    const DeviceId dev = static_cast<DeviceId>(i);
-    std::vector<Pattern> voicePatterns;
-    voicePatterns.reserve(snap.song.patterns.size());
-    for (const auto& pattern : snap.song.patterns) {
-      if (pattern.deviceId == dev) voicePatterns.push_back(pattern);
-    }
-    snap.voices[i]->load(snap.song.devices[i], voicePatterns);
+    if (snap.voices[i]) snap.voices[i]->load(snap.song.devices[i]);
   }
 }
 

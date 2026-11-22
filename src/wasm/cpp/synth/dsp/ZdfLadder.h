@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Denormal.h"
+
 #include <algorithm>
 #include <cmath>
 
@@ -74,7 +76,7 @@ public:
     for (float& stage : m_state) {
       const float v = (x - stage) * G;
       const float y = v + stage;
-      stage = y + v;
+      stage = flushDenormal(y + v); // the tail after note-off decays to 0
       x = y;
     }
     return x;

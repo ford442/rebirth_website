@@ -1,5 +1,5 @@
 import type { EngineModule, RbsAudioEngineInstance } from '../types/wasm-audio-engine';
-import { MASTER_BUS, STEM_DEVICES } from '../types/wasm-audio-engine';
+import { MASTER_BUS, OFFLINE_CHUNK_FRAMES, STEM_DEVICES } from '../types/wasm-audio-engine';
 import { loadModIntoEngine, loadSongIntoEngine } from './wasm-engine-io';
 import { locateWasmAsset } from './wasm-locate-file';
 import type { BounceRequest, BounceResponse } from './bounce-protocol';
@@ -50,16 +50,55 @@ function fillEngine(module: EngineModule, req: BounceRequest): RbsAudioEngineIns
   return engine;
 }
 
-function wavBuffer(bytes: Uint8Array): ArrayBuffer {
-  const copy = new Uint8Array(bytes.byteLength);
-  copy.set(bytes);
-  return copy.buffer;
-}
-
 function postResponse(response: BounceResponse, transfer: Transferable[] = []) {
   (
     self as unknown as { postMessage: (msg: BounceResponse, t?: Transferable[]) => void }
   ).postMessage(response, transfer);
+}
+
+/**
+ * Render one file in fixed chunks, posting each as a transferable buffer.
+ * The WASM heap holds a single chunk at a time, so a 15-minute song costs
+ * the same heap as a 15-second one.
+ */
+function streamFile(
+  engine: RbsAudioEngineInstance,
+  req: BounceRequest,
+  file: number,
+  deviceIndex: number,
+  frames: number,
+  sampleHeap: () => void
+): void {
+  if (!engine.beginOfflineRender(deviceIndex)) {
+    throw { code: 'HEAP_EXHAUSTED', message: 'Not enough WASM heap to start the bounce.' };
+  }
+  try {
+    postResponse({
+      id: req.id,
+      ok: true,
+      kind: 'begin',
+      file,
+      frames,
+      sampleRate: req.config.sampleRate,
+    });
+    let rendered = 0;
+    while (rendered < frames) {
+      const ask = Math.min(OFFLINE_CHUNK_FRAMES, frames - rendered);
+      const chunk = engine.renderOfflineChunk(ask);
+      const got = chunk.byteLength / 4;
+      if (got === 0) {
+        throw { code: 'PARSE_ERROR', message: 'The bounce stopped before the end of the song.' };
+      }
+      // A fresh JS-owned copy (see main.cpp), so its buffer can be handed
+      // over rather than copied again.
+      const data = chunk.buffer as ArrayBuffer;
+      postResponse({ id: req.id, ok: true, kind: 'chunk', file, data }, [data]);
+      rendered += got;
+      sampleHeap();
+    }
+  } finally {
+    engine.endOfflineRender();
+  }
 }
 
 self.onmessage = (event: MessageEvent<BounceRequest>) => {
@@ -74,21 +113,24 @@ self.onmessage = (event: MessageEvent<BounceRequest>) => {
         throw { code: 'PARSE_ERROR', message: 'Nothing to render.' };
       }
 
-      if (req.kind === 'stems') {
-        const wavs: ArrayBuffer[] = [];
-        for (const device of STEM_DEVICES) {
-          const bytes = engine.renderOfflineToWav(length, device.index);
-          wavs.push(wavBuffer(bytes));
-        }
-        const response: BounceResponse = { id: req.id, ok: true, kind: 'stems', wavs };
-        postResponse(response, wavs);
-        return;
-      }
-
-      const bytes = engine.renderOfflineToWav(length, req.deviceIndex ?? MASTER_BUS);
-      const wav = wavBuffer(bytes);
-      const response: BounceResponse = { id: req.id, ok: true, kind: 'wav', wav };
-      postResponse(response, [wav]);
+      const devices =
+        req.kind === 'stems'
+          ? STEM_DEVICES.map((device) => device.index)
+          : [req.deviceIndex ?? MASTER_BUS];
+      const heap = { peak: module.heapStats().usedBytes };
+      devices.forEach((deviceIndex, file) => {
+        streamFile(engine!, req, file, deviceIndex, length, () => {
+          heap.peak = Math.max(heap.peak, module.heapStats().usedBytes);
+        });
+      });
+      postResponse({
+        id: req.id,
+        ok: true,
+        kind: 'done',
+        files: devices.length,
+        peakHeapBytes: heap.peak,
+        heapSize: module.heapStats().heapSize,
+      });
     } catch (err) {
       const error =
         err && typeof err === 'object' && 'code' in err && 'message' in err

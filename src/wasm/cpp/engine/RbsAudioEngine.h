@@ -10,6 +10,7 @@
 #include "../audio/WavWriter.h"
 #include <array>
 #include <atomic>
+#include <cstdlib>
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -23,14 +24,10 @@ namespace rb338 {
  */
 struct EngineConfig {
   float sampleRate = 44100.0f;
-  uint32_t bufferSize = 128;
   bool enableTb303A = true;
   bool enableTb303B = true;
   bool enableTr808 = true;
   bool enableTr909 = true;
-  bool enableDistortion = true;
-  bool enableCompressor = true;
-  bool enableDelay = true;
 };
 
 /**
@@ -95,22 +92,35 @@ public:
   /** Diagnostics for the most recent loadMod() call. Main thread only. */
   const ModLoadReport& lastModReport() const { return m_modReport; }
 
+  // Transport commands go through the queue. Each returns false when the
+  // queue is full (64 pending commands — only possible while the audio
+  // callback is not running, e.g. a suspended AudioContext), so the caller
+  // can retry instead of silently losing a Stop.
+
   /** Start playback from the current position. */
-  void play();
+  bool play();
 
   /** Pause playback ( retains position ). */
-  void pause();
+  bool pause();
 
-  /** Stop playback and reset to bar 1. */
-  void stop();
+  /**
+   * Stop playback and reset to bar 1. Device knobs and mixer levels return
+   * to the song's own values (plus the session's knob overrides), undoing
+   * whatever TRAK automation had moved them to.
+   */
+  bool stop();
 
-  /** Seek to a specific bar (1-based). */
-  void seek(uint16_t bar);
+  /**
+   * Seek to a specific bar (1-based). Knob and mixer state is rebuilt as if
+   * playback had reached that bar: the song's values, then every automation
+   * event before it, in order.
+   */
+  bool seek(uint16_t bar);
 
-  /** Set master volume (0.0–1.0). */
+  /** Set master volume (0.0–1.0). Takes effect at the next block. */
   void setVolume(float volume);
 
-  /** Set absolute tempo in BPM (clamped to 40–250). */
+  /** Set absolute tempo in BPM (clamped to MIN_BPM–MAX_BPM, 20–500). */
   void setTempo(float bpm);
 
   /** Current absolute tempo in BPM. Safe to call from any thread. */
@@ -120,8 +130,15 @@ public:
   void setTempoMultiplier(float multiplier);
 
   /**
-   * Live device/mixer parameter. Main thread only — enqueued for the audio
-   * callback. Session-only; does not rewrite the loaded song file.
+   * Live device/mixer parameter. Main thread only. Session-only; does not
+   * rewrite the loaded song file.
+   *
+   * Written to a per-parameter atomic slot, not the command queue: twenty
+   * moves of one knob before the next audio block collapse into one, and
+   * can never fill the queue. Once moved, a knob also masks that knob's TRAK
+   * automation for the rest of the session — every song writes an initial
+   * value for every controller at tick 0, so without the mask a knob move
+   * would be undone the moment playback (or a bounce) restarted.
    */
   void setDeviceParam(uint8_t deviceId, uint8_t paramId, float value);
 
@@ -139,7 +156,15 @@ public:
   // Session-only, exactly like setDeviceParam(): the loaded `.rbs` bytes are
   // never rewritten. Reloading the file from disk restores the original.
 
-  /** Overwrite one step. Creates the pattern if the song has no such slot. */
+  /**
+   * Overwrite one step. Creates the pattern if the song has no such slot.
+   *
+   * The edit reaches the audio thread as a PatchStep command that rewrites
+   * the step in the live snapshot in place, so held 303 notes, filter state,
+   * the delay tail and automated knob values carry on through the edit.
+   * Only a slot the live snapshot does not have yet (a brand-new pattern) or
+   * a full queue falls back to rebuilding the graph.
+   */
   bool setStep(uint8_t deviceId, uint8_t bank, uint8_t patternIndex,
                uint8_t stepIndex, const StepData& step);
 
@@ -153,6 +178,20 @@ public:
 
   /** A pattern's play length, or 0 when the song has no such pattern. */
   uint8_t getPatternLength(uint8_t deviceId, uint8_t bank, uint8_t patternIndex) const;
+
+  /**
+   * One pattern of the working copy (edits included), or nullopt for a slot
+   * the song does not store. The UI fetches patterns through this rather
+   * than receiving every pattern on load. Main thread only.
+   */
+  std::optional<Pattern> getPattern(uint8_t deviceId, uint8_t bank,
+                                    uint8_t patternIndex) const;
+
+  /** The loaded song's arrangement (empty before a song is loaded). */
+  const std::vector<ArrangementBar>& arrangement() const { return m_song.arrangement; }
+
+  /** Load-time summary of the working copy: metadata, devices, slot map. */
+  SongSummary songSummary() const { return summariseSong(m_song); }
 
   // ── Saving (.rbs write-back) ──────────────────────────────────────
 
@@ -234,6 +273,40 @@ public:
   static constexpr uint8_t MASTER_BUS = 0xffu;
   std::vector<uint8_t> renderOfflineWav(uint32_t frames, uint8_t deviceIndex = MASTER_BUS);
 
+  // ── Chunked bounce ────────────────────────────────────────────────
+  //
+  // renderOfflineWav() holds the whole file in the WASM heap: 44.1 kHz
+  // stereo 16-bit is ~10.6 MiB a minute, so against the fixed 64 MiB heap
+  // anything past four or five minutes aborted the bounce worker. The
+  // chunked API keeps one fixed chunk on the heap instead; JavaScript copies
+  // each chunk out and assembles the file (header included) on its side.
+  //
+  //   beginOfflineRender(device)            rewind; solo a stem if asked
+  //   renderOfflineChunk(n) / chunk data    repeat until done (n <= CHUNK)
+  //   endOfflineRender()                    restore mutes, release the chunk
+
+  /** Largest frame count one renderOfflineChunk() call renders. */
+  static constexpr uint32_t OFFLINE_CHUNK_FRAMES = 1u << 16;
+
+  /**
+   * Start a chunked bounce. `deviceIndex` is a stem, or MASTER_BUS. Returns
+   * false when nothing is loaded or the chunk buffer cannot be allocated.
+   */
+  bool beginOfflineRender(uint8_t deviceIndex = MASTER_BUS);
+
+  /**
+   * Render the next `frames` (clamped to OFFLINE_CHUNK_FRAMES) as
+   * interleaved little-endian 16-bit stereo into the chunk buffer. Returns
+   * frames rendered; 0 outside a begin/end pair.
+   */
+  uint32_t renderOfflineChunk(uint32_t frames);
+
+  /** The chunk renderOfflineChunk() just wrote: frames × 2 channels × 2 bytes. */
+  const uint8_t* offlineChunkData() const { return m_offlineChunk.get(); }
+
+  /** Finish a chunked bounce, undoing the stem solo. */
+  void endOfflineRender();
+
   /** Push a control command from the main thread. Never blocks. */
   bool pushCommand(const EngineCommand& cmd);
 
@@ -255,6 +328,19 @@ private:
   void drainCommands();
   void handleCommand(const EngineCommand& cmd);
   void republishGraph();
+  /** Send a pattern patch to the audio thread, or rebuild if it cannot be. */
+  void publishPatternEdit(const Pattern& pattern, const EngineCommand& patch);
+  /**
+   * Rewind `snap` to the song state at `bar`: song knobs and mixer, then
+   * automation before `bar`, then the session's knob overrides. Allocation
+   * free — runs on the audio thread for Stop/Seek and on the main thread
+   * for an offline bounce.
+   */
+  void rewindGraph(EngineSnapshot* snap, uint16_t bar);
+  /** Apply knob slots the main thread has written since the last block. */
+  void drainParamSlots(EngineSnapshot* snap);
+  /** Session override mask, one bit per (device, DeviceParamId). */
+  uint64_t overrideMask() const { return m_paramOverridden.load(std::memory_order_acquire); }
   /** Locate a pattern in the working copy, appending an empty one if absent. */
   Pattern* findOrCreatePattern(uint8_t deviceId, uint8_t bank, uint8_t patternIndex);
   const Pattern* findPattern(uint8_t deviceId, uint8_t bank, uint8_t patternIndex) const;
@@ -264,6 +350,20 @@ private:
   /** Single offline render path; writes floats, WAV bytes, or both. */
   uint32_t runOfflineRender(uint32_t frames, uint8_t deviceIndex,
                             float* interleavedOut, WavPcm16Builder* wav);
+  /** Rewind and (for a stem) solo; shared by every offline entry point. */
+  EngineSnapshot* startOffline(uint8_t deviceIndex);
+  void finishOffline();
+  /** Render `count` (≤ AUDIO_WORKLET_FRAMES) frames of interleaved stereo. */
+  void renderOfflineQuantum(float* interleaved, uint32_t count);
+
+  // Offline render state (main thread / bounce worker only).
+  EngineSnapshot* m_offlineSnap = nullptr;
+  bool m_offlineStem = false;
+  std::array<bool, NUM_DEVICES> m_offlineSavedMutes{};
+  struct FreeDeleter {
+    void operator()(uint8_t* p) const { std::free(p); }
+  };
+  std::unique_ptr<uint8_t, FreeDeleter> m_offlineChunk;
   EngineSnapshot* pinSnapshot();
   void reclaimRetiredSnapshots();
   void resetVoices(EngineSnapshot* snap);
@@ -322,9 +422,21 @@ private:
   // or rewinding for an offline bounce — would therefore silently discard
   // every knob the user has touched. Replaying these afterwards is what
   // makes a bounce sound like what is actually playing.
-  static constexpr size_t NUM_DEVICE_PARAMS = 10; // DeviceParamId::Tune..Mute
-  std::array<std::array<float, NUM_DEVICE_PARAMS>, NUM_DEVICES> m_paramOverrides{};
-  std::array<std::array<bool, NUM_DEVICE_PARAMS>, NUM_DEVICES> m_paramOverrideSet{};
+  //
+  // The slots are the single store: the main thread writes a value and sets
+  // its dirty bit; the audio thread swaps the dirty mask out once per block
+  // and applies just those slots. `m_paramOverridden` is sticky — a bit,
+  // once set, says "the user owns this knob" for rebuilds, rewinds, saves
+  // and automation masking.
+  static constexpr size_t NUM_PARAM_SLOTS = size_t(NUM_DEVICES) * NUM_DEVICE_PARAMS;
+  static_assert(NUM_PARAM_SLOTS <= 64, "param bitmasks are 64-bit");
+  std::array<std::atomic<uint32_t>, NUM_PARAM_SLOTS> m_paramSlots{};
+  std::atomic<uint64_t> m_paramDirty{0};
+  std::atomic<uint64_t> m_paramOverridden{0};
+  static constexpr uint64_t paramBit(size_t device, size_t param) {
+    return uint64_t{1} << (device * NUM_DEVICE_PARAMS + param);
+  }
+  float paramSlotValue(size_t device, size_t param) const;
   void applyParamOverrides(EngineSnapshot* snap);
 
   // Per-device mono scratch buffers (member storage — not on the audio-thread stack).

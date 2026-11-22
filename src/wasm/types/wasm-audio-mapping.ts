@@ -23,7 +23,7 @@ import type {
   WasmArrangementBar,
   WasmDeviceId,
   WasmDeviceState,
-  WasmParsedSong,
+  WasmSongSummary,
   WasmPattern,
 } from './wasm-audio-song';
 import {
@@ -103,21 +103,34 @@ function toUiArrangementStep(wasmBar: WasmArrangementBar): ArrangementStep {
   };
 }
 
+/** Where the patterns and arrangement behind a `WasmSongSummary` come from. */
+export interface SongPatternSource {
+  getPattern(deviceId: number, bank: number, patternIndex: number): WasmPattern | undefined;
+  getArrangement(): EmbindVector<WasmArrangementBar>;
+}
+
 /**
- * Converts the raw Embind `WasmParsedSong` (returned by `RbsParser::parse`)
- * into the UI-facing `ParsedSong` shape. Consumes (and deletes) the
- * `patterns` / `arrangement` Embind vector handles as a side effect — call
- * this exactly once per parsed song.
+ * Builds the UI-facing `ParsedSong` from the slim Embind `WasmSongSummary`
+ * (returned by `loadSongFromBytes`), fetching each pattern the summary says
+ * the song stores, and the arrangement, from `source` — the engine's working
+ * copy. Consumes (and deletes) the arrangement vector handle it fetches.
  */
-export function toUiParsedSong(wasmSong: WasmParsedSong): ParsedSong {
-  const patterns = consumeVector(wasmSong.patterns);
-  const arrangement = consumeVector(wasmSong.arrangement);
+export function toUiParsedSong(summary: WasmSongSummary, source: SongPatternSource): ParsedSong {
+  const patterns: Pattern[] = [];
+  summary.patternSlots.forEach((mask, deviceId) => {
+    for (let slot = 0; slot < 32; slot += 1) {
+      if (((mask >>> slot) & 1) === 0) continue;
+      const pattern = source.getPattern(deviceId, slot >> 3, slot & 7);
+      if (pattern) patterns.push(toUiPattern(pattern));
+    }
+  });
+  const arrangement = consumeVector(source.getArrangement());
   return {
-    title: wasmSong.title,
-    author: wasmSong.author,
-    bpm: wasmSong.bpm,
-    devices: wasmSong.devices.map(toUiDeviceState),
-    patterns: patterns.map(toUiPattern),
+    title: summary.title,
+    author: summary.author,
+    bpm: summary.bpm,
+    devices: summary.devices.map(toUiDeviceState),
+    patterns,
     arrangement: arrangement.map(toUiArrangementStep),
   };
 }

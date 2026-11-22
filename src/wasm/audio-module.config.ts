@@ -20,26 +20,23 @@ export const wasmAudioConfig: WasmAudioModuleConfig = {
   /** Path of the AudioWorklet processor script */
   workletPath: `${prefix}wasm/rbsWorklet.js`,
 
-  /** Preferred AudioContext sample rate (Hz) */
-  preferredSampleRate: 44100,
+  /** Live AudioContext rate: null = the output device's own rate (no resampling) */
+  preferredSampleRate: null,
 
-  /** Request low output latency for interactive archive preview */
-  latencyHint: 'interactive',
+  /** Offline bounces stay at CD rate, where file compatibility matters */
+  offlineSampleRate: 44100,
 
-  /** Render quantum size in frames (standard Web Audio = 128) */
-  bufferSize: 128,
+  /** Passive archive listening: larger buffers, fewer glitches on low-end devices */
+  latencyHint: 'playback',
 
-  /** Maximum TB-303 polyphony (hardware is monophonic = 1) */
-  maxVoices: 1,
+  /** Studio, MIDI input or step editing: the context is rebuilt with this hint */
+  interactiveLatencyHint: 'interactive',
 
-  /** Runtime feature flags — disable modules on low-power devices */
+  /** Runtime feature flags — disable devices on low-power hardware */
   features: {
     tb303_a: true,
     tb303_b: true,
     tr808: true,
     tr909: true,
-    distortion: true,
-    compressor: true,
-    delay: true,
   },
 };

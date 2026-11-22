@@ -31,6 +31,7 @@ import { MASTER_BUS } from '../types/wasm-audio-engine';
 
 import { wasmAudioConfig } from '../audio-module.config';
 import type { AudioContextDiagnostics } from '../types/wasm-audio-config';
+import { TEMPO_MAX_BPM, TEMPO_MIN_BPM } from '../types/wasm-audio-config';
 import { toUiParsedMod, toUiParsedSong } from '../types/wasm-audio-mapping';
 import { WasmInitError, INIT_FAILURE_MESSAGES } from './rbs-init-errors';
 import {
@@ -75,6 +76,16 @@ export class WasmAudioBridge {
   private _modBuffer: ArrayBuffer | null = null;
   private _songTitle = '';
   private _paramOverrides = new Map<string, { deviceId: number; paramId: number; value: number }>();
+  /** Step or length edits made since the song loaded (a bounce must include them). */
+  private _patternsEdited = false;
+
+  /** Latency hint of the open (or next) AudioContext; see `useInteractiveLatency`. */
+  private _latencyHint: AudioContextLatencyCategory = wasmAudioConfig.latencyHint;
+  /** The in-flight close/reopen of the audio graph, so rebuilds never overlap. */
+  private _graphRebuild: Promise<void> | null = null;
+  /** True while the graph is closed because the page went into the bfcache. */
+  private _closedForPageHide = false;
+  private _pageListeners: (() => void) | null = null;
 
   /** The instantiated Emscripten module (heap probe / integration tests). */
   get wasmModule(): EngineModule | null {
@@ -215,55 +226,17 @@ export class WasmAudioBridge {
           }),
       });
 
-      // 3. Create AudioContext (retry without sampleRate on NotSupportedError)
-      const { context, diagnostics } = createProductionAudioContext(
-        wasmAudioConfig.preferredSampleRate,
-        wasmAudioConfig.latencyHint
-      );
-      this.audioContext = context;
-      this._audioDiagnostics = diagnostics;
-      this._audioLifecycle = attachAudioContextLifecycle(context);
-
-      // 4. Create WASM engine instance via Embind
-      const config: EngineConfig = this._buildEngineConfig();
-
+      // 4. Create the WASM engine instance via Embind. It is initialised
+      //    inside _openAudioGraph(), once the context's rate is known.
       // EMSCRIPTEN_BINDINGS exports Embind classes directly on the module.
       this.enginePtr = new this.module.RbsAudioEngine();
-      this.enginePtr.init(config);
 
-      // 5. Register the JS AudioContext with Emscripten and create the worklet
-      const contextHandle = this.module.emscriptenRegisterAudioObject(this.audioContext);
-
-      await new Promise<void>((resolve, reject) => {
-        this.module?.initAudioWorklet(contextHandle, this.enginePtr!, (nodeHandle) => {
-          if (nodeHandle == null || nodeHandle === 0) {
-            reject(
-              new WasmInitError({
-                reason: 'worklet-init-failed',
-                message: INIT_FAILURE_MESSAGES['worklet-init-failed'],
-              })
-            );
-            return;
-          }
-          this.workletNode =
-            this.module?.emscriptenGetAudioObject<AudioWorkletNode>(nodeHandle) ?? null;
-          resolve();
-        });
-      });
-
-      // 6. Connect worklet node to audio graph
-      if (!this.workletNode) {
-        throw new Error('AudioWorklet node was not created');
-      }
-      // GainNode stays at unity — master volume is applied in WASM (see
-      // audio-module.config.ts).
-      this.gainNode = this.audioContext.createGain();
-      this.gainNode.gain.value = 1.0;
-      this.workletNode.connect(this.gainNode);
-      this.gainNode.connect(this.audioContext.destination);
+      // 5. AudioContext + worklet + gain, at the device's own rate
+      await this._openAudioGraph();
 
       // Sync engine master volume with the UI default.
       this.enginePtr.setVolume(this.volume);
+      this._attachPageLifecycle();
 
       // Position polling starts with play() and ends when playback does.
       this._setStatus('ready');
@@ -319,13 +292,14 @@ export class WasmAudioBridge {
           throw err;
         }
 
-        const song = toUiParsedSong(parsed);
+        const song = toUiParsedSong(parsed, this.enginePtr);
 
         // Keep the source bytes so a bounce can rebuild this song offline.
         // A new song starts from its own knob values, so drop stale overrides.
         this._songBuffer = buffer.slice(0);
         this._songTitle = song.title;
         this._paramOverrides.clear();
+        this._patternsEdited = false;
 
         this._setStatus('ready');
         return song;
@@ -410,17 +384,17 @@ export class WasmAudioBridge {
    * drift — a bounce configured differently from the live engine would not
    * be the same render.
    */
-  private _buildEngineConfig(): EngineConfig {
+  private _buildEngineConfig(sampleRate?: number): EngineConfig {
     return {
-      sampleRate: this.audioContext?.sampleRate ?? wasmAudioConfig.preferredSampleRate,
-      bufferSize: wasmAudioConfig.bufferSize,
+      sampleRate:
+        sampleRate ??
+        this.audioContext?.sampleRate ??
+        wasmAudioConfig.preferredSampleRate ??
+        wasmAudioConfig.offlineSampleRate,
       enableTb303A: wasmAudioConfig.features.tb303_a,
       enableTb303B: wasmAudioConfig.features.tb303_b,
       enableTr808: wasmAudioConfig.features.tr808,
       enableTr909: wasmAudioConfig.features.tr909,
-      enableDistortion: wasmAudioConfig.features.distortion,
-      enableCompressor: wasmAudioConfig.features.compressor,
-      enableDelay: wasmAudioConfig.features.delay,
     };
   }
 
@@ -430,14 +404,23 @@ export class WasmAudioBridge {
       throw { code: 'PARSE_ERROR', message: 'Nothing to render' } satisfies EngineError;
     }
     this._audioLifecycle?.resumeIfNeeded();
+    // Pattern edits live only in the engine's working copy, so once there are
+    // any the bounce renders a save of it instead of the file from disk.
+    let songBytes = this._songBuffer.slice(0);
+    if (this._patternsEdited && this.enginePtr) {
+      const saved = this.enginePtr.saveRbs();
+      if (saved.byteLength > 0) songBytes = saved.slice().buffer;
+    }
     return {
-      songBytes: this._songBuffer.slice(0),
+      songBytes,
       modBytes: this._modBuffer ? this._modBuffer.slice(0) : null,
       paramOverrides: [...this._paramOverrides.values()],
       frames: frames && frames > 0 ? frames : 0,
       deviceIndex,
       tempo: this.enginePtr?.getTempo() ?? 125,
-      config: this._buildEngineConfig(),
+      // Bounces stay at 44.1 kHz whatever the device runs at: file
+      // compatibility matters more than matching the live rate.
+      config: this._buildEngineConfig(wasmAudioConfig.offlineSampleRate),
       glueScriptPath: wasmAudioConfig.glueScriptPath,
       wasmPath: wasmAudioConfig.wasmPath,
       workletPath: wasmAudioConfig.workletPath,
@@ -447,6 +430,11 @@ export class WasmAudioBridge {
   /** Render the loaded song to a WAV file on a Worker (AudioContext-free). */
   async bounceToWav(frames?: number, deviceIndex: number = MASTER_BUS): Promise<RenderedFile> {
     return this._bounce.renderWav(this._bouncePayload(frames, deviceIndex), this._downloadStem());
+  }
+
+  /** Worker WASM heap peak of the last finished bounce, or null (heap probe). */
+  get lastBounceHeap(): { peakBytes: number; heapSize: number } | null {
+    return this._bounce.lastHeap;
   }
 
   /** Render one WAV per device on a single Worker engine. */
@@ -561,7 +549,7 @@ export class WasmAudioBridge {
    */
   setTempoBpm(bpm: number): boolean {
     if (!this.enginePtr) return false;
-    const safeBpm = Math.max(40, Math.min(250, Math.round(bpm)));
+    const safeBpm = Math.max(TEMPO_MIN_BPM, Math.min(TEMPO_MAX_BPM, Math.round(bpm)));
     this.enginePtr.setTempo(safeBpm);
     return true;
   }
@@ -576,6 +564,7 @@ export class WasmAudioBridge {
     const param = Math.max(0, Math.min(MAX_DEVICE_PARAM_ID, Math.floor(paramId)));
     const clamped = Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
     this.enginePtr.setDeviceParam(id, param, clamped);
+    void this.useInteractiveLatency();
     // Remembered so an offline bounce reproduces what you are hearing, not
     // the song's untouched knob values. Live knob moves are session-only and
     // are never written back into the loaded song by the engine.
@@ -603,6 +592,8 @@ export class WasmAudioBridge {
     if (!this.enginePtr || typeof this.enginePtr.setStep !== 'function') return false;
     const coords = this._stepCoords(deviceId, bank, patternIndex, stepIndex);
     if (!coords) return false;
+    this._patternsEdited = true;
+    void this.useInteractiveLatency();
     return Boolean(
       this.enginePtr.setStep(coords.deviceId, coords.bank, coords.patternIndex, coords.stepIndex, {
         active: Boolean(step.active),
@@ -639,6 +630,8 @@ export class WasmAudioBridge {
     if (!coords) return false;
     const steps = Math.floor(length);
     if (!Number.isFinite(steps) || steps < 1 || steps > 16) return false;
+    this._patternsEdited = true;
+    void this.useInteractiveLatency();
     return Boolean(
       this.enginePtr.setPatternLength(coords.deviceId, coords.bank, coords.patternIndex, steps)
     );
@@ -685,6 +678,24 @@ export class WasmAudioBridge {
     return true;
   }
 
+  /**
+   * Switch the AudioContext to the interactive latency hint. Passive archive
+   * listening runs with `'playback'` (larger buffers, fewer glitches on
+   * low-end devices); the first studio edit, knob move or MIDI connection
+   * calls this once, which rebuilds the context and worklet around the same
+   * engine — playback carries on from where it was. Idempotent.
+   */
+  useInteractiveLatency(): Promise<void> {
+    const hint = wasmAudioConfig.interactiveLatencyHint;
+    if (this._latencyHint === hint) return this._graphRebuild ?? Promise.resolve();
+    this._latencyHint = hint;
+    if (!this.audioContext || this._closedForPageHide) return Promise.resolve();
+    return this._rebuildAudioGraph().catch((err) => {
+      console.error('[WasmAudioBridge] latency switch failed:', err);
+      this._setStatus('error');
+    });
+  }
+
   /** Clean up resources. */
   dispose(): void {
     this.stop();
@@ -696,6 +707,160 @@ export class WasmAudioBridge {
   // ── Private helpers ─────────────────────────────────────────────
 
   /**
+   * Create the AudioContext, start the Emscripten audio worklet on it and
+   * connect the output, around the existing engine.
+   *
+   * The engine is (re)initialised only when it has never run or the new
+   * context's rate differs from the one it was built for — and a re-init
+   * reloads the song, mod and knob moves, since voices are built per rate.
+   */
+  private async _openAudioGraph(): Promise<void> {
+    const module = this.module;
+    const engine = this.enginePtr;
+    if (!module || !engine) throw new Error('Bridge not initialised');
+
+    // Retries without sampleRate on NotSupportedError when a rate is forced.
+    const { context, diagnostics } = createProductionAudioContext(
+      wasmAudioConfig.preferredSampleRate,
+      this._latencyHint
+    );
+    const previousRate = this._audioDiagnostics?.sampleRate ?? null;
+    this.audioContext = context;
+    this._audioDiagnostics = diagnostics;
+    this._audioLifecycle = attachAudioContextLifecycle(context);
+
+    if (previousRate !== context.sampleRate) {
+      // Capture what only the engine holds before init() resets it.
+      const tempo = previousRate !== null ? engine.getTempo() : null;
+      const edited = previousRate !== null && this._patternsEdited ? engine.saveRbs() : null;
+      engine.init(this._buildEngineConfig());
+      if (previousRate !== null) {
+        this._reloadSession(engine, edited);
+        if (tempo !== null) engine.setTempo(tempo);
+      }
+    }
+
+    const contextHandle = module.emscriptenRegisterAudioObject(context);
+    await new Promise<void>((resolve, reject) => {
+      module.initAudioWorklet(contextHandle, engine, (nodeHandle) => {
+        if (nodeHandle == null || nodeHandle === 0) {
+          reject(
+            new WasmInitError({
+              reason: 'worklet-init-failed',
+              message: INIT_FAILURE_MESSAGES['worklet-init-failed'],
+            })
+          );
+          return;
+        }
+        this.workletNode = module.emscriptenGetAudioObject<AudioWorkletNode>(nodeHandle) ?? null;
+        resolve();
+      });
+    });
+
+    if (!this.workletNode) {
+      throw new Error('AudioWorklet node was not created');
+    }
+    // GainNode stays at unity — master volume is applied in WASM (see
+    // audio-module.config.ts).
+    this.gainNode = context.createGain();
+    this.gainNode.gain.value = 1.0;
+    this.workletNode.connect(this.gainNode);
+    this.gainNode.connect(context.destination);
+  }
+
+  /**
+   * Tear down the AudioContext and worklet, keeping the engine and its song.
+   * Awaits the close, so the old audio thread has stopped calling into the
+   * engine before a new one may start.
+   */
+  private async _closeAudioGraph(): Promise<void> {
+    this._audioLifecycle?.dispose();
+    this._audioLifecycle = null;
+    this.workletNode?.disconnect();
+    this.workletNode = null;
+    this.gainNode?.disconnect();
+    this.gainNode = null;
+    const context = this.audioContext;
+    this.audioContext = null;
+    // close() rejects on a context that is already closed; nothing to do then.
+    await context?.close().catch(() => {});
+  }
+
+  /** Close and reopen the graph (bfcache restore, latency change). Serialised. */
+  private _rebuildAudioGraph(): Promise<void> {
+    const run = async () => {
+      if (!this.enginePtr) return;
+      await this._closeAudioGraph();
+      if (!this.enginePtr) return; // disposed meanwhile
+      await this._openAudioGraph();
+    };
+    const next = (this._graphRebuild ?? Promise.resolve()).then(run, run);
+    this._graphRebuild = next.finally(() => {
+      if (this._graphRebuild === next) this._graphRebuild = null;
+    });
+    return next;
+  }
+
+  /** Put the song, mod and knob moves back into a freshly initialised engine. */
+  private _reloadSession(engine: RbsAudioEngineInstance, edited: Uint8Array | null): void {
+    if (!this.module) return;
+    const song = edited && edited.byteLength > 0 ? edited.slice().buffer : this._songBuffer;
+    if (song) {
+      const ptr = mallocCopy(this.module, new Uint8Array(song));
+      if (ptr !== 0) {
+        try {
+          engine.loadSongFromBytes(ptr, song.byteLength);
+        } finally {
+          this.module._free(ptr);
+        }
+      }
+    }
+    if (this._modBuffer) {
+      const ptr = mallocCopy(this.module, new Uint8Array(this._modBuffer));
+      if (ptr !== 0) {
+        try {
+          engine.loadMod(ptr, this._modBuffer.byteLength);
+        } finally {
+          this.module._free(ptr);
+        }
+      }
+    }
+    for (const o of this._paramOverrides.values()) {
+      engine.setDeviceParam(o.deviceId, o.paramId, o.value);
+    }
+  }
+
+  /**
+   * Close the AudioContext when the page is hidden and reopen it when the
+   * page comes back from the back/forward cache. An open AudioContext makes
+   * a page ineligible for the bfcache; the engine (and the loaded song) stay
+   * in WASM memory, so the restore is just a new context and worklet.
+   */
+  private _attachPageLifecycle(): void {
+    if (typeof window === 'undefined' || this._pageListeners) return;
+    const onPageHide = () => {
+      if (!this.audioContext) return;
+      this.pause();
+      this._closedForPageHide = true;
+      void this._closeAudioGraph();
+    };
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (!this._closedForPageHide || !event.persisted) return;
+      this._closedForPageHide = false;
+      void this._rebuildAudioGraph().catch((err) => {
+        console.error('[WasmAudioBridge] audio restore after bfcache failed:', err);
+        this._setStatus('error');
+      });
+    };
+    window.addEventListener('pagehide', onPageHide);
+    window.addEventListener('pageshow', onPageShow);
+    this._pageListeners = () => {
+      window.removeEventListener('pagehide', onPageHide);
+      window.removeEventListener('pageshow', onPageShow);
+    };
+  }
+
+  /**
    * Give back everything init() may have created, in whatever state it got
    * to: the poll, the audio graph, the AudioContext, the engine and the
    * module. Safe on a half-built or already-released bridge, and leaves it
@@ -703,6 +868,9 @@ export class WasmAudioBridge {
    */
   private _release(): void {
     this._stopPositionPolling();
+    this._pageListeners?.();
+    this._pageListeners = null;
+    this._closedForPageHide = false;
     this._audioLifecycle?.dispose();
     this._audioLifecycle = null;
     this.workletNode?.disconnect();

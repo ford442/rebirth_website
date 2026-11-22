@@ -47,10 +47,15 @@ std::vector<float> renderStandardRebirth303b(uint32_t totalFrames) {
   RbsParser parser;
   auto song = parser.parse(bytes.data(), bytes.size());
   if (!song) throw std::runtime_error("parse failed: " + parser.lastError());
+  // This is a DSP regression net for the voice, not for TRAK automation
+  // (test_offline.cpp covers that). The golden was rendered when automation
+  // past track 0 never reached the voices; the song's 303-B cutoff/env-mod
+  // automation would now move the timbre and mask a DSP change, so render
+  // the patterns against the song's static knob values.
+  song->automation.clear();
 
   EngineConfig cfg;
   cfg.sampleRate = 44100.0f;
-  cfg.bufferSize = 128;
   cfg.enableTb303A = false;
   cfg.enableTb303B = true;
   cfg.enableTr808 = false;

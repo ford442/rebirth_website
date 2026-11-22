@@ -26,11 +26,10 @@ std::vector<uint8_t> readFixture(const std::string& name) {
 EngineConfig testConfig() {
   EngineConfig cfg;
   cfg.sampleRate = 44100.0f;
-  cfg.bufferSize = 128;
-  // FX off so the comparison isolates the voices themselves.
-  cfg.enableDistortion = false;
-  cfg.enableCompressor = false;
-  cfg.enableDelay = false;
+  // The comparison isolates the voices: the synthetic songs below leave every
+  // SongFxSettings effect at its default (off). EngineConfig used to carry
+  // enable{Distortion,Compressor,Delay} flags for this, but setSongFx()
+  // overwrote them, so they never did anything and were removed.
   return cfg;
 }
 

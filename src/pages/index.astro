@@ -1,1 +1,1391 @@
-FULL_CONTENT_FROM_TMP_INDEX_ASTRO_NEW
+---
+// src/pages/index.astro — Landing page for the ReBirth RB-338 Community Archive
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArchiveQuickAccess from '../components/ArchiveQuickAccess.astro';
+import HardwarePanel from '../components/ui/HardwarePanel.astro';
+import Led from '../components/ui/Led.astro';
+import Knob from '../components/ui/Knob.astro';
+import StepButton from '../components/ui/StepButton.astro';
+import ActionButton from '../components/ui/ActionButton.astro';
+import RbsPlayer from '../components/RbsPlayer.astro';
+import ModCard from '../components/ModCard.astro';
+import { songCollections } from '../data/song-collections';
+import { normalizeBase } from '../lib/url';
+import { getWasmBuildStatus } from '../lib/wasm-build-status';
+import { DEMO_BY_ID, demoSongUrl, toPlayerDemos } from '../data/demo-songs';
+import {
+  formatStatRange,
+  totalSongsIndexed,
+  totalMods,
+  latestVersion,
+} from '../data/archive-stats';
+
+/* ── Types ─────────────────────────────────────────────────────── */
+
+interface FeaturedItem {
+  title: string;
+  fileType: '.rbm' | '.rbs';
+  description: string;
+  author: string;
+  tags: string[];
+  href?: string;
+  target?: string;
+  rel?: string;
+  browseHref?: string;
+  collectionPath?: string;
+  songCount?: number;
+  bpm?: number;
+  compatibility?: string;
+  demoSrc?: string;
+  externalHostLabel?: string;
+  tagHrefBase?: string;
+}
+
+interface SkinGalleryItem {
+  src: string;
+  alt: string;
+  caption: string;
+  label: string;
+}
+
+interface BeginnerPick {
+  title: string;
+  href: string;
+  note: string;
+}
+
+interface InspirationLink {
+  name: string;
+  href: string;
+  takeaway: string;
+}
+
+const base = normalizeBase(import.meta.env.BASE_URL);
+const wasmBuild = getWasmBuildStatus();
+
+/* ── Data ──────────────────────────────────────────────────────── */
+
+const featuredSongs: FeaturedItem[] = [
+  {
+    title: 'Cavey — Acid Lockdown',
+    fileType: '.rbs',
+    description:
+      'Razor-sharp 303 lines locked into a hypnotic groove. From the legendary Cavey artist collection.',
+    author: 'Cavey',
+    tags: ['acid', '303', 'lockgroove'],
+    browseHref: `${base}/archive/songs/Artists/Cavey/`,
+    collectionPath: 'Artists/Cavey',
+    songCount: songCollections.artists.folders.find((folder) => folder.name === 'Cavey')?.count,
+    bpm: 128,
+    compatibility: 'ReBirth 2.0',
+    demoSrc: demoSongUrl(base, DEMO_BY_ID['cavey-3-acid']),
+    tagHrefBase: `${base}/archive/songs?q=`,
+  },
+  {
+    title: 'DJ Knightmare — Factory Sequence',
+    fileType: '.rbs',
+    description:
+      'Dark industrial percussion and distorted synth stabs built for warehouse playback.',
+    author: 'DJ Knightmare',
+    tags: ['industrial', 'techno', 'dark'],
+    browseHref: `${base}/archive/songs/Artists/DJ%20Knightmare/`,
+    collectionPath: 'Artists/DJ Knightmare',
+    songCount: songCollections.artists.folders.find((folder) => folder.name === 'DJ Knightmare')
+      ?.count,
+    bpm: 134,
+    compatibility: 'ReBirth 2.0',
+    demoSrc: demoSongUrl(base, DEMO_BY_ID['dj-knightmare-amnesya']),
+    tagHrefBase: `${base}/archive/songs?q=`,
+  },
+  {
+    title: 'Noah Cohn — Euro Acid Line',
+    fileType: '.rbs',
+    description:
+      'Extended acid journey through European rave aesthetics. One of the most complete artist archives on the site.',
+    author: 'Noah Cohn',
+    tags: ['acid', 'euro', 'classic'],
+    browseHref: `${base}/archive/songs/Artists/Noah_Cohn_Complete/`,
+    collectionPath: 'Artists/Noah_Cohn_Complete',
+    songCount: songCollections.artists.folders.find(
+      (folder) => folder.name === 'Noah Cohn Complete'
+    )?.count,
+    bpm: 132,
+    compatibility: 'ReBirth 2.0',
+    demoSrc: demoSongUrl(base, DEMO_BY_ID['noah-cohn-20']),
+    tagHrefBase: `${base}/archive/songs?q=`,
+  },
+  {
+    title: 'Fanatic — Saturday Morning Sessions',
+    fileType: '.rbs',
+    description:
+      'Eclectic breaks and melodic hooks that channel retro cartoon energy into ReBirth patterns.',
+    author: 'Fanatic',
+    tags: ['breaks', 'eclectic', 'melodic'],
+    browseHref: `${base}/archive/songs/Artists/Fanatic/`,
+    collectionPath: 'Artists/Fanatic',
+    songCount: songCollections.artists.folders.find((folder) => folder.name === 'Fanatic')?.count,
+    compatibility: 'ReBirth 2.0',
+    tagHrefBase: `${base}/archive/songs?q=`,
+  },
+];
+
+const demoSongs = toPlayerDemos(base);
+
+const beginnerPicks: BeginnerPick[] = [
+  {
+    title: 'Cavey',
+    href: `${base}/archive/songs/Artists/Cavey/`,
+    note: 'Classic acid groove and easy first listen.',
+  },
+  {
+    title: 'DJ Knightmare',
+    href: `${base}/archive/songs/Artists/DJ%20Knightmare/`,
+    note: 'Darker industrial tone with strong drum programming.',
+  },
+  {
+    title: 'Noah Cohn Complete',
+    href: `${base}/archive/songs/Artists/Noah_Cohn_Complete/`,
+    note: 'Large artist catalog with varied arrangements.',
+  },
+  {
+    title: 'Fanatic',
+    href: `${base}/archive/songs/Artists/Fanatic/`,
+    note: 'Melodic and playful style for contrast.',
+  },
+  {
+    title: 'Featured Sampler',
+    href: `${base}/archive/songs?filter=featured`,
+    note: 'Quick route to curated picks.',
+  },
+];
+
+const inspirationLinks: InspirationLink[] = [
+  {
+    name: 'Internet Archive (Audio Collections)',
+    href: 'https://archive.org/details/audio',
+    takeaway: 'Strong discovery labels and collection context for first-time visitors.',
+  },
+  {
+    name: 'The Mod Archive',
+    href: 'https://modarchive.org/',
+    takeaway: 'Clear metadata and contributor visibility build trust quickly.',
+  },
+  {
+    name: 'Bandcamp Discover',
+    href: 'https://bandcamp.com/discover',
+    takeaway: 'Genre-led browsing and quick recommendations reduce newcomer friction.',
+  },
+];
+
+const featuredMods: FeaturedItem[] = [
+  {
+    title: 'Metallicon',
+    fileType: '.rbm',
+    description:
+      'One of the four official default mods from the original ReBirth 2.0.1 CD-ROM. Classic metal drums and aggressive bass.',
+    author: 'Propellerhead',
+    tags: ['official', 'classic', 'metal'],
+    href: 'https://storage.1ink.us/rebirth_mods/Metallicon.rbm',
+    externalHostLabel: 'storage.1ink.us',
+    tagHrefBase: `${base}/archive/mods?tag=`,
+    target: '_blank',
+    rel: 'noopener noreferrer',
+  },
+  {
+    title: 'Red Stripe',
+    fileType: '.rbm',
+    description:
+      'Official UK campaign mod built for a branding push. Run it at 338 BPM for full drum-roll chaos.',
+    author: 'Thomas & Wolfgang Merkle',
+    tags: ['official', 'dnb', 'fast'],
+    href: 'https://storage.1ink.us/rebirth_mods/Red_Stripe_a6.rbm',
+    externalHostLabel: 'storage.1ink.us',
+    tagHrefBase: `${base}/archive/mods?tag=`,
+    target: '_blank',
+    rel: 'noopener noreferrer',
+  },
+  {
+    title: 'Infernalizer',
+    fileType: '.rbm',
+    description:
+      'Hailed historically as "The Most Beautiful Mod Ever." Church organ, sharp drums, and dark synths.',
+    author: 'Jesuspark',
+    tags: ['dark', 'organ', 'award-winning'],
+    href: 'https://storage.1ink.us/rebirth_mods/INFERNALIZER.rbm',
+    externalHostLabel: 'storage.1ink.us',
+    tagHrefBase: `${base}/archive/mods?tag=`,
+    target: '_blank',
+    rel: 'noopener noreferrer',
+  },
+  {
+    title: 'AnokhaV2',
+    fileType: '.rbm',
+    description:
+      'Sitar loops, tabla samples, and Indian deity artwork. A world-music mod unlike anything else in the archive.',
+    author: 'Sam Laleo Singh',
+    tags: ['ethnic', 'world', 'sitar'],
+    href: 'https://storage.1ink.us/rebirth_mods/AnokhaV2.rbm',
+    externalHostLabel: 'storage.1ink.us',
+    tagHrefBase: `${base}/archive/mods?tag=`,
+    target: '_blank',
+    rel: 'noopener noreferrer',
+  },
+];
+
+const skinGalleryItems: SkinGalleryItem[] = [
+  {
+    src: `${base}/images/rebirth/default-skin.jpg`,
+    alt: 'ReBirth RB-338 default interface showing the stock silver TB-303, TR-808, and TR-909 panels with classic Roland-style knobs and step sequencer.',
+    caption:
+      'Stock skin — the original Propellerhead interface shipped with ReBirth 1.0 through 2.0.1 before any mod is loaded.',
+    label: 'DEFAULT SKIN',
+  },
+  {
+    src: `${base}/images/rebirth/metallicon.jpg`,
+    alt: 'Metallicon mod screenshot with brushed-metal panels, aggressive red accents, and heavy industrial drum machine graphics.',
+    caption:
+      'Metallicon — one of the four official default mods included with ReBirth 2.0.1, featuring classic metal drums and aggressive bass.',
+    label: 'METALLICON',
+  },
+  {
+    src: `${base}/images/rebirth/red-stripe.jpg`,
+    alt: 'Red Stripe mod interface with bold red branding panels, high-contrast drum controls, and campaign-style graphic design.',
+    caption:
+      'Red Stripe — official UK branding campaign mod by Thomas & Wolfgang Merkle; run transport at 338 BPM for full drum-roll chaos.',
+    label: 'RED STRIPE',
+  },
+  {
+    src: `${base}/images/rebirth/orbit2.jpg`,
+    alt: 'Orbit 2 mod screenshot with deep-space graphics, cosmic color palette, and futuristic ambient-style panel artwork.',
+    caption:
+      'Orbit / Orbit 2 — a beloved space-themed mod lineage from the 1.5 era, remastered for ReBirth 2.0 with ambient, futuristic visuals.',
+    label: 'ORBIT 2',
+  },
+  {
+    src: `${base}/images/rebirth/infernalizer.jpg`,
+    alt: 'Infernalizer mod showing ornate gothic panel art, church-organ motifs, and dark red and black interface styling.',
+    caption:
+      'Infernalizer — hailed historically as “The Most Beautiful Mod Ever,” with sharp drums, synths, and a church organ for dark styles.',
+    label: 'INFERNALIZER',
+  },
+  {
+    src: `${base}/images/rebirth/anokhav2.jpg`,
+    alt: 'AnokhaV2 mod interface decorated with Indian deity artwork, sitar motifs, and warm earth-tone panel graphics.',
+    caption:
+      'AnokhaV2 — sitar loops, tabla samples, and deity artwork create a world-music mod unlike anything else in the archive.',
+    label: 'ANOKHAV2',
+  },
+];
+
+// 16-step pattern for the hero sequencer (visual decoration)
+const songPattern = [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1];
+const bassPattern = [1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0];
+const kickPattern = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0];
+---
+
+<BaseLayout
+  title="Home"
+  description="Community archive for the ReBirth RB-338 software synthesizer — songs, mods, and history preserved."
+>
+  <HardwarePanel
+    ariaLabel="Archive master header"
+    variant="rackmount-chassis"
+    animate
+    class="rb-panel--center-header rb-panel--padded-body"
+  >
+    <div class="homepage-hero">
+      <div class="homepage-hero__copy">
+        <h1 class="master-title">
+          <span class="master-title__label">COMMUNITY ARCHIVE</span>
+          <span class="master-title__main">ReBirth RB-338</span>
+          <span class="master-title__tagline">Songs, mods, and history preserved for download</span>
+        </h1>
+        <p class="hero-summary">
+          Browse community song folders, download rare mods, and trace the history of
+          Propellerhead&apos;s classic software groovebox.
+        </p>
+      </div>
+      <div class="homepage-hero__meta">
+        <div class="master-leds">
+          <Led status="online" label="ARCHIVE ONLINE" />
+          <Led
+            status={wasmBuild.ready ? 'online' : 'pending'}
+            label={wasmBuild.ready ? 'WASM READY' : 'WASM PENDING'}
+          />
+        </div>
+        <div class="master-stats" aria-label="Archive stats">
+          <div
+            class="master-stat"
+            title={`${totalSongsIndexed.toLocaleString()} indexed .rbs files`}
+          >
+            <span class="master-stat__value">{formatStatRange(totalSongsIndexed)}</span>
+            <span class="master-stat__label">Songs</span>
+          </div>
+          <div class="master-stat" title={`${totalMods.toLocaleString()} .rbm mod files`}>
+            <span class="master-stat__value">{formatStatRange(totalMods)}</span>
+            <span class="master-stat__label">Mods</span>
+          </div>
+          <div class="master-stat">
+            <span class="master-stat__value">1997–2005</span>
+            <span class="master-stat__label">Era</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </HardwarePanel>
+
+  <HardwarePanel
+    ariaLabel="Start here guide for new visitors"
+    variant="rackmount-module"
+    animate
+    title="START HERE — NEW TO REBIRTH?"
+    ledStatus="online"
+    ledLabel="QUICK INTRO"
+    class="start-here-panel"
+  >
+    <div class="start-here">
+      <p class="start-here__summary">
+        ReBirth RB-338 is a software groovebox that recreates the <abbr
+          title="Roland TB-303 Bass Line">TB-303</abbr
+        >,
+        <abbr title="Roland TR-808 drum machine">TR-808</abbr>, and <abbr
+          title="Roland TR-909 drum machine">TR-909</abbr
+        >. This archive preserves songs and mods so new listeners can discover the sound.
+      </p>
+      <div class="start-here__links" role="navigation" aria-label="New visitor quick links">
+        <a class="start-here__link" href={`${base}/archive/songs`}>Listen to Songs</a>
+        <a class="start-here__link" href={`${base}/archive/mods`}>Browse Mods</a>
+        <a class="start-here__link" href={`${base}/history`}>Read History</a>
+        <a class="start-here__link" href={`${base}/beginner-guide`}>Beginner Guide</a>
+      </div>
+      <div class="start-here__picks">
+        <h2>If you&apos;re new, start with these 5 picks</h2>
+        <ol>
+          {
+            beginnerPicks.map((pick) => (
+              <li>
+                <a href={pick.href}>{pick.title}</a>
+                <span>{pick.note}</span>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </div>
+  </HardwarePanel>
+
+  <div class="archive-entry-strip" role="navigation" aria-label="Quick archive links">
+    <a
+      class="archive-entry-strip__link archive-entry-strip__link--songs"
+      href={`${base}/archive/songs`}>Browse Songs</a
+    >
+    <a
+      class="archive-entry-strip__link archive-entry-strip__link--mods"
+      href={`${base}/archive/mods`}>Browse Mods</a
+    >
+    <a class="archive-entry-strip__link" href={`${base}/history`}>History</a>
+    <a class="archive-entry-strip__link" href={`${base}/beginner-guide`}>Start Here</a>
+  </div>
+
+  <HardwarePanel
+    ariaLabel="OpenRB-338 modern reimplementation"
+    variant="rackmount-module"
+    animate
+    title="OPENRB-338 — MODERN PLAYBACK"
+    ledStatus="online"
+    ledLabel="OPEN SOURCE"
+    class="openrb-promo"
+  >
+    <p class="openrb-promo__text">
+      Play the archived <code>.rbs</code> songs on modern macOS, Windows, and Linux with
+      <strong>OpenRB-338</strong> — a free, open-source, bit-accurate reimplementation of ReBirth RB-338.
+      No original software or vintage computer required.
+    </p>
+    <div class="openrb-promo__actions">
+      <a class="rb-pattern-btn" href={`${base}/openrb338`}>Learn more &amp; download</a>
+      <a
+        class="rb-mix-btn"
+        href="https://github.com/pingw33n/openrb-338"
+        target="_blank"
+        rel="noopener noreferrer">GitHub</a
+      >
+    </div>
+  </HardwarePanel>
+
+  <ArchiveQuickAccess />
+
+  <h2 class="section-zone-label" id="featured-zone">Featured Archive</h2>
+
+  <section class="featured-deck" aria-label="Featured archive picks">
+    <HardwarePanel
+      ariaLabelledBy="songs-heading"
+      variant="rackmount-module"
+      animate
+      title="FEATURED SONGS — .RBS"
+      ledStatus="online"
+      ledLabel="4 FILES"
+      class="featured-deck__panel"
+    >
+      <div class="featured-header">
+        <p class="featured-summary">
+          Representative artist folders for a fast start into the song archive.
+        </p>
+        <ActionButton variant="pattern" href={`${base}/archive/songs`}>All Songs →</ActionButton>
+      </div>
+      <div class="card-grid card-grid--compact">
+        {featuredSongs.map((song) => <ModCard {...song} rackmount={true} />)}
+      </div>
+    </HardwarePanel>
+
+    <HardwarePanel
+      ariaLabelledBy="mods-heading"
+      variant="rackmount-module"
+      animate
+      title="FEATURED MODS — .RBM"
+      ledStatus="online"
+      ledLabel="4 FILES"
+      class="featured-deck__panel"
+    >
+      <div class="featured-header">
+        <p class="featured-summary">High-signal mod picks from the preserved `.rbm` catalog.</p>
+        <ActionButton variant="mix" href={`${base}/archive/mods`}>All Mods →</ActionButton>
+      </div>
+      <div class="card-grid card-grid--compact">
+        {featuredMods.map((mod) => <ModCard {...mod} rackmount={true} />)}
+      </div>
+    </HardwarePanel>
+  </section>
+
+  <section class="skin-gallery" aria-labelledby="skin-gallery-heading">
+    <HardwarePanel
+      ariaLabelledBy="skin-gallery-heading"
+      variant="rackmount-module"
+      animate
+      title="REBIRTH RB-338 — DEFAULT SKIN & 2.0 MODS"
+      ledStatus="online"
+      ledLabel="6 SKINS"
+      class="skin-gallery__panel"
+    >
+      <h2 class="sr-only" id="skin-gallery-heading">
+        ReBirth RB-338 default skin and 2.0-era mods
+      </h2>
+      <p class="skin-gallery__intro">
+        Mods arrived in ReBirth v1.5 and could completely replace the on-screen graphics and sample
+        sets — turning the same TB-303 / TR-808 / TR-909 engine into an entirely new instrument.
+      </p>
+
+      <!-- TODO: Replace with final hosted image URLs once uploaded to storage.1ink.us or public/images/ -->
+      <div class="gallery-grid" role="list" aria-label="ReBirth default skin and mod screenshots">
+        {
+          skinGalleryItems.map((item) => (
+            <figure class="gallery-grid__item" role="listitem">
+              <div class="gallery-grid__frame">
+                <span class="gallery-grid__label" aria-hidden="true">
+                  {item.label}
+                </span>
+                <img
+                  class="gallery-grid__image"
+                  src={item.src}
+                  alt={item.alt}
+                  loading="lazy"
+                  width="640"
+                  height="480"
+                  decoding="async"
+                />
+              </div>
+              <figcaption class="gallery-grid__caption">{item.caption}</figcaption>
+            </figure>
+          ))
+        }
+      </div>
+
+      <p class="skin-gallery__footer">
+        <a class="skin-gallery__archive-link" href={`${base}/archive/mods/index.html`}>
+          Browse the full mod archive →
+        </a>
+      </p>
+    </HardwarePanel>
+  </section>
+
+  <hr class="etched" />
+  <h2 class="section-zone-label" id="about-zone">About the RB-338</h2>
+
+  <details class="mobile-accordion" open>
+    <summary class="mobile-accordion__summary">About the hardware</summary>
+    <div class="mobile-accordion__content">
+      <HardwarePanel
+        ariaLabel="Hardware-themed archive details"
+        variant="rackmount-module"
+        animate
+        title="ABOUT THE HARDWARE"
+        ledStatus="pending"
+        ledLabel="OPTIONAL"
+      >
+        <div class="hardware-story">
+          <div class="rb-knob-row">
+            <Knob label="TUNE" rotation={-20} />
+            <Knob label="CUT OFF" rotation={30} />
+            <Knob label="RES" rotation={-45} />
+            <Knob label="ENV MOD" rotation={10} />
+            <Knob label="DECAY" rotation={-30} />
+            <Knob label="ACCENT" rotation={50} />
+          </div>
+          <div class="hero-body">
+            <aside aria-label="System readout" class="hero-right">
+              <div class="rb-terminal hero-terminal">
+                <div class="rb-terminal__bar">
+                  <span aria-hidden="true" class="dot dot--red"></span>
+                  <span aria-hidden="true" class="dot dot--amber"></span>
+                  <span aria-hidden="true" class="dot dot--green"></span>
+                  <span class="rb-terminal__title">rb338_archive.sh</span>
+                </div>
+                <pre
+                  aria-label="System status terminal"
+                  class="rb-terminal__body"><code>$ rb338 --status
+<span class="t-green">▶ ARCHIVE ONLINE</span>
+  est    : <span class="t-amber">1997</span>
+  songs  : <span class="t-green">{formatStatRange(totalSongsIndexed)}</span>
+  mods   : <span class="t-green">{formatStatRange(totalMods)}</span>
+  version: <span class="t-amber">{latestVersion}</span>
+  wasm   : <span class={wasmBuild.ready ? 't-green' : 't-dim'}>{wasmBuild.ready ? 'ready' : 'pending'}</span>
+
+$ rb338 --formats
+  *.rbs  — ReBirth Song file
+  *.rbm  — ReBirth Mod file
+  glossary: <span class="t-green">{base}/glossary</span>
+
+$ rb338 --about
+  <span class="t-green">Propellerhead ReBirth RB-338</span>
+  TB-303 · TR-808 · TR-909 emulation
+  Released <span class="t-amber">1997</span> · Abandonware <span class="t-amber">2005</span>
+
+$ _<span class="cursor-blink">█</span></code></pre>
+              </div>
+            </aside>
+            <div class="hero-left">
+              <div class="seq-tracks">
+                <div aria-label="Song pattern" class="seq-row" role="group">
+                  <span class="seq-row__label">SONG</span>
+                  <div aria-hidden="true" class="rb-step-grid">
+                    {
+                      songPattern.map((active, i) => (
+                        <StepButton
+                          active={active === 1}
+                          beat={i % 4 === 0}
+                          ariaLabel={`Step ${i + 1} ${active ? 'on' : 'off'}`}
+                          title={`Step ${i + 1}`}
+                        />
+                      ))
+                    }
+                  </div>
+                </div>
+                <div aria-label="Bass pattern" class="seq-row" role="group">
+                  <span class="seq-row__label">BASS</span>
+                  <div aria-hidden="true" class="rb-step-grid">
+                    {
+                      bassPattern.map((active, i) => (
+                        <StepButton
+                          active={active === 1}
+                          beat={i % 4 === 0}
+                          ariaLabel={`Step ${i + 1} ${active ? 'on' : 'off'}`}
+                          title={`Step ${i + 1}`}
+                        />
+                      ))
+                    }
+                  </div>
+                </div>
+                <div aria-label="Kick pattern" class="seq-row seq-row--kick" role="group">
+                  <span class="seq-row__label">KICK</span>
+                  <div aria-hidden="true" class="rb-step-grid">
+                    {
+                      kickPattern.map((active, i) => (
+                        <StepButton
+                          active={active === 1}
+                          beat={i % 4 === 0}
+                          ariaLabel={`Step ${i + 1} ${active ? 'on' : 'off'}`}
+                          title={`Step ${i + 1}`}
+                        />
+                      ))
+                    }
+                  </div>
+                </div>
+              </div>
+              <div aria-hidden="true" class="seq-numbers">
+                <span class="seq-row__label"></span>
+                <div class="seq-num-row">
+                  {
+                    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map((n) => (
+                      <span class="seq-num">{n}</span>
+                    ))
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </HardwarePanel>
+    </div>
+  </details>
+
+  <details class="mobile-accordion" open>
+    <summary class="mobile-accordion__summary">Information modules</summary>
+    <div class="mobile-accordion__content">
+      <HardwarePanel
+        ariaLabel="About the Archive"
+        animate
+        variant="rackmount"
+        title="INFORMATION MODULES"
+        ledStatus="online"
+        ledLabel="OK"
+      >
+        <div class="about-row">
+          <div class="about-modules">
+            <article class="rb-file-card rb-card-rack">
+              <div class="rb-panel__header rb-panel--clean-header">
+                <span class="rb-panel__title">WHAT IS REBIRTH?</span>
+                <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
+              </div>
+              <p>
+                Released by Propellerhead Software in <strong>1997</strong>, <strong
+                  >ReBirth RB-338</strong
+                > was one of the first software synthesizers to faithfully emulate the <strong
+                  >Roland TB-303</strong
+                > Bass Line and the Roland TR-808 / TR-909 drum machines. It became a cornerstone of electronic
+                music production and is now freely available as abandonware.
+              </p>
+            </article>
+            <article class="rb-file-card rb-card-rack">
+              <div class="rb-panel__header rb-panel--clean-header">
+                <span class="rb-panel__title">WHAT IS THIS SITE?</span>
+                <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
+              </div>
+              <p>
+                This community archive preserves <code>.rbs</code> song files and <code>.rbm</code> mod
+                files contributed by enthusiasts worldwide. It also hosts historical documentation spanning
+                versions <code>1.0</code> through <code>2.0.1</code> and lays the groundwork for in-browser
+                <code>.rbs</code> preview via WebAssembly. Need term help? Open the <a
+                  href={`${base}/glossary`}>glossary</a
+                >.
+              </p>
+            </article>
+            <article class="rb-file-card rb-card-rack">
+              <div class="rb-panel__header rb-panel--clean-header">
+                <span class="rb-panel__title">HOW TO CONTRIBUTE?</span>
+                <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
+              </div>
+              <p>
+                Open a pull request on the <a
+                  href="https://github.com/ford442/rebirth_website"
+                  rel="noopener noreferrer"
+                  target="_blank">GitHub repository</a
+                >. Place song files in <code>public/archive/rbs-songs/</code> and mod files in <code
+                  >public/archive/rbm-mods/</code
+                >. See the <a href={`${base}/docs`}>documentation</a> for naming conventions and metadata
+                requirements.
+              </p>
+            </article>
+          </div>
+        </div>
+      </HardwarePanel>
+    </div>
+  </details>
+
+  <details class="mobile-accordion" open>
+    <summary class="mobile-accordion__summary">Community trust and discovery</summary>
+    <div class="mobile-accordion__content">
+      <HardwarePanel
+        ariaLabel="Community trust signals"
+        animate
+        variant="rackmount"
+        title="ARCHIVE TRUST SIGNALS"
+        ledStatus="online"
+        ledLabel="COMMUNITY"
+      >
+        <div class="trust-grid">
+          <article class="rb-file-card rb-card-rack">
+            <div class="rb-panel__header rb-panel--clean-header">
+              <span class="rb-panel__title">WHY THIS ARCHIVE EXISTS</span>
+              <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
+            </div>
+            <p>
+              This is a preservation project for ReBirth-era community music, visuals, and
+              documentation. The goal is long-term public access for newcomers and original fans.
+            </p>
+          </article>
+          <article class="rb-file-card rb-card-rack">
+            <div class="rb-panel__header rb-panel--clean-header">
+              <span class="rb-panel__title">CONTRIBUTE</span>
+              <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
+            </div>
+            <p>
+              Help document mods, add archive metadata, or submit fixes through the <a
+                href="https://github.com/ford442/rebirth_website"
+                target="_blank"
+                rel="noopener noreferrer">GitHub repository</a
+              >.
+            </p>
+          </article>
+          <article class="rb-file-card rb-card-rack">
+            <div class="rb-panel__header rb-panel--clean-header">
+              <span class="rb-panel__title">NEW TO THE FORMAT?</span>
+              <span aria-hidden="true" class="rb-screw rb-screw--static"></span>
+            </div>
+            <p>
+              Use the <a href={`${base}/glossary`}>Glossary</a> for terms like <code>.rbs</code>, <code
+                >.rbm</code
+              >, and pattern sequencing before diving into the full archive.
+            </p>
+          </article>
+        </div>
+      </HardwarePanel>
+    </div>
+  </details>
+
+  <details class="mobile-accordion" open>
+    <summary class="mobile-accordion__summary">Archive inspiration links</summary>
+    <div class="mobile-accordion__content">
+      <HardwarePanel
+        ariaLabel="Reference music archive links"
+        animate
+        variant="rackmount-module"
+        title="REFERENCE ARCHIVES & UX INSPIRATION"
+        ledStatus="pending"
+        ledLabel="3 SOURCES"
+      >
+        <p class="inspiration-intro">
+          We benchmark newcomer-friendly discovery patterns against established music archive sites:
+        </p>
+        <ul class="inspiration-list">
+          {
+            inspirationLinks.map((link) => (
+              <li>
+                <a href={link.href} target="_blank" rel="noopener noreferrer">
+                  {link.name}
+                </a>
+                <p>{link.takeaway}</p>
+              </li>
+            ))
+          }
+        </ul>
+      </HardwarePanel>
+    </div>
+  </details>
+
+  <h2 class="section-zone-label" id="player-zone" tabindex="-1">Browser Preview</h2>
+
+  <!-- ╔══════════════════════════════════════════════════════════════════════╗ -->
+  <!-- ║  WASM PLAYER — In-browser .rbs preview engine                       ║ -->
+  <!-- ╚══════════════════════════════════════════════════════════════════════╝ -->
+  <RbsPlayer title="BROWSER PLAYBACK ENGINE" demos={demoSongs} />
+
+  <!-- Mobile sticky archive action bar -->
+  <nav class="mobile-action-bar" aria-label="Mobile archive shortcuts">
+    <a class="mobile-action-bar__btn mobile-action-bar__btn--songs" href={`${base}/archive/songs`}>
+      Browse Songs
+    </a>
+    <a class="mobile-action-bar__btn mobile-action-bar__btn--mods" href={`${base}/archive/mods`}>
+      Browse Mods
+    </a>
+  </nav>
+  <div class="mobile-action-bar-spacer" aria-hidden="true"></div>
+
+  <script>
+    (function () {
+      function updateMobileAccordions() {
+        const narrow = window.matchMedia('(max-width: 767px)').matches;
+        document.querySelectorAll('.mobile-accordion').forEach((details) => {
+          if (narrow) {
+            details.removeAttribute('open');
+          } else {
+            details.setAttribute('open', '');
+          }
+        });
+      }
+      updateMobileAccordions();
+      window.addEventListener('resize', updateMobileAccordions);
+    })();
+  </script>
+</BaseLayout>
+
+<style>
+  /* Container constraint for main content panels */
+  main > .rb-panel,
+  main > .rb-rack,
+  main > .archive-entry-strip,
+  main > .featured-deck,
+  main > .skin-gallery,
+  main > hr.etched,
+  main > .section-zone-label {
+    /* Added from main branch */
+    max-width: 1100px;
+    margin-inline: auto;
+  }
+
+  main > .archive-entry-strip,
+  main > .quick-browse,
+  main > .featured-deck,
+  main > .skin-gallery {
+    margin-bottom: 1.5rem;
+  }
+
+  .homepage-hero {
+    display: grid;
+    gap: 1.5rem;
+    align-items: end;
+  }
+
+  .homepage-hero__copy {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .homepage-hero__meta {
+    display: grid;
+    gap: 1rem;
+    justify-items: start;
+  }
+
+  .hero-summary {
+    max-width: 60ch;
+    margin: 0;
+    color: var(--color-text);
+    font-size: 1rem;
+  }
+
+  .start-here-panel {
+    margin-top: 1rem;
+  }
+
+  .start-here {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .start-here__summary {
+    margin: 0;
+    max-width: 74ch;
+    color: var(--color-text);
+  }
+
+  .start-here__links {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .start-here__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.8rem;
+    border: 1px solid var(--rb-border);
+    border-radius: var(--rb-radius);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: var(--rb-font-display);
+    font-size: 0.72rem;
+    color: var(--rb-silver);
+    background: linear-gradient(180deg, #2a2a2a 0%, #1c1c1c 100%);
+  }
+
+  .start-here__link:hover,
+  .start-here__link:focus-visible {
+    color: var(--rb-amber);
+    border-color: var(--rb-amber-dim);
+  }
+
+  .start-here__picks h2 {
+    margin: 0 0 0.6rem;
+    font-size: 0.95rem;
+    color: var(--rb-silver);
+  }
+
+  .start-here__picks ol {
+    margin: 0;
+    padding-left: 1.25rem;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .start-here__picks li a {
+    color: var(--rb-amber);
+    text-decoration: none;
+    font-family: var(--rb-font-display);
+  }
+
+  .start-here__picks li a:hover,
+  .start-here__picks li a:focus-visible {
+    color: var(--rb-green-bright);
+    text-decoration: underline;
+  }
+
+  .start-here__picks li span {
+    margin-left: 0.4rem;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+  }
+
+  .archive-entry-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .archive-entry-strip__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3.25rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--rb-border);
+    border-radius: var(--rb-radius);
+    background: linear-gradient(180deg, #262626, #1e1e1e);
+    font-family: var(--rb-font-display);
+    font-size: var(--text-md);
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    text-transform: uppercase;
+    color: var(--rb-silver);
+  }
+
+  .archive-entry-strip__link--songs:hover,
+  .archive-entry-strip__link--songs:focus-visible {
+    color: var(--rb-green);
+  }
+
+  .archive-entry-strip__link--mods:hover,
+  .archive-entry-strip__link--mods:focus-visible {
+    color: var(--rb-amber);
+  }
+
+  /* Zone-level section headings — visible eyebrows between major page zones */
+  .section-zone-label {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: var(--space-xl) 0 var(--space-md);
+    padding-inline: 1rem;
+    font-family: var(--font-title);
+    font-size: var(--text-sm);
+    font-weight: 400;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--rb-silver-dim);
+  }
+
+  .section-zone-label::before,
+  .section-zone-label::after {
+    content: '';
+    flex: 1;
+    height: 0;
+    border-top: 1px solid #1a1a1a;
+    border-bottom: 1px solid #3a3a3a;
+  }
+
+  .featured-deck {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .featured-deck__panel {
+    margin-bottom: 0;
+  }
+
+  .featured-summary {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-md);
+    max-width: 34ch;
+  }
+
+  .card-grid--compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .skin-gallery__panel {
+    margin-bottom: 0;
+  }
+
+  .skin-gallery__intro {
+    margin: 0 0 1.25rem;
+    max-width: 68ch;
+    color: var(--color-text-muted);
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .gallery-grid__item {
+    display: grid;
+    gap: 0.65rem;
+    margin: 0;
+  }
+
+  .gallery-grid__frame {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--rb-border);
+    border-radius: 6px;
+    background: linear-gradient(180deg, #1f1f1f 0%, #141414 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.04),
+      0 2px 8px rgba(0, 0, 0, 0.35);
+  }
+
+  .gallery-grid__label {
+    position: absolute;
+    top: 0.55rem;
+    left: 0.55rem;
+    z-index: 1;
+    padding: 0.2rem 0.45rem;
+    border: 1px solid rgba(255, 176, 0, 0.35);
+    border-radius: 3px;
+    background: rgba(17, 17, 17, 0.82);
+    font-family: var(--rb-font-display);
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--rb-amber);
+  }
+
+  .gallery-grid__image {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: top center;
+    background: #0d0d0d;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .gallery-grid__caption {
+    margin: 0;
+    padding: 0 0.15rem;
+    color: var(--color-text);
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  .gallery-grid__caption::before {
+    content: '▸ ';
+    color: var(--rb-green-bright);
+    font-family: var(--rb-font-display);
+  }
+
+  .skin-gallery__footer {
+    margin: 1.25rem 0 0;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--rb-border);
+    text-align: right;
+  }
+
+  .skin-gallery__archive-link {
+    font-family: var(--rb-font-display);
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--rb-amber);
+  }
+
+  .skin-gallery__archive-link:hover,
+  .skin-gallery__archive-link:focus-visible {
+    color: var(--rb-green-bright);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .hardware-story {
+    display: grid;
+    gap: 1rem;
+  }
+
+  /* Scoped knob sizing for the controls panel */
+  .rb-knob-row {
+    justify-content: space-around;
+    margin-bottom: 1rem;
+  }
+
+  /* About module inner card heading override */
+  .rb-file-card .rb-panel__header {
+    gap: 0.5rem;
+  }
+
+  /* Ensure about row grid works correctly inside panel body */
+  .about-row {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .trust-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .inspiration-intro {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .inspiration-list {
+    margin: 0.75rem 0 0;
+    padding-left: 1.2rem;
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .inspiration-list a {
+    color: var(--rb-amber);
+    text-decoration: none;
+    font-family: var(--rb-font-display);
+  }
+
+  .inspiration-list a:hover,
+  .inspiration-list a:focus-visible {
+    color: var(--rb-green-bright);
+    text-decoration: underline;
+  }
+
+  .inspiration-list p {
+    margin: 0.25rem 0 0;
+    color: var(--color-text-muted);
+    font-size: 0.86rem;
+  }
+
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .about-row,
+    .trust-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .about-row,
+    .trust-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .homepage-hero {
+      grid-template-columns: minmax(0, 1.5fr) minmax(18rem, 1fr);
+    }
+  }
+
+  .about-modules {
+    display: contents;
+  }
+
+  @media (max-width: 1023px) {
+    .archive-entry-strip,
+    .start-here__links,
+    .featured-deck,
+    .gallery-grid,
+    .card-grid--compact {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (min-width: 360px) and (max-width: 767px) {
+    .featured-deck,
+    .card-grid--compact {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .featured-deck :global(.mod-card__desc) {
+      display: none;
+    }
+
+    /* Compact chip display: show last 2 meta rows (BPM + Version) as inline badges */
+    .featured-deck :global(.mod-card__meta) {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      padding: 0.2rem 0;
+      border: none;
+      background: transparent;
+    }
+
+    .featured-deck :global(.mod-card__meta-row) {
+      display: none;
+    }
+
+    .featured-deck :global(.mod-card__meta-row:nth-last-child(-n + 2)) {
+      display: flex;
+      align-items: center;
+      gap: 0.25em;
+      padding: 0.15rem 0.45rem;
+      background: rgba(255, 176, 0, 0.07);
+      border: 1px solid rgba(255, 176, 0, 0.22);
+      border-radius: var(--rb-radius-sm);
+    }
+
+    .featured-deck :global(.mod-card__meta-row dt) {
+      font-size: 0.55rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    .featured-deck :global(.mod-card__meta-row dd) {
+      font-size: 0.7rem;
+      color: var(--rb-amber);
+      margin: 0;
+    }
+  }
+
+  /* Mobile accordion for decorative panels */
+  .mobile-accordion > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .mobile-accordion > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile-accordion__summary {
+    display: none;
+  }
+
+  .mobile-action-bar {
+    display: none;
+  }
+
+  .mobile-action-bar-spacer {
+    display: none;
+  }
+
+  @media (max-width: 767px) {
+    .mobile-accordion__summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--rb-border);
+      border-radius: var(--rb-radius);
+      background: linear-gradient(180deg, #2a2a2a 0%, #222 100%);
+      font-family: var(--rb-font-display);
+      font-size: var(--text-sm);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--rb-amber);
+    }
+
+    .mobile-accordion__summary::after {
+      content: '+';
+      font-size: 1.1rem;
+      color: var(--rb-silver-dim);
+    }
+
+    .mobile-accordion[open] > .mobile-accordion__summary::after {
+      content: '−';
+    }
+
+    .rb-knob-row,
+    .seq-tracks,
+    .seq-numbers {
+      display: none;
+    }
+
+    .homepage-hero {
+      gap: 1rem;
+    }
+
+    .master-title__main {
+      font-size: clamp(1.6rem, 8vw, 2.2rem);
+    }
+
+    .master-stats {
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .master-stat {
+      padding: 0.35rem 0.5rem;
+    }
+
+    .master-stat__value {
+      font-size: 1rem;
+    }
+
+    .archive-entry-strip {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.5rem;
+    }
+
+    .archive-entry-strip__link {
+      min-height: 2.75rem;
+      padding: 0.5rem;
+      font-size: var(--text-sm);
+    }
+
+    .mobile-action-bar {
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 900;
+      gap: 0.75rem;
+      padding: 0.5rem 1rem;
+      background: linear-gradient(0deg, #0f0f0f 0%, #1a1a1a 100%);
+      border-top: 2px solid #111;
+      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.7);
+    }
+
+    .mobile-action-bar__btn {
+      flex: 1 1 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--rb-radius);
+      border: 1px solid var(--rb-border);
+      border-bottom: 2px solid #111;
+      font-family: var(--rb-font-display);
+      font-size: var(--text-sm);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      text-align: center;
+      color: #fff;
+      transition: all 120ms ease;
+    }
+
+    .mobile-action-bar__btn--songs {
+      background: linear-gradient(180deg, #339958 0%, #1a5230 100%);
+      border-color: var(--rb-green-dim);
+    }
+
+    .mobile-action-bar__btn--mods {
+      background: linear-gradient(180deg, #d42040 0%, #8a1525 100%);
+      border-color: var(--rb-red-dim);
+    }
+
+    .mobile-action-bar__btn:hover,
+    .mobile-action-bar__btn:focus-visible {
+      filter: brightness(1.15);
+      outline: none;
+    }
+
+    .mobile-action-bar-spacer {
+      display: block;
+      height: 4.25rem;
+    }
+  }
+</style>

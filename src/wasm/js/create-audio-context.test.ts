@@ -52,6 +52,16 @@ describe('createProductionAudioContext', () => {
     });
   });
 
+  it('uses the device rate when no rate is preferred', () => {
+    const { Ctor, calls } = fakeCtor(() => {}, { sampleRate: 48000 });
+    vi.stubGlobal('AudioContext', Ctor);
+    const { diagnostics } = createProductionAudioContext(null, 'playback');
+    // No sampleRate option at all: the browser picks the hardware rate.
+    expect(calls).toEqual([{ latencyHint: 'playback' }]);
+    expect(diagnostics.sampleRate).toBe(48000);
+    expect(diagnostics.requestedSampleRate).toBeNull();
+  });
+
   it('passes a custom latency hint through', () => {
     const { Ctor, calls } = fakeCtor();
     vi.stubGlobal('AudioContext', Ctor);

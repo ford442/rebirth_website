@@ -4,14 +4,21 @@
  * Everything here describes a handle, a call signature or a struct that
  * actually crosses into C++ — `EngineConfig`, the `RbsAudioEngine` /
  * `RbsParser` / `RbmParser` instance shapes, the Emscripten module object,
- * and the offline-bounce helpers that drive `renderOfflineToWav`.
+ * and the offline-bounce helpers that drive the chunked `renderOfflineChunk`.
  *
  * The single source of truth for the C++ <-> TypeScript contract is
  * `src/wasm/CONTRACT.md`. Run `npm run contract:check` after changing either
  * side.
  */
 
-import type { DeviceId, WasmDeviceId, WasmParsedSong, WasmStepData } from './wasm-audio-song';
+import type {
+  DeviceId,
+  WasmArrangementBar,
+  WasmDeviceId,
+  WasmPattern,
+  WasmSongSummary,
+  WasmStepData,
+} from './wasm-audio-song';
 import type { WasmModLoadReport } from './wasm-audio-mod';
 
 /** Runtime engine configuration passed from JS to WASM on init.
@@ -19,10 +26,8 @@ import type { WasmModLoadReport } from './wasm-audio-mod';
  *  Matches `EngineConfig` in `src/wasm/cpp/engine/RbsAudioEngine.h` exactly.
  */
 export interface EngineConfig {
-  /** Host AudioContext sample rate (Hz) */
+  /** Host AudioContext sample rate (Hz); the offline bounce uses its own. */
   sampleRate: number;
-  /** Render quantum size in frames (typically 128) */
-  bufferSize: number;
   /** Enable TB-303 voice A */
   enableTb303A: boolean;
   /** Enable TB-303 voice B */
@@ -31,12 +36,6 @@ export interface EngineConfig {
   enableTr808: boolean;
   /** Enable TR-909 drum machine */
   enableTr909: boolean;
-  /** Enable distortion FX */
-  enableDistortion: boolean;
-  /** Enable compressor FX */
-  enableCompressor: boolean;
-  /** Enable delay FX */
-  enableDelay: boolean;
 }
 
 /** Current playback position returned by the engine */
@@ -67,6 +66,9 @@ export interface EmbindVector<T> {
 /** `deviceIndex` value that renders the full mix rather than a stem. */
 export const MASTER_BUS = 255;
 
+/** Mirrors `RbsAudioEngine::OFFLINE_CHUNK_FRAMES`: frames per bounce chunk. */
+export const OFFLINE_CHUNK_FRAMES = 1 << 16;
+
 /** Device order used by stem exports, matching C++ `DeviceId`. */
 export const STEM_DEVICES: ReadonlyArray<{ index: number; id: DeviceId; slug: string }> = [
   { index: 0, id: 'tb303-a', slug: '303a' },
@@ -95,22 +97,27 @@ export type WorkletNodeHandle = number;
 export interface RbsAudioEngineInstance {
   init(config: EngineConfig): boolean;
   /**
-   * In-process writer/test path. Archive loads must use loadSongFromBytes so
-   * TRAK automation is not dropped by the Embind copy.
+   * Parse + load from WASM heap bytes. Returns the slim summary, or
+   * undefined (see `lastParseError()`). Patterns and the arrangement are
+   * fetched on demand with `getPattern` / `getArrangement`.
    */
-  loadSong(song: WasmParsedSong): boolean;
-  /** Parse + load from WASM heap bytes. Returns the UI summary, or undefined. */
-  loadSongFromBytes(ptr: number, size: number): WasmParsedSong | undefined;
+  loadSongFromBytes(ptr: number, size: number): WasmSongSummary | undefined;
   lastParseError(): string;
   /** Decode a `.rbm` already copied into the WASM heap. Returns ModLoadStatus. */
   loadMod(ptr: number, size: number): number;
   clearMod(): void;
   hasMod(): boolean;
   getModReport(): WasmModLoadReport;
-  play(): void;
-  pause(): void;
-  stop(): void;
-  seek(bar: number): void;
+  /**
+   * Transport commands are queued for the audio thread. Each returns false
+   * when the 64-entry queue is full — only possible while the audio callback
+   * is not running (a suspended AudioContext) — so the caller can retry.
+   * Volume, tempo and device knobs never use the queue.
+   */
+  play(): boolean;
+  pause(): boolean;
+  stop(): boolean;
+  seek(bar: number): boolean;
   setVolume(volume: number): void;
   setTempo(bpm: number): void;
   getTempo(): number;
@@ -118,7 +125,7 @@ export interface RbsAudioEngineInstance {
   setDeviceParam(deviceId: number, paramId: number, value: number): void;
   /**
    * Pattern edit, engine working copy. One step patch per call — never a
-   * whole `WasmParsedSong`, which cannot carry TRAK automation back across
+   * whole song, which could not carry TRAK automation back across
    * Embind. Session-only: the loaded `.rbs` bytes are not rewritten.
    */
   setStep(
@@ -133,6 +140,10 @@ export interface RbsAudioEngineInstance {
   setPatternLength(deviceId: number, bank: number, patternIndex: number, length: number): boolean;
   /** Pattern play length, or 0 when the song has no such pattern. */
   getPatternLength(deviceId: number, bank: number, patternIndex: number): number;
+  /** One pattern of the working copy (edits included), or undefined for an unstored slot. */
+  getPattern(deviceId: number, bank: number, patternIndex: number): WasmPattern | undefined;
+  /** The arrangement, as an Embind vector the caller must `delete()`. */
+  getArrangement(): EmbindVector<WasmArrangementBar>;
   /**
    * Serialise the engine's working copy back to `.rbs` bytes (always a
    * ReBirth 2.x container). Empty when the save failed — see
@@ -145,10 +156,20 @@ export interface RbsAudioEngineInstance {
   getProcessedBlockCount(): number;
   renderTestBlock(numFrames: number): number;
   /**
-   * Bounce offline to a 16-bit PCM WAV. `deviceIndex` 0-3 renders a stem;
-   * MASTER_BUS (255) renders the full mix. Returns a JS-owned Uint8Array.
+   * Start a chunked offline bounce. `deviceIndex` 0-3 renders a stem;
+   * MASTER_BUS (255) renders the full mix. False when nothing is loaded or
+   * the chunk buffer could not be allocated.
    */
-  renderOfflineToWav(frames: number, deviceIndex: number): Uint8Array;
+  beginOfflineRender(deviceIndex: number): boolean;
+  /**
+   * Render up to `frames` (at most OFFLINE_CHUNK_FRAMES) more frames as
+   * interleaved little-endian 16-bit stereo, no WAV header. Returns a
+   * JS-owned Uint8Array of `rendered × 4` bytes; empty outside a begin/end
+   * pair. The WASM heap only ever holds one chunk.
+   */
+  renderOfflineChunk(frames: number): Uint8Array;
+  /** Finish a chunked bounce and release its chunk buffer. */
+  endOfflineRender(): void;
   /** Frames covering the loaded arrangement at the current tempo. */
   songLengthFrames(): number;
   getPlaybackPosition(): PlaybackPosition;
@@ -165,7 +186,7 @@ export interface HeapStats {
 /** Class constructor shape exposed by Embind for `RbsParser` */
 export interface RbsParserInstance {
   /** Returns the parsed song, or `undefined` when parsing fails. */
-  parse(ptr: number, size: number): WasmParsedSong | undefined;
+  parse(ptr: number, size: number): WasmSongSummary | undefined;
   lastError(): string;
   delete(): void;
 }

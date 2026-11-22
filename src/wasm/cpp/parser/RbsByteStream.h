@@ -9,6 +9,8 @@
 // Implementation detail of cpp/parser/ — not part of the public parser API.
 #pragma once
 
+#include "BigEndian.h"
+
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -174,9 +176,7 @@ private:
 };
 
 // ── Chunk helpers ────────────────────────────────────────────────────
-inline bool matchId(const uint8_t* id, const char* expected) {
-  return std::memcmp(id, expected, 4) == 0;
-}
+// matchId() lives in BigEndian.h, shared with the .rbm and AIFF readers.
 
 inline bool readChunkHeader(ByteStream& stream, const uint8_t*& id, uint32_t& size,
                      bool& fiveByteId) {

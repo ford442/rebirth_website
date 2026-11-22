@@ -41,7 +41,14 @@ test.describe('WASM audio engine (preview / GitHub Pages parity)', () => {
       await bridge.loadRbsFile(buffer);
 
       const status = bridge.playerStatus;
-      const workletBlocks = bridge.enginePtr?.getProcessedBlockCount?.() ?? 0;
+      // The passive 'playback' latency hint uses a larger output buffer, so
+      // the first render callbacks can land ~100 ms after init resolves.
+      const blocks = () => bridge.enginePtr?.getProcessedBlockCount?.() ?? 0;
+      const until = Date.now() + 2000;
+      while (blocks() === 0 && Date.now() < until) {
+        await new Promise((resolve) => setTimeout(resolve, 20));
+      }
+      const workletBlocks = blocks();
 
       bridge.dispose();
       return { status, workletBlocks, crossOriginIsolated: window.crossOriginIsolated };

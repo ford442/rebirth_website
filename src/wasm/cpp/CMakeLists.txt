@@ -16,10 +16,23 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(RB338_ASAN "Build native tests with AddressSanitizer" OFF)
 option(RB338_UBSAN "Build native tests with UndefinedBehaviorSanitizer" OFF)
 option(RB338_TSAN "Build native tests with ThreadSanitizer" OFF)
-option(RB338_NO_EXCEPTIONS "Compile rb338_engine with -fno-exceptions (spike only)" OFF)
+option(RB338_FUZZ "Build libFuzzer targets (clang only; ASan + UBSan)" OFF)
+option(RB338_NO_EXCEPTIONS "Compile the native engine + parser with -fno-exceptions too" OFF)
 
 if(RB338_TSAN AND (RB338_ASAN OR RB338_UBSAN))
   message(FATAL_ERROR "RB338_TSAN cannot be combined with ASan/UBSan")
+endif()
+
+if(RB338_FUZZ)
+  if(EMSCRIPTEN OR NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    message(FATAL_ERROR "RB338_FUZZ needs a native clang build: "
+                        "cmake -DRB338_FUZZ=ON -DCMAKE_CXX_COMPILER=clang++")
+  endif()
+  # Every library is instrumented for coverage and the sanitizers; only the
+  # fuzz executables link libFuzzer's main.
+  add_compile_options(-fsanitize=fuzzer-no-link,address,undefined
+                      -fno-sanitize-recover=undefined -fno-omit-frame-pointer)
+  add_link_options(-fsanitize=address,undefined)
 endif()
 
 if(RB338_ASAN)
@@ -27,7 +40,9 @@ if(RB338_ASAN)
   add_link_options(-fsanitize=address)
 endif()
 if(RB338_UBSAN)
-  add_compile_options(-fsanitize=undefined -fno-omit-frame-pointer)
+  # Non-recoverable: by default UBSan only prints, and the asan-ubsan CI leg
+  # stayed green through real undefined behaviour.
+  add_compile_options(-fsanitize=undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer)
   add_link_options(-fsanitize=undefined)
 endif()
 if(RB338_TSAN)
@@ -71,8 +86,16 @@ target_include_directories(rb338_engine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 # header as SYSTEM so its own warnings never fail our build.
 target_include_directories(rb338_engine SYSTEM PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/third_party")
-if(RB338_NO_EXCEPTIONS)
+# The engine and parser never throw or catch (only tools/ do), and the WASM
+# heap is fixed: a failed `new` aborts the instance whatever the flag, so
+# large buffers are malloc'd and null-checked instead (sample arena, bounce
+# chunk). -fno-exceptions makes that the rule rather than a convention, and
+# drops the unwind tables from the .wasm. Native builds keep exceptions by
+# default because the tools and doctest use them.
+if(EMSCRIPTEN OR RB338_NO_EXCEPTIONS)
+  target_compile_options(rb338_parser PRIVATE -fno-exceptions)
   target_compile_options(rb338_engine PRIVATE -fno-exceptions)
+  target_compile_options(rb338_vendor PRIVATE -fno-exceptions)
 endif()
 
 # Type-check the worklet translation unit on every CMake build.
@@ -103,6 +126,19 @@ if(NOT EMSCRIPTEN)
   add_executable(rbm-inspect ${RB338_RBM_INSPECT_SOURCES})
   target_link_libraries(rbm-inspect PRIVATE rb338_engine)
 
+  # Corpus conformance sweep (archive-health.yml, nightly).
+  add_executable(rbs-conformance ${RB338_CONFORMANCE_SOURCES})
+  target_link_libraries(rbs-conformance PRIVATE rb338_engine)
+
+  if(RB338_FUZZ)
+    foreach(fuzz_src ${RB338_FUZZ_SOURCES})
+      get_filename_component(fuzz_name "${fuzz_src}" NAME_WE)
+      add_executable(${fuzz_name} ${fuzz_src})
+      target_link_libraries(${fuzz_name} PRIVATE rb338_engine)
+      target_link_options(${fuzz_name} PRIVATE -fsanitize=fuzzer)
+    endforeach()
+  endif()
+
   enable_testing()
   add_test(
     NAME rbs_native_tests
@@ -116,7 +152,8 @@ if(EMSCRIPTEN)
   set(RB338_WASM_OUT "${RB338_REPO_ROOT}/public/wasm" CACHE PATH "WASM output directory")
   add_executable(rbsParser ${RB338_WASM_MAIN} ${RB338_WORKLET_SOURCES})
   target_link_libraries(rbsParser PRIVATE rb338_engine)
-  target_compile_options(rbsParser PRIVATE -msimd128)
+  # -msimd128 comes from the global EMSCRIPTEN compile options above.
+  target_compile_options(rbsParser PRIVATE -fno-exceptions)
   target_link_options(rbsParser PRIVATE
     -pthread
     -sAUDIO_WORKLET=1
@@ -129,7 +166,6 @@ if(EMSCRIPTEN)
     -sENVIRONMENT=web,worker
     -sFILESYSTEM=0
     -sSUPPORT_LONGJMP=0
-    -sALLOW_TABLE_GROWTH=1
     # WASM module linear stack (main thread + synchronous WASM calls).
     # Not the AudioWorklet pthread stack — see engine/AudioThreadLimits.h.
     -sSTACK_SIZE=131072

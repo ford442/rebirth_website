@@ -41,10 +41,16 @@ PlaybackPosition getPlaybackPositionWrapper(const RbsAudioEngine& self) {
   return PlaybackPosition{bar, step};
 }
 
-std::optional<ParsedSong> parseSongWrapper(RbsParser& self,
-                                           uintptr_t dataPtr,
-                                           size_t size) {
-  return self.parse(reinterpret_cast<const uint8_t*>(dataPtr), size);
+/**
+ * Parse without loading: a metadata probe. Returns the same slim summary as
+ * loadSongFromBytes — never the whole ParsedSong.
+ */
+std::optional<SongSummary> parseSongWrapper(RbsParser& self,
+                                            uintptr_t dataPtr,
+                                            size_t size) {
+  auto song = self.parse(reinterpret_cast<const uint8_t*>(dataPtr), size);
+  if (!song) return std::nullopt;
+  return summariseSong(*song);
 }
 
 /**
@@ -65,12 +71,21 @@ std::optional<ModLoadReport> parseModWrapper(RbmParser& self,
 
 /**
  * Parse + load on the WASM heap so TRAK automation never round-trips through JS.
- * Returns the Embind UI summary (no automation vector).
+ * Returns the slim SongSummary; patterns and the arrangement are fetched on
+ * demand with getPattern / getArrangement.
  */
-std::optional<ParsedSong> loadSongFromBytesWrapper(RbsAudioEngine& self,
-                                                   uintptr_t dataPtr,
-                                                   size_t size) {
-  return self.loadSongFromBytes(reinterpret_cast<const uint8_t*>(dataPtr), size);
+std::optional<SongSummary> loadSongFromBytesWrapper(RbsAudioEngine& self,
+                                                    uintptr_t dataPtr,
+                                                    size_t size) {
+  if (!self.loadSongFromBytes(reinterpret_cast<const uint8_t*>(dataPtr), size)) {
+    return std::nullopt;
+  }
+  return self.songSummary();
+}
+
+/** A copy of the arrangement, as an Embind vector the caller must delete(). */
+std::vector<ArrangementBar> getArrangementWrapper(const RbsAudioEngine& self) {
+  return self.arrangement();
 }
 
 /** Decode a .rbm straight from the WASM heap into the engine's sample pool. */
@@ -96,16 +111,19 @@ ModLoadReport getModReportWrapper(const RbsAudioEngine& self) {
 }
 
 /**
- * Bounce to a WAV and hand JavaScript a Uint8Array it owns.
+ * Render the next chunk of a chunked bounce and hand JavaScript a
+ * Uint8Array it owns: interleaved little-endian 16-bit stereo, no header.
  *
- * `new Uint8Array(view)` copies out of the WASM heap, so the returned array
- * stays valid after the C++ vector goes out of scope — a bare
- * typed_memory_view would dangle the moment this function returns.
+ * `new Uint8Array(view)` copies out of the WASM heap, so the bytes stay
+ * valid after the next chunk overwrites the buffer — and the WASM heap only
+ * ever holds one chunk, however long the song. The bounce worker assembles
+ * the WAV header and body in JavaScript.
  */
-val renderOfflineWavWrapper(RbsAudioEngine& self, uint32_t frames, uint8_t deviceIndex) {
-  const std::vector<uint8_t> wav = self.renderOfflineWav(frames, deviceIndex);
+val renderOfflineChunkWrapper(RbsAudioEngine& self, uint32_t frames) {
+  const uint32_t rendered = self.renderOfflineChunk(frames);
+  const size_t bytes = static_cast<size_t>(rendered) * 4u;
   return val::global("Uint8Array")
-      .new_(val(typed_memory_view(wav.size(), wav.data())));
+      .new_(val(typed_memory_view(bytes, self.offlineChunkData())));
 }
 
 /**
@@ -164,12 +182,12 @@ void registerFixedArray(const char* name) {
 
 EMSCRIPTEN_BINDINGS(rb338_audio) {
   // Container registrations must appear before any value_object that uses them.
-  register_vector<Pattern>("PatternVector");
   register_vector<ArrangementBar>("ArrangementBarVector");
   register_vector<ModSampleReportEntry>("ModSampleReportEntryVector");
   registerFixedArray<StepData, MAX_STEPS>("StepDataArray");
   registerFixedArray<DeviceState, NUM_DEVICES>("DeviceStateArray");
   registerFixedArray<PatternRef, NUM_DEVICES>("PatternRefArray");
+  registerFixedArray<uint32_t, NUM_DEVICES>("PatternSlotArray");
 
   // enums — expose as plain numbers so JS/TS can use them directly.
   enum_<DeviceId>("DeviceId", enum_value_type::number)
@@ -343,23 +361,26 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .field("length",       &Pattern::length)
     .field("steps",        &Pattern::steps);
 
-  // ParsedSong
-  value_object<ParsedSong>("ParsedSong")
-    .field("title",        &ParsedSong::title)
-    .field("author",       &ParsedSong::author)
-    .field("infoText",     &ParsedSong::infoText)
-    .field("creatorUrl",   &ParsedSong::creatorUrl)
-    .field("bpm",          &ParsedSong::bpm)
-    .field("version",      &ParsedSong::version)
-    .field("headVersion",  &ParsedSong::headVersion)
-    .field("globSubFormat",&ParsedSong::globSubFormat)
-    .field("showInfoOnOpen", &ParsedSong::showInfoOnOpen)
-    .field("devices",      &ParsedSong::devices)
-    .field("patterns",     &ParsedSong::patterns)
-    .field("arrangement",  &ParsedSong::arrangement)
-    .field("fx",           &ParsedSong::fx);
+  register_optional<Pattern>(); // getPattern() on an empty slot
 
-  register_optional<ParsedSong>();
+  // SongSummary — the load-time result; see RbsTypes.h
+
+  value_object<SongSummary>("SongSummary")
+    .field("title",        &SongSummary::title)
+    .field("author",       &SongSummary::author)
+    .field("infoText",     &SongSummary::infoText)
+    .field("creatorUrl",   &SongSummary::creatorUrl)
+    .field("bpm",          &SongSummary::bpm)
+    .field("version",      &SongSummary::version)
+    .field("headVersion",  &SongSummary::headVersion)
+    .field("globSubFormat",&SongSummary::globSubFormat)
+    .field("showInfoOnOpen", &SongSummary::showInfoOnOpen)
+    .field("devices",      &SongSummary::devices)
+    .field("fx",           &SongSummary::fx)
+    .field("barCount",     &SongSummary::barCount)
+    .field("patternSlots", &SongSummary::patternSlots);
+
+  register_optional<SongSummary>();
 
   // RbsParser
   class_<RbsParser>("RbsParser")
@@ -384,20 +405,15 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
   // EngineConfig
   value_object<EngineConfig>("EngineConfig")
     .field("sampleRate",        &EngineConfig::sampleRate)
-    .field("bufferSize",        &EngineConfig::bufferSize)
     .field("enableTb303A",      &EngineConfig::enableTb303A)
     .field("enableTb303B",      &EngineConfig::enableTb303B)
     .field("enableTr808",       &EngineConfig::enableTr808)
-    .field("enableTr909",       &EngineConfig::enableTr909)
-    .field("enableDistortion",  &EngineConfig::enableDistortion)
-    .field("enableCompressor",  &EngineConfig::enableCompressor)
-    .field("enableDelay",       &EngineConfig::enableDelay);
+    .field("enableTr909",       &EngineConfig::enableTr909);
 
   // RbsAudioEngine
   class_<RbsAudioEngine>("RbsAudioEngine")
     .constructor()
     .function("init",      &RbsAudioEngine::init)
-    .function("loadSong",  &RbsAudioEngine::loadSong)
     .function("loadSongFromBytes", &loadSongFromBytesWrapper)
     .function("lastParseError", &RbsAudioEngine::lastParseError)
     .function("loadMod",   &loadModWrapper)
@@ -417,12 +433,16 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .function("getStep",   &RbsAudioEngine::getStep)
     .function("setPatternLength", &RbsAudioEngine::setPatternLength)
     .function("getPatternLength", &RbsAudioEngine::getPatternLength)
+    .function("getPattern", &RbsAudioEngine::getPattern)
+    .function("getArrangement", &getArrangementWrapper)
     .function("isPlaying", &RbsAudioEngine::isPlaying)
     .function("getProcessedBlockCount", &RbsAudioEngine::getProcessedBlockCount)
     .function("renderTestBlock", &RbsAudioEngine::renderTestBlock)
     .function("saveRbs",   &saveRbsWrapper)
     .function("lastSaveError", &RbsAudioEngine::lastSaveError)
-    .function("renderOfflineToWav", &renderOfflineWavWrapper)
+    .function("beginOfflineRender", &RbsAudioEngine::beginOfflineRender)
+    .function("renderOfflineChunk", &renderOfflineChunkWrapper)
+    .function("endOfflineRender", &RbsAudioEngine::endOfflineRender)
     .function("songLengthFrames", &RbsAudioEngine::songLengthFrames)
     .function("getPlaybackPosition", &getPlaybackPositionWrapper);
 

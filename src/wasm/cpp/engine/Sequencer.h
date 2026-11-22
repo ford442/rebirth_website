@@ -70,6 +70,13 @@ public:
   /** Set position (seek). Resets the intra-step sample accumulator. */
   void setPosition(uint16_t bar, uint8_t step);
 
+  /**
+   * Re-resolve patterns (and their cached lengths) at the next block without
+   * moving the transport. A PatchLength edit needs this; a step edit does
+   * not, since the sequencer reads steps through the pattern pointer.
+   */
+  void invalidatePatterns() { m_resolvedBar = 0; }
+
 private:
   const Pattern* findPattern(const ParsedSong& song, DeviceId device,
                              uint8_t bank, uint8_t index) const;

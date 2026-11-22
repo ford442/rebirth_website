@@ -601,6 +601,10 @@ export function initPlayerUI(playerEl: HTMLElement, options: PlayerUIOptions = {
 
   function setMidiState(state: MidiState, detail: string) {
     playerEl.dataset.midiState = state;
+    // Playing from a controller wants the low-latency context.
+    if (state === 'connected' && 'useInteractiveLatency' in bridge) {
+      void bridge.useInteractiveLatency();
+    }
     if (dom.midiStatus) dom.midiStatus.textContent = detail;
     if (dom.btnMidiIn) {
       dom.btnMidiIn.classList.toggle('is-on', state === 'connected');

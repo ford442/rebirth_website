@@ -69,9 +69,15 @@ bool SamplePool::init(size_t arenaFrames) {
   if (arenaFrames == 0) return false;
 
   // The one and only allocation. Everything after this point writes into
-  // the arena in place, so slot pointers never dangle.
-  m_arena.assign(arenaFrames, 0.0f);
-  if (m_arena.size() != arenaFrames) return false;
+  // the arena in place, so slot pointers never dangle. Nothing reads a frame
+  // before a decode writes it, so the arena is not zero-filled.
+  m_arena.reset(static_cast<float*>(std::malloc(arenaFrames * sizeof(float))));
+  if (!m_arena) {
+    m_arenaFrames = 0;
+    m_initialised = false;
+    return false;
+  }
+  m_arenaFrames = arenaFrames;
 
   m_slots.fill(SlotData{});
   m_used = 0;
@@ -105,7 +111,7 @@ ModLoadStatus SamplePool::loadFromParsedMod(const ParsedMod& mod, ModLoadReport&
   report.title = mod.title;
   report.description = mod.description;
   report.copyright = mod.copyright;
-  report.capacityFrames = static_cast<uint32_t>(m_arena.size());
+  report.capacityFrames = static_cast<uint32_t>(m_arenaFrames);
 
   if (!m_initialised) {
     report.status = ModLoadStatus::NotInitialised;
@@ -153,7 +159,7 @@ ModLoadStatus SamplePool::loadFromParsedMod(const ParsedMod& mod, ModLoadReport&
     entry.channels = info.channels;
     entry.bitDepth = info.bitDepth;
 
-    const size_t remaining = m_arena.size() - m_used;
+    const size_t remaining = m_arenaFrames - m_used;
     if (info.frameCount > remaining) {
       entry.decodeStatus = SampleDecodeStatus::DestinationTooSmall;
       exhausted = true;
@@ -162,7 +168,7 @@ ModLoadStatus SamplePool::loadFromParsedMod(const ParsedMod& mod, ModLoadReport&
       continue;
     }
 
-    float* dest = m_arena.data() + m_used;
+    float* dest = m_arena.get() + m_used;
     SampleInfo decoded;
     const SampleDecodeStatus status =
         decodeSampleMono(resource.bytes.data(), resource.bytes.size(), dest, remaining, decoded);

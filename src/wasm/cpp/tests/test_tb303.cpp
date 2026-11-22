@@ -73,7 +73,6 @@ ParsedSong make303Song() {
 EngineConfig tb303OnlyConfig() {
   EngineConfig cfg;
   cfg.sampleRate = 44100.0f;
-  cfg.bufferSize = 128;
   cfg.enableTb303A = true;
   cfg.enableTb303B = false;
   cfg.enableTr808 = false;
@@ -86,7 +85,7 @@ EngineConfig tb303OnlyConfig() {
 TEST_CASE("Tb303Voice: triggered note produces audible output") {
   Tb303Voice voice;
   voice.init(44100.0f);
-  voice.load(default303State(), {});
+  voice.load(default303State());
 
   voice.triggerStep(0, activeNote(48));
   const float peak = renderPeak(voice);
@@ -98,7 +97,7 @@ TEST_CASE("Tb303Voice: square waveform produces output") {
   voice.init(44100.0f);
   DeviceState state = default303State();
   state.waveform = 1;
-  voice.load(state, {});
+  voice.load(state);
 
   voice.triggerStep(0, activeNote(52));
   CHECK(renderPeak(voice) > 0.01f);
@@ -107,7 +106,7 @@ TEST_CASE("Tb303Voice: square waveform produces output") {
 TEST_CASE("Tb303Voice: accent is louder than non-accent") {
   Tb303Voice voice;
   voice.init(44100.0f);
-  voice.load(default303State(), {});
+  voice.load(default303State());
 
   voice.triggerStep(0, activeNote(48, false));
   const float normalPeak = renderPeak(voice, 2048);
@@ -122,7 +121,7 @@ TEST_CASE("Tb303Voice: accent is louder than non-accent") {
 TEST_CASE("Tb303Voice: slide chain keeps sound alive across two notes") {
   Tb303Voice voice;
   voice.init(44100.0f);
-  voice.load(default303State(), {});
+  voice.load(default303State());
 
   voice.triggerStep(0, activeNote(48, false, true));
   renderPeak(voice, 2205);
@@ -145,7 +144,7 @@ TEST_CASE("Tb303Voice: resonance knob audibly changes filter Q") {
     state.envMod = 0.0f;
     state.decay = 0.9f;    // envelope stays near 1 across the measurement window
     state.accent = 0.0f;
-    voice.load(state, {});
+    voice.load(state);
     voice.triggerStep(0, activeNote(83, false)); // ~988 Hz, near the fixed cutoff
 
     constexpr uint32_t kSkip = 2205;    // 50 ms settle
@@ -181,7 +180,7 @@ TEST_CASE("Tb303Voice: tune knob spans a wider range than +/-1 semitone") {
     DeviceState state = default303State();
     state.tune = tune;
     state.waveform = 1; // square: unambiguous zero crossings
-    voice.load(state, {});
+    voice.load(state);
     voice.triggerStep(0, activeNote(57));
 
     constexpr uint32_t kFrames = 44100 / 2;

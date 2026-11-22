@@ -1,60 +1,48 @@
 #pragma once
 
-#include "DrumSynth.h"
-#include "SampleVoice.h"
-#include "Voice.h"
-#include <array>
+#include "DrumMachineVoice.h"
 
 namespace rb338 {
 
 /**
- * Tr808Voice — TR-808 drum machine.
- *
- * Procedural analogue-style models for BD, SD, CH, OH, RS, CP. When a
- * `.rbm` mod supplies PCM for a slot, that slot plays the sample instead;
- * every other slot keeps its procedural model, so a partial mod still
- * sounds like a complete kit.
- *
- * Each instrument is monophonic; multiple instruments layer per step.
+ * TR-808 kit mapping. Tr808Cymbal has no channel (there is no sequencer bit
+ * for it), so a mod's cymbal sample is catalogued but never triggered.
  */
-class Tr808Voice : public Voice {
-public:
-  Tr808Voice() = default;
-  ~Tr808Voice() override = default;
+struct Tr808Kit {
+  static constexpr bool kIs909 = false;
 
-  void init(float sampleRate) override;
-  void load(const DeviceState& state, const std::vector<Pattern>& patterns) override;
-  void render(float* output, uint32_t numFrames) override;
-  void triggerStep(uint8_t stepIndex, const StepData& step) override;
-  void setParameter(DeviceParamId param, float value) override;
-  void setSamplePool(const SamplePool* pool) override;
-  void reset() override;
-
-private:
-  enum class Channel : size_t {
-    Kick = 0,
-    Snare,
-    ClosedHat,
-    OpenHat,
-    Rimshot,
-    Clap,
-    Clave,
-    Maracas,
-    LowTom,
-    MidTom,
-    HighTom,
-    Count
+  enum Channel : uint8_t {
+    Kick, Snare, ClosedHat, OpenHat, Rimshot, Clap, Clave, Maracas,
+    LowTom, MidTom, HighTom, Count
   };
 
-  float m_sampleRate = 44100.0f;
-  DrumParams m_params{};
-  std::array<DrumVoiceChannel, static_cast<size_t>(Channel::Count)> m_channels{};
+  static constexpr std::array<ModSampleSlot, Count> kSlots = {
+      ModSampleSlot::Tr808Kick,     ModSampleSlot::Tr808Snare,
+      ModSampleSlot::Tr808ClosedHat, ModSampleSlot::Tr808OpenHat,
+      ModSampleSlot::Tr808Rimshot,  ModSampleSlot::Tr808Clap,
+      ModSampleSlot::Tr808Clave,    ModSampleSlot::Tr808Maracas,
+      ModSampleSlot::Tr808LowTom,   ModSampleSlot::Tr808MidTom,
+      ModSampleSlot::Tr808HighTom,
+  };
 
-  // Mod sample playback. Borrowed pointer — owned by the EngineSnapshot.
-  const SamplePool* m_pool = nullptr;
-  std::array<SampleVoice, static_cast<size_t>(Channel::Count)> m_sampleVoices{};
-
-  void fire(Channel ch, DrumVoiceId id, bool accent);
+  // RbsFormat.md §6e: byte 8 (CL) is the claves, byte 9 (CP) the clap and
+  // byte 10 (MA) the maracas on the 808.
+  static constexpr std::array<DrumRoute, kNumDrumHits> kRoutes = {{
+      {Kick, DrumVoiceId::Kick},           // BD
+      {Snare, DrumVoiceId::Snare},         // SD
+      {LowTom, DrumVoiceId::LowTom},       // LT
+      {MidTom, DrumVoiceId::MidTom},       // MT
+      {HighTom, DrumVoiceId::HighTom},     // HT
+      {ClosedHat, DrumVoiceId::ClosedHat}, // CH
+      {OpenHat, DrumVoiceId::OpenHat},     // OH
+      {Clave, DrumVoiceId::Clave},         // CL
+      {Clap, DrumVoiceId::Clap},           // CP
+      {Maracas, DrumVoiceId::Maracas},     // MA
+      {Rimshot, DrumVoiceId::Rimshot},     // RS
+  }};
 };
+
+using Tr808Voice = DrumMachineVoice<Tr808Kit>;
+extern template class DrumMachineVoice<Tr808Kit>;
 
 } // namespace rb338

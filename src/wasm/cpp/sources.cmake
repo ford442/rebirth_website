@@ -60,6 +60,7 @@ set(RB338_TEST_SOURCES
   tests/test_mod_playback.cpp
   tests/test_mixer.cpp
   tests/test_rbm_parser.cpp
+  tests/test_correctness.cpp
 )
 
 set(RB338_INSPECT_SOURCES
@@ -72,4 +73,17 @@ set(RB338_WRITE_SOURCES
 
 set(RB338_RBM_INSPECT_SOURCES
   tools/rbm-inspect.cpp
+)
+
+set(RB338_CONFORMANCE_SOURCES
+  tools/rbs-conformance.cpp
+)
+
+# libFuzzer targets — built only with -DRB338_FUZZ=ON (clang). One entry
+# point per file; CMakeLists.txt makes an executable of each.
+set(RB338_FUZZ_SOURCES
+  fuzz/fuzz_rbs_parser.cpp
+  fuzz/fuzz_rbm_parser.cpp
+  fuzz/fuzz_sample_decoder.cpp
+  fuzz/fuzz_rbs_roundtrip.cpp
 )

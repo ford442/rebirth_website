@@ -10,10 +10,9 @@ constexpr float kPi = 3.14159265358979323846f;
 
 float lerp(float a, float b, float t) { return a + (b - a) * t; }
 
-float expDecay(uint32_t age, uint32_t length) {
-  if (length == 0) return 0.0f;
-  const float t = static_cast<float>(age) / static_cast<float>(length);
-  return std::exp(-5.0f * t);
+/** Per-sample multiplier for an exp(-5 t) decay over `length` samples. */
+float decayCoeff(uint32_t length) {
+  return length == 0 ? 0.0f : std::exp(-5.0f / static_cast<float>(length));
 }
 
 } // anonymous namespace
@@ -34,12 +33,12 @@ void DrumVoiceChannel::reset() {
   m_clapBurstAge = 0;
   m_clapBurstLen = 0;
   m_clapGap = 0;
-  // The noise generator is a chaotic map carried in m_noiseState. Leaving it
-  // alone made every replay of a snare or hat draw a different noise
-  // sequence, so the same song bounced twice produced two different files.
-  // 0.0f is the value a freshly constructed channel starts from, so a reset
-  // channel now sounds exactly like a new one.
-  m_noiseState = 0.0f;
+  // Reseed the noise generator. Leaving it alone made every replay of a snare
+  // or hat draw a different noise sequence, so the same song bounced twice
+  // produced two different files. kNoiseSeed is also what a freshly
+  // constructed channel starts from, so a reset channel sounds exactly like
+  // a new one.
+  m_noiseState = kNoiseSeed;
 }
 
 void DrumVoiceChannel::trigger(DrumVoiceId id, float velocity, bool accent,
@@ -105,11 +104,27 @@ void DrumVoiceChannel::trigger(DrumVoiceId id, float velocity, bool accent,
       m_length = static_cast<uint32_t>(sr * lerp(0.14f, 0.24f, params.decay));
       break;
   }
+
+  m_envGain = 1.0f;
+  m_envCoeff = decayCoeff(m_length);
+  m_burstEnvGain = 1.0f;
+  m_burstEnvCoeff = decayCoeff(m_clapBurstLen);
 }
 
 float DrumVoiceChannel::nextNoise() {
-  m_noiseState = std::fmod(m_noiseState * 1.97f + 0.13f, 2.0f) - 1.0f;
-  return m_noiseState;
+  // xorshift32 (Marsaglia 2003): full 2^32-1 period, white, and three shifts
+  // per sample. It replaced `fmod(x * 1.97 + 0.13, 2) - 1`, which is not
+  // noise at all: fmod keeps the sign of a negative x, so the state fell
+  // into roughly [-3.0, -0.87] and stayed there — snare, clap, rim, maracas
+  // and cymbals were fed a large negative DC offset (a thump) instead of a
+  // hiss.
+  uint32_t x = m_noiseState;
+  x ^= x << 13;
+  x ^= x >> 17;
+  x ^= x << 5;
+  m_noiseState = x;
+  // Reinterpret as signed and scale: [-2^31, 2^31) → [-1, 1).
+  return static_cast<float>(static_cast<int32_t>(x)) * (1.0f / 2147483648.0f);
 }
 
 float DrumVoiceChannel::renderKick() {
@@ -118,12 +133,12 @@ float DrumVoiceChannel::renderKick() {
   const float endHz = (m_is909 ? 48.0f : 42.0f) * m_pitchMul;
   const float freq = lerp(startHz, endHz, t * t);
   m_phase += 2.0f * kPi * freq / m_sampleRate;
-  const float env = expDecay(m_age, m_length);
+  const float env = m_envGain;
   return std::sin(m_phase) * env * m_velocity * 0.95f;
 }
 
 float DrumVoiceChannel::renderSnare() {
-  const float env = expDecay(m_age, m_length);
+  const float env = m_envGain;
   const float toneHz = (m_is909 ? 210.0f : 185.0f) * m_pitchMul;
   m_phase += 2.0f * kPi * toneHz / m_sampleRate;
   const float tone = std::sin(m_phase) * 0.35f;
@@ -132,7 +147,7 @@ float DrumVoiceChannel::renderSnare() {
 }
 
 float DrumVoiceChannel::renderHat(bool open) {
-  const float env = expDecay(m_age, m_length);
+  const float env = m_envGain;
   // High-pass-ish noise via differencing.
   const float n0 = nextNoise();
   const float n1 = nextNoise();
@@ -141,7 +156,7 @@ float DrumVoiceChannel::renderHat(bool open) {
 }
 
 float DrumVoiceChannel::renderRimshot() {
-  const float env = expDecay(m_age, m_length);
+  const float env = m_envGain;
   m_phase += 2.0f * kPi * 320.0f / m_sampleRate;
   const float click = std::sin(m_phase) * 0.25f;
   const float noise = nextNoise() * 0.55f;
@@ -158,17 +173,19 @@ float DrumVoiceChannel::renderClap() {
     }
     --m_clapBurstsLeft;
     m_clapBurstAge = 0;
+    m_burstEnvGain = 1.0f;
     if (m_clapBurstsLeft == 0) return 0.0f;
   }
 
-  const float env = expDecay(m_clapBurstAge, m_clapBurstLen);
+  const float env = m_burstEnvGain;
+  m_burstEnvGain *= m_burstEnvCoeff;
   const float sample = nextNoise() * env * m_velocity * 0.42f;
   ++m_clapBurstAge;
   return sample;
 }
 
 float DrumVoiceChannel::renderClave() {
-  const float env = expDecay(m_age, m_length);
+  const float env = m_envGain;
   m_phase += 2.0f * kPi * 2400.0f / m_sampleRate;
   const float click = std::sin(m_phase) * 0.45f;
   const float noise = nextNoise() * 0.15f;
@@ -176,14 +193,14 @@ float DrumVoiceChannel::renderClave() {
 }
 
 float DrumVoiceChannel::renderMaracas() {
-  const float env = expDecay(m_age, m_length);
+  const float env = m_envGain;
   const float n0 = nextNoise();
   const float n1 = nextNoise();
   return (n0 - n1) * env * m_velocity * 0.28f;
 }
 
 float DrumVoiceChannel::renderCrash() {
-  const float env = expDecay(m_age, m_length);
+  const float env = m_envGain;
   const float n0 = nextNoise();
   const float n1 = nextNoise();
   m_phase += 2.0f * kPi * 4200.0f / m_sampleRate;
@@ -192,7 +209,7 @@ float DrumVoiceChannel::renderCrash() {
 }
 
 float DrumVoiceChannel::renderRide() {
-  const float env = expDecay(m_age, m_length);
+  const float env = m_envGain;
   m_phase += 2.0f * kPi * 6800.0f / m_sampleRate;
   const float tone = std::sin(m_phase) * 0.35f;
   const float n0 = nextNoise();
@@ -204,7 +221,7 @@ float DrumVoiceChannel::renderTom(float baseHz) {
   const float t = static_cast<float>(m_age) / static_cast<float>(std::max(1u, m_length));
   const float freq = baseHz * m_pitchMul * lerp(1.0f, 0.65f, t);
   m_phase += 2.0f * kPi * freq / m_sampleRate;
-  const float env = expDecay(m_age, m_length);
+  const float env = m_envGain;
   return std::sin(m_phase) * env * m_velocity * 0.7f;
 }
 
@@ -255,6 +272,7 @@ float DrumVoiceChannel::render() {
   }
 
   ++m_age;
+  m_envGain *= m_envCoeff;
   if (m_age >= m_length) {
     m_active = false;
   }

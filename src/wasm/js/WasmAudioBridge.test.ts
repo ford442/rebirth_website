@@ -188,7 +188,7 @@ describe('WasmAudioBridge.init', () => {
 
       expect(failure.failure.reason).toBe('engine-init-failed');
       expect(failure.failure.message).toContain('44100 Hz');
-      expect(failure.failure.message).toContain('hint=interactive');
+      expect(failure.failure.message).toContain('hint=playback'); // passive listening default
       // ...and the context it created is released regardless.
       expect(FakeAudioContext.instances[0].close).toHaveBeenCalledTimes(1);
     });

@@ -1,5 +1,32 @@
 /** @typedef {import('vite-plugin-pwa').VitePWAOptions} VitePWAOptions */
 
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+/**
+ * Cache name for the WASM runtime cache, keyed by the content of the glue and
+ * the binary this build ships.
+ *
+ * `/wasm/*` names are not content-hashed, so with one fixed cache name a
+ * CacheFirst entry could pair a new `rbsParser.js` with last deploy's
+ * `rbsParser.wasm` (or the reverse) once the precache stops shadowing them —
+ * and an Embind glue/binary mismatch fails at instantiation. Keying the cache
+ * by both files' bytes makes every build's pair its own cache.
+ */
+export function wasmCacheName() {
+  const dir = fileURLToPath(new URL('./public/wasm/', import.meta.url));
+  const hash = createHash('sha256');
+  let found = false;
+  for (const file of ['rbsParser.js', 'rbsParser.wasm']) {
+    const path = `${dir}${file}`;
+    if (!existsSync(path)) continue;
+    hash.update(readFileSync(path));
+    found = true;
+  }
+  return found ? `rb338-wasm-${hash.digest('hex').slice(0, 12)}` : 'rb338-wasm-dev';
+}
+
 /** @type {string} Must match astro.config.mjs `base`. */
 export const PWA_BASE = '/rebirth_website';
 
@@ -59,10 +86,12 @@ export function createPwaOptions() {
           urlPattern: ({ url }) => url.pathname.startsWith('/rebirth_website/wasm/'),
           handler: 'CacheFirst',
           options: {
-            cacheName: 'rb338-wasm',
+            // Immutable within one build, so CacheFirst is safe — see wasmCacheName().
+            cacheName: wasmCacheName(),
             expiration: {
               maxEntries: 16,
-              maxAgeSeconds: 60 * 60 * 24 * 365,
+              maxAgeSeconds: 60 * 60 * 24 * 30,
+              purgeOnQuotaError: true,
             },
             cacheableResponse: {
               statuses: [0, 200],

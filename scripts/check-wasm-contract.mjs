@@ -22,6 +22,8 @@
  *        b. the matching TypeScript interface in wasm-audio.ts.
  *   3. Required `RbsAudioEngine` Embind `.function("name")` entries exist in
  *      main.cpp and as methods on `RbsAudioEngineInstance` in wasm-audio.ts.
+ *   4. The tempo range — `MIN_BPM` / `MAX_BPM` in RbsTypes.h and
+ *      `TEMPO_MIN_BPM` / `TEMPO_MAX_BPM` in wasm-audio-config.ts — agrees.
  *
  * Exit code is non-zero (and CI fails) on any mismatch.
  */
@@ -61,7 +63,7 @@ const STRUCT_TO_TS_INTERFACE = {
   ArrangementBar: 'WasmArrangementBar',
   DeviceState: 'WasmDeviceState',
   Pattern: 'WasmPattern',
-  ParsedSong: 'WasmParsedSong',
+  SongSummary: 'WasmSongSummary',
   DelaySettings: 'WasmDelaySettings',
   PcfSettings: 'WasmPcfSettings',
   DistSettings: 'WasmDistSettings',
@@ -289,7 +291,8 @@ function checkValueObjects() {
 /** Archive/load path names that must stay on RbsAudioEngine Embind. */
 const REQUIRED_ENGINE_EMBIND_FUNCTIONS = [
   'init',
-  'loadSong',
+  'getPattern',
+  'getArrangement',
   'loadSongFromBytes',
   'lastParseError',
   'loadMod',
@@ -300,7 +303,9 @@ const REQUIRED_ENGINE_EMBIND_FUNCTIONS = [
   'getStep',
   'setPatternLength',
   'getPatternLength',
-  'renderOfflineToWav',
+  'beginOfflineRender',
+  'renderOfflineChunk',
+  'endOfflineRender',
   'songLengthFrames',
   'getPlaybackPosition',
 ];
@@ -353,9 +358,43 @@ function checkEngineFunctions() {
   }
 }
 
+// ── 4. Tempo range (C++ RbsTypes.h vs TS wasm-audio-config.ts) ─────────
+
+const RBS_TYPES_H = path.join(ROOT, 'src/wasm/cpp/parser/RbsTypes.h');
+const WASM_AUDIO_CONFIG_TS = path.join(ROOT, 'src/wasm/types/wasm-audio-config.ts');
+
+function checkTempoRange() {
+  const cpp = read(RBS_TYPES_H);
+  const ts = read(WASM_AUDIO_CONFIG_TS);
+  const cppValue = (name) => {
+    const m = cpp.match(new RegExp(`constexpr float ${name} = ([\\d.]+)f;`));
+    return m ? Number(m[1]) : null;
+  };
+  const tsValue = (name) => {
+    const m = ts.match(new RegExp(`export const ${name} = ([\\d.]+);`));
+    return m ? Number(m[1]) : null;
+  };
+  for (const [cppName, tsName] of [
+    ['MIN_BPM', 'TEMPO_MIN_BPM'],
+    ['MAX_BPM', 'TEMPO_MAX_BPM'],
+  ]) {
+    const a = cppValue(cppName);
+    const b = tsValue(tsName);
+    if (a === null) fail(`${relative(RBS_TYPES_H)}: could not find "constexpr float ${cppName}"`);
+    if (b === null)
+      fail(`${relative(WASM_AUDIO_CONFIG_TS)}: could not find "export const ${tsName}"`);
+    if (a !== null && b !== null && a !== b) {
+      fail(
+        `Tempo range drift: ${cppName} = ${a} in RbsTypes.h but ${tsName} = ${b} in wasm-audio-config.ts`
+      );
+    }
+  }
+}
+
 checkDeviceParamId();
 checkValueObjects();
 checkEngineFunctions();
+checkTempoRange();
 
 if (errors.length > 0) {
   console.error(`\n✗ WASM contract check found ${errors.length} problem(s):\n`);

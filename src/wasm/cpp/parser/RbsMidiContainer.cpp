@@ -2,6 +2,7 @@
 // Song data lives in a single SysEx message; DEVL-equivalent body starts at offset 309.
 
 #include "RbsParser.h"
+#include "BigEndian.h"
 #include <algorithm>
 #include <array>
 #include <cstring>
@@ -35,9 +36,7 @@ constexpr size_t kV1909LabelSkip = 5;
 constexpr size_t kV1909HeaderSize = 31;
 constexpr size_t kV1909SlotSize = 194;
 
-bool matchId(const uint8_t* id, const char* expected) {
-  return std::memcmp(id, expected, 4) == 0;
-}
+using detail::matchId;
 
 bool matchPrefix(const uint8_t* data, const char* expected, size_t len) {
   return std::memcmp(data, expected, len) == 0;
@@ -87,7 +86,12 @@ float readMidiTempoBpm(const uint8_t* data, size_t size) {
           (static_cast<uint32_t>(data[i + 4]) << 8) |
           static_cast<uint32_t>(data[i + 5]);
       if (usPerQuarter > 0) {
-        return 60000000.0f / static_cast<float>(usPerQuarter);
+        // Clamped to the range the v2 GLOB reader enforces, so a v1 song
+        // can always be saved and reloaded. Real archive files sit right on
+        // the edge: Cherry Coke Contest "12_approach" stores 119,999 us per
+        // quarter (500.004 BPM), which parsed as v1 but its v2 save was
+        // rejected (found by the corpus conformance sweep).
+        return std::clamp(60000000.0f / static_cast<float>(usPerQuarter), MIN_BPM, MAX_BPM);
       }
     }
   }

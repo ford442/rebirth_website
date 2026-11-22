@@ -17,22 +17,35 @@ export interface EngineFeatures {
   tb303_b: boolean;
   tr808: boolean;
   tr909: boolean;
-  distortion: boolean;
-  compressor: boolean;
-  delay: boolean;
 }
+
+/**
+ * Tempo range, mirroring `MIN_BPM` / `MAX_BPM` in
+ * `src/wasm/cpp/parser/RbsTypes.h` (the contract check keeps them equal).
+ * ReBirth documents 20–500 BPM; the parser, engine and UI all use it.
+ */
+export const TEMPO_MIN_BPM = 20;
+export const TEMPO_MAX_BPM = 500;
 
 /** Runtime paths and feature flags from `audio-module.config.ts`. */
 export interface WasmAudioModuleConfig {
   wasmPath: string;
   glueScriptPath: string;
   workletPath: string;
-  /** Preferred AudioContext sample rate (Hz); browser may use a different rate. */
-  preferredSampleRate: number;
-  /** AudioContext latency hint for archive preview */
+  /**
+   * Preferred live AudioContext sample rate (Hz), or null for the output
+   * device's own rate. Null is the default: forcing 44.1 kHz on 48 kHz
+   * hardware (most phones, Bluetooth, many DACs) makes the browser resample
+   * every render quantum, at some CPU and latency cost. The engine takes its
+   * rate from the context, so nothing in the DSP assumes 44.1 kHz.
+   */
+  preferredSampleRate: number | null;
+  /** Sample rate of offline bounces (WAV / stems), where file compatibility matters. */
+  offlineSampleRate: number;
+  /** Latency hint for passive archive listening: larger buffers, fewer glitches. */
   latencyHint: AudioContextLatencyCategory;
-  bufferSize: number;
-  maxVoices: number;
+  /** Latency hint once the studio, MIDI input or step editing is active. */
+  interactiveLatencyHint: AudioContextLatencyCategory;
   features: EngineFeatures;
 }
 

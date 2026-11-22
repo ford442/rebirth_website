@@ -17,13 +17,18 @@ four devices: TB-303 A/B through a ZDF ladder filter
 and TR-808 / TR-909 either procedurally (`synth/DrumSynth.*`) or from `.rbm`
 mod samples (`RbsAudioEngine::loadMod` → `synth/SamplePool.*`, covered by
 `tests/wasm-rbm-mod.spec.ts`). It bounces offline to 16-bit WAV — full mix or
-per-device stems — via `renderOfflineToWav` on a dedicated Worker, and the TS
+per-device stems — on a dedicated Worker, streaming fixed-size chunks out of
+the WASM heap (`beginOfflineRender` / `renderOfflineChunk`) so a full-length
+song fits the fixed 64 MiB heap, and the TS
 side exports the loaded song as a Standard MIDI File (`src/lib/midi-smf.ts`).
 
 Pattern steps are editable in the studio grid. A click sends one patch —
 `RbsAudioEngine::setStep(deviceId, bank, patternIndex, stepIndex, StepData)` —
-which mutates the engine's main-thread working copy and republishes the render
-graph, the same atomic snapshot swap `loadMod()` uses. Undo lives in JavaScript
+which mutates the engine's main-thread working copy and sends the audio thread
+a `PatchStep` command that rewrites that step in the live snapshot in place —
+held notes, filter state, the delay tail and automated knobs all carry on
+through the edit. Only a brand-new pattern slot falls back to republishing the
+render graph, the atomic snapshot swap `loadMod()` uses. Undo lives in JavaScript
 (`js/player-step-edit.ts`) as a bounded stack of inverse patches. Nothing sends
 a `ParsedSong` back across Embind, and nothing allocates in `processBlock()`.
 
@@ -45,12 +50,13 @@ semantic, not bitwise; `cpp/parser/RbsFormat.md` §10 lists what a save drops,
   never grows a sample bank.
 - **Reproduce a source file byte for byte.** Unknown chunks, reserved fields
   and Propellerhead checksums we have not documented are not preserved.
-- **Play TRAK automation from an archive file loaded through Embind.** The
-  parser _stores_ every non-pattern TRAK event in `ParsedSong::automation` and
-  `AutomationScheduler` applies it on the audio thread — but that vector is not
-  registered with Embind, so it only survives the `loadSongFromBytes` path
-  (parse inside C++). A song handed back through `loadSong(WasmParsedSong)`
-  loses it. Archive loads must use `loadSongFromBytes`.
+- **Send TRAK automation to JavaScript.** The parser stores every
+  non-pattern TRAK event in `ParsedSong::automation` and `AutomationScheduler`
+  plays all of it (sorted by tick, looping with the arrangement), but the
+  vector never crosses Embind: songs load through `loadSongFromBytes`, which
+  returns a slim `SongSummary`, and there is no JS-side `loadSong` any more.
+- **Decode drum accents with confidence.** See `parser/RbsFormat.md` §6e —
+  help wanted.
 - **Load `.rbm` skins.** Skin resources are counted and reported, never drawn.
 
 ## Language roles
@@ -271,6 +277,48 @@ guesses include paths and will resolve the wrong `parser/` vs `native_stubs/`
 headers, so an editor shows errors the real build does not have. `npm run
 wasm:test` regenerates it as a side effect. The database is git-ignored — it
 records absolute paths from your machine.
+
+`main.cpp` and `worklet/` exist only in the Emscripten target, so the native
+database has no entry for them. A second `.clangd` fragment (`If: PathMatch`)
+points those files at `src/wasm/cpp/build-wasm/compile_commands.json`, which
+CMake exports on every `npm run wasm:build` — run that once (with the pinned
+Emscripten active) to get Embind flags and completions in `main.cpp`.
+
+### Fuzzing and the corpus sweep
+
+The parser reads untrusted bytes — the community corpus and anything a
+visitor drops on the player — so it has libFuzzer targets (clang only):
+
+```bash
+cmake -S src/wasm/cpp -B build-fuzz -DCMAKE_CXX_COMPILER=clang++ -DRB338_FUZZ=ON
+cmake --build build-fuzz --target fuzz_rbs_parser fuzz_rbm_parser \
+  fuzz_sample_decoder fuzz_rbs_roundtrip
+./build-fuzz/fuzz_rbs_roundtrip corpus/ -max_total_time=300
+```
+
+| Target                | Exercises                                                      |
+| --------------------- | -------------------------------------------------------------- |
+| `fuzz_rbs_parser`     | `RbsParser::parse` (v1, v1.5 and v2 containers)                |
+| `fuzz_rbm_parser`     | `RbmParser::parse` + `summariseMod` (sample header probes)     |
+| `fuzz_sample_decoder` | `probeSample` / `decodeSampleMono` (AIFF, AIFF-C, WAV)         |
+| `fuzz_rbs_roundtrip`  | parse → `RbsWriter` → parse, semantically equal (RbsCompare.h) |
+
+Every library is built with ASan + non-recoverable UBSan for these. Inputs
+the fuzzers have found live in `test-fixtures/fuzz/`, each pinned by a test in
+`tests/test_correctness.cpp`.
+
+`rbs-conformance` (a normal native tool) sweeps a whole corpus: for every
+song it parses, writes, reparses and compares, then renders four bars and
+checks every sample is finite and within full scale. It prints a JSON
+pass/fail histogram and exits non-zero below 99% semantic round trip:
+
+```bash
+python3 scripts/mirror-archive.py --scope all --kind rbs   # fills .mirror/ (ADR 0001)
+./src/wasm/cpp/build/rbs-conformance --out report.json .mirror/blobs
+```
+
+`archive-health.yml` runs ten minutes of fuzzing and the full sweep nightly,
+and uploads crashing inputs and the report as workflow artifacts.
 
 ### Emitted files
 
