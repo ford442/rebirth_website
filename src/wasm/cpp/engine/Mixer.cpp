@@ -108,7 +108,7 @@ float Mixer::compressSample(float x, float& envelope) const {
 }
 
 void Mixer::resetDspState() {
-  std::fill(m_delayLine.begin(), m_delayLine.end(), 0.0f);
+  if (m_delayLine) std::fill_n(m_delayLine.get(), m_delayCapacity, 0.0f);
   m_delayWritePos = 0;
   m_delayTapSamples = 0;
   // Unity, not zero: the envelope is a gain, and starting it at 0 faded in
@@ -124,8 +124,9 @@ void Mixer::init(float sampleRate) {
   m_sampleRate = std::max(sampleRate, 1000.0f);
   // One allocation, on the main thread. Sized so the slowest tempo-synced
   // subdivision fits at this sample rate; process() only ever indexes it.
-  m_delayLine.assign(
-      static_cast<size_t>(MAX_DELAY_SECONDS * m_sampleRate) + 1u, 0.0f);
+  const size_t capacity = static_cast<size_t>(MAX_DELAY_SECONDS * m_sampleRate) + 1u;
+  m_delayLine.reset(static_cast<float*>(std::malloc(capacity * sizeof(float))));
+  m_delayCapacity = m_delayLine ? static_cast<uint32_t>(capacity) : 0u;
   refreshCompressorCoefficients();
   m_limiterReleaseCoeff = std::exp(-1.0f / (kLimiterRelease * m_sampleRate));
   for (auto& pcf : m_pcf) {
@@ -249,22 +250,23 @@ void Mixer::updateDelayTap(float bpm) {
   // Tempo-synced to the subdivision the song's DELY `time` byte selected.
   const float samplesPerTap = (60.0f / clampedBpm) * m_delayBeatFraction * m_sampleRate;
   const uint32_t tap = static_cast<uint32_t>(std::round(samplesPerTap));
-  const uint32_t capacity = static_cast<uint32_t>(m_delayLine.size());
+  const uint32_t capacity = m_delayCapacity;
   m_delayTapSamples = (capacity < 2u) ? 0u : std::clamp(tap, 1u, capacity - 1u);
 }
 
 void Mixer::processDelaySample(float input, float& outL, float& outR) {
-  if (!m_delayOn || m_delayTapSamples == 0 || m_delayLine.empty()) {
+  if (!m_delayOn || m_delayTapSamples == 0 || !m_delayLine) {
     outL = 0.0f;
     outR = 0.0f;
     return;
   }
 
-  const uint32_t capacity = static_cast<uint32_t>(m_delayLine.size());
+  const uint32_t capacity = m_delayCapacity;
+  float* line = m_delayLine.get();
   const uint32_t readPos = (m_delayWritePos + capacity - m_delayTapSamples) % capacity;
-  const float delayed = m_delayLine[readPos];
+  const float delayed = line[readPos];
 
-  m_delayLine[m_delayWritePos] =
+  line[m_delayWritePos] =
       flushDenormal(input + delayed * m_delayFeedback);
   m_delayWritePos = (m_delayWritePos + 1) % capacity;
 

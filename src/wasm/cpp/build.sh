@@ -223,6 +223,9 @@ const manifest = {
     initialMemory: $INITIAL_MEMORY,
     maximumMemory: $MAXIMUM_MEMORY,
     allowMemoryGrowth: $ALLOW_MEMORY_GROWTH,
+    // Engine, parser and Embind glue are built with -fno-exceptions (see
+    // CMakeLists.txt); large buffers are malloc'd and null-checked instead.
+    cxxExceptions: false,
   },
   files: {
     glue:   { path: 'rbsParser.js',  bytes: $(file_size "$GLUE_FILE") },

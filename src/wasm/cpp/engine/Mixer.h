@@ -4,7 +4,8 @@
 #include "../synth/dsp/Pcf.h"
 #include <array>
 #include <cstdint>
-#include <vector>
+#include <cstdlib>
+#include <memory>
 
 namespace rb338 {
 
@@ -128,7 +129,13 @@ private:
   float m_delayBeatFraction = 0.25f;
 
   // Tempo-sync delay (sized once in init, never resized in process).
-  std::vector<float> m_delayLine;
+  // malloc'd and null-checked: if the fixed heap cannot spare it the mixer
+  // runs without the delay rather than aborting the WASM instance.
+  struct FreeDeleter {
+    void operator()(float* p) const { std::free(p); }
+  };
+  std::unique_ptr<float, FreeDeleter> m_delayLine;
+  uint32_t m_delayCapacity = 0;
   uint32_t m_delayWritePos = 0;
   uint32_t m_delayTapSamples = 0;
   float m_delayFeedback = 0.38f;
