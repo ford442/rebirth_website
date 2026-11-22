@@ -94,7 +94,7 @@ describe('mapMidiMessage: drum pads on channel 10', () => {
 
   it('ignores pads with no ReBirth voice', () => {
     expect(map(0x99, 44, 100)).toBeNull(); // pedal hi-hat
-    expect(map(0x99, 49, 100)).toBeNull(); // crash
+    expect(map(0x99, 52, 100)).toBeNull(); // Chinese cymbal
     expect(map(0x99, 0, 100)).toBeNull();
   });
 

@@ -496,6 +496,7 @@ export class WasmAudioBridge {
     if (!this.audioContext || !this.enginePtr) return;
     this._audioLifecycle?.resumeIfNeeded();
     this.enginePtr.play();
+    this._enginePlayingSeen = false;
     this._setStatus('playing');
     this._startPositionPolling();
   }
@@ -601,6 +602,10 @@ export class WasmAudioBridge {
         drumExtra: Math.max(0, Math.min(255, Math.floor(step.drumExtra ?? 0))),
         accent: Boolean(step.accent),
         slide: Boolean(step.slide),
+        // 909 dynamics; the engine masks them to the hit instruments and
+        // clears them on every other device.
+        drumAccent: Math.max(0, Math.min(0x7ff, Math.floor(step.drumAccent ?? 0))),
+        drumFlam: Math.max(0, Math.min(0x7ff, Math.floor(step.drumFlam ?? 0))),
       })
     );
   }
@@ -892,10 +897,20 @@ export class WasmAudioBridge {
     this.onStatus?.(s);
   }
 
+  /** Set once the engine reports it is playing after the last play(). */
+  private _enginePlayingSeen = false;
+
   /**
    * Poll the engine's position once per frame — but only while playing.
    * The loop ends itself when playback does, so a stopped or idle player
    * costs no frames.
+   *
+   * Song mode stops by itself after the last bar (or never, when the song
+   * loops), so the poll also watches `isPlaying()`: once the engine has been
+   * seen playing and then stops, the song is over and the player goes back
+   * to ready. Waiting to see it play first matters — the Play command only
+   * reaches the audio thread at its next block, so the first frames can
+   * still read false.
    */
   private _startPositionPolling() {
     if (this.positionPollId != null) return;
@@ -904,6 +919,15 @@ export class WasmAudioBridge {
       if (!this.enginePtr || this.status !== 'playing') return;
       const pos: PlaybackPosition = this.enginePtr.getPlaybackPosition();
       this.onPosition?.(pos.bar, pos.step);
+      if (typeof this.enginePtr.isPlaying === 'function') {
+        const playing = this.enginePtr.isPlaying();
+        if (playing) {
+          this._enginePlayingSeen = true;
+        } else if (this._enginePlayingSeen) {
+          this._setStatus('ready');
+          return;
+        }
+      }
       this.positionPollId = requestAnimationFrame(poll);
     };
     this.positionPollId = requestAnimationFrame(poll);

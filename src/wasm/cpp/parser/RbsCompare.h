@@ -21,7 +21,8 @@ inline bool sameKnob(float a, float b) { return std::fabs(a - b) <= 0.5f / 127.0
 
 inline bool sameStep(const StepData& a, const StepData& b) {
   return a.active == b.active && a.note == b.note && a.drumExtra == b.drumExtra &&
-         a.accent == b.accent && a.slide == b.slide;
+         a.accent == b.accent && a.slide == b.slide && a.drumAccent == b.drumAccent &&
+         a.drumFlam == b.drumFlam;
 }
 
 inline const Pattern* findSlot(const ParsedSong& song, const Pattern& like) {
@@ -68,6 +69,12 @@ inline std::string semanticDifference(const ParsedSong& a, const ParsedSong& b) 
   if (trimmedText(a.creatorUrl) != trimmedText(b.creatorUrl)) return "creatorUrl";
   if (a.showInfoOnOpen != b.showInfoOnOpen) return "showInfoOnOpen";
   if (std::fabs(a.bpm - b.bpm) > 0.001f) return "bpm";
+  if (a.playMode != b.playMode) return "playMode";
+  if (a.loopEnabled != b.loopEnabled) return "loopEnabled";
+  if (a.loopStart != b.loopStart || a.loopEnd != b.loopEnd) return "loop locators";
+  if (a.shuffle != b.shuffle) return "shuffle";
+  if (a.vintage != b.vintage) return "vintage";
+  if (trimmedText(a.modFtpUrl) != trimmedText(b.modFtpUrl)) return "modFtpUrl";
 
   for (int d = 0; d < NUM_DEVICES; ++d) {
     const DeviceState& x = a.devices[d];
@@ -86,8 +93,10 @@ inline std::string semanticDifference(const ParsedSong& a, const ParsedSong& b) 
     if (!sameKnob(x.level, y.level)) return at + "level";
     if (!sameKnob(x.pan, y.pan)) return at + "pan";
     if (!sameKnob(x.delaySend, y.delaySend)) return at + "delaySend";
-    if (x.dist != y.dist || x.pcf != y.pcf || x.compressor != y.compressor) {
-      return at + "fx sends";
+    if (x.dist != y.dist) return at + "dist";
+    if (d >= static_cast<int>(DeviceId::TR808)) {
+      const auto device = static_cast<DeviceId>(d);
+      if (effectiveDrumKit(x, device) != effectiveDrumKit(y, device)) return at + "kit";
     }
   }
 
@@ -100,6 +109,7 @@ inline std::string semanticDifference(const ParsedSong& a, const ParsedSong& b) 
       return at + " missing";
     }
     if (x.length != y->length) return at + " length";
+    if (x.shuffle != y->shuffle) return at + " shuffle";
     for (int s = 0; s < MAX_STEPS; ++s) {
       if (!sameStep(x.steps[s], y->steps[s])) return at + " step " + std::to_string(s);
     }
@@ -111,12 +121,15 @@ inline std::string semanticDifference(const ParsedSong& a, const ParsedSong& b) 
   const SongFxSettings& fx = a.fx;
   const SongFxSettings& gx = b.fx;
   if (fx.masterLevel != gx.masterLevel) return "fx.masterLevel";
-  if (fx.delay.enabled != gx.delay.enabled || fx.delay.time != gx.delay.time ||
-      fx.delay.feedback != gx.delay.feedback || fx.delay.wet != gx.delay.wet) {
+  if (fx.delay.enabled != gx.delay.enabled || fx.delay.steps != gx.delay.steps ||
+      fx.delay.triplet != gx.delay.triplet || fx.delay.feedback != gx.delay.feedback ||
+      fx.delay.pan != gx.delay.pan) {
     return "fx.delay";
   }
   if (fx.pcf.enabled != gx.pcf.enabled || fx.pcf.cutoff != gx.pcf.cutoff ||
-      fx.pcf.resonance != gx.pcf.resonance || fx.pcf.envAmount != gx.pcf.envAmount) {
+      fx.pcf.resonance != gx.pcf.resonance || fx.pcf.envAmount != gx.pcf.envAmount ||
+      fx.pcf.pattern != gx.pcf.pattern || fx.pcf.decay != gx.pcf.decay ||
+      fx.pcf.lowpass != gx.pcf.lowpass || fx.pcf.target != gx.pcf.target) {
     return "fx.pcf";
   }
   if (fx.dist.enabled != gx.dist.enabled || fx.dist.drive != gx.dist.drive ||
@@ -124,7 +137,8 @@ inline std::string semanticDifference(const ParsedSong& a, const ParsedSong& b) 
     return "fx.dist";
   }
   if (fx.comp.enabled != gx.comp.enabled || fx.comp.ratio != gx.comp.ratio ||
-      fx.comp.threshold != gx.comp.threshold) {
+      fx.comp.threshold != gx.comp.threshold || fx.comp.attack != gx.comp.attack ||
+      fx.comp.target != gx.comp.target) {
     return "fx.comp";
   }
 

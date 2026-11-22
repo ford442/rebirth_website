@@ -6,12 +6,13 @@
  * mapping from `DeviceParam` (see `player-studio.ts`) to `bridge.setDeviceParam`.
  */
 
-import type { DeviceId, ParsedSong, WasmStepData } from '../types/wasm-audio-song';
+import type { DeviceId, DeviceState, ParsedSong, WasmStepData } from '../types/wasm-audio-song';
 import {
   buildStepCells,
   defaultPatternCoords,
   DEVICE_INDEX,
   DeviceParam,
+  DRUM_KIT_KNOBS,
   isAcidDevice,
   pickPattern,
   pickPatternExact,
@@ -113,6 +114,9 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
       active: Boolean(step.active),
       accent: Boolean(step.accent),
       slide: Boolean(step.slide),
+      ...(step.drumAccent || step.drumFlam
+        ? { drumAccent: step.drumAccent ?? 0, drumFlam: step.drumFlam ?? 0 }
+        : {}),
     });
   }
 
@@ -143,6 +147,8 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
         drumExtra: step.drumExtra,
         accent: step.accent,
         slide: step.slide,
+        drumAccent: step.drumAccent ?? 0,
+        drumFlam: step.drumFlam ?? 0,
       };
       if (commitStep(device, step.bank, step.patternIndex, step.stepIndex, next)) {
         recordStepEdit(device, step.bank, step.patternIndex, step.stepIndex, next);
@@ -172,10 +178,21 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
     return findDrumHit(dom.studioDrum?.value ?? 'bd');
   }
 
+  function kitInputs(): Array<HTMLInputElement | HTMLSelectElement> {
+    return dom.studioKit
+      ? Array.from(
+          dom.studioKit.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-studio-kit]')
+        )
+      : [];
+  }
+
   function setStudioLive(live: boolean) {
     stepEditingLive = live;
     dom.root.dataset.studioLive = live ? '1' : '0';
     dom.studioKnobs.forEach((el) => {
+      el.disabled = !live;
+    });
+    kitInputs().forEach((el) => {
       el.disabled = !live;
     });
     dom.studioSteps.forEach((cell) => {
@@ -373,6 +390,8 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
         drumExtra: 0,
         accent: action.accent,
         slide: false,
+        drumAccent: 0,
+        drumFlam: 0,
       };
       const ok = commitMidiStep(action.device, stepIndex, next, previous);
       if (ok && deps.getBridge().playerStatus !== 'playing') {
@@ -467,6 +486,7 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
         el.value = String(value);
       }
     };
+    renderKitPanel(device);
     if (device) {
       applyKnob('tune', device.knobs.tune ?? 0.5);
       applyKnob('cutoff', device.knobs.cutoff ?? 0.5);
@@ -479,6 +499,69 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
       applyKnob('waveform', device.waveform ?? 0);
       applyKnob('mute', device.muted);
     }
+  }
+
+  /** One kit byte (0–127) as the 0–1 value its control and setDeviceParam use. */
+  const KIT_SWITCH_ON = String(1 / 127);
+  let kitPanelFor: DeviceId | null = null;
+
+  /**
+   * The selected drum machine's own panel: every kit knob in `DRUM_KIT_KNOBS`,
+   * built once per machine and re-valued from the song on every render. A
+   * move goes through `setDeviceParam(KitBase + index)`, like every knob.
+   */
+  function renderKitPanel(device: DeviceState | undefined) {
+    const panel = dom.studioKit;
+    if (!panel) return;
+    const machine =
+      selectedDevice === 'tr808' || selectedDevice === 'tr909' ? selectedDevice : null;
+    panel.hidden = machine === null;
+    if (!machine) return;
+
+    if (kitPanelFor !== machine) {
+      panel.replaceChildren();
+      for (const knob of DRUM_KIT_KNOBS[machine]) {
+        const wrap = document.createElement('label');
+        wrap.className = knob.switch ? 'studio-knob studio-knob--toggle' : 'studio-knob';
+        const caption = document.createElement('span');
+        caption.textContent = knob.label;
+        wrap.append(caption);
+        let control: HTMLInputElement | HTMLSelectElement;
+        if (knob.switch) {
+          const select = document.createElement('select');
+          knob.switch.forEach((label, on) => {
+            const option = document.createElement('option');
+            option.value = on ? KIT_SWITCH_ON : '0';
+            option.textContent = label;
+            select.append(option);
+          });
+          select.setAttribute('aria-label', knob.label);
+          control = select;
+        } else {
+          const range = document.createElement('input');
+          range.type = 'range';
+          range.min = '0';
+          range.max = '1';
+          range.step = String(1 / 127);
+          control = range;
+        }
+        control.dataset.studioParam = String(DeviceParam.KitBase + knob.index);
+        control.dataset.studioKit = String(knob.index);
+        control.disabled = !stepEditingLive;
+        control.addEventListener('input', () => applyKnobInput(control));
+        control.addEventListener('change', () => applyKnobInput(control));
+        wrap.append(control);
+        panel.append(wrap);
+      }
+      kitPanelFor = machine;
+    }
+
+    kitInputs().forEach((el) => {
+      const index = Number(el.dataset.studioKit);
+      const byte = device?.kit?.[index] ?? 64;
+      el.value =
+        el instanceof HTMLSelectElement ? (byte ? KIT_SWITCH_ON : '0') : String(byte / 127);
+    });
   }
 
   function renderMetadataPanel(song: ParsedSong) {
@@ -562,41 +645,46 @@ export function createStudioView(deps: StudioViewDeps): StudioView {
     });
 
     dom.studioKnobs.forEach((el) => {
-      const apply = () => {
-        if (deps.isDegradedMode()) return;
-        const paramId = Number(el.dataset.studioParam);
-        if (!Number.isFinite(paramId)) return;
-        let value = 0;
-        if (el instanceof HTMLInputElement && el.type === 'checkbox') {
-          value = el.checked ? 1 : 0;
-        } else if (el instanceof HTMLSelectElement) {
-          value = Number(el.value);
-        } else if (el instanceof HTMLInputElement) {
-          value = Number(el.value);
-        }
-        const deviceIndex = DEVICE_INDEX[selectedDevice];
-        const bridge = deps.getBridge();
-        const ok =
-          'setDeviceParam' in bridge &&
-          typeof bridge.setDeviceParam === 'function' &&
-          bridge.setDeviceParam(deviceIndex, paramId, value);
-        if (ok) recordParamMove(deviceIndex, paramId, value);
-        const loadedSong = deps.getLoadedSong();
-        if (ok && loadedSong) {
-          const device = loadedSong.devices.find((d) => d.deviceId === selectedDevice);
-          const knob = el.dataset.studioKnob;
-          if (device && knob) {
-            if (knob === 'mute') device.muted = value >= 0.5;
-            else if (knob === 'level') device.level = value;
-            else if (knob === 'pan') device.pan = value;
-            else if (knob === 'waveform') device.waveform = value;
-            else device.knobs[knob] = value;
-          }
-        }
-      };
-      el.addEventListener('input', apply);
-      el.addEventListener('change', apply);
+      el.addEventListener('input', () => applyKnobInput(el));
+      el.addEventListener('change', () => applyKnobInput(el));
     });
+  }
+
+  /** A knob or switch moved: send it to the engine and mirror it in the UI song. */
+  function applyKnobInput(el: HTMLInputElement | HTMLSelectElement) {
+    if (deps.isDegradedMode()) return;
+    const paramId = Number(el.dataset.studioParam);
+    if (!Number.isFinite(paramId)) return;
+    let value = 0;
+    if (el instanceof HTMLInputElement && el.type === 'checkbox') {
+      value = el.checked ? 1 : 0;
+    } else {
+      value = Number(el.value);
+    }
+    const deviceIndex = DEVICE_INDEX[selectedDevice];
+    const bridge = deps.getBridge();
+    const ok =
+      'setDeviceParam' in bridge &&
+      typeof bridge.setDeviceParam === 'function' &&
+      bridge.setDeviceParam(deviceIndex, paramId, value);
+    if (ok) recordParamMove(deviceIndex, paramId, value);
+    const loadedSong = deps.getLoadedSong();
+    if (!ok || !loadedSong) return;
+    const device = loadedSong.devices.find((d) => d.deviceId === selectedDevice);
+    if (!device) return;
+    const kitIndex = el.dataset.studioKit;
+    if (kitIndex !== undefined) {
+      device.kit = device.kit ?? [];
+      device.kit[Number(kitIndex)] = Math.round(value * 127);
+      return;
+    }
+    const knob = el.dataset.studioKnob;
+    if (!knob) return;
+    if (knob === 'mute') device.muted = value >= 0.5;
+    else if (knob === 'level') device.level = value;
+    else if (knob === 'pan') device.pan = value;
+    else if (knob === 'waveform') device.waveform = value;
+    else device.knobs[knob] = value;
   }
 
   return {

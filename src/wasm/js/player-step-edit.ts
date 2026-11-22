@@ -32,7 +32,13 @@ export interface DrumHitSpec {
   bit: number;
 }
 
-/** Must match `DrumHit` / `DrumExtra` in `src/wasm/cpp/synth/DrumBitfield.h`. */
+/**
+ * Must match `DrumHit` / `DrumExtra` in `src/wasm/cpp/synth/DrumBitfield.h`.
+ * Two bits name a different instrument per machine: CB is the 808 cowbell /
+ * 909 crash, CY the 808 cymbal / 909 ride (`drumHitLabel` gives the right
+ * one for a device). On the 808, RS also plays the claves and CP the
+ * maracas, per the machine's selector switches.
+ */
 export const DRUM_HITS: DrumHitSpec[] = [
   { key: 'bd', label: 'BD', field: 'note', bit: 0x01 },
   { key: 'sd', label: 'SD', field: 'note', bit: 0x02 },
@@ -41,9 +47,9 @@ export const DRUM_HITS: DrumHitSpec[] = [
   { key: 'ht', label: 'HT', field: 'note', bit: 0x10 },
   { key: 'ch', label: 'CH', field: 'note', bit: 0x20 },
   { key: 'oh', label: 'OH', field: 'note', bit: 0x40 },
-  { key: 'cl', label: 'CL', field: 'note', bit: 0x80 },
+  { key: 'cb', label: 'CB/CR', field: 'note', bit: 0x80 },
   { key: 'cp', label: 'CP', field: 'drumExtra', bit: 0x01 },
-  { key: 'ma', label: 'MA', field: 'drumExtra', bit: 0x02 },
+  { key: 'cy', label: 'CY/RD', field: 'drumExtra', bit: 0x02 },
   { key: 'rs', label: 'RS', field: 'drumExtra', bit: 0x04 },
 ];
 
@@ -59,6 +65,8 @@ export function toWasmStep(step: StepData | undefined | null): WasmStepData {
     drumExtra: step?.drumExtra ?? 0,
     accent: Boolean(step?.accent),
     slide: Boolean(step?.slide),
+    drumAccent: step?.drumAccent ?? 0,
+    drumFlam: step?.drumFlam ?? 0,
   };
 }
 
@@ -68,7 +76,14 @@ export const EMPTY_STEP: Readonly<WasmStepData> = Object.freeze({
   drumExtra: 0,
   accent: false,
   slide: false,
+  drumAccent: 0,
+  drumFlam: 0,
 });
+
+/** The 11-bit instrument word a drum step hits: `note | drumExtra << 8`. */
+export function drumHitWord(step: Pick<WasmStepData, 'note' | 'drumExtra'>): number {
+  return ((step.note ?? 0) & 0xff) | (((step.drumExtra ?? 0) & 0x07) << 8);
+}
 
 /**
  * TB-303 click cycle: `off → note-on → accent → slide → off`.
@@ -79,14 +94,15 @@ export const EMPTY_STEP: Readonly<WasmStepData> = Object.freeze({
  */
 export function cycleAcidStep(current: WasmStepData, note = DEFAULT_ACID_NOTE): WasmStepData {
   const pitch = current.note || note;
+  const base = { active: true, note: pitch, drumExtra: 0, drumAccent: 0, drumFlam: 0 };
   if (!current.active) {
-    return { active: true, note: pitch, drumExtra: 0, accent: false, slide: false };
+    return { ...base, accent: false, slide: false };
   }
   if (!current.accent && !current.slide) {
-    return { active: true, note: pitch, drumExtra: 0, accent: true, slide: false };
+    return { ...base, accent: true, slide: false };
   }
   if (current.accent && !current.slide) {
-    return { active: true, note: pitch, drumExtra: 0, accent: false, slide: true };
+    return { ...base, accent: false, slide: true };
   }
   return { ...EMPTY_STEP };
 }
@@ -105,6 +121,10 @@ export function toggleDrumHit(current: WasmStepData, hit: DrumHitSpec): WasmStep
   const hasHit = (next.note ?? 0) !== 0 || (next.drumExtra ?? 0) !== 0;
   next.active = hasHit;
   if (!hasHit) next.accent = false;
+  // A 909 accent / flam only means something on an instrument that plays.
+  const word = drumHitWord(next);
+  next.drumAccent = (current.drumAccent ?? 0) & word;
+  next.drumFlam = (current.drumFlam ?? 0) & word;
   return next;
 }
 

@@ -30,6 +30,11 @@ Pattern makePattern(DeviceId dev, uint8_t bank, uint8_t index, uint8_t length,
   return p;
 }
 
+/** A note being played (not a rest reaching the 303, not a gate release). */
+bool isNote(const Sequencer::Event& ev) {
+  return ev.kind == Sequencer::EventKind::Trigger && ev.step.active;
+}
+
 ParsedSong makeSong() {
   ParsedSong song;
   song.bpm = 120.0f;
@@ -150,7 +155,7 @@ TEST_CASE("Sequencer: honors per-device pattern length (loops within the bar)") 
     // Position after the call reflects the master step of any emitted event.
     seq.getPosition(bar, step);
     for (uint32_t i = 0; i < n; ++i) {
-      if (ev[i].device == DeviceId::TB303_A) {
+      if (ev[i].device == DeviceId::TB303_A && isNote(ev[i])) {
         firedMasterSteps.push_back(step);
         // Device-local index must stay within the pattern length.
         CHECK(ev[i].stepIndex < 4);
@@ -193,7 +198,7 @@ TEST_CASE("Sequencer: arrangement drives per-bar pattern selection") {
     // Position after the call reflects the bar + master step of the emission.
     seq.getPosition(bar, step);
     for (uint32_t i = 0; i < n; ++i) {
-      if (ev[i].device == DeviceId::TB303_A) {
+      if (ev[i].device == DeviceId::TB303_A && isNote(ev[i])) {
         fired.emplace_back(bar, step);
       }
     }
@@ -222,7 +227,7 @@ TEST_CASE("Sequencer: parsed TRAK switches real fixture patterns across bars") {
   uint8_t bar1Note = 0;
   bool foundBar1 = false;
   for (uint32_t i = 0; i < firstCount; ++i) {
-    if (events[i].device == DeviceId::TB303_A) {
+    if (events[i].device == DeviceId::TB303_A && isNote(events[i])) {
       bar1Note = events[i].step.note;
       foundBar1 = true;
     }
@@ -236,7 +241,7 @@ TEST_CASE("Sequencer: parsed TRAK switches real fixture patterns across bars") {
   uint8_t bar5Note = 0;
   bool foundBar5 = false;
   for (uint32_t i = 0; i < fifthCount; ++i) {
-    if (events[i].device == DeviceId::TB303_A) {
+    if (events[i].device == DeviceId::TB303_A && isNote(events[i])) {
       bar5Note = events[i].step.note;
       foundBar5 = true;
     }

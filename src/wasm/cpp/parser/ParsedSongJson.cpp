@@ -37,7 +37,9 @@ void appendStep(std::ostringstream& out, const StepData& step) {
       << "\"note\":" << static_cast<int>(step.note) << ','
       << "\"drumExtra\":" << static_cast<int>(step.drumExtra) << ','
       << "\"accent\":" << (step.accent ? "true" : "false") << ','
-      << "\"slide\":" << (step.slide ? "true" : "false")
+      << "\"slide\":" << (step.slide ? "true" : "false") << ','
+      << "\"drumAccent\":" << step.drumAccent << ','
+      << "\"drumFlam\":" << step.drumFlam
       << '}';
 }
 
@@ -57,10 +59,14 @@ void appendDevice(std::ostringstream& out, const DeviceState& dev) {
       << "\"level\":" << dev.level << ','
       << "\"pan\":" << dev.pan << ','
       << "\"dist\":" << (dev.dist ? "true" : "false") << ','
-      << "\"pcf\":" << (dev.pcf ? "true" : "false") << ','
-      << "\"compressor\":" << (dev.compressor ? "true" : "false") << ','
-      << "\"delaySend\":" << dev.delaySend
-      << '}';
+      << "\"delaySend\":" << dev.delaySend << ','
+      << "\"kit\":[";
+  const auto kit = effectiveDrumKit(dev, dev.id);
+  for (size_t i = 0; i < kit.size(); ++i) {
+    if (i > 0) out << ',';
+    out << static_cast<int>(kit[i]);
+  }
+  out << "]}";
 }
 
 void appendPattern(std::ostringstream& out, const Pattern& pattern) {
@@ -69,6 +75,7 @@ void appendPattern(std::ostringstream& out, const Pattern& pattern) {
       << "\"bank\":" << static_cast<int>(pattern.bank) << ','
       << "\"patternIndex\":" << static_cast<int>(pattern.patternIndex) << ','
       << "\"length\":" << static_cast<int>(pattern.length) << ','
+      << "\"shuffle\":" << (pattern.shuffle ? "true" : "false") << ','
       << "\"steps\":[";
   for (int i = 0; i < MAX_STEPS; ++i) {
     if (i > 0) out << ',';
@@ -97,15 +104,20 @@ void appendFxSettings(std::ostringstream& out, const SongFxSettings& fx) {
       << "\"masterLevel\":" << static_cast<int>(fx.masterLevel) << ','
       << "\"delay\":{"
       << "\"enabled\":" << (fx.delay.enabled ? "true" : "false") << ','
-      << "\"time\":" << static_cast<int>(fx.delay.time) << ','
+      << "\"steps\":" << static_cast<int>(fx.delay.steps) << ','
+      << "\"triplet\":" << (fx.delay.triplet ? "true" : "false") << ','
       << "\"feedback\":" << static_cast<int>(fx.delay.feedback) << ','
-      << "\"wet\":" << static_cast<int>(fx.delay.wet)
+      << "\"pan\":" << static_cast<int>(fx.delay.pan)
       << "},"
       << "\"pcf\":{"
       << "\"enabled\":" << (fx.pcf.enabled ? "true" : "false") << ','
       << "\"cutoff\":" << static_cast<int>(fx.pcf.cutoff) << ','
       << "\"resonance\":" << static_cast<int>(fx.pcf.resonance) << ','
-      << "\"envAmount\":" << static_cast<int>(fx.pcf.envAmount)
+      << "\"envAmount\":" << static_cast<int>(fx.pcf.envAmount) << ','
+      << "\"pattern\":" << static_cast<int>(fx.pcf.pattern) << ','
+      << "\"decay\":" << static_cast<int>(fx.pcf.decay) << ','
+      << "\"lowpass\":" << (fx.pcf.lowpass ? "true" : "false") << ','
+      << "\"target\":" << static_cast<int>(fx.pcf.target)
       << "},"
       << "\"dist\":{"
       << "\"enabled\":" << (fx.dist.enabled ? "true" : "false") << ','
@@ -116,7 +128,8 @@ void appendFxSettings(std::ostringstream& out, const SongFxSettings& fx) {
       << "\"enabled\":" << (fx.comp.enabled ? "true" : "false") << ','
       << "\"threshold\":" << static_cast<int>(fx.comp.threshold) << ','
       << "\"ratio\":" << static_cast<int>(fx.comp.ratio) << ','
-      << "\"attack\":" << static_cast<int>(fx.comp.attack)
+      << "\"attack\":" << static_cast<int>(fx.comp.attack) << ','
+      << "\"target\":" << static_cast<int>(fx.comp.target)
       << "}"
       << '}';
 }
@@ -141,7 +154,15 @@ std::string parsedSongToJson(const ParsedSong& song) {
       << ",\"headVersion\":" << static_cast<int>(song.headVersion)
       << ",\"globSubFormat\":" << static_cast<int>(song.globSubFormat)
       << ",\"showInfoOnOpen\":" << (song.showInfoOnOpen ? "true" : "false")
-      << ",\"devices\":[";
+      << ",\"playMode\":" << static_cast<int>(song.playMode)
+      << ",\"loopEnabled\":" << (song.loopEnabled ? "true" : "false")
+      << ",\"loopStart\":" << song.loopStart
+      << ",\"loopEnd\":" << song.loopEnd
+      << ",\"shuffle\":" << static_cast<int>(song.shuffle)
+      << ",\"vintage\":" << (song.vintage ? "true" : "false")
+      << ",\"modFtpUrl\":";
+  appendEscapedJsonString(out, song.modFtpUrl);
+  out << ",\"devices\":[";
 
   for (int i = 0; i < NUM_DEVICES; ++i) {
     if (i > 0) out << ',';

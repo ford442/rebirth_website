@@ -8,11 +8,16 @@
 namespace rb338::dsp {
 
 /**
- * Pcf — ReBirth's "PCF" (pattern-controlled filter) send effect.
+ * Pcf — ReBirth's "PCF" (pattern-controlled filter) insert.
  *
- * ReBirth's PCF is not a generic tone control: it is a resonant low-pass
- * whose corner frequency is pushed by the signal's own envelope, which is
- * what gives it the rhythmic, pumping character on a drum bus. The old
+ * ReBirth's PCF is pattern-gated: the RBS 4.2 layout stores a trigger
+ * pattern (one of 55) and an envelope decay next to frequency, Q and
+ * amount, plus a low-pass / band-pass switch (RbsFormat.md §6a-ii). The 55
+ * trigger patterns themselves are not in the file and are not documented,
+ * so the envelope here is still derived from the signal (a follower whose
+ * release is the DECAY knob) — the closest stand-in that needs no table we
+ * do not have. Mode and decay are honoured; the pattern byte round-trips
+ * but does not yet change the sound. The old
  * `Mixer.cpp` implementation was a single one-pole smoother with a
  * hand-rolled "resonant" blend, which could neither self-resonate nor track
  * the envelope; `envAmount` was parsed out of the DEVL/PCF chunk and then
@@ -46,7 +51,7 @@ public:
     // ~2 ms attack, ~120 ms release: fast enough to catch a kick transient,
     // slow enough that the sweep is audible rather than a click.
     m_envAttack = std::exp(-1.0f / (0.002f * m_sampleRate));
-    m_envRelease = std::exp(-1.0f / (0.120f * m_sampleRate));
+    m_envRelease = std::exp(-1.0f / (decaySeconds() * m_sampleRate));
     reset();
     updateCoefficients(true);
   }
@@ -76,6 +81,15 @@ public:
   /** @param norm 0–1 (the song's `envAmount` byte / 127). */
   void setEnvAmount(float norm) { m_envAmount = std::clamp(norm, 0.0f, 1.0f); }
 
+  /** @param norm 0–1 DECAY knob: envelope release 30 ms … ~1 s. */
+  void setDecay(float norm) {
+    m_decay = std::clamp(norm, 0.0f, 1.0f);
+    m_envRelease = std::exp(-1.0f / (decaySeconds() * m_sampleRate));
+  }
+
+  /** Filter type switch: low-pass (true) or band-pass. */
+  void setLowpass(bool lowpass) { m_lowpass = lowpass; }
+
   float process(float input) {
     const float absIn = std::fabs(input);
     const float coeff = (absIn > m_envelope) ? m_envAttack : m_envRelease;
@@ -94,10 +108,15 @@ public:
     const float v2 = m_ic2eq + m_a2 * m_ic1eq + m_a3 * v3;
     m_ic1eq = flushDenormal(2.0f * v1 - m_ic1eq);
     m_ic2eq = flushDenormal(2.0f * v2 - m_ic2eq);
-    return v2;
+    // Band-pass is the SVF's v1, normalised by k so the peak stays at
+    // unity gain whatever the Q.
+    return m_lowpass ? v2 : v1 * m_k;
   }
 
 private:
+  /** DECAY 0 → 30 ms, 0.5 → ~170 ms (close to the old fixed 120 ms), 1 → 1 s. */
+  float decaySeconds() const { return 0.03f * std::exp2(m_decay * 5.06f); }
+
   /** Base corner frequency in Hz for the current `cutoff` byte. */
   float baseCutoffHz() const {
     // 80 Hz … ~10.2 kHz across the byte range, exponentially spaced.
@@ -122,6 +141,8 @@ private:
   float m_cutoffNorm = 0.5f;
   float m_resonance = 0.0f;
   float m_envAmount = 0.0f;
+  float m_decay = 0.45f;
+  bool m_lowpass = true;
   float m_k = 2.0f;
 
   float m_currentHz = -1.0f;

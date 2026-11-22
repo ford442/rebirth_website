@@ -2,8 +2,11 @@
 // identical. Bitwise identity is explicitly NOT required — padding, reserved
 // fields and chunks the parser skips are not preserved (RbsFormat.md §10).
 
+#include "../parser/DrumKit.h"
+#include "../parser/RbsCompare.h"
 #include "../parser/RbsParser.h"
 #include "../parser/RbsWriter.h"
+#include "../synth/DrumBitfield.h"
 #include "../third_party/doctest.h"
 
 #include <fstream>
@@ -65,8 +68,10 @@ void requireSameDevices(const ParsedSong& a, const ParsedSong& b) {
     CHECK(x.pan == doctest::Approx(y.pan).epsilon(0.005));
     CHECK(x.delaySend == doctest::Approx(y.delaySend).epsilon(0.005));
     CHECK(x.dist == y.dist);
-    CHECK(x.pcf == y.pcf);
-    CHECK(x.compressor == y.compressor);
+    if (i >= static_cast<int>(DeviceId::TR808)) {
+      CHECK(effectiveDrumKit(x, static_cast<DeviceId>(i)) ==
+            effectiveDrumKit(y, static_cast<DeviceId>(i)));
+    }
   }
 }
 
@@ -129,19 +134,26 @@ std::string trimmed(const std::string& text) {
 void requireSameFx(const SongFxSettings& x, const SongFxSettings& y) {
   CHECK(x.masterLevel == y.masterLevel);
   CHECK(x.delay.enabled == y.delay.enabled);
-  CHECK(x.delay.time == y.delay.time);
+  CHECK(x.delay.steps == y.delay.steps);
+  CHECK(x.delay.triplet == y.delay.triplet);
   CHECK(x.delay.feedback == y.delay.feedback);
-  CHECK(x.delay.wet == y.delay.wet);
+  CHECK(x.delay.pan == y.delay.pan);
   CHECK(x.pcf.enabled == y.pcf.enabled);
   CHECK(x.pcf.cutoff == y.pcf.cutoff);
   CHECK(x.pcf.resonance == y.pcf.resonance);
   CHECK(x.pcf.envAmount == y.pcf.envAmount);
+  CHECK(x.pcf.pattern == y.pcf.pattern);
+  CHECK(x.pcf.decay == y.pcf.decay);
+  CHECK(x.pcf.lowpass == y.pcf.lowpass);
+  CHECK(x.pcf.target == y.pcf.target);
   CHECK(x.dist.enabled == y.dist.enabled);
   CHECK(x.dist.drive == y.dist.drive);
   CHECK(x.dist.mix == y.dist.mix);
   CHECK(x.comp.enabled == y.comp.enabled);
   CHECK(x.comp.ratio == y.comp.ratio);
   CHECK(x.comp.threshold == y.comp.threshold);
+  CHECK(x.comp.attack == y.comp.attack);
+  CHECK(x.comp.target == y.comp.target);
 }
 
 void requireSameSong(const ParsedSong& a, const ParsedSong& b) {
@@ -201,6 +213,7 @@ TEST_CASE("v2 fixtures survive parse → write → parse semantically") {
     const ParsedSong original = parseFixture(name);
     const ParsedSong reloaded = parseBytes(writeSong(original), std::string(name) + " (written)");
     requireSameSong(original, reloaded);
+    CHECK(semanticDifference(original, reloaded) == "");
   }
 }
 
@@ -270,4 +283,68 @@ TEST_CASE("Writer rejects values the parser would refuse to read back") {
     CHECK_FALSE(writer.write(song).has_value());
     CHECK(writer.lastError().find("pattern-select") != std::string::npos);
   }
+}
+
+TEST_CASE("Every groove, transport, kit and FX field survives the round trip") {
+  ParsedSong song = parseFixture("standard-rebirth.rbs");
+  song.playMode = PlayMode::Pattern;
+  song.loopEnabled = true;
+  song.loopStart = 3 * GLOB_TICKS_PER_BAR;
+  song.loopEnd = 11 * GLOB_TICKS_PER_BAR;
+  song.shuffle = 101;
+  song.vintage = true;
+  song.showInfoOnOpen = false;
+  song.modFtpUrl = "ftp.example.org";
+  song.fx.delay = DelaySettings{true, 6, true, 77, 12};
+  song.fx.pcf.pattern = 54;
+  song.fx.pcf.decay = 9;
+  song.fx.pcf.lowpass = false;
+  song.fx.pcf.target = FX_TARGET_MASTER;
+  song.fx.comp.attack = 0;
+  song.fx.comp.target = FX_TARGET_FIRST_DEVICE + 2;
+  song.devices[2].kit[kitIndex(Kit808::CowBellLevel)] = 3;
+  song.devices[3].kit[kitIndex(Kit909::FlamInterval)] = 111;
+  song.devices[3].accent = 90 / 127.0f;
+  for (Pattern& p : song.patterns) {
+    if (p.deviceId == DeviceId::TR909 && p.bank == 1 && p.patternIndex == 2) {
+      p.shuffle = true;
+      p.steps[0] = StepData{true, DrumHit::BD | DrumHit::SD, DrumExtra::RS, true, false, 0x001, 0x400};
+      p.steps[1] = StepData{false, 0, 0, true, false, 0, 0}; // AC row only
+    }
+    if (p.deviceId == DeviceId::TR808 && p.bank == 0 && p.patternIndex == 5) {
+      p.steps[3] = StepData{true, DrumHit::CB, DrumExtra::CY, true, false, 0, 0};
+    }
+  }
+
+  const ParsedSong reloaded = parseBytes(writeSong(song), "edited");
+  CHECK(semanticDifference(song, reloaded) == "");
+  CHECK(reloaded.playMode == PlayMode::Pattern);
+  CHECK(reloaded.loopEnd == 11 * GLOB_TICKS_PER_BAR);
+  CHECK(reloaded.vintage);
+  CHECK(reloaded.fx.delay.triplet);
+  CHECK(reloaded.devices[3].kit[kitIndex(Kit909::FlamInterval)] == 111);
+}
+
+TEST_CASE("A song with no drum chunk saves the default kit") {
+  ParsedSong song;
+  song.title = "Hand built";
+  const ParsedSong reloaded = parseBytes(writeSong(song), "hand built");
+  CHECK(reloaded.devices[2].hasKit);
+  CHECK(reloaded.devices[2].kit == defaultDrumKit(DeviceId::TR808));
+  CHECK(reloaded.devices[3].kit == defaultDrumKit(DeviceId::TR909));
+  CHECK(semanticDifference(song, reloaded) == "");
+}
+
+TEST_CASE("USRI strings are cut to their fields, consistently on read and write") {
+  ParsedSong song;
+  song.title = "Long strings";
+  song.author = std::string(60, 'a');
+  song.infoText = std::string(500, 'i');
+  song.showInfoOnOpen = true;
+  const ParsedSong once = parseBytes(writeSong(song), "long");
+  CHECK(once.author.size() == 40);
+  CHECK(once.infoText.size() == 400);
+  CHECK(once.showInfoOnOpen);
+  const ParsedSong twice = parseBytes(writeSong(once), "long again");
+  CHECK(semanticDifference(once, twice) == "");
 }

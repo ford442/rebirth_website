@@ -121,10 +121,19 @@ void position;
 
 const fxDefaults: WasmSongFxSettings = {
   masterLevel: 127,
-  delay: { enabled: false, time: 0, feedback: 0, wet: 0 },
-  pcf: { enabled: false, cutoff: 64, resonance: 0, envAmount: 0 },
+  delay: { enabled: false, steps: 3, triplet: false, feedback: 0, pan: 64 },
+  pcf: {
+    enabled: false,
+    cutoff: 64,
+    resonance: 0,
+    envAmount: 0,
+    pattern: 0,
+    decay: 64,
+    lowpass: true,
+    target: 0,
+  },
   dist: { enabled: false, drive: 32, mix: 29 },
-  comp: { enabled: false, threshold: 32, ratio: 127, attack: 127 },
+  comp: { enabled: false, threshold: 32, ratio: 127, attack: 127, target: 0 },
 };
 void fxDefaults;
 
@@ -169,6 +178,18 @@ class MockRbsAudioEngine implements RbsAudioEngineInstance {
     return 120;
   }
   setTempoMultiplier(_multiplier: number): void {}
+
+  setPlayMode(_mode: number): boolean {
+    return true;
+  }
+
+  getPlayMode(): number {
+    return 1;
+  }
+
+  selectPattern(_deviceId: number, _bank: number, _patternIndex: number): boolean {
+    return true;
+  }
   setDeviceParam(_deviceId: number, _paramId: number, _value: number): void {}
 
   setStep(
@@ -187,7 +208,15 @@ class MockRbsAudioEngine implements RbsAudioEngineInstance {
     _patternIndex: number,
     _stepIndex: number
   ): WasmStepData {
-    return { active: false, note: 0, drumExtra: 0, accent: false, slide: false };
+    return {
+      active: false,
+      note: 0,
+      drumExtra: 0,
+      accent: false,
+      slide: false,
+      drumAccent: 0,
+      drumFlam: 0,
+    };
   }
 
   setPatternLength(

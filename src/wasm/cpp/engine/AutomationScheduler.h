@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../parser/RbsTypes.h"
+#include "EngineCommands.h"
 #include <cstddef>
 #include <cstdint>
 
@@ -35,12 +36,16 @@ public:
                           uint32_t numFrames, Event* out, uint32_t maxEvents);
 
   /**
-   * Apply one event. `overrideMask` has one bit per (device, DeviceParamId)
-   * — bit `device * NUM_DEVICE_PARAMS + param` — for knobs the user has
-   * taken over this session; automation of those knobs is skipped.
+   * Apply one event. `overrides` marks the knobs the user has taken over
+   * this session; automation of those knobs is skipped.
+   *
+   * Controller ids are the byte offsets of the field in the track's DEVL
+   * chunk (RbsFormat.md §7): device tracks follow the device header (so an
+   * 808/909 controller ≥ 0x03 is a kit byte), FX tracks their FX chunk, and
+   * the mixer track MIXR's first bytes then six controllers per channel.
    */
   static void applyEvent(Voice* const* voices, Mixer* mixer, const Event& ev,
-                         uint64_t overrideMask = 0);
+                         const ParamMask& overrides = ParamMask{});
 
   /**
    * Apply, in order, every event strictly before `bar`/`step` — the knob and
@@ -50,7 +55,8 @@ public:
    * automation list.
    */
   static void foldUntil(const ParsedSong& song, uint16_t bar, uint8_t step,
-                        Voice* const* voices, Mixer* mixer, uint64_t overrideMask = 0);
+                        Voice* const* voices, Mixer* mixer,
+                        const ParamMask& overrides = ParamMask{});
 
   void setPosition(const ParsedSong* song, uint16_t bar, uint8_t step);
 

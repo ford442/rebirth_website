@@ -34,6 +34,7 @@ const wasm = vi.hoisted(() => {
     saveRbs = vi.fn(() => new Uint8Array([1, 2, 3]));
     lastSaveError = vi.fn(() => '');
     getPlaybackPosition = vi.fn(() => ({ bar: 2, step: 5 }));
+    isPlaying = vi.fn(() => true);
     constructor() {
       state.engines.push(this as unknown as Record<string, ReturnType<typeof vi.fn>>);
     }
@@ -271,6 +272,27 @@ describe('WasmAudioBridge position polling', () => {
     expect(loop.pending()).toBe(1);
   });
 
+  it('goes back to ready when the song runs out, not before the engine starts', async () => {
+    const bridge = await readyBridge();
+    bridge.play();
+    const engine = wasm.state.engines[0];
+
+    // The Play command has not reached the audio thread yet: keep playing.
+    engine.isPlaying.mockReturnValue(false);
+    loop.runFrame();
+    expect(bridge.playerStatus).toBe('playing');
+
+    engine.isPlaying.mockReturnValue(true);
+    loop.runFrame();
+    expect(bridge.playerStatus).toBe('playing');
+
+    // Song mode stopped after the last bar.
+    engine.isPlaying.mockReturnValue(false);
+    loop.runFrame();
+    expect(bridge.playerStatus).toBe('ready');
+    expect(loop.pending()).toBe(0);
+  });
+
   it('never schedules a second loop when play() is called twice', async () => {
     const bridge = await readyBridge();
     bridge.play();
@@ -358,7 +380,8 @@ describe('WasmAudioBridge.setDeviceParam', () => {
     const engine = wasm.state.engines[0].setDeviceParam;
     expect(engine).toHaveBeenNthCalledWith(1, 3, MAX_DEVICE_PARAM_ID, 1);
     expect(engine).toHaveBeenNthCalledWith(2, 0, 0, 0);
-    expect(MAX_DEVICE_PARAM_ID).toBe(9);
+    // Mute (9) plus the 28 drum-kit params from KitBase (10).
+    expect(MAX_DEVICE_PARAM_ID).toBe(37);
   });
 
   it('treats a non-finite value as 0', async () => {

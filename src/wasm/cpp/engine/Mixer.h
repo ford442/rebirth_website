@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../parser/RbsTypes.h"
+#include "../synth/dsp/OversampledShaper.h"
 #include "../synth/dsp/Pcf.h"
 #include <array>
 #include <cstdint>
@@ -21,19 +22,21 @@ namespace rb338 {
  */
 class Mixer {
 public:
-  /** Longest tempo-sync subdivision the DELY `time` byte can select, in beats. */
-  static constexpr float MAX_DELAY_BEATS = 1.0f;
+  /** DELY byte 1: the delay time in steps, 1–32. */
+  static constexpr uint8_t MAX_DELAY_STEPS = 32;
 
   /**
-   * Longest delay tap the line must be able to hold, in seconds: the longest
-   * subdivision (a quarter note) at the slowest tempo the engine accepts.
-   * At MIN_BPM = 20 that is 3 s. One extra sample of headroom keeps the read
-   * pointer strictly behind the write pointer.
-   *
-   * The line used to be a fixed 20000-sample array (~0.45 s @ 44.1 kHz), and
-   * then 1.125 s, which still truncated a quarter-note tap below 53 BPM.
+   * Delay-line length, in seconds. 32 straight sixteenths (two bars) at
+   * MIN_BPM would be 24 s — 4.6 MB a mixer at 48 kHz, against a fixed
+   * 64 MiB heap that holds two or three of them — so the line covers 8 s
+   * (the longest step count seen in the archive corpus is 12) and a longer
+   * tap is clamped. One extra sample keeps the read pointer strictly behind
+   * the write pointer.
    */
-  static constexpr float MAX_DELAY_SECONDS = (60.0f / MIN_BPM) * MAX_DELAY_BEATS;
+  static constexpr float MAX_DELAY_SECONDS = 8.0f;
+
+  /** Delay time in seconds for `steps` sixteenths (or triplet sixteenths). */
+  static float delaySeconds(uint8_t steps, bool triplet, float bpm);
 
   Mixer() = default;
 
@@ -76,36 +79,58 @@ public:
   void setChannelLevel(int deviceIndex, float level);
   void setChannelPan(int deviceIndex, float pan);
   void setChannelMuted(int deviceIndex, bool muted);
+  void setChannelDelaySend(int deviceIndex, float send);
+  void setChannelDistortion(int deviceIndex, bool on);
 
   /** Current mute state, so a stem render can solo one device and restore. */
   bool channelMuted(int deviceIndex) const;
 
+  /** MIXR byte 0 as 0–1. */
+  void setMasterLevel(float level);
+
+  void setDelaySteps(uint8_t steps);
+  void setDelayTriplet(bool triplet);
   void setDelayFeedback(float feedback);
-  void setDelayWet(float wet);
+  /** Delay return pan, 0 = left, 0.5 = centre, 1 = right. */
+  void setDelayPan(float pan);
   void setDistortionDrive(float drive);
   void setDistortionMix(float mix);
   void setCompressorThreshold(float threshold);
   void setCompressorRatio(float ratio);
+  /** COMP byte 1 (0–127) mapped as the song's chunk is. */
+  void setCompressorRatioByte(uint8_t ratio);
   void setCompressorAttack(float attackSeconds);
+  /** Insert device id, as MIXR byte 1 stores it (FX_TARGET_*). */
+  void setCompressorTarget(uint8_t target);
   void setPcfCutoff(float cutoff);
   void setPcfResonance(float resonance);
   void setPcfEnvAmount(float envAmount);
+  void setPcfDecay(float decay);
+  void setPcfLowpass(bool lowpass);
+  /** Insert device id, as MIXR byte 2 stores it (FX_TARGET_*). */
+  void setPcfTarget(uint8_t target);
 
   void setDistortionEnabled(bool on) { m_distortionOn = on; }
   void setCompressorEnabled(bool on) { m_compressorOn = on; }
   void setDelayEnabled(bool on) { m_delayOn = on; }
   void setPcfEnabled(bool on) { m_pcfOn = on; }
 
+  /** Test hook: run the distortion's shaper at the host rate, as it used to. */
+  void setDistortionOversampling(bool on) { m_distOversampling = on; }
+
 private:
   static float flushDenormal(float x);
   static float constantPowerPanLeft(float pan);
   static float constantPowerPanRight(float pan);
-  static float diodeDistort(float x, float drive);
   float compressSample(float x, float& envelope) const;
+  /** Stereo-linked compression of the master bus. */
+  void compressStereo(float& left, float& right);
   void updateDelayTap(float bpm);
   void refreshCompressorCoefficients();
-  void processDelaySample(float input, float& outL, float& outR);
-  float processPcfSample(int deviceIndex, float input);
+  float processDelaySample(float input);
+  bool insertOn(uint8_t target, int deviceIndex) const {
+    return target == FX_TARGET_FIRST_DEVICE + deviceIndex;
+  }
 
   float m_sampleRate = 44100.0f;
   bool m_distortionOn = true;
@@ -117,6 +142,19 @@ private:
   float m_masterLevel = 1.0f;
   float m_distortionDrive = 5.0f;
   float m_distortionMix = 0.65f;
+  bool m_distOversampling = true;
+  dsp::OversampledShaper m_distShaper;
+  /**
+   * Per-channel delay matching the shaper's latency: a channel feeding the
+   * (parallel) distortion has its dry signal delayed by as much, or the two
+   * would comb-filter. Power of two so the index wraps with a mask.
+   */
+  static constexpr uint32_t kDistCompSize = 32;
+  static_assert(dsp::OversampledShaper::kLatency < kDistCompSize);
+  std::array<std::array<float, kDistCompSize>, NUM_DEVICES> m_distComp{};
+  uint32_t m_distCompPos = 0;
+  uint8_t m_compressorTarget = FX_TARGET_NONE;
+  uint8_t m_pcfTarget = FX_TARGET_NONE;
   float m_compressorThreshold = 0.55f;
   float m_compressorRatio = 4.0f;
   float m_compressorAttackSeconds = 0.003f;
@@ -125,8 +163,10 @@ private:
   float m_pcfCutoff = 0.5f;
   float m_pcfResonance = 0.2f;
   float m_pcfEnvAmount = 0.0f;
-  /** Delay subdivision as a fraction of a beat (0.25 = a sixteenth). */
-  float m_delayBeatFraction = 0.25f;
+  uint8_t m_delaySteps = 3;
+  bool m_delayTriplet = false;
+  float m_delayPanL = 0.70710678f;
+  float m_delayPanR = 0.70710678f;
 
   // Tempo-sync delay (sized once in init, never resized in process).
   // malloc'd and null-checked: if the fixed heap cannot spare it the mixer
@@ -139,17 +179,18 @@ private:
   uint32_t m_delayWritePos = 0;
   uint32_t m_delayTapSamples = 0;
   float m_delayFeedback = 0.38f;
-  float m_delayWet = 0.45f;
 
   // Master peak limiter gain (stereo-linked, 1 = no reduction).
   float m_limiterEnvelope = 1.0f;
   float m_limiterReleaseCoeff = 0.0f;
 
-  // Per-device compressor envelope followers (compressor-send path).
+  // Compressor envelope followers: one per device insert, one for the master.
   std::array<float, NUM_DEVICES> m_compressorEnvelopes{};
+  float m_masterCompressorEnvelope = 0.0f;
 
-  // Per-device PCF send filters.
+  // PCF filters: one per device insert, a stereo pair for the master.
   std::array<dsp::Pcf, NUM_DEVICES> m_pcf{};
+  std::array<dsp::Pcf, 2> m_pcfMaster{};
 };
 
 } // namespace rb338

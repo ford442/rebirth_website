@@ -61,6 +61,8 @@ set(RB338_TEST_SOURCES
   tests/test_mixer.cpp
   tests/test_rbm_parser.cpp
   tests/test_correctness.cpp
+  tests/test_fidelity.cpp
+  tests/test_golden.cpp
 )
 
 set(RB338_INSPECT_SOURCES
@@ -77,6 +79,14 @@ set(RB338_RBM_INSPECT_SOURCES
 
 set(RB338_CONFORMANCE_SOURCES
   tools/rbs-conformance.cpp
+)
+
+set(RB338_RENDER_SOURCES
+  tools/rbs-render.cpp
+)
+
+set(RB338_GOLDEN_SOURCES
+  tools/rbs-golden.cpp
 )
 
 # libFuzzer targets — built only with -DRB338_FUZZ=ON (clang). One entry

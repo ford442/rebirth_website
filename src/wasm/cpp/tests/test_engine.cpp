@@ -145,15 +145,16 @@ TEST_CASE("Engine: hard-left pan isolates right channel") {
   float* buffers[2] = {left, right};
 
   eng.play();
-  for (int i = 0; i < 32; ++i) {
-    eng.processBlock(buffers, 2, 128);
-  }
-
+  // Peak over the whole render: the 303 gate closes half a step in, so a
+  // single late block can land in the gap between notes.
   float leftPeak = 0.0f;
   float rightPeak = 0.0f;
-  for (int i = 0; i < 128; ++i) {
-    leftPeak = std::max(leftPeak, std::fabs(left[i]));
-    rightPeak = std::max(rightPeak, std::fabs(right[i]));
+  for (int b = 0; b < 32; ++b) {
+    eng.processBlock(buffers, 2, 128);
+    for (int i = 0; i < 128; ++i) {
+      leftPeak = std::max(leftPeak, std::fabs(left[i]));
+      rightPeak = std::max(rightPeak, std::fabs(right[i]));
+    }
   }
 
   CHECK(leftPeak > 0.01f);

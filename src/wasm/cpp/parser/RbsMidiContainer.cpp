@@ -33,8 +33,16 @@ constexpr size_t kV1808SlotSize = 194;
 
 constexpr size_t kV1909BlockSize = 6239;
 constexpr size_t kV1909LabelSkip = 5;
-constexpr size_t kV1909HeaderSize = 31;
+// 6239 - 5 - 32 * 194. This was 31 (the v2 909 header), which made the
+// block 5 bytes longer than its own size, so the 909 path rejected every
+// input before reading a byte.
+constexpr size_t kV1909HeaderSize = 26;
 constexpr size_t kV1909SlotSize = 194;
+
+// Each block is exactly label + header + 32 pattern slots.
+static_assert(kV1303BlockSize == kV1303LabelSkip + kV1303HeaderSize + 32 * kV1303SlotSize);
+static_assert(kV1808BlockSize == kV1808LabelSkip + kV1808HeaderSize + 32 * kV1808SlotSize);
+static_assert(kV1909BlockSize == kV1909LabelSkip + kV1909HeaderSize + 32 * kV1909SlotSize);
 
 using detail::matchId;
 

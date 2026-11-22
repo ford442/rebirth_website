@@ -56,9 +56,12 @@ export const DRUM_NOTE_MAP: Readonly<Record<number, string>> = Object.freeze({
   46: 'oh',
   47: 'mt',
   48: 'ht',
+  49: 'cb', // crash — the 909's CB row (the 808's is the cowbell, 56)
   50: 'ht',
-  70: 'ma',
-  75: 'cl',
+  51: 'cy', // ride — the 909's CY row (the 808's is its cymbal)
+  56: 'cb',
+  70: 'cp', // maracas: the 808's CP row with its CP/MA selector on MA
+  75: 'rs', // claves: the 808's RS row with its RS/CL selector on CL
 });
 
 /** A decoded, device-agnostic instruction for the studio to apply. */

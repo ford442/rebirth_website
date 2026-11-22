@@ -45,7 +45,8 @@ void applyMasterVolume(float* left, float* right, uint32_t numFrames, float volu
 #endif
 }
 
-// StepData ↔ one 32-bit command word: note, drumExtra, then three flags.
+// StepData ↔ command words: note, drumExtra, then three flags in one word;
+// the 909's per-instrument masks in a second (packStepDynamics).
 uint32_t packStep(const StepData& step) {
   return static_cast<uint32_t>(step.note) |
          (static_cast<uint32_t>(step.drumExtra) << 8) |
@@ -62,6 +63,20 @@ StepData unpackStep(uint32_t word) {
   step.accent = (word >> 17) & 1u;
   step.slide = (word >> 18) & 1u;
   return step;
+}
+
+uint32_t packStepDynamics(const StepData& step) {
+  return static_cast<uint32_t>(step.drumAccent) | (static_cast<uint32_t>(step.drumFlam) << 16);
+}
+
+void unpackStepDynamics(uint32_t word, StepData& step) {
+  step.drumAccent = static_cast<uint16_t>(word & 0xffffu);
+  step.drumFlam = static_cast<uint16_t>(word >> 16);
+}
+
+/** Bits of the 11-hit word a drum step actually plays. */
+uint16_t drumHitMask(const StepData& step) {
+  return static_cast<uint16_t>(step.note | ((step.drumExtra & 0x07u) << 8));
 }
 
 } // anonymous namespace
@@ -100,8 +115,7 @@ bool RbsAudioEngine::loadSong(const ParsedSong& song) {
   m_hasSong = true;
   // A new song starts from its own knobs (the bridge forgets its overrides
   // on load too). Clearing the mask also hands automation back to the song.
-  m_paramOverridden.store(0, std::memory_order_release);
-  m_paramDirty.store(0, std::memory_order_release);
+  clearParamMasks();
 
   auto next = buildEngineSnapshot(m_song, m_config, m_samplePool);
   EngineSnapshot* raw = next.get();
@@ -246,15 +260,48 @@ void RbsAudioEngine::setTempoMultiplier(float multiplier) {
   m_tempoMultiplier.store(std::clamp(multiplier, 0.25f, 4.0f), std::memory_order_relaxed);
 }
 
+void RbsAudioEngine::clearParamMasks() {
+  for (auto& word : m_paramOverridden) word.store(0, std::memory_order_release);
+  for (auto& word : m_paramDirty) word.store(0, std::memory_order_release);
+}
+
+ParamMask RbsAudioEngine::overrideMask() const {
+  ParamMask mask;
+  for (size_t d = 0; d < NUM_DEVICES; ++d) {
+    mask.bits[d] = m_paramOverridden[d].load(std::memory_order_acquire);
+  }
+  return mask;
+}
+
+bool RbsAudioEngine::setPlayMode(uint8_t mode) {
+  if (!m_initialised || mode > 1) return false;
+  m_song.playMode = mode == 0 ? PlayMode::Pattern : PlayMode::Song;
+  if (!m_hasSong) return true;
+  if (pushCommand({EngineCommandType::SetPlayMode, mode, 0})) return true;
+  republishGraph();
+  return true;
+}
+
+bool RbsAudioEngine::selectPattern(uint8_t deviceId, uint8_t bank, uint8_t patternIndex) {
+  if (!m_initialised || !validSlot(deviceId, bank, patternIndex)) return false;
+  // The working copy remembers it as the device's selected pattern, which
+  // is what a save writes and a rebuilt graph starts from.
+  DeviceState& dev = m_song.devices[deviceId];
+  dev.initialPatternBank = bank;
+  dev.initialPatternIndex = patternIndex;
+  const uint32_t slot = static_cast<uint32_t>(bank) * MAX_PATTERNS_PER_BANK + patternIndex;
+  return pushCommand({EngineCommandType::QueuePattern, deviceId, slot});
+}
+
 void RbsAudioEngine::setDeviceParam(uint8_t deviceId, uint8_t paramId, float value) {
   if (deviceId >= NUM_DEVICES || paramId >= NUM_DEVICE_PARAMS) return;
-  const uint64_t bit = paramBit(deviceId, paramId);
+  const uint64_t bit = paramBit(paramId);
   // Value first, then the bits with release: the audio thread's acquire swap
   // of the dirty mask is then guaranteed to see this value (or a later one).
   m_paramSlots[size_t(deviceId) * NUM_DEVICE_PARAMS + paramId].store(
       floatBits(value), std::memory_order_relaxed);
-  m_paramOverridden.fetch_or(bit, std::memory_order_release);
-  m_paramDirty.fetch_or(bit, std::memory_order_release);
+  m_paramOverridden[deviceId].fetch_or(bit, std::memory_order_release);
+  m_paramDirty[deviceId].fetch_or(bit, std::memory_order_release);
 }
 
 float RbsAudioEngine::paramSlotValue(size_t device, size_t param) const {
@@ -264,11 +311,11 @@ float RbsAudioEngine::paramSlotValue(size_t device, size_t param) const {
 
 void RbsAudioEngine::applyParamOverrides(EngineSnapshot* snap) {
   if (!snap) return;
-  const uint64_t mask = overrideMask();
-  if (mask == 0) return;
+  const ParamMask mask = overrideMask();
+  if (!mask.any()) return;
   for (uint8_t device = 0; device < NUM_DEVICES; ++device) {
     for (uint8_t param = 0; param < NUM_DEVICE_PARAMS; ++param) {
-      if (!(mask & paramBit(device, param))) continue;
+      if (!mask.test(device, param)) continue;
       applyDeviceParam(snap, device, static_cast<DeviceParamId>(param),
                        paramSlotValue(device, param));
     }
@@ -276,11 +323,11 @@ void RbsAudioEngine::applyParamOverrides(EngineSnapshot* snap) {
 }
 
 void RbsAudioEngine::drainParamSlots(EngineSnapshot* snap) {
-  const uint64_t dirty = m_paramDirty.exchange(0, std::memory_order_acquire);
-  if (dirty == 0 || !snap) return;
   for (uint8_t device = 0; device < NUM_DEVICES; ++device) {
+    const uint64_t dirty = m_paramDirty[device].exchange(0, std::memory_order_acquire);
+    if (dirty == 0 || !snap) continue;
     for (uint8_t param = 0; param < NUM_DEVICE_PARAMS; ++param) {
-      if (!(dirty & paramBit(device, param))) continue;
+      if (!(dirty & paramBit(param))) continue;
       applyDeviceParam(snap, device, static_cast<DeviceParamId>(param),
                        paramSlotValue(device, param));
     }
@@ -294,8 +341,11 @@ void RbsAudioEngine::rewindGraph(EngineSnapshot* snap, uint16_t bar) {
   for (int i = 0; i < NUM_DEVICES; ++i) {
     voices[i] = snap->voices[static_cast<size_t>(i)].get();
   }
-  const uint64_t mask = overrideMask();
-  AutomationScheduler::foldUntil(snap->song, bar, 0, voices, snap->mixer.get(), mask);
+  // Pattern mode plays no song automation: the device headers are the knobs.
+  if (Sequencer::playsArrangement(snap->song)) {
+    AutomationScheduler::foldUntil(snap->song, bar, 0, voices, snap->mixer.get(),
+                                   overrideMask());
+  }
   applyParamOverrides(snap);
 }
 
@@ -316,6 +366,10 @@ void RbsAudioEngine::drainCommands() {
 void RbsAudioEngine::handleCommand(const EngineCommand& cmd) {
   switch (cmd.type) {
     case EngineCommandType::Play:
+      // Play after the song ran out starts it again from the top.
+      if (m_sequencer->ended()) {
+        handleCommand({EngineCommandType::Stop, 0, 0});
+      }
       m_playing.store(true, std::memory_order_relaxed);
       break;
     case EngineCommandType::Pause:
@@ -361,13 +415,27 @@ void RbsAudioEngine::handleCommand(const EngineCommand& cmd) {
       Pattern& pattern = patchSnap->song.patterns[index];
       if (cmd.type == EngineCommandType::PatchStep) {
         const uint32_t stepIndex = (cmd.param1 >> 16) & 0xffu;
-        if (stepIndex < MAX_STEPS) pattern.steps[stepIndex] = unpackStep(cmd.param2);
+        if (stepIndex < MAX_STEPS) {
+          StepData step = unpackStep(cmd.param2);
+          unpackStepDynamics(cmd.param3, step);
+          pattern.steps[stepIndex] = step;
+        }
       } else {
         pattern.length = static_cast<uint8_t>(std::clamp<uint32_t>(cmd.param2, 1, MAX_STEPS));
         m_sequencer->invalidatePatterns(); // cached lengths must re-resolve
       }
       break;
     }
+    case EngineCommandType::SetPlayMode: {
+      EngineSnapshot* modeSnap = pinSnapshot();
+      if (!modeSnap) break;
+      modeSnap->song.playMode = cmd.param1 == 0 ? PlayMode::Pattern : PlayMode::Song;
+      m_sequencer->invalidatePatterns();
+      break;
+    }
+    case EngineCommandType::QueuePattern:
+      m_sequencer->queuePattern(static_cast<int>(cmd.param1), static_cast<uint8_t>(cmd.param2));
+      break;
     default:
       break;
   }
@@ -418,7 +486,7 @@ EngineSnapshot* RbsAudioEngine::prepareOfflineTransport() {
   // puts the user's knob moves back on top of the song's values.
   rewindGraph(snap, 1);
   // Knob slots are folded in by rewindGraph; nothing is left to drain.
-  m_paramDirty.store(0, std::memory_order_relaxed);
+  for (auto& word : m_paramDirty) word.store(0, std::memory_order_relaxed);
   if (snap->mixer) snap->mixer->resetDspState();
   m_playing.store(true, std::memory_order_release);
   return snap;
@@ -545,8 +613,10 @@ uint32_t RbsAudioEngine::songLengthFrames() const {
   EngineSnapshot* snap = m_published.load(std::memory_order_acquire);
   if (!snap) return 0;
 
-  // One bar is four beats; the arrangement gives the bar count.
-  const size_t bars = snap->song.arrangement.empty() ? 4u : snap->song.arrangement.size();
+  // One bar is four beats. Song mode stops (or loops back) after
+  // songLengthBars(); pattern mode never ends, so a bounce takes four bars.
+  const uint32_t songBars = Sequencer::songLengthBars(snap->song);
+  const size_t bars = songBars == 0 ? 4u : songBars;
   const float bpm = std::clamp(m_bpm.load(std::memory_order_acquire), MIN_BPM, MAX_BPM);
   const double secondsPerBar = (60.0 / static_cast<double>(bpm)) * 4.0;
   const double seconds = secondsPerBar * static_cast<double>(bars);
@@ -609,9 +679,11 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
 
   uint32_t eventCount = m_sequencer->generateEvents(
       &snap->song, effectiveBpm, m_config.sampleRate, numFrames, events, 128);
-  uint32_t autoCount = m_automation.generateEvents(
-      &snap->song, effectiveBpm, m_config.sampleRate, bar, step, stepPhase,
-      numFrames, autoEvents, 128);
+  // TRAK automation belongs to the song: pattern mode leaves the knobs alone.
+  uint32_t autoCount = Sequencer::playsArrangement(snap->song)
+      ? m_automation.generateEvents(&snap->song, effectiveBpm, m_config.sampleRate, bar,
+                                    step, stepPhase, numFrames, autoEvents, 128)
+      : 0u;
 
   const float vol = m_volume.load(std::memory_order_relaxed);
   float* left = (numChannels >= 2) ? outputBuffers[0] : nullptr;
@@ -621,7 +693,7 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
   for (int i = 0; i < NUM_DEVICES; ++i) {
     voicePtrs[i] = snap->voices[static_cast<size_t>(i)].get();
   }
-  const uint64_t overridden = overrideMask();
+  const ParamMask overridden = overrideMask();
 
   uint32_t cursor = 0;
   uint32_t evIdx = 0;
@@ -641,7 +713,12 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
       const auto& ev = events[evIdx++];
       const int di = static_cast<int>(ev.device);
       if (di >= 0 && di < NUM_DEVICES && snap->voices[static_cast<size_t>(di)]) {
-        snap->voices[static_cast<size_t>(di)]->triggerStep(ev.stepIndex, ev.step);
+        Voice& voice = *snap->voices[static_cast<size_t>(di)];
+        if (ev.kind == Sequencer::EventKind::Release) {
+          voice.releaseGate();
+        } else {
+          voice.triggerStep(ev.stepIndex, ev.step);
+        }
       }
     }
     cursor = offset;
@@ -650,6 +727,9 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
   m_sequencer->getPosition(bar, step);
   m_currentBar.store(bar, std::memory_order_relaxed);
   m_currentStep.store(step, std::memory_order_relaxed);
+  // Song mode ran out: the transport stops where the song ended. This
+  // block's tails were still rendered; the next Play starts from the top.
+  if (m_sequencer->ended()) m_playing.store(false, std::memory_order_relaxed);
 }
 
 EngineSnapshot* RbsAudioEngine::pinSnapshot() {
@@ -782,17 +862,26 @@ bool RbsAudioEngine::setStep(uint8_t deviceId, uint8_t bank, uint8_t patternInde
   Pattern* pattern = findOrCreatePattern(deviceId, bank, patternIndex);
   if (!pattern) return false;
 
-  pattern->steps[stepIndex] = step;
-  // Slide is a TB-303 concept; a drum voice would just ignore it, but keeping
-  // the working copy honest means an eventual .rbs writer has nothing to undo.
-  if (deviceId != static_cast<uint8_t>(DeviceId::TB303_A) &&
-      deviceId != static_cast<uint8_t>(DeviceId::TB303_B)) {
-    pattern->steps[stepIndex].slide = false;
+  StepData& stored = pattern->steps[stepIndex];
+  stored = step;
+  // Keep the working copy to what the format can hold, so a save has
+  // nothing to undo: slide is a TB-303 flag, and per-instrument accent /
+  // flam exist only on the 909 and only on instruments the step hits.
+  const bool is303 = deviceId == static_cast<uint8_t>(DeviceId::TB303_A) ||
+                     deviceId == static_cast<uint8_t>(DeviceId::TB303_B);
+  if (!is303) stored.slide = false;
+  if (deviceId == static_cast<uint8_t>(DeviceId::TR909) && stored.active) {
+    const uint16_t hits = drumHitMask(stored);
+    stored.drumFlam &= hits;
+    stored.drumAccent &= static_cast<uint16_t>(hits & ~stored.drumFlam);
+  } else {
+    stored.drumAccent = 0;
+    stored.drumFlam = 0;
   }
-  publishPatternEdit(*pattern,
-                     EngineCommand{EngineCommandType::PatchStep,
-                                   static_cast<uint32_t>(stepIndex) << 16,
-                                   packStep(pattern->steps[stepIndex])});
+  EngineCommand patch{EngineCommandType::PatchStep, static_cast<uint32_t>(stepIndex) << 16,
+                      packStep(stored)};
+  patch.param3 = packStepDynamics(stored);
+  publishPatternEdit(*pattern, patch);
   return true;
 }
 
@@ -840,12 +929,20 @@ std::vector<uint8_t> RbsAudioEngine::saveRbs() {
   // folded in here.
   ParsedSong song = m_song;
   song.bpm = m_bpm.load(std::memory_order_acquire);
-  const uint64_t overridden = overrideMask();
+  const ParamMask overridden = overrideMask();
   for (int device = 0; device < NUM_DEVICES; ++device) {
     DeviceState& dev = song.devices[device];
     for (size_t param = 0; param < NUM_DEVICE_PARAMS; ++param) {
-      if (!(overridden & paramBit(static_cast<size_t>(device), param))) continue;
+      if (!overridden.test(static_cast<size_t>(device), param)) continue;
       const float value = paramSlotValue(static_cast<size_t>(device), param);
+      if (param >= static_cast<size_t>(DeviceParamId::KitBase)) {
+        // A kit knob: start from the kit the song plays, then set the byte.
+        dev.kit = effectiveDrumKit(dev, static_cast<DeviceId>(device));
+        dev.hasKit = true;
+        dev.kit[param - static_cast<size_t>(DeviceParamId::KitBase)] =
+            static_cast<uint8_t>(std::lround(std::clamp(value, 0.0f, 1.0f) * 127.0f));
+        continue;
+      }
       switch (static_cast<DeviceParamId>(param)) {
         case DeviceParamId::Tune:      dev.tune = value; break;
         case DeviceParamId::Cutoff:    dev.cutoff = value; break;
@@ -857,6 +954,7 @@ std::vector<uint8_t> RbsAudioEngine::saveRbs() {
         case DeviceParamId::Level:     dev.level = value; break;
         case DeviceParamId::Pan:       dev.pan = value; break;
         case DeviceParamId::Mute:      dev.muted = value >= 0.5f; break;
+        default: break;
       }
     }
   }
@@ -888,8 +986,9 @@ void RbsAudioEngine::applyDeviceParam(EngineSnapshot* snap, uint8_t deviceId,
       if (mixer) mixer->setChannelMuted(static_cast<int>(deviceId), value >= 0.5f);
       break;
     default:
-      // Tune / Cutoff / Resonance / EnvMod / Decay / Accent / Waveform go
-      // straight to the voice — no string lookup on the audio thread.
+      // Tune / Cutoff / Resonance / EnvMod / Decay / Accent / Waveform and
+      // the drum kit range go straight to the voice — no string lookup on
+      // the audio thread.
       if (voice) voice->setParameter(param, clamped);
       break;
   }

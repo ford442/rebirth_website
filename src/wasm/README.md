@@ -22,6 +22,27 @@ the WASM heap (`beginOfflineRender` / `renderOfflineChunk`) so a full-length
 song fits the fixed 64 MiB heap, and the TS
 side exports the loaded song as a Standard MIDI File (`src/lib/midi-smf.ts`).
 
+It plays a song the way its author saved it (`cpp/parser/RbsFormat.md` §4,
+§6–§7):
+
+- **Transport.** Song mode plays the arrangement and stops after the last
+  bar, or loops the song's own loop region; pattern mode plays each
+  device's selected pattern, with changes queued to the next bar
+  (`setPlayMode`, `selectPattern`). A bounce is one pass of the song.
+- **Groove.** Shuffle delays the off-beat sixteenths of shuffle-flagged
+  patterns by up to a third of a step, sample-accurately.
+- **TB-303.** Separate VCA (fixed decay, gated) and VCF (DECAY knob)
+  envelopes, a gate closed half a step in unless the note slides, an accent
+  capacitor that climbs over consecutive accents, a ~60 ms slide.
+- **Drum machines.** Every per-instrument knob of the 808 and 909 panels
+  (level, tune, tone, snappy, attack, decay, the 808's selector switches),
+  the 808 cowbell, cymbal and congas, the AC row, the 909's per-instrument
+  accents and flams, and the hat choke — editable live in the studio's kit
+  panel and saved.
+- **Mixer and FX.** The device on/off arrangement lane, the compressor and
+  PCF as inserts on the device MIXR names (or the master), the delay's steps
+  and pan, and a distortion run 4× oversampled with ADAA.
+
 Pattern steps are editable in the studio grid. A click sends one patch —
 `RbsAudioEngine::setStep(deviceId, bank, patternIndex, stepIndex, StepData)` —
 which mutates the engine's main-thread working copy and sends the audio thread
@@ -55,8 +76,16 @@ semantic, not bitwise; `cpp/parser/RbsFormat.md` §10 lists what a save drops,
   plays all of it (sorted by tick, looping with the arrangement), but the
   vector never crosses Embind: songs load through `loadSongFromBytes`, which
   returns a slim `SongSummary`, and there is no JS-side `loadSong` any more.
-- **Decode drum accents with confidence.** See `parser/RbsFormat.md` §6e —
-  help wanted.
+- **Play the v1 / v1.5 song track.** Those songs loop one pattern; the
+  arrangement is an SMF CC 14 pattern chain the parser does not decode yet
+  (`parser/RbsFormat.md` §9).
+- **Trigger the PCF from its pattern** or change the voices in vintage mode:
+  both are decoded and saved, but what they do is undocumented
+  (`parser/RbsFormat.md` §4, §6a-ii).
+- **Sound exactly like ReBirth.** Envelope times, the shuffle and flam
+  ranges, the drum models and the accent amounts are informed estimates;
+  `test-fixtures/golden/GOLDEN.md` describes the reference recordings that
+  would calibrate them.
 - **Load `.rbm` skins.** Skin resources are counted and reported, never drawn.
 
 ## Language roles
@@ -193,6 +222,21 @@ cmake --build src/wasm/cpp/build --target rbs-write
 diff <(./src/wasm/cpp/build/rbs-inspect src/wasm/test-fixtures/blue-planet.rbs) \
      <(./src/wasm/cpp/build/rbs-inspect /tmp/out.rbs)
 ```
+
+**Render a song to WAV** — `rbs-render` drives the same offline path as the
+browser bounce, so the engine can be A/B'd against a recording from original
+ReBirth without a browser:
+
+```bash
+./src/wasm/cpp/build/rbs-render --bars 8 src/wasm/test-fixtures/no-remorse.rbs /tmp/no-remorse.wav
+./src/wasm/cpp/build/rbs-render --seconds 2 --stem 3 --mono song.rbs /tmp/909.wav
+```
+
+**Golden references** — `test-fixtures/golden/` holds small reference songs
+and their renders; `tests/test_golden.cpp` compares a fresh render against
+each by banded log-spectrum distance and RMS-envelope correlation.
+[`GOLDEN.md`](test-fixtures/golden/GOLDEN.md) explains how to regenerate them
+(`rbs-golden`) and how to contribute a recording from ReBirth 2.0.1.
 
 #### What the native tests cover
 
@@ -407,7 +451,8 @@ src/wasm/
 │   ├── Makefile                 # Optional g++ wrapper (no CMake required)
 │   ├── main.cpp                 # Emscripten entry point + embind exports
 │   ├── build.sh                 # Thin emcmake wrapper + worklet/manifest post-process
-│   ├── tools/                   # rbs-inspect / rbm-inspect (JSON dumps), rbs-write
+│   ├── tools/                   # rbs-inspect / rbm-inspect (JSON dumps), rbs-write,
+│   │                            # rbs-render (.rbs → WAV), rbs-golden (golden references)
 │   ├── tests/                   # doctest unit tests (native only)
 │   ├── native_stubs/            # Emscripten-only APIs stubbed for the native build
 │   ├── third_party/doctest.h    # Vendored doctest 2.4.11
@@ -420,6 +465,8 @@ src/wasm/
 │   │   ├── ParsedSongJson.*     # ParsedSong → JSON (CLI + debugging)
 │   │   ├── ParsedModJson.*      # ParsedMod → JSON (CLI + debugging)
 │   │   ├── RbsTypes.h           # C++ structs matching .rbs data
+│   │   ├── DrumKit.h            # Named 808 / 909 kit bytes (= TRAK controller ids)
+│   │   ├── RbsDrumRow.h         # Drum step row layout, shared by parser + writer
 │   │   └── RbsFormat.md         # Reverse-engineered format spec (RbmFormat.md too)
 │   ├── audio/                   # WAV/AIFF sample decode + WAV writer (bounce)
 │   ├── synth/
@@ -429,7 +476,7 @@ src/wasm/
 │   │   ├── Tr909Voice.h/.cpp    # TR-909 drums
 │   │   ├── DrumSynth.h/.cpp     # Shared procedural drum models
 │   │   ├── SamplePool.h/.cpp    # .rbm sample arena (fixed, RT-safe)
-│   │   └── dsp/                 # ZdfLadder.h, PolyBlep.h
+│   │   └── dsp/                 # ZdfLadder.h, PolyBlep.h, Pcf.h, OversampledShaper.h
 │   ├── engine/
 │   │   ├── RbsAudioEngine.h/.cpp# Top-level engine
 │   │   ├── Sequencer.h/.cpp     # Pattern scheduler
@@ -439,7 +486,8 @@ src/wasm/
 │   │   └── Mixer.h/.cpp         # Stereo mix + FX
 │   └── worklet/
 │       └── RbsWorklet.cpp       # AudioWorkletProcessor callback (WASM only)
-├── test-fixtures/               # Golden .rbs / .rbm files for native + browser tests
+├── test-fixtures/               # .rbs / .rbm fixtures; golden/ holds the reference
+│                                # songs + renders (golden/GOLDEN.md)
 ├── js/                          # TypeScript: everything from Embind out to the DOM
 │   ├── WasmAudioBridge.ts       # Typed wrapper around the Emscripten module
 │   ├── wasm-bounce.ts           # Offline bounce client (owns the render Worker)

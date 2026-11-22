@@ -434,6 +434,15 @@ const DRUM_CHOICES = DRUM_HITS.map((hit) => ({ key: hit.key, label: hit.label })
           <input type="checkbox" data-studio-param="9" data-studio-knob="mute" disabled />
         </label>
       </div>
+      <div
+        class="studio-kit"
+        id="rbsStudioKit"
+        data-studio-kit
+        role="group"
+        aria-label="Drum kit knobs"
+        hidden
+      >
+      </div>
       <p class="studio-hint" id="rbsStudioHint">
         Load a song in the WASM engine to edit steps and tweak live knobs.
       </p>
@@ -1075,6 +1084,47 @@ const DRUM_CHOICES = DRUM_HITS.map((hit) => ({ key: hit.key, label: hit.label })
     color: #c0c0c0;
     border: 1px solid #3a3a3a;
     font-size: 0.65rem;
+  }
+
+  /* The kit panel's knobs are built by player-studio-view.ts, so they carry
+     no scope attribute: style them through :global(). */
+  .studio-kit {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+    gap: 0.45rem 0.65rem;
+    border-top: 1px solid #2a2a2a;
+    padding-top: 0.45rem;
+  }
+
+  .studio-kit[hidden] {
+    display: none !important;
+  }
+
+  .studio-kit :global(.studio-knob) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    font-family: var(--rb-font-display, 'Courier New', monospace);
+    font-size: 0.58rem;
+    letter-spacing: 0.05em;
+    color: #888;
+  }
+
+  .studio-kit :global(input[type='range']) {
+    width: 100%;
+    accent-color: var(--rb-amber, #ffb000);
+  }
+
+  .studio-kit :global(select) {
+    background: #111;
+    color: #c0c0c0;
+    border: 1px solid #3a3a3a;
+    font-size: 0.65rem;
+  }
+
+  .rbs-player[data-player-mode^='degraded'] .studio-kit,
+  .rbs-player[data-studio-live='0'] .studio-kit {
+    opacity: 0.4;
   }
 
   .studio-hint {

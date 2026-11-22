@@ -416,16 +416,38 @@ describe('songToMidi: drums', () => {
       GM_DRUM_MAP.highTom,
       GM_DRUM_MAP.closedHat,
       GM_DRUM_MAP.openHat,
-      GM_DRUM_MAP.clave,
+      GM_DRUM_MAP.cowbell,
     ]);
-    expect(keys).toEqual([36, 38, 45, 47, 50, 42, 46, 75]);
+    expect(keys).toEqual([36, 38, 45, 47, 50, 42, 46, 56]);
   });
 
-  it('maps the secondary bits (clap, maracas, rimshot) from drumExtra', () => {
+  it('maps the secondary bits (clap, cymbal, rimshot) from drumExtra', () => {
     const keys = drumNotes([drum(0, { drumExtra: 0x07 })])
       .filter((n) => n[1] === 'note-on')
       .map((n) => n[2]);
-    expect(keys).toEqual([GM_DRUM_MAP.clap, GM_DRUM_MAP.maracas, GM_DRUM_MAP.rimshot]);
+    expect(keys).toEqual([GM_DRUM_MAP.clap, GM_DRUM_MAP.crash, GM_DRUM_MAP.rimshot]);
+  });
+
+  it('maps the 909 CB / CY bits to crash and ride', () => {
+    const keys = notes(
+      trackNamed(
+        readSmf(songToMidi(song([pattern('tr909', [drum(0x80, { drumExtra: 0x02 })])]))),
+        'TR-909'
+      )
+    )
+      .filter((n) => n[1] === 'note-on')
+      .map((n) => n[2]);
+    expect(keys).toEqual([GM_DRUM_MAP.crash, GM_DRUM_MAP.ride]);
+  });
+
+  it('accents a 909 hit marked in drumAccent', () => {
+    const smf = readSmf(songToMidi(song([pattern('tr909', [drum(0x03, { drumAccent: 0x02 })])])));
+    const ons = trackNamed(smf, 'TR-909').events.filter((e) => e.kind === 'note-on');
+    // Kick plain, snare accented on its own.
+    expect(ons.map((e) => (e.kind === 'note-on' ? [e.key, e.value] : []))).toEqual([
+      [GM_DRUM_MAP.kick, 80],
+      [GM_DRUM_MAP.snare, 112],
+    ]);
   });
 
   it('plays several hits on one step together, on the GM drum channel', () => {

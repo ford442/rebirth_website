@@ -71,6 +71,7 @@ function toUiDeviceState(wasmDevice: WasmDeviceState): DeviceState {
     waveform: wasmDevice.waveform,
     initialPatternBank: wasmDevice.initialPatternBank,
     initialPatternIndex: wasmDevice.initialPatternIndex,
+    kit: wasmDevice.id >= 2 && wasmDevice.kit ? Array.from(wasmDevice.kit) : [],
   };
 }
 
@@ -79,12 +80,15 @@ function toUiPattern(wasmPattern: WasmPattern): Pattern {
     deviceId: WASM_DEVICE_ID_TO_UI[wasmPattern.deviceId],
     bank: wasmPattern.bank,
     patternIndex: wasmPattern.patternIndex,
+    shuffle: Boolean(wasmPattern.shuffle),
     steps: wasmPattern.steps.map((s) => ({
       active: s.active,
       note: s.note === 0 ? undefined : s.note,
       accent: s.accent,
       slide: s.slide,
       drumExtra: s.drumExtra,
+      drumAccent: s.drumAccent ?? 0,
+      drumFlam: s.drumFlam ?? 0,
     })),
   };
 }

@@ -45,6 +45,12 @@ export interface DeviceState {
   waveform: number;
   initialPatternBank: number;
   initialPatternIndex: number;
+  /**
+   * 808/909 per-instrument kit bytes (0–127), indexed like `DRUM_KIT_KNOBS`
+   * in `player-studio.ts`. Empty for a TB-303 or a song from a summary that
+   * predates the kit.
+   */
+  kit?: number[];
 }
 
 /** A single pattern (up to 16 steps) for one device (UI-facing) */
@@ -55,6 +61,8 @@ export interface Pattern {
   bank: number;
   /** Pattern index 0–7 within the bank */
   patternIndex: number;
+  /** Plays with the song's shuffle amount (the slot's shuffle flag). */
+  shuffle?: boolean;
   /** Step data (length is 1–16 depending on pattern length setting) */
   steps: StepData[];
 }
@@ -71,6 +79,9 @@ export interface StepData {
   slide: boolean;
   /** Packed drum bits for 808/909 (`note` + extra hits). */
   drumExtra?: number;
+  /** TR-909: per-instrument accent / flam bits, in `note | drumExtra << 8` order. */
+  drumAccent?: number;
+  drumFlam?: number;
 }
 
 /** One bar in the song arrangement (UI-facing) */
@@ -101,6 +112,10 @@ export interface WasmStepData {
   drumExtra: number;
   accent: boolean;
   slide: boolean;
+  /** TR-909 only: accented instruments, one bit per hit (`note | drumExtra << 8`). */
+  drumAccent: number;
+  /** TR-909 only: flammed instruments, same bit order. */
+  drumFlam: number;
 }
 
 /** Pattern reference as encoded in C++ `PatternRef` */
@@ -131,9 +146,9 @@ export interface WasmDeviceState {
   level: number;
   pan: number;
   dist: boolean;
-  pcf: boolean;
-  compressor: boolean;
   delaySend: number;
+  /** 808/909 kit bytes (DrumKit.h); the TB-303 carries an unused placeholder. */
+  kit: number[];
 }
 
 /** Pattern as encoded in C++ `Pattern` */
@@ -142,22 +157,35 @@ export interface WasmPattern {
   bank: number;
   patternIndex: number;
   length: number;
+  shuffle: boolean;
   steps: WasmStepData[];
 }
 
 /** Parsed song as encoded in C++ `ParsedSong` */
 export interface WasmDelaySettings {
   enabled: boolean;
-  time: number;
+  /** Delay time in sixteenths (1–32), triplet sixteenths when `triplet`. */
+  steps: number;
+  triplet: boolean;
   feedback: number;
-  wet: number;
+  /** Delay return pan, 0 = left, 64 = centre, 127 = right. */
+  pan: number;
 }
+
+/** MIXR insert-target ids for `comp.target` / `pcf.target`. */
+export const FX_TARGET = { none: 0, master: 1, firstDevice: 2 } as const;
 
 export interface WasmPcfSettings {
   enabled: boolean;
   cutoff: number;
   resonance: number;
   envAmount: number;
+  /** Trigger pattern 0–54 (decoded and saved; not yet audible). */
+  pattern: number;
+  decay: number;
+  lowpass: boolean;
+  /** Insert device: 0 none, 1 master, 2–5 the four devices. */
+  target: number;
 }
 
 export interface WasmDistSettings {
@@ -171,6 +199,8 @@ export interface WasmCompSettings {
   threshold: number;
   ratio: number;
   attack: number;
+  /** Insert device: 0 none, 1 master, 2–5 the four devices. */
+  target: number;
 }
 
 export interface WasmSongFxSettings {
@@ -198,6 +228,16 @@ export interface WasmSongSummary {
   headVersion: number;
   globSubFormat: number;
   showInfoOnOpen: boolean;
+  /** 0 = pattern mode, 1 = song mode. */
+  playMode: number;
+  loopEnabled: boolean;
+  /** Loop locators as whole 0-based bars. */
+  loopStartBar: number;
+  loopEndBar: number;
+  /** Song shuffle amount 0–127, for patterns whose `shuffle` flag is set. */
+  shuffle: number;
+  /** ReBirth 1.x "vintage" sound switch (decoded, not yet audible). */
+  vintage: boolean;
   devices: WasmDeviceState[];
   fx: WasmSongFxSettings;
   /** Bars in the arrangement (0 when the song has none). */

@@ -81,10 +81,11 @@ TEST_CASE("Mixer: silence produces no NaNs or denormals") {
     devices[i].id = static_cast<DeviceId>(i);
     devices[i].level = 1.0f;
     devices[i].dist = true;
-    devices[i].compressor = true;
     devices[i].delaySend = 1.0f;
   }
   mixer.setDeviceStates(devices);
+  mixer.setCompressorTarget(FX_TARGET_MASTER);
+  mixer.setPcfTarget(FX_TARGET_MASTER);
 
   auto silence = makeConstant(0.0f);
   const float* inputs[NUM_DEVICES] = {
@@ -137,7 +138,7 @@ TEST_CASE("Mixer: distortion send changes the output waveform") {
   CHECK(wetPeak > dryPeak);
 }
 
-TEST_CASE("Mixer: PCF send changes the output waveform") {
+TEST_CASE("Mixer: the PCF insert sits on the device MIXR names") {
   Mixer mixer;
   mixer.init(44100.0f);
   mixer.setDistortionEnabled(false);
@@ -148,13 +149,13 @@ TEST_CASE("Mixer: PCF send changes the output waveform") {
   fx.pcf.enabled = true;
   fx.pcf.cutoff = 8;
   fx.pcf.resonance = 8;
+  fx.pcf.target = FX_TARGET_FIRST_DEVICE + 1; // on 303-B, not the 303-A playing
   mixer.setSongFx(fx);
 
   std::array<DeviceState, NUM_DEVICES> devices{};
   devices[0].id = DeviceId::TB303_A;
   devices[0].level = 1.0f;
   devices[0].pan = 0.5f;
-  devices[0].pcf = false;
   mixer.setDeviceStates(devices);
 
   auto tone = makeConstant(0.6f);
@@ -164,8 +165,7 @@ TEST_CASE("Mixer: PCF send changes the output waveform") {
   mixer.process(inputs, dryLeft, dryRight, kFrames, 120.0f);
   const float dryPeak = peakPlanar(dryLeft, kFrames);
 
-  devices[0].pcf = true;
-  mixer.setDeviceStates(devices);
+  mixer.setPcfTarget(FX_TARGET_FIRST_DEVICE); // now on 303-A
   float wetLeft[kFrames] = {0};
   float wetRight[kFrames] = {0};
   mixer.process(inputs, wetLeft, wetRight, kFrames, 120.0f);
@@ -180,6 +180,7 @@ TEST_CASE("Mixer: delay send produces energy after the tap time") {
   mixer.setDistortionEnabled(false);
   mixer.setCompressorEnabled(false);
   mixer.setDelayEnabled(true);
+  mixer.setDelaySteps(1);
 
   std::array<DeviceState, NUM_DEVICES> devices{};
   devices[0].id = DeviceId::TB303_A;
@@ -301,8 +302,6 @@ std::array<DeviceState, NUM_DEVICES> allSendsOn() {
   devices[0].level = 1.0f;
   devices[0].pan = 0.5f;
   devices[0].dist = true;
-  devices[0].compressor = true;
-  devices[0].pcf = true;
   devices[0].delaySend = 1.0f;
   return devices;
 }
@@ -323,7 +322,11 @@ std::vector<float> renderWithFx(const SongFxSettings& fx, const std::vector<floa
   Mixer mixer;
   mixer.init(44100.0f);
   mixer.setDeviceStates(allSendsOn());
-  mixer.setSongFx(fx);
+  // The compressor and PCF inserts on the one device that plays.
+  SongFxSettings routed = fx;
+  routed.comp.target = FX_TARGET_FIRST_DEVICE;
+  routed.pcf.target = FX_TARGET_FIRST_DEVICE;
+  mixer.setSongFx(routed);
 
   std::vector<float> left(input.size(), 0.0f);
   std::vector<float> right(input.size(), 0.0f);
@@ -434,9 +437,9 @@ TEST_CASE("Mixer: a dotted-eighth tap at 80 BPM fits the delay line") {
 
   SongFxSettings fx = allFxOff();
   fx.delay.enabled = true;
-  fx.delay.time = 100; // dotted eighth
+  fx.delay.steps = 3; // three sixteenths = a dotted eighth
+  fx.delay.triplet = false;
   fx.delay.feedback = 90;
-  fx.delay.wet = 127;
 
   std::vector<float> input(frames, 0.0f);
   input[0] = 1.0f; // single impulse into the delay send
@@ -458,17 +461,17 @@ TEST_CASE("Mixer: a dotted-eighth tap at 80 BPM fits the delay line") {
   CHECK(atTap > 0.1f);
 }
 
-TEST_CASE("Mixer: the DELY time byte selects different subdivisions") {
+TEST_CASE("Mixer: DELY steps and step unit set the tap") {
   const uint32_t frames = 44100;
   std::vector<float> input(frames, 0.0f);
   input[0] = 1.0f;
 
-  auto firstEchoIndex = [&](uint8_t time) {
+  auto firstEchoIndex = [&](uint8_t steps, bool triplet) {
     SongFxSettings fx = allFxOff();
     fx.delay.enabled = true;
-    fx.delay.time = time;
+    fx.delay.steps = steps;
+    fx.delay.triplet = triplet;
     fx.delay.feedback = 0;
-    fx.delay.wet = 127;
     const auto out = renderWithFx(fx, input, 120.0f);
     for (uint32_t i = 64; i < frames; ++i) {
       if (std::fabs(out[i]) > 0.1f) return i;
@@ -476,9 +479,102 @@ TEST_CASE("Mixer: the DELY time byte selects different subdivisions") {
     return frames;
   };
 
-  const uint32_t sixteenth = firstEchoIndex(0);
-  const uint32_t quarter = firstEchoIndex(127);
-  CHECK(sixteenth < frames);
-  CHECK(quarter < frames);
-  CHECK(quarter > sixteenth * 3);
+  // 120 BPM: a sixteenth is 5512.5 samples.
+  CHECK(firstEchoIndex(1, false) == doctest::Approx(5512.5).epsilon(0.002));
+  CHECK(firstEchoIndex(4, false) == doctest::Approx(22050.0).epsilon(0.002));
+  // Three triplet sixteenths are two straight ones.
+  CHECK(firstEchoIndex(3, true) == doctest::Approx(11025.0).epsilon(0.002));
+  // Step 0 is not a zero-length delay.
+  CHECK(firstEchoIndex(0, false) == firstEchoIndex(1, false));
+}
+
+TEST_CASE("Mixer: the delay return follows the DELY pan byte") {
+  const uint32_t frames = 8192;
+  std::vector<float> input(frames, 0.0f);
+  input[0] = 1.0f;
+
+  Mixer mixer;
+  mixer.init(44100.0f);
+  // The send is post-level, so the dry impulse is heard too; the echo is
+  // read on its own, a sixteenth later.
+  mixer.setDeviceStates(allSendsOn());
+  SongFxSettings fx = allFxOff();
+  fx.delay.enabled = true;
+  fx.delay.steps = 1;
+  fx.delay.feedback = 0;
+  fx.delay.pan = 0; // hard left
+  mixer.setSongFx(fx);
+
+  std::vector<float> left(frames, 0.0f);
+  std::vector<float> right(frames, 0.0f);
+  for (uint32_t offset = 0; offset < frames; offset += kFrames) {
+    const float* buffers[NUM_DEVICES] = {input.data() + offset, nullptr, nullptr, nullptr};
+    mixer.process(buffers, left.data() + offset, right.data() + offset, kFrames, 120.0f);
+  }
+  // 120 BPM sixteenth ≈ 5513 samples; look only around the echo.
+  float echoL = 0.0f;
+  float echoR = 0.0f;
+  for (uint32_t i = 5400; i < 5650; ++i) {
+    echoL = std::max(echoL, std::fabs(left[i]));
+    echoR = std::max(echoR, std::fabs(right[i]));
+  }
+  CHECK(echoL > 0.5f);
+  CHECK(echoR < 1e-3f);
+}
+
+TEST_CASE("Mixer: COMP target 1 compresses the master bus") {
+  const auto input = makeSquare(22050, 150.0f, 0.9f);
+  auto render = [&](uint8_t target) {
+    Mixer mixer;
+    mixer.init(44100.0f);
+    mixer.setDeviceStates(allSendsOn());
+    SongFxSettings fx = allFxOff();
+    fx.comp.enabled = true;
+    fx.comp.threshold = 10;
+    fx.comp.ratio = 127;
+    fx.comp.attack = 0;
+    fx.comp.target = target;
+    mixer.setSongFx(fx);
+    std::vector<float> left(input.size(), 0.0f);
+    std::vector<float> right(input.size(), 0.0f);
+    for (size_t offset = 0; offset < input.size(); offset += kFrames) {
+      const auto block = static_cast<uint32_t>(std::min<size_t>(kFrames, input.size() - offset));
+      const float* buffers[NUM_DEVICES] = {input.data() + offset, nullptr, nullptr, nullptr};
+      mixer.process(buffers, left.data() + offset, right.data() + offset, block, 120.0f);
+    }
+    return rmsPlanar(left.data(), static_cast<uint32_t>(left.size()));
+  };
+  const float none = render(FX_TARGET_NONE);
+  const float master = render(FX_TARGET_MASTER);
+  const float otherDevice = render(FX_TARGET_FIRST_DEVICE + 3); // the silent 909
+  CHECK(master < none * 0.8f);
+  CHECK(otherDevice == doctest::Approx(none).epsilon(1e-4));
+}
+
+TEST_CASE("Mixer: a channel feeding the distortion stays in time with it") {
+  // The oversampled shaper is OversampledShaper::kLatency samples late; the
+  // dry signal of a channel routed to it is delayed to match, or a parallel
+  // mix would comb-filter. With distortion off nothing is delayed.
+  Mixer mixer;
+  mixer.init(44100.0f);
+  auto devices = allSendsOn();
+  devices[0].delaySend = 0.0f;
+  mixer.setDeviceStates(devices);
+  SongFxSettings fx = allFxOff();
+  fx.dist.enabled = true;
+  fx.dist.drive = 0;
+  fx.dist.mix = 0; // silent wet path: only the (delayed) dry is heard
+  mixer.setSongFx(fx);
+
+  std::vector<float> input(kFrames, 0.0f);
+  input[0] = 0.5f;
+  float left[kFrames] = {0};
+  float right[kFrames] = {0};
+  const float* buffers[NUM_DEVICES] = {input.data(), nullptr, nullptr, nullptr};
+  mixer.process(buffers, left, right, kFrames, 120.0f);
+  uint32_t peakAt = 0;
+  for (uint32_t i = 0; i < kFrames; ++i) {
+    if (std::fabs(left[i]) > std::fabs(left[peakAt])) peakAt = i;
+  }
+  CHECK(peakAt == dsp::OversampledShaper::kLatency);
 }

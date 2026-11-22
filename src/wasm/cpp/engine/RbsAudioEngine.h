@@ -130,6 +130,22 @@ public:
   void setTempoMultiplier(float multiplier);
 
   /**
+   * Switch between song mode (1: play the arrangement, stop at its end or
+   * loop) and pattern mode (0: each device plays its selected pattern).
+   * Updates the working copy too, so a save keeps it. Main thread only.
+   */
+  bool setPlayMode(uint8_t mode);
+
+  /** The working copy's play mode (0 = pattern, 1 = song). */
+  uint8_t playMode() const { return static_cast<uint8_t>(m_song.playMode); }
+
+  /**
+   * Pattern mode: make bank/patternIndex the device's pattern from the next
+   * bar boundary, as the hardware queues a pattern change. Main thread only.
+   */
+  bool selectPattern(uint8_t deviceId, uint8_t bank, uint8_t patternIndex);
+
+  /**
    * Live device/mixer parameter. Main thread only. Session-only; does not
    * rewrite the loaded song file.
    *
@@ -258,7 +274,11 @@ public:
    */
   uint32_t renderOfflineStem(float* interleavedStereo, uint32_t frames, uint8_t deviceIndex);
 
-  /** Frames needed to cover the loaded song's arrangement at the current tempo. */
+  /**
+   * Frames one pass of the loaded song lasts at the current tempo: the
+   * arrangement (cut at the loop end when the loop would jump back first),
+   * or four bars in pattern mode, which never ends.
+   */
   uint32_t songLengthFrames() const;
 
   /**
@@ -340,7 +360,7 @@ private:
   /** Apply knob slots the main thread has written since the last block. */
   void drainParamSlots(EngineSnapshot* snap);
   /** Session override mask, one bit per (device, DeviceParamId). */
-  uint64_t overrideMask() const { return m_paramOverridden.load(std::memory_order_acquire); }
+  ParamMask overrideMask() const;
   /** Locate a pattern in the working copy, appending an empty one if absent. */
   Pattern* findOrCreatePattern(uint8_t deviceId, uint8_t bank, uint8_t patternIndex);
   const Pattern* findPattern(uint8_t deviceId, uint8_t bank, uint8_t patternIndex) const;
@@ -429,13 +449,12 @@ private:
   // once set, says "the user owns this knob" for rebuilds, rewinds, saves
   // and automation masking.
   static constexpr size_t NUM_PARAM_SLOTS = size_t(NUM_DEVICES) * NUM_DEVICE_PARAMS;
-  static_assert(NUM_PARAM_SLOTS <= 64, "param bitmasks are 64-bit");
   std::array<std::atomic<uint32_t>, NUM_PARAM_SLOTS> m_paramSlots{};
-  std::atomic<uint64_t> m_paramDirty{0};
-  std::atomic<uint64_t> m_paramOverridden{0};
-  static constexpr uint64_t paramBit(size_t device, size_t param) {
-    return uint64_t{1} << (device * NUM_DEVICE_PARAMS + param);
-  }
+  // One 64-bit word per device (NUM_DEVICE_PARAMS <= 64).
+  std::array<std::atomic<uint64_t>, NUM_DEVICES> m_paramDirty{};
+  std::array<std::atomic<uint64_t>, NUM_DEVICES> m_paramOverridden{};
+  static constexpr uint64_t paramBit(size_t param) { return uint64_t{1} << param; }
+  void clearParamMasks();
   float paramSlotValue(size_t device, size_t param) const;
   void applyParamOverrides(EngineSnapshot* snap);
 
