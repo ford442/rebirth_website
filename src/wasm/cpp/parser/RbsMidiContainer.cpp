@@ -2,6 +2,7 @@
 // Song data lives in a single SysEx message; DEVL-equivalent body starts at offset 309.
 
 #include "RbsParser.h"
+#include "BigEndian.h"
 #include <algorithm>
 #include <array>
 #include <cstring>
@@ -35,9 +36,7 @@ constexpr size_t kV1909LabelSkip = 5;
 constexpr size_t kV1909HeaderSize = 31;
 constexpr size_t kV1909SlotSize = 194;
 
-bool matchId(const uint8_t* id, const char* expected) {
-  return std::memcmp(id, expected, 4) == 0;
-}
+using detail::matchId;
 
 bool matchPrefix(const uint8_t* data, const char* expected, size_t len) {
   return std::memcmp(data, expected, len) == 0;

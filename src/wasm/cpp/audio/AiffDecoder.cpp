@@ -13,6 +13,7 @@
  */
 
 #include "SampleDecoder.h"
+#include "../parser/BigEndian.h"
 #include <cmath>
 #include <cstring>
 
@@ -22,19 +23,9 @@ namespace {
 
 constexpr size_t kChunkHeaderBytes = 8;
 
-uint16_t readU16Be(const uint8_t* p) {
-  return static_cast<uint16_t>((static_cast<uint16_t>(p[0]) << 8) | p[1]);
-}
-
-uint32_t readU32Be(const uint8_t* p) {
-  return (static_cast<uint32_t>(p[0]) << 24) | (static_cast<uint32_t>(p[1]) << 16) |
-         (static_cast<uint32_t>(p[2]) << 8) | static_cast<uint32_t>(p[3]);
-}
-
-bool idEquals(const uint8_t* p, const char (&id)[5]) {
-  return p[0] == static_cast<uint8_t>(id[0]) && p[1] == static_cast<uint8_t>(id[1]) &&
-         p[2] == static_cast<uint8_t>(id[2]) && p[3] == static_cast<uint8_t>(id[3]);
-}
+constexpr auto readU16Be = detail::loadU16BE;
+constexpr auto readU32Be = detail::loadU32BE;
+constexpr auto idEquals = detail::matchId;
 
 /** 80-bit IEEE 754 extended precision, as used by AIFF's COMM sample rate. */
 double readExtended80(const uint8_t* p) {

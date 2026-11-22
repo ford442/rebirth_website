@@ -1,44 +1,46 @@
 #pragma once
 
-#include "DrumSynth.h"
-#include "SampleVoice.h"
-#include "Voice.h"
-#include <array>
+#include "DrumMachineVoice.h"
 
 namespace rb338 {
 
-/**
- * Tr909Voice — TR-909 drum machine.
- *
- * Procedural models for every 909 voice: BD, SD, toms, CH, OH, hand clap
- * (CL), rimshot (RS), crash (CP) and ride (MA). A `.rbm` mod
- * can replace any individual slot with PCM; the rest stay procedural.
- */
-class Tr909Voice : public Voice {
-public:
-  Tr909Voice() = default;
-  ~Tr909Voice() override = default;
+/** TR-909 kit mapping: every voice, hand clap included. */
+struct Tr909Kit {
+  static constexpr bool kIs909 = true;
 
-  void init(float sampleRate) override;
-  void load(const DeviceState& state) override;
-  void render(float* output, uint32_t numFrames) override;
-  void triggerStep(uint8_t stepIndex, const StepData& step) override;
-  void setParameter(DeviceParamId param, float value) override;
-  void setSamplePool(const SamplePool* pool) override;
-  void reset() override;
+  enum Channel : uint8_t {
+    Kick, Snare, ClosedHat, OpenHat, Clap, Rimshot, Crash, Ride,
+    LowTom, MidTom, HighTom, Count
+  };
 
-private:
-  static constexpr size_t NUM_CHANNELS = 11;
+  static constexpr std::array<ModSampleSlot, Count> kSlots = {
+      ModSampleSlot::Tr909Kick,     ModSampleSlot::Tr909Snare,
+      ModSampleSlot::Tr909ClosedHat, ModSampleSlot::Tr909OpenHat,
+      ModSampleSlot::Tr909Clap,     ModSampleSlot::Tr909Rimshot,
+      ModSampleSlot::Tr909Crash,    ModSampleSlot::Tr909Ride,
+      ModSampleSlot::Tr909LowTom,   ModSampleSlot::Tr909MidTom,
+      ModSampleSlot::Tr909HighTom,
+  };
 
-  float m_sampleRate = 44100.0f;
-  DrumParams m_params{};
-  std::array<DrumVoiceChannel, NUM_CHANNELS> m_channels{};
-
-  // Mod sample playback. Borrowed pointer — owned by the EngineSnapshot.
-  const SamplePool* m_pool = nullptr;
-  std::array<SampleVoice, NUM_CHANNELS> m_sampleVoices{};
-
-  void fire(DrumVoiceId id, bool accent);
+  // RbsFormat.md §6e: byte 8 (CL) is the hand clap, byte 9 (CP) the crash and
+  // byte 10 (MA) the ride on the 909. The CL bit used to be ignored, so the
+  // clap channel (and a mod's Tr909Clap sample) could never sound.
+  static constexpr std::array<DrumRoute, kNumDrumHits> kRoutes = {{
+      {Kick, DrumVoiceId::Kick},           // BD
+      {Snare, DrumVoiceId::Snare},         // SD
+      {LowTom, DrumVoiceId::LowTom},       // LT
+      {MidTom, DrumVoiceId::MidTom},       // MT
+      {HighTom, DrumVoiceId::HighTom},     // HT
+      {ClosedHat, DrumVoiceId::ClosedHat}, // CH
+      {OpenHat, DrumVoiceId::OpenHat},     // OH
+      {Clap, DrumVoiceId::Clap},           // CL
+      {Crash, DrumVoiceId::Crash},         // CP
+      {Ride, DrumVoiceId::Ride},           // MA
+      {Rimshot, DrumVoiceId::Rimshot},     // RS
+  }};
 };
+
+using Tr909Voice = DrumMachineVoice<Tr909Kit>;
+extern template class DrumMachineVoice<Tr909Kit>;
 
 } // namespace rb338

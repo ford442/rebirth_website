@@ -1,4 +1,5 @@
 #include "RbmParser.h"
+#include "BigEndian.h"
 #include <algorithm>
 #include <cctype>
 #include <cstring>
@@ -11,14 +12,8 @@ namespace {
 constexpr char kCatMagic[4] = {'C', 'A', 'T', ' '};
 constexpr char kPrbmMagic[4] = {'P', 'R', 'B', 'M'};
 
-bool matchId(const uint8_t* id, const char* expect) {
-  return std::memcmp(id, expect, 4) == 0;
-}
-
-uint32_t readU32BE(const uint8_t* p) {
-  return (static_cast<uint32_t>(p[0]) << 24) | (static_cast<uint32_t>(p[1]) << 16) |
-         (static_cast<uint32_t>(p[2]) << 8) | static_cast<uint32_t>(p[3]);
-}
+using detail::matchId;
+constexpr auto readU32BE = detail::loadU32BE;
 
 std::string asciiLower(std::string s) {
   for (char& c : s) {
