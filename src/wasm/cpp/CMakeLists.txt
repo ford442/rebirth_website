@@ -16,10 +16,23 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(RB338_ASAN "Build native tests with AddressSanitizer" OFF)
 option(RB338_UBSAN "Build native tests with UndefinedBehaviorSanitizer" OFF)
 option(RB338_TSAN "Build native tests with ThreadSanitizer" OFF)
+option(RB338_FUZZ "Build libFuzzer targets (clang only; ASan + UBSan)" OFF)
 option(RB338_NO_EXCEPTIONS "Compile the native engine + parser with -fno-exceptions too" OFF)
 
 if(RB338_TSAN AND (RB338_ASAN OR RB338_UBSAN))
   message(FATAL_ERROR "RB338_TSAN cannot be combined with ASan/UBSan")
+endif()
+
+if(RB338_FUZZ)
+  if(EMSCRIPTEN OR NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    message(FATAL_ERROR "RB338_FUZZ needs a native clang build: "
+                        "cmake -DRB338_FUZZ=ON -DCMAKE_CXX_COMPILER=clang++")
+  endif()
+  # Every library is instrumented for coverage and the sanitizers; only the
+  # fuzz executables link libFuzzer's main.
+  add_compile_options(-fsanitize=fuzzer-no-link,address,undefined
+                      -fno-sanitize-recover=undefined -fno-omit-frame-pointer)
+  add_link_options(-fsanitize=address,undefined)
 endif()
 
 if(RB338_ASAN)
@@ -27,7 +40,9 @@ if(RB338_ASAN)
   add_link_options(-fsanitize=address)
 endif()
 if(RB338_UBSAN)
-  add_compile_options(-fsanitize=undefined -fno-omit-frame-pointer)
+  # Non-recoverable: by default UBSan only prints, and the asan-ubsan CI leg
+  # stayed green through real undefined behaviour.
+  add_compile_options(-fsanitize=undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer)
   add_link_options(-fsanitize=undefined)
 endif()
 if(RB338_TSAN)
@@ -110,6 +125,19 @@ if(NOT EMSCRIPTEN)
   # SamplePool the audio engine uses.
   add_executable(rbm-inspect ${RB338_RBM_INSPECT_SOURCES})
   target_link_libraries(rbm-inspect PRIVATE rb338_engine)
+
+  # Corpus conformance sweep (archive-health.yml, nightly).
+  add_executable(rbs-conformance ${RB338_CONFORMANCE_SOURCES})
+  target_link_libraries(rbs-conformance PRIVATE rb338_engine)
+
+  if(RB338_FUZZ)
+    foreach(fuzz_src ${RB338_FUZZ_SOURCES})
+      get_filename_component(fuzz_name "${fuzz_src}" NAME_WE)
+      add_executable(${fuzz_name} ${fuzz_src})
+      target_link_libraries(${fuzz_name} PRIVATE rb338_engine)
+      target_link_options(${fuzz_name} PRIVATE -fsanitize=fuzzer)
+    endforeach()
+  endif()
 
   enable_testing()
   add_test(

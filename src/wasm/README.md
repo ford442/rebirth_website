@@ -278,6 +278,42 @@ points those files at `src/wasm/cpp/build-wasm/compile_commands.json`, which
 CMake exports on every `npm run wasm:build` — run that once (with the pinned
 Emscripten active) to get Embind flags and completions in `main.cpp`.
 
+### Fuzzing and the corpus sweep
+
+The parser reads untrusted bytes — the community corpus and anything a
+visitor drops on the player — so it has libFuzzer targets (clang only):
+
+```bash
+cmake -S src/wasm/cpp -B build-fuzz -DCMAKE_CXX_COMPILER=clang++ -DRB338_FUZZ=ON
+cmake --build build-fuzz --target fuzz_rbs_parser fuzz_rbm_parser \
+  fuzz_sample_decoder fuzz_rbs_roundtrip
+./build-fuzz/fuzz_rbs_roundtrip corpus/ -max_total_time=300
+```
+
+| Target                | Exercises                                                      |
+| --------------------- | -------------------------------------------------------------- |
+| `fuzz_rbs_parser`     | `RbsParser::parse` (v1, v1.5 and v2 containers)                |
+| `fuzz_rbm_parser`     | `RbmParser::parse` + `summariseMod` (sample header probes)     |
+| `fuzz_sample_decoder` | `probeSample` / `decodeSampleMono` (AIFF, AIFF-C, WAV)         |
+| `fuzz_rbs_roundtrip`  | parse → `RbsWriter` → parse, semantically equal (RbsCompare.h) |
+
+Every library is built with ASan + non-recoverable UBSan for these. Inputs
+the fuzzers have found live in `test-fixtures/fuzz/`, each pinned by a test in
+`tests/test_correctness.cpp`.
+
+`rbs-conformance` (a normal native tool) sweeps a whole corpus: for every
+song it parses, writes, reparses and compares, then renders four bars and
+checks every sample is finite and within full scale. It prints a JSON
+pass/fail histogram and exits non-zero below 99% semantic round trip:
+
+```bash
+python3 scripts/mirror-archive.py --scope all --kind rbs   # fills .mirror/ (ADR 0001)
+./src/wasm/cpp/build/rbs-conformance --out report.json .mirror/blobs
+```
+
+`archive-health.yml` runs ten minutes of fuzzing and the full sweep nightly,
+and uploads crashing inputs and the report as workflow artifacts.
+
 ### Emitted files
 
 Emscripten produces `rbsParser.js` and `rbsParser.wasm`. `build.sh` copies the

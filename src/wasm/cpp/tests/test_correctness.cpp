@@ -724,3 +724,75 @@ TEST_CASE("Tb303: the tail after note-off flushes to zero instead of going subno
   // And the voice is genuinely silent by the end, not ringing at -300 dB.
   for (size_t i = tail.size() - 4410; i < tail.size(); ++i) REQUIRE(tail[i] == 0.0f);
 }
+
+// ── §8: inputs the fuzzers found ─────────────────────────────────────
+
+#include "../audio/SampleDecoder.h"
+#include "../parser/RbsCompare.h"
+#include "../parser/RbsWriter.h"
+
+TEST_CASE("Fuzz regression: a knob byte past 127 survives a save unchanged") {
+  // fuzz_rbs_roundtrip: MIXR level 0xff parsed as 2.0, the writer clamped it
+  // to 127, so the song changed on save. Knob bytes now clamp on read.
+  const ParsedSong song = loadFixture("fuzz/roundtrip-mixr-level-255.rbs");
+  for (const DeviceState& dev : song.devices) {
+    CHECK(dev.level <= 1.0f);
+    CHECK(dev.pan <= 1.0f);
+  }
+  RbsWriter writer;
+  auto bytes = writer.write(song);
+  REQUIRE(bytes.has_value());
+  RbsParser parser;
+  auto reloaded = parser.parse(bytes->data(), bytes->size());
+  REQUIRE(reloaded.has_value());
+  CHECK(semanticDifference(song, *reloaded) == "");
+}
+
+TEST_CASE("Fuzz regression: a hostile MS-ADPCM WAV decodes without overflow") {
+  // fuzz_sample_decoder: dr_wav's MS-ADPCM step overflowed int32 (signed
+  // overflow is UB; the asan-ubsan leg now fails on it). Patched to 64-bit.
+  const auto bytes = readFixtureBytes("fuzz/msadpcm-delta-overflow.wav");
+  std::vector<float> dest(4096);
+  SampleInfo info;
+  const SampleDecodeStatus status =
+      decodeSampleMono(bytes.data(), bytes.size(), dest.data(), dest.size(), info);
+  if (status == SampleDecodeStatus::Ok) {
+    for (uint32_t i = 0; i < info.frameCount; ++i) REQUIRE(std::isfinite(dest[i]));
+  }
+  CHECK(info.frameCount <= dest.size());
+}
+
+TEST_CASE("Fuzz regression: a whitespace-only title is rejected before a save, not after") {
+  // fuzz_rbs_roundtrip: a v1 (MIDI container) song whose title was all
+  // spaces parsed — the v1 path keeps padding — but its v2 save did not,
+  // because the GLOB reader trims. The title check now applies to the
+  // trimmed title, so the original is refused up front.
+  const auto bytes = readFixtureBytes("fuzz/roundtrip-blank-v1-title.rbs");
+  RbsParser parser;
+  CHECK_FALSE(parser.parse(bytes.data(), bytes.size()).has_value());
+  CHECK(parser.lastError().find("no title") != std::string::npos);
+}
+
+TEST_CASE("Parser: GLOB strings are read only within their fixed-width fields") {
+  // An unterminated 65-byte title used to run on into the FTP URL field —
+  // a title the writer cannot store, so it changed on save.
+  auto bytes = readFixtureBytes("standard-rebirth.rbs");
+  const std::string glob = "GLOB";
+  auto it = std::search(bytes.begin(), bytes.end(), glob.begin(), glob.end());
+  REQUIRE(it != bytes.end());
+  const size_t body = static_cast<size_t>(it - bytes.begin()) + 8;
+  for (size_t i = 0; i < 65; ++i) bytes[body + 0x0f + i] = 'T';  // no terminator
+  for (size_t i = 0; i < 8; ++i) bytes[body + 0x50 + i] = 'U';   // FTP URL text
+
+  RbsParser parser;
+  auto song = parser.parse(bytes.data(), bytes.size());
+  REQUIRE(song.has_value());
+  CHECK(song->title == std::string(64, 'T'));
+  RbsWriter writer;
+  auto saved = writer.write(*song);
+  REQUIRE(saved.has_value());
+  RbsParser reparser;
+  auto reloaded = reparser.parse(saved->data(), saved->size());
+  REQUIRE(reloaded.has_value());
+  CHECK(semanticDifference(*song, *reloaded) == "");
+}

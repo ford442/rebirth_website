@@ -49,6 +49,18 @@ https://archive.org/details/rebirth-rb338-songpacks
 | `v15/cavey-3-acid.rbs`       | archive `Artists/Cavey/3_acid.rbs`       | 3.2.0          | 27,163 B | community v1.5 golden  |
 | `reject/generic-smf.mid`     | synthetic empty Type-1 SMF               | (none)         | 26 B     | MIDI rejection fixture |
 
+### `fuzz/` — inputs the fuzzers found
+
+Minimised or raw crashing inputs from the libFuzzer targets (see
+`src/wasm/README.md`). Each is pinned by a test in
+`cpp/tests/test_correctness.cpp`.
+
+| File                                | Target                | Bug                                                            |
+| ----------------------------------- | --------------------- | -------------------------------------------------------------- |
+| `fuzz/roundtrip-mixr-level-255.rbs` | `fuzz_rbs_roundtrip`  | MIXR level byte 0xff parsed as 2.0; the save clamped it to 1.0 |
+| `fuzz/roundtrip-blank-v1-title.rbs` | `fuzz_rbs_roundtrip`  | all-space v1 title parsed, but its v2 save did not             |
+| `fuzz/msadpcm-delta-overflow.wav`   | `fuzz_sample_decoder` | signed overflow in dr_wav's MS-ADPCM step (patched)            |
+
 The raw bytes are vendored as `*.b64` next to each fixture (GitHub text-safe).
 Materialize the binary files with:
 
