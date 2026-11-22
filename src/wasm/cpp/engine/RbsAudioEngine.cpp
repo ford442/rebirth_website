@@ -180,8 +180,15 @@ ModLoadStatus RbsAudioEngine::loadMod(const uint8_t* data, size_t size) {
 
   // Decode into a brand-new pool. Refilling the live one would race the
   // audio thread, which is reading PCM straight out of its arena.
+  //
+  // Size it to what this mod actually decodes, not the 8 MiB budget: the old
+  // pool stays alive until the swap, so two full-size arenas used to sit in
+  // the fixed heap at once. A mod over budget still gets the full budget, so
+  // the loader can report ArenaExhausted with as much loaded as fits.
+  const ModLoadReport plan = summariseMod(*mod);
+  const size_t arenaFrames = std::clamp<size_t>(plan.usedFrames, 1, SamplePool::kDefaultArenaFrames);
   auto pool = std::make_shared<SamplePool>();
-  if (!pool->init(SamplePool::kDefaultArenaFrames)) {
+  if (!pool->init(arenaFrames)) {
     m_modReport = ModLoadReport{};
     m_modReport.status = ModLoadStatus::ArenaExhausted;
     return m_modReport.status;

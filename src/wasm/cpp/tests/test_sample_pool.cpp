@@ -23,12 +23,25 @@ std::vector<uint8_t> readFixture(const std::string& name) {
   return buffer;
 }
 
-ParsedMod parseModFixture(const std::string& name) {
-  const auto bytes = readFixture(name);
+/**
+ * A parsed mod plus the bytes it borrows from. EmbeddedResource::bytes is a
+ * span into the parser's input, so the buffer must outlive the ParsedMod.
+ */
+struct LoadedMod {
+  std::vector<uint8_t> bytes;
+  ParsedMod mod;
+  operator const ParsedMod&() const { return mod; }
+  const ParsedMod* operator->() const { return &mod; }
+};
+
+LoadedMod parseModFixture(const std::string& name) {
+  LoadedMod out;
+  out.bytes = readFixture(name);
   RbmParser parser;
-  auto mod = parser.parse(bytes.data(), bytes.size());
+  auto mod = parser.parse(out.bytes.data(), out.bytes.size());
   if (!mod) throw std::runtime_error("Parse failed for " + name + ": " + parser.lastError());
-  return *mod;
+  out.mod = std::move(*mod);
+  return out;
 }
 
 const ModSampleReportEntry* findEntry(const ModLoadReport& report, const std::string& name) {
@@ -41,7 +54,7 @@ const ModSampleReportEntry* findEntry(const ModLoadReport& report, const std::st
 } // namespace
 
 TEST_CASE("SamplePool: loads decodable slots from sample-kit.rbm") {
-  const ParsedMod mod = parseModFixture("mods/sample-kit.rbm");
+  const LoadedMod mod = parseModFixture("mods/sample-kit.rbm");
 
   SamplePool pool;
   REQUIRE(pool.init());
@@ -106,7 +119,7 @@ TEST_CASE("SamplePool: loads decodable slots from sample-kit.rbm") {
 }
 
 TEST_CASE("SamplePool: a tiny arena reports exhaustion instead of growing") {
-  const ParsedMod mod = parseModFixture("mods/sample-kit.rbm");
+  const LoadedMod mod = parseModFixture("mods/sample-kit.rbm");
 
   SamplePool pool;
   // Room for the 303 wavetable (128 frames) but not the 2048-frame kick.
@@ -127,7 +140,7 @@ TEST_CASE("SamplePool: a tiny arena reports exhaustion instead of growing") {
 }
 
 TEST_CASE("SamplePool: minimal.rbm's stub AIFF fails without loading anything") {
-  const ParsedMod mod = parseModFixture("mods/minimal.rbm");
+  const LoadedMod mod = parseModFixture("mods/minimal.rbm");
 
   SamplePool pool;
   REQUIRE(pool.init());
@@ -144,7 +157,7 @@ TEST_CASE("SamplePool: minimal.rbm's stub AIFF fails without loading anything") 
 }
 
 TEST_CASE("SamplePool: uninitialised pool refuses to load") {
-  const ParsedMod mod = parseModFixture("mods/sample-kit.rbm");
+  const LoadedMod mod = parseModFixture("mods/sample-kit.rbm");
 
   SamplePool pool;
   ModLoadReport report;
@@ -153,8 +166,8 @@ TEST_CASE("SamplePool: uninitialised pool refuses to load") {
 }
 
 TEST_CASE("SamplePool: reloading replaces the previous kit") {
-  const ParsedMod kit = parseModFixture("mods/sample-kit.rbm");
-  const ParsedMod stub = parseModFixture("mods/minimal.rbm");
+  const LoadedMod kit = parseModFixture("mods/sample-kit.rbm");
+  const LoadedMod stub = parseModFixture("mods/minimal.rbm");
 
   SamplePool pool;
   REQUIRE(pool.init());

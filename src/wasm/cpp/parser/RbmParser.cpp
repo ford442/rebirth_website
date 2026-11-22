@@ -141,7 +141,7 @@ bool RbmParser::parseEmbf(const uint8_t* data, size_t size, ParsedMod& mod) {
   res.slot = classifySampleSlot(res.name);
   const size_t payloadOff = n + 1;
   if (payloadOff < size) {
-    res.bytes.assign(data + payloadOff, data + size);
+    res.bytes = std::span<const uint8_t>(data + payloadOff, size - payloadOff);
   }
   mod.resources.push_back(std::move(res));
   return true;

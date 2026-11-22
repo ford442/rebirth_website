@@ -3,6 +3,8 @@
 #include "../audio/SampleDecoder.h"
 #include "../parser/RbmTypes.h"
 #include <array>
+#include <cstdlib>
+#include <memory>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -83,7 +85,11 @@ public:
     uint32_t sampleRate = 0;
   };
 
-  /** Reserve the arena. Main thread only; safe to call once per pool. */
+  /**
+   * Reserve the arena. Main thread only; safe to call once per pool.
+   * Returns false when the allocation fails (malloc, not new: with
+   * exceptions off a failed new would abort the whole WASM instance).
+   */
   bool init(size_t arenaFrames = kDefaultArenaFrames);
 
   /** Drop every loaded slot but keep the arena. Main thread only. */
@@ -103,11 +109,15 @@ public:
   bool empty() const { return m_loadedSlots == 0; }
 
   size_t usedFrames() const { return m_used; }
-  size_t capacityFrames() const { return m_arena.size(); }
+  size_t capacityFrames() const { return m_arenaFrames; }
   uint32_t loadedSlots() const { return m_loadedSlots; }
 
 private:
-  std::vector<float> m_arena;
+  struct FreeDeleter {
+    void operator()(float* p) const { std::free(p); }
+  };
+  std::unique_ptr<float, FreeDeleter> m_arena;
+  size_t m_arenaFrames = 0;
   std::array<SlotData, NUM_MOD_SAMPLE_SLOTS> m_slots{};
   size_t m_used = 0;
   uint32_t m_loadedSlots = 0;

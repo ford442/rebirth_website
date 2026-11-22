@@ -668,3 +668,17 @@ TEST_CASE("SongSummary: carries metadata and the slot map, patterns come on dema
   CHECK(eng.arrangement().size() == song.arrangement.size());
   CHECK_FALSE(eng.getPattern(9, 0, 0).has_value());
 }
+
+TEST_CASE("Mods: the sample arena is sized to the mod, not the 8 MiB budget") {
+  // loadMod builds the new pool while the old one is still live, so two
+  // fixed 8 MiB arenas used to sit in the 64 MiB heap at once.
+  const auto bytes = readFixtureBytes("mods/sample-kit.rbm");
+  RbsAudioEngine eng;
+  REQUIRE(eng.init(config44k()));
+  REQUIRE(eng.loadSong(loadFixture("standard-rebirth.rbs")));
+  REQUIRE(eng.loadMod(bytes.data(), bytes.size()) == ModLoadStatus::Ok);
+  const ModLoadReport& report = eng.lastModReport();
+  CHECK(report.usedFrames > 0);
+  CHECK(report.capacityFrames == report.usedFrames);
+  CHECK(report.capacityFrames < SamplePool::kDefaultArenaFrames / 64);
+}
