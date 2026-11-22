@@ -29,8 +29,12 @@ public:
   /** Initialise voice with host sample rate. */
   virtual void init(float sampleRate) = 0;
 
-  /** Load pattern + device state data. Main thread only. */
-  virtual void load(const DeviceState& state, const std::vector<Pattern>& patterns) = 0;
+  /**
+   * Apply a device's knob state (tune, cutoff, …). Allocation-free, so the
+   * audio thread can use it to rewind a graph on seek. Patterns are not the
+   * voice's business — the sequencer reads them from the snapshot's song.
+   */
+  virtual void load(const DeviceState& state) = 0;
 
   /**
    * Render audio into `output`.

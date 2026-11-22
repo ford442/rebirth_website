@@ -20,18 +20,19 @@ namespace rb338 {
  */
 class Mixer {
 public:
+  /** Longest tempo-sync subdivision the DELY `time` byte can select, in beats. */
+  static constexpr float MAX_DELAY_BEATS = 1.0f;
+
   /**
-   * Longest delay tap the line must be able to hold, in seconds.
+   * Longest delay tap the line must be able to hold, in seconds: the longest
+   * subdivision (a quarter note) at the slowest tempo the engine accepts.
+   * At MIN_BPM = 20 that is 3 s. One extra sample of headroom keeps the read
+   * pointer strictly behind the write pointer.
    *
-   * The slowest subdivision we sync to is a dotted eighth, and the tempo
-   * floor is 40 BPM: (60/40) * 0.75 = 1.125 s. One extra sample of headroom
-   * keeps the read pointer strictly behind the write pointer.
-   *
-   * The line used to be a fixed 20000-sample array (~0.45 s @ 44.1 kHz),
-   * which silently truncated every tap longer than a sixteenth at slow
-   * tempos and would have clipped outright at 48/96 kHz.
+   * The line used to be a fixed 20000-sample array (~0.45 s @ 44.1 kHz), and
+   * then 1.125 s, which still truncated a quarter-note tap below 53 BPM.
    */
-  static constexpr float MAX_DELAY_SECONDS = 1.125f;
+  static constexpr float MAX_DELAY_SECONDS = (60.0f / MIN_BPM) * MAX_DELAY_BEATS;
 
   Mixer() = default;
 
@@ -92,6 +93,7 @@ public:
   void setDistortionEnabled(bool on) { m_distortionOn = on; }
   void setCompressorEnabled(bool on) { m_compressorOn = on; }
   void setDelayEnabled(bool on) { m_delayOn = on; }
+  void setPcfEnabled(bool on) { m_pcfOn = on; }
 
 private:
   static float flushDenormal(float x);
@@ -132,8 +134,9 @@ private:
   float m_delayFeedback = 0.38f;
   float m_delayWet = 0.45f;
 
-  // Master peak limiter envelope (stereo-linked).
-  float m_limiterEnvelope = 0.0f;
+  // Master peak limiter gain (stereo-linked, 1 = no reduction).
+  float m_limiterEnvelope = 1.0f;
+  float m_limiterReleaseCoeff = 0.0f;
 
   // Per-device compressor envelope followers (compressor-send path).
   std::array<float, NUM_DEVICES> m_compressorEnvelopes{};

@@ -116,6 +116,7 @@ std::optional<ParsedSong> RbsParser::parse(const uint8_t* data, size_t size) {
 std::optional<ParsedSong> RbsParser::parse(std::span<const uint8_t> buffer) {
   clearError();
   m_seenTb303A = false;
+  m_catDepth = 0;
   m_trakIndex = 0;
   m_maxTrakPosition = 0;
   for (auto& changes : m_patternChanges) changes.clear();
@@ -273,9 +274,17 @@ bool RbsParser::parseNestedCat(const uint8_t* data, size_t size,
     return false;
   }
 
+  if (m_catDepth >= MAX_CAT_DEPTH) {
+    m_error = "Nested CAT containers exceed the supported depth";
+    return false;
+  }
+
   // The marker identifies the list; chunks follow immediately after it.
-  return parseContainer(stream.data() + stream.pos(),
-                        stream.remaining(), song, false);
+  ++m_catDepth;
+  const bool ok = parseContainer(stream.data() + stream.pos(),
+                                 stream.remaining(), song, false);
+  --m_catDepth;
+  return ok;
 }
 
 // ═════════════════════════════════════════════════════════════════════
@@ -325,7 +334,7 @@ bool RbsParser::parseGlob(const uint8_t* data, size_t size, ParsedSong& song) {
     return false;
   }
   const float bpm = static_cast<float>(tempoTimes1000) / 1000.0f;
-  if (bpm < 20.0f || bpm > 500.0f) {
+  if (bpm < MIN_BPM || bpm > MAX_BPM) {
     m_error = "GLOB tempo is outside ReBirth's 20-500 BPM range";
     return false;
   }

@@ -59,7 +59,7 @@ float subdivisionForByte(uint8_t time) {
   return kDelaySubdivisions[std::min(index, kNumDelaySubdivisions - 1)];
 }
 constexpr float kLimiterThreshold = 0.92f;
-constexpr float kLimiterRelease = 0.02f;      // seconds
+constexpr float kLimiterRelease = 0.08f;      // seconds (attack is instant)
 
 } // anonymous namespace
 
@@ -111,7 +111,9 @@ void Mixer::resetDspState() {
   std::fill(m_delayLine.begin(), m_delayLine.end(), 0.0f);
   m_delayWritePos = 0;
   m_delayTapSamples = 0;
-  m_limiterEnvelope = 0.0f;
+  // Unity, not zero: the envelope is a gain, and starting it at 0 faded in
+  // the first ~50 ms of every bounce and every snapshot rebuild.
+  m_limiterEnvelope = 1.0f;
   m_compressorEnvelopes.fill(0.0f);
   for (auto& pcf : m_pcf) {
     pcf.reset();
@@ -125,6 +127,7 @@ void Mixer::init(float sampleRate) {
   m_delayLine.assign(
       static_cast<size_t>(MAX_DELAY_SECONDS * m_sampleRate) + 1u, 0.0f);
   refreshCompressorCoefficients();
+  m_limiterReleaseCoeff = std::exp(-1.0f / (kLimiterRelease * m_sampleRate));
   for (auto& pcf : m_pcf) {
     pcf.prepare(m_sampleRate);
   }
@@ -242,7 +245,7 @@ void Mixer::setChannelMuted(int deviceIndex, bool muted) {
 }
 
 void Mixer::updateDelayTap(float bpm) {
-  const float clampedBpm = std::clamp(bpm, 40.0f, 250.0f);
+  const float clampedBpm = std::clamp(bpm, MIN_BPM, MAX_BPM);
   // Tempo-synced to the subdivision the song's DELY `time` byte selected.
   const float samplesPerTap = (60.0f / clampedBpm) * m_delayBeatFraction * m_sampleRate;
   const uint32_t tap = static_cast<uint32_t>(std::round(samplesPerTap));
@@ -278,8 +281,21 @@ void Mixer::process(const float* const* deviceBuffers, float* leftOut, float* ri
   ::memset(leftOut, 0, numFrames * sizeof(float));
   ::memset(rightOut, 0, numFrames * sizeof(float));
 
-  const float limiterReleaseCoeff =
-      std::exp(-1.0f / (kLimiterRelease * m_sampleRate));
+  // Level and pan only change between process() calls (commands and
+  // automation land on span boundaries), so the per-device gains are
+  // computed once here — not a cos + sin per device per frame.
+  std::array<float, NUM_DEVICES> gainL{};
+  std::array<float, NUM_DEVICES> gainR{};
+  std::array<float, NUM_DEVICES> levels{};
+  std::array<float, NUM_DEVICES> sends{};
+  for (int d = 0; d < NUM_DEVICES; ++d) {
+    const DeviceState& dev = m_devices[static_cast<size_t>(d)];
+    const float pan = std::clamp(dev.pan, 0.0f, 1.0f);
+    gainL[d] = constantPowerPanLeft(pan);
+    gainR[d] = constantPowerPanRight(pan);
+    levels[d] = std::clamp(dev.level, 0.0f, 1.0f);
+    sends[d] = std::clamp(dev.delaySend, 0.0f, 1.0f);
+  }
 
   for (uint32_t frame = 0; frame < numFrames; ++frame) {
     float dryL = 0.0f;
@@ -294,8 +310,7 @@ void Mixer::process(const float* const* deviceBuffers, float* leftOut, float* ri
 
       float sample = flushDenormal(src[frame]);
       sample = processPcfSample(d, sample);
-      const float level = std::clamp(m_devices[d].level, 0.0f, 1.0f);
-      const float pan = std::clamp(m_devices[d].pan, 0.0f, 1.0f);
+      const float level = levels[d];
 
       if (m_compressorOn && m_devices[d].compressor) {
         // Per-device compressor send — gentle bus compression before pan.
@@ -304,17 +319,15 @@ void Mixer::process(const float* const* deviceBuffers, float* leftOut, float* ri
         sample *= level;
       }
 
-      const float leftGain = constantPowerPanLeft(pan);
-      const float rightGain = constantPowerPanRight(pan);
-      dryL += sample * leftGain;
-      dryR += sample * rightGain;
+      dryL += sample * gainL[d];
+      dryR += sample * gainR[d];
 
       if (m_distortionOn && m_devices[d].dist) {
         distBus += sample;
       }
 
       if (m_delayOn) {
-        const float send = std::clamp(m_devices[d].delaySend, 0.0f, 1.0f);
+        const float send = sends[d];
         if (send > 0.0f) {
           delayBus += sample * send;
         }
@@ -342,16 +355,23 @@ void Mixer::process(const float* const* deviceBuffers, float* leftOut, float* ri
     float outL = flushDenormal((dryL + wetL) * m_masterLevel);
     float outR = flushDenormal((dryR + wetR) * m_masterLevel);
 
-    if (m_compressorOn) {
-      // Master peak limiter — prevents hard digital clips on the summed bus.
-      const float peak = std::max(std::fabs(outL), std::fabs(outR));
-      const float targetGain =
-          (peak > kLimiterThreshold) ? (kLimiterThreshold / peak) : 1.0f;
+    // Master peak limiter — always on, whatever the song's COMP switch says
+    // (that switch is the per-device compressor send above). The gain drops
+    // instantly to whatever keeps this sample under the ceiling, then
+    // recovers smoothly. Attack and release used to share one 20 ms
+    // coefficient, so a transient was half through before the gain moved and
+    // the output clipped.
+    const float peak = std::max(std::fabs(outL), std::fabs(outR));
+    const float targetGain =
+        (peak > kLimiterThreshold) ? (kLimiterThreshold / peak) : 1.0f;
+    if (targetGain < m_limiterEnvelope) {
+      m_limiterEnvelope = targetGain;
+    } else {
       m_limiterEnvelope =
-          targetGain + limiterReleaseCoeff * (m_limiterEnvelope - targetGain);
-      outL *= m_limiterEnvelope;
-      outR *= m_limiterEnvelope;
+          targetGain + m_limiterReleaseCoeff * (m_limiterEnvelope - targetGain);
     }
+    outL *= m_limiterEnvelope;
+    outR *= m_limiterEnvelope;
 
     leftOut[frame] = flushDenormal(outL);
     rightOut[frame] = flushDenormal(outR);

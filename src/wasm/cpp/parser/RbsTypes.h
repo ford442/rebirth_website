@@ -25,6 +25,15 @@ constexpr int MAX_BANKS = 4;              // A, B, C, D
 constexpr int MAX_STEPS = 16;
 constexpr int NUM_DEVICES = 4;            // 303-A, 303-B, 808, 909
 
+// Tempo range, shared by the parser (GLOB validation), the engine (transport
+// clamp, delay sizing, automation timing) and the TypeScript player
+// (`TEMPO_MIN_BPM` / `TEMPO_MAX_BPM` in wasm-audio-config.ts — the contract
+// check keeps the two in step). ReBirth documents 20–500 BPM; the engine
+// used to clamp to 40–250, so a song the parser accepted could play at a
+// tempo other than the one it was saved with.
+constexpr float MIN_BPM = 20.0f;
+constexpr float MAX_BPM = 500.0f;
+
 // ─────────────────────────────────────────────────────────────────
 // Enums
 // ─────────────────────────────────────────────────────────────────

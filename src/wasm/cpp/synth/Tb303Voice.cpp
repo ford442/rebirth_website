@@ -63,8 +63,7 @@ void Tb303Voice::applyDeviceState(const DeviceState& state) {
   m_filter.setCoeffs(cutoffNormToHz(m_smoothedCutoff), m_smoothedResonance, m_sampleRate);
 }
 
-void Tb303Voice::load(const DeviceState& state, const std::vector<Pattern>& patterns) {
-  (void)patterns;
+void Tb303Voice::load(const DeviceState& state) {
   applyDeviceState(state);
 }
 

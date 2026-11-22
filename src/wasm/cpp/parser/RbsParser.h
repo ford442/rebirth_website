@@ -54,8 +54,17 @@ public:
   /** Reset internal error state. */
   void clearError() { m_error.clear(); }
 
+  /**
+   * Deepest `CAT ` nesting accepted. Real files nest two levels (root →
+   * DEVL / TRKL); each level is one native stack frame, and in WASM the
+   * 128 KiB stack sits in linear memory with no overflow check in Release,
+   * so a crafted file could otherwise recurse into the heap.
+   */
+  static constexpr int MAX_CAT_DEPTH = 8;
+
 private:
   std::string m_error;
+  int m_catDepth = 0;
   bool m_seenTb303A = false;
   size_t m_trakIndex = 0;
   uint32_t m_maxTrakPosition = 0;

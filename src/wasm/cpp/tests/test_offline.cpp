@@ -378,10 +378,20 @@ TEST_CASE("Offline: live knob moves survive into the bounce") {
   const auto again = eng.renderOfflineWav(frames);
   CHECK(std::memcmp(shortened.data(), again.data(), shortened.size()) == 0);
 
-  // Moving it back returns to the original render.
+  // A knob the user has moved masks that knob's TRAK automation for the
+  // session (every song writes each controller at tick 0, which would
+  // otherwise undo the move as soon as the bounce started). So moving it back
+  // to the song's value pins the decay there — matching a fresh engine with
+  // the same override, not the automated original.
   eng.setDeviceParam(1, 4, song.devices[1].decay);
   const auto restored = eng.renderOfflineWav(frames);
-  CHECK(std::memcmp(before.data(), restored.data(), before.size()) == 0);
+  RbsAudioEngine fresh;
+  REQUIRE(fresh.init(testConfig()));
+  REQUIRE(fresh.loadSong(song));
+  fresh.setDeviceParam(1, 4, song.devices[1].decay);
+  const auto freshRender = fresh.renderOfflineWav(frames);
+  REQUIRE(restored.size() == freshRender.size());
+  CHECK(std::memcmp(freshRender.data(), restored.data(), restored.size()) == 0);
 }
 
 TEST_CASE("Offline: knob moves survive loading a mod") {

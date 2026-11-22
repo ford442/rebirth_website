@@ -45,6 +45,25 @@ void applyMasterVolume(float* left, float* right, uint32_t numFrames, float volu
 #endif
 }
 
+// StepData ↔ one 32-bit command word: note, drumExtra, then three flags.
+uint32_t packStep(const StepData& step) {
+  return static_cast<uint32_t>(step.note) |
+         (static_cast<uint32_t>(step.drumExtra) << 8) |
+         (step.active ? (1u << 16) : 0u) |
+         (step.accent ? (1u << 17) : 0u) |
+         (step.slide ? (1u << 18) : 0u);
+}
+
+StepData unpackStep(uint32_t word) {
+  StepData step;
+  step.note = static_cast<uint8_t>(word & 0xffu);
+  step.drumExtra = static_cast<uint8_t>((word >> 8) & 0xffu);
+  step.active = (word >> 16) & 1u;
+  step.accent = (word >> 17) & 1u;
+  step.slide = (word >> 18) & 1u;
+  return step;
+}
+
 } // anonymous namespace
 
 RbsAudioEngine::RbsAudioEngine() {
@@ -85,12 +104,14 @@ bool RbsAudioEngine::loadSong(const ParsedSong& song) {
   m_owned.push_back(std::move(next));
   m_published.store(raw, std::memory_order_seq_cst);
 
-  m_bpm.store(std::clamp(song.bpm, 40.0f, 250.0f), std::memory_order_release);
+  m_bpm.store(std::clamp(song.bpm, MIN_BPM, MAX_BPM), std::memory_order_release);
   m_currentBar.store(1, std::memory_order_relaxed);
   m_currentStep.store(0, std::memory_order_relaxed);
 
   // Reset transport via the command queue; do not touch the live graph here.
-  stop();
+  // The fresh graph is already at the song's own values, so the Stop's
+  // rewind just re-applies the session overrides on the audio thread.
+  pushCommand({EngineCommandType::Stop, 0, 0});
   reclaimRetiredSnapshots();
   return true;
 }
@@ -122,9 +143,11 @@ void RbsAudioEngine::republishGraph() {
   if (!m_hasSong) return; // no song yet — this applies at the next loadSong()
 
   auto next = buildEngineSnapshot(m_song, m_config, m_samplePool);
-  // A rebuilt graph starts from the song's knob values, so replay the live
-  // ones — otherwise loading a mod would silently undo every knob move.
-  applyParamOverrides(next.get());
+  // A rebuilt graph starts from the song's knob values. Bring it to where
+  // playback is — automation up to the current bar, then the live knob
+  // moves — or loading a mod mid-song would snap every knob back to bar 1.
+  // The snapshot is not published yet, so the main thread still owns it.
+  rewindGraph(next.get(), m_currentBar.load(std::memory_order_acquire));
   EngineSnapshot* raw = next.get();
   m_owned.push_back(std::move(next));
   m_published.store(raw, std::memory_order_seq_cst);
@@ -182,58 +205,87 @@ bool RbsAudioEngine::hasMod() const {
   return m_samplePool && !m_samplePool->empty();
 }
 
-void RbsAudioEngine::play() {
-  pushCommand({EngineCommandType::Play, 0, 0});
+bool RbsAudioEngine::play() {
+  return pushCommand({EngineCommandType::Play, 0, 0});
 }
 
-void RbsAudioEngine::pause() {
-  pushCommand({EngineCommandType::Pause, 0, 0});
+bool RbsAudioEngine::pause() {
+  return pushCommand({EngineCommandType::Pause, 0, 0});
 }
 
-void RbsAudioEngine::stop() {
-  pushCommand({EngineCommandType::Stop, 0, 0});
+bool RbsAudioEngine::stop() {
+  return pushCommand({EngineCommandType::Stop, 0, 0});
 }
 
-void RbsAudioEngine::seek(uint16_t bar) {
-  pushCommand({EngineCommandType::Seek, std::max<uint16_t>(1, bar), 0});
+bool RbsAudioEngine::seek(uint16_t bar) {
+  return pushCommand({EngineCommandType::Seek, std::max<uint16_t>(1, bar), 0});
 }
 
+// Volume and tempo are continuous: the audio thread reads each atomic once
+// per block, so storing straight into it coalesces and needs no queue slot.
 void RbsAudioEngine::setVolume(float volume) {
-  pushCommand({EngineCommandType::SetVolume, floatBits(std::clamp(volume, 0.0f, 1.0f)), 0});
+  m_volume.store(std::clamp(volume, 0.0f, 1.0f), std::memory_order_relaxed);
 }
 
 void RbsAudioEngine::setTempo(float bpm) {
-  pushCommand({EngineCommandType::SetTempo, floatBits(std::clamp(bpm, 40.0f, 250.0f)), 0});
+  m_bpm.store(std::clamp(bpm, MIN_BPM, MAX_BPM), std::memory_order_release);
 }
 
 void RbsAudioEngine::setTempoMultiplier(float multiplier) {
-  pushCommand({EngineCommandType::SetTempoMultiplier, floatBits(std::clamp(multiplier, 0.25f, 4.0f)), 0});
+  m_tempoMultiplier.store(std::clamp(multiplier, 0.25f, 4.0f), std::memory_order_relaxed);
 }
 
 void RbsAudioEngine::setDeviceParam(uint8_t deviceId, uint8_t paramId, float value) {
-  if (deviceId >= NUM_DEVICES) return;
+  if (deviceId >= NUM_DEVICES || paramId >= NUM_DEVICE_PARAMS) return;
+  const uint64_t bit = paramBit(deviceId, paramId);
+  // Value first, then the bits with release: the audio thread's acquire swap
+  // of the dirty mask is then guaranteed to see this value (or a later one).
+  m_paramSlots[size_t(deviceId) * NUM_DEVICE_PARAMS + paramId].store(
+      floatBits(value), std::memory_order_relaxed);
+  m_paramOverridden.fetch_or(bit, std::memory_order_release);
+  m_paramDirty.fetch_or(bit, std::memory_order_release);
+}
 
-  // Remember it on the main thread before queuing, so a later graph rebuild
-  // can replay it. Recording inside the audio thread's command drain would
-  // race the main thread reading it back.
-  if (paramId < NUM_DEVICE_PARAMS) {
-    m_paramOverrides[deviceId][paramId] = value;
-    m_paramOverrideSet[deviceId][paramId] = true;
-  }
-
-  const uint32_t packed = static_cast<uint32_t>(deviceId) | (static_cast<uint32_t>(paramId) << 8);
-  pushCommand({EngineCommandType::SetDeviceParam, packed, floatBits(value)});
+float RbsAudioEngine::paramSlotValue(size_t device, size_t param) const {
+  return bitsToFloat(
+      m_paramSlots[device * NUM_DEVICE_PARAMS + param].load(std::memory_order_acquire));
 }
 
 void RbsAudioEngine::applyParamOverrides(EngineSnapshot* snap) {
   if (!snap) return;
+  const uint64_t mask = overrideMask();
+  if (mask == 0) return;
   for (uint8_t device = 0; device < NUM_DEVICES; ++device) {
     for (uint8_t param = 0; param < NUM_DEVICE_PARAMS; ++param) {
-      if (!m_paramOverrideSet[device][param]) continue;
+      if (!(mask & paramBit(device, param))) continue;
       applyDeviceParam(snap, device, static_cast<DeviceParamId>(param),
-                       m_paramOverrides[device][param]);
+                       paramSlotValue(device, param));
     }
   }
+}
+
+void RbsAudioEngine::drainParamSlots(EngineSnapshot* snap) {
+  const uint64_t dirty = m_paramDirty.exchange(0, std::memory_order_acquire);
+  if (dirty == 0 || !snap) return;
+  for (uint8_t device = 0; device < NUM_DEVICES; ++device) {
+    for (uint8_t param = 0; param < NUM_DEVICE_PARAMS; ++param) {
+      if (!(dirty & paramBit(device, param))) continue;
+      applyDeviceParam(snap, device, static_cast<DeviceParamId>(param),
+                       paramSlotValue(device, param));
+    }
+  }
+}
+
+void RbsAudioEngine::rewindGraph(EngineSnapshot* snap, uint16_t bar) {
+  if (!snap) return;
+  applySongStateToSnapshot(*snap);
+  Voice* voices[NUM_DEVICES];
+  for (int i = 0; i < NUM_DEVICES; ++i) {
+    voices[i] = snap->voices[static_cast<size_t>(i)].get();
+  }
+  const uint64_t mask = overrideMask();
+  AutomationScheduler::foldUntil(snap->song, bar, 0, voices, snap->mixer.get(), mask);
+  applyParamOverrides(snap);
 }
 
 bool RbsAudioEngine::pushCommand(const EngineCommand& cmd) {
@@ -245,6 +297,9 @@ void RbsAudioEngine::drainCommands() {
   while (m_commandQueue.pop(cmd)) {
     handleCommand(cmd);
   }
+  // Knob moves after the transport commands: a Stop/Seek rewind re-applies
+  // the overrides anyway, and a move made after it must win.
+  drainParamSlots(pinSnapshot());
 }
 
 void RbsAudioEngine::handleCommand(const EngineCommand& cmd) {
@@ -255,14 +310,18 @@ void RbsAudioEngine::handleCommand(const EngineCommand& cmd) {
     case EngineCommandType::Pause:
       m_playing.store(false, std::memory_order_relaxed);
       break;
-    case EngineCommandType::Stop:
+    case EngineCommandType::Stop: {
       m_playing.store(false, std::memory_order_relaxed);
       m_sequencer->setPosition(1, 0);
       m_automation.reset();
       m_currentBar.store(1, std::memory_order_relaxed);
       m_currentStep.store(0, std::memory_order_relaxed);
-      resetVoices(pinSnapshot());
+      EngineSnapshot* stopSnap = pinSnapshot();
+      resetVoices(stopSnap);
+      // Automation moved the knobs as the song played; put them back.
+      rewindGraph(stopSnap, 1);
       break;
+    }
     case EngineCommandType::Seek: {
       const uint16_t seekBar = static_cast<uint16_t>(cmd.param1);
       m_sequencer->setPosition(seekBar, 0);
@@ -273,22 +332,29 @@ void RbsAudioEngine::handleCommand(const EngineCommand& cmd) {
       m_currentBar.store(seekBar, std::memory_order_relaxed);
       m_currentStep.store(0, std::memory_order_relaxed);
       resetVoices(seekSnap);
+      // Land on the knob values playback would have reached at seekBar.
+      rewindGraph(seekSnap, seekBar);
       break;
     }
-    case EngineCommandType::SetVolume:
-      m_volume.store(bitsToFloat(cmd.param1), std::memory_order_relaxed);
-      break;
-    case EngineCommandType::SetTempo:
-      m_bpm.store(bitsToFloat(cmd.param1), std::memory_order_release);
-      break;
-    case EngineCommandType::SetTempoMultiplier:
-      m_tempoMultiplier.store(bitsToFloat(cmd.param1), std::memory_order_relaxed);
-      break;
-    case EngineCommandType::SetDeviceParam: {
-      const uint8_t deviceId = static_cast<uint8_t>(cmd.param1 & 0xffu);
-      const auto param = static_cast<DeviceParamId>((cmd.param1 >> 8) & 0xffu);
-      const float value = bitsToFloat(cmd.param2);
-      applyDeviceParam(pinSnapshot(), deviceId, param, value);
+    case EngineCommandType::PatchStep:
+    case EngineCommandType::PatchLength: {
+      // Rewrite the live snapshot's copy of the pattern in place. The
+      // sequencer holds pointers into this vector, so a step edit is heard
+      // the next time the step plays — with no voice, filter or delay state
+      // touched. The vector never resizes here: the main thread only sends a
+      // patch for an index the published snapshot already has.
+      EngineSnapshot* patchSnap = pinSnapshot();
+      if (!patchSnap) break;
+      const size_t index = cmd.param1 & 0xffffu;
+      if (index >= patchSnap->song.patterns.size()) break;
+      Pattern& pattern = patchSnap->song.patterns[index];
+      if (cmd.type == EngineCommandType::PatchStep) {
+        const uint32_t stepIndex = (cmd.param1 >> 16) & 0xffu;
+        if (stepIndex < MAX_STEPS) pattern.steps[stepIndex] = unpackStep(cmd.param2);
+      } else {
+        pattern.length = static_cast<uint8_t>(std::clamp<uint32_t>(cmd.param2, 1, MAX_STEPS));
+        m_sequencer->invalidatePatterns(); // cached lengths must re-resolve
+      }
       break;
     }
     default:
@@ -337,11 +403,11 @@ EngineSnapshot* RbsAudioEngine::prepareOfflineTransport() {
   // Rewind the graph itself, not just the transport: TRAK automation has
   // been rewriting knobs and mixer levels in place, and the delay line still
   // holds the tail of whatever played last. Without both resets, bouncing
-  // the same song twice produces two different files.
-  applySongStateToSnapshot(*snap);
-  // …then put the user's knob moves back on top, since the line above just
-  // reset the graph to the song's own values.
-  applyParamOverrides(snap);
+  // the same song twice produces two different files. rewindGraph() also
+  // puts the user's knob moves back on top of the song's values.
+  rewindGraph(snap, 1);
+  // Knob slots are folded in by rewindGraph; nothing is left to drain.
+  m_paramDirty.store(0, std::memory_order_relaxed);
   if (snap->mixer) snap->mixer->resetDspState();
   m_playing.store(true, std::memory_order_release);
   return snap;
@@ -425,7 +491,7 @@ uint32_t RbsAudioEngine::songLengthFrames() const {
 
   // One bar is four beats; the arrangement gives the bar count.
   const size_t bars = snap->song.arrangement.empty() ? 4u : snap->song.arrangement.size();
-  const float bpm = std::clamp(m_bpm.load(std::memory_order_acquire), 40.0f, 250.0f);
+  const float bpm = std::clamp(m_bpm.load(std::memory_order_acquire), MIN_BPM, MAX_BPM);
   const double secondsPerBar = (60.0 / static_cast<double>(bpm)) * 4.0;
   const double seconds = secondsPerBar * static_cast<double>(bars);
   const double frames = seconds * static_cast<double>(m_config.sampleRate);
@@ -472,8 +538,13 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
 
   alignas(16) Sequencer::Event events[128];
   alignas(16) AutomationScheduler::Event autoEvents[128];
-  const float effectiveBpm =
-      m_bpm.load(std::memory_order_relaxed) * m_tempoMultiplier.load(std::memory_order_relaxed);
+  // One clamp, shared by the sequencer, the automation clock and the delay:
+  // the multiplier can push the product outside the tempo range, and the
+  // sequencer used to run unclamped while the other two clamped — so at
+  // 2× a 140 BPM song, automation drifted away from the notes.
+  const float effectiveBpm = std::clamp(
+      m_bpm.load(std::memory_order_relaxed) * m_tempoMultiplier.load(std::memory_order_relaxed),
+      MIN_BPM, MAX_BPM);
 
   uint16_t bar = 0;
   uint8_t step = 0;
@@ -494,6 +565,7 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
   for (int i = 0; i < NUM_DEVICES; ++i) {
     voicePtrs[i] = snap->voices[static_cast<size_t>(i)].get();
   }
+  const uint64_t overridden = overrideMask();
 
   uint32_t cursor = 0;
   uint32_t evIdx = 0;
@@ -506,7 +578,8 @@ void RbsAudioEngine::processBlock(float* const* outputBuffers,
       renderSpan(*snap, cursor, offset - cursor, left, right, numChannels, effectiveBpm, vol);
     }
     while (autoIdx < autoCount && autoEvents[autoIdx].sampleOffset <= offset) {
-      m_automation.applyEvent(voicePtrs, snap->mixer.get(), autoEvents[autoIdx++]);
+      AutomationScheduler::applyEvent(voicePtrs, snap->mixer.get(), autoEvents[autoIdx++],
+                                      overridden);
     }
     while (evIdx < eventCount && events[evIdx].sampleOffset <= offset) {
       const auto& ev = events[evIdx++];
@@ -631,6 +704,22 @@ Pattern* RbsAudioEngine::findOrCreatePattern(uint8_t deviceId, uint8_t bank,
   return &m_song.patterns.back();
 }
 
+void RbsAudioEngine::publishPatternEdit(const Pattern& pattern, const EngineCommand& patch) {
+  // The live snapshot holds a copy of m_song taken when it was built, and
+  // m_song.patterns only ever grows by appending — so an index that exists
+  // in the snapshot names the same pattern there.
+  const EngineSnapshot* live = m_published.load(std::memory_order_acquire);
+  const size_t index = static_cast<size_t>(&pattern - m_song.patterns.data());
+  const bool inLive = live && index < live->song.patterns.size() && index <= 0xffffu;
+  if (inLive) {
+    EngineCommand cmd = patch;
+    cmd.param1 |= static_cast<uint32_t>(index);
+    if (pushCommand(cmd)) return;
+  }
+  // A brand-new pattern, or a full queue: rebuild. Correct, just not seamless.
+  republishGraph();
+}
+
 bool RbsAudioEngine::setStep(uint8_t deviceId, uint8_t bank, uint8_t patternIndex,
                              uint8_t stepIndex, const StepData& step) {
   if (!m_initialised || stepIndex >= MAX_STEPS) return false;
@@ -644,7 +733,10 @@ bool RbsAudioEngine::setStep(uint8_t deviceId, uint8_t bank, uint8_t patternInde
       deviceId != static_cast<uint8_t>(DeviceId::TB303_B)) {
     pattern->steps[stepIndex].slide = false;
   }
-  republishGraph();
+  publishPatternEdit(*pattern,
+                     EngineCommand{EngineCommandType::PatchStep,
+                                   static_cast<uint32_t>(stepIndex) << 16,
+                                   packStep(pattern->steps[stepIndex])});
   return true;
 }
 
@@ -662,7 +754,7 @@ bool RbsAudioEngine::setPatternLength(uint8_t deviceId, uint8_t bank,
   Pattern* pattern = findOrCreatePattern(deviceId, bank, patternIndex);
   if (!pattern) return false;
   pattern->length = length;
-  republishGraph();
+  publishPatternEdit(*pattern, EngineCommand{EngineCommandType::PatchLength, 0, length});
   return true;
 }
 
@@ -685,11 +777,12 @@ std::vector<uint8_t> RbsAudioEngine::saveRbs() {
   // folded in here.
   ParsedSong song = m_song;
   song.bpm = m_bpm.load(std::memory_order_acquire);
+  const uint64_t overridden = overrideMask();
   for (int device = 0; device < NUM_DEVICES; ++device) {
     DeviceState& dev = song.devices[device];
     for (size_t param = 0; param < NUM_DEVICE_PARAMS; ++param) {
-      if (!m_paramOverrideSet[device][param]) continue;
-      const float value = m_paramOverrides[device][param];
+      if (!(overridden & paramBit(static_cast<size_t>(device), param))) continue;
+      const float value = paramSlotValue(static_cast<size_t>(device), param);
       switch (static_cast<DeviceParamId>(param)) {
         case DeviceParamId::Tune:      dev.tune = value; break;
         case DeviceParamId::Cutoff:    dev.cutoff = value; break;

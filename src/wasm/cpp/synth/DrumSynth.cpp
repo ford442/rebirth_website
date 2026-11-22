@@ -34,12 +34,12 @@ void DrumVoiceChannel::reset() {
   m_clapBurstAge = 0;
   m_clapBurstLen = 0;
   m_clapGap = 0;
-  // The noise generator is a chaotic map carried in m_noiseState. Leaving it
-  // alone made every replay of a snare or hat draw a different noise
-  // sequence, so the same song bounced twice produced two different files.
-  // 0.0f is the value a freshly constructed channel starts from, so a reset
-  // channel now sounds exactly like a new one.
-  m_noiseState = 0.0f;
+  // Reseed the noise generator. Leaving it alone made every replay of a snare
+  // or hat draw a different noise sequence, so the same song bounced twice
+  // produced two different files. kNoiseSeed is also what a freshly
+  // constructed channel starts from, so a reset channel sounds exactly like
+  // a new one.
+  m_noiseState = kNoiseSeed;
 }
 
 void DrumVoiceChannel::trigger(DrumVoiceId id, float velocity, bool accent,
@@ -108,8 +108,19 @@ void DrumVoiceChannel::trigger(DrumVoiceId id, float velocity, bool accent,
 }
 
 float DrumVoiceChannel::nextNoise() {
-  m_noiseState = std::fmod(m_noiseState * 1.97f + 0.13f, 2.0f) - 1.0f;
-  return m_noiseState;
+  // xorshift32 (Marsaglia 2003): full 2^32-1 period, white, and three shifts
+  // per sample. It replaced `fmod(x * 1.97 + 0.13, 2) - 1`, which is not
+  // noise at all: fmod keeps the sign of a negative x, so the state fell
+  // into roughly [-3.0, -0.87] and stayed there — snare, clap, rim, maracas
+  // and cymbals were fed a large negative DC offset (a thump) instead of a
+  // hiss.
+  uint32_t x = m_noiseState;
+  x ^= x << 13;
+  x ^= x >> 17;
+  x ^= x << 5;
+  m_noiseState = x;
+  // Reinterpret as signed and scale: [-2^31, 2^31) → [-1, 1).
+  return static_cast<float>(static_cast<int32_t>(x)) * (1.0f / 2147483648.0f);
 }
 
 float DrumVoiceChannel::renderKick() {

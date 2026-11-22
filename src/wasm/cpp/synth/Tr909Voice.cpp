@@ -60,8 +60,7 @@ void Tr909Voice::setSamplePool(const SamplePool* pool) {
   }
 }
 
-void Tr909Voice::load(const DeviceState& state, const std::vector<Pattern>& patterns) {
-  (void)patterns;
+void Tr909Voice::load(const DeviceState& state) {
   m_params.tune = state.tune;
   m_params.decay = state.decay;
   m_params.accent = state.accent;
@@ -111,6 +110,11 @@ void Tr909Voice::triggerStep(uint8_t stepIndex, const StepData& step) {
   if (hits & DrumHit::HT) fire(DrumVoiceId::HighTom, accent);
   if (hits & DrumHit::CH) fire(DrumVoiceId::ClosedHat, accent);
   if (hits & DrumHit::OH) fire(DrumVoiceId::OpenHat, accent);
+  // RbsFormat.md §6e: row byte 8 is "Clap / Claves" — claves on the 808,
+  // the hand clap on the 909 — and byte 9 is "Clap / Crash", the 909's
+  // crash. The CL bit used to be ignored here, so channel 4 (and a mod's
+  // Tr909Clap sample) could never sound.
+  if (hits & DrumHit::CL) fire(DrumVoiceId::Clap, accent);
   if (extra & DrumExtra::RS) fire(DrumVoiceId::Rimshot, accent);
   if (extra & DrumExtra::CP) fire(DrumVoiceId::Crash, accent);
   if (extra & DrumExtra::MA) fire(DrumVoiceId::Ride, accent);

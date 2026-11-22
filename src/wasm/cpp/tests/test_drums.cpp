@@ -83,7 +83,7 @@ TEST_CASE("Tr808Voice: kick/snare/hat pattern produces audio") {
   state.tune = 0.5f;
   state.decay = 0.5f;
   state.accent = 0.5f;
-  voice.load(state, {});
+  voice.load(state);
 
   StepData step{};
   step.active = true;
@@ -98,7 +98,7 @@ TEST_CASE("Tr808Voice: rimshot and clap extra hits sound") {
   Tr808Voice voice;
   voice.init(44100.0f);
   DeviceState state{};
-  voice.load(state, {});
+  voice.load(state);
 
   StepData step{};
   step.active = true;
@@ -135,7 +135,7 @@ TEST_CASE("Tr808Voice: tom hits produce audio") {
   Tr808Voice voice;
   voice.init(44100.0f);
   DeviceState state{};
-  voice.load(state, {});
+  voice.load(state);
 
   StepData step{};
   step.active = true;
@@ -150,7 +150,7 @@ TEST_CASE("Tr808Voice: clave and clap are distinct voices") {
   Tr808Voice voice;
   voice.init(44100.0f);
   DeviceState state{};
-  voice.load(state, {});
+  voice.load(state);
 
   StepData claveStep{};
   claveStep.active = true;
@@ -174,7 +174,7 @@ TEST_CASE("Tr909Voice: rimshot and crash extra hits sound") {
   Tr909Voice voice;
   voice.init(44100.0f);
   DeviceState state{};
-  voice.load(state, {});
+  voice.load(state);
 
   StepData step{};
   step.active = true;

@@ -23,7 +23,7 @@ public:
   ~Tr808Voice() override = default;
 
   void init(float sampleRate) override;
-  void load(const DeviceState& state, const std::vector<Pattern>& patterns) override;
+  void load(const DeviceState& state) override;
   void render(float* output, uint32_t numFrames) override;
   void triggerStep(uint8_t stepIndex, const StepData& step) override;
   void setParameter(DeviceParamId param, float value) override;

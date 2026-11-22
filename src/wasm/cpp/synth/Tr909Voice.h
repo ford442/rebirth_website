@@ -10,7 +10,8 @@ namespace rb338 {
 /**
  * Tr909Voice — TR-909 drum machine.
  *
- * Procedural models for BD, SD, CH, OH, and clap (CL / CP). A `.rbm` mod
+ * Procedural models for every 909 voice: BD, SD, toms, CH, OH, hand clap
+ * (CL), rimshot (RS), crash (CP) and ride (MA). A `.rbm` mod
  * can replace any individual slot with PCM; the rest stay procedural.
  */
 class Tr909Voice : public Voice {
@@ -19,7 +20,7 @@ public:
   ~Tr909Voice() override = default;
 
   void init(float sampleRate) override;
-  void load(const DeviceState& state, const std::vector<Pattern>& patterns) override;
+  void load(const DeviceState& state) override;
   void render(float* output, uint32_t numFrames) override;
   void triggerStep(uint8_t stepIndex, const StepData& step) override;
   void setParameter(DeviceParamId param, float value) override;

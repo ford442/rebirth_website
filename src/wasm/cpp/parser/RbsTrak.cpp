@@ -84,6 +84,18 @@ bool RbsParser::parseTrak(const uint8_t* data, size_t size, ParsedSong& song) {
 }
 
 bool RbsParser::buildArrangement(ParsedSong& song) {
+  // parseTrak appends events track by track, so song.automation arrives
+  // grouped by track rather than ordered in time. AutomationScheduler walks
+  // it with a single forward cursor, which skips every event that sits
+  // "behind" one already passed on another track — most of a song's
+  // automation never fired. A stable sort keeps the on-disk order of events
+  // that share a tick (later writes still win), and runs even when no track
+  // selects patterns.
+  std::stable_sort(song.automation.begin(), song.automation.end(),
+                   [](const AutomationEvent& a, const AutomationEvent& b) {
+                     return a.tickPosition < b.tickPosition;
+                   });
+
   bool hasPatternChanges = false;
   for (const auto& changes : m_patternChanges) {
     hasPatternChanges = hasPatternChanges || !changes.empty();

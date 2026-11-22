@@ -120,9 +120,16 @@ TEST_CASE("Engine: getTempo reflects loaded song, setTempo, and clamping") {
   eng.processBlock(buffers, 2, 128); // drain SetTempo command
   CHECK(eng.getTempo() == doctest::Approx(95.0f));
 
-  // Out-of-range song tempo is clamped to the supported 40–250 BPM range.
+  // The engine accepts the parser's whole 20–500 BPM range (it used to clamp
+  // to 40–250, so a 300 BPM song the parser accepted played at 250).
   REQUIRE(eng.loadSong(makeSong(300.0f)));
-  CHECK(eng.getTempo() == doctest::Approx(250.0f));
+  CHECK(eng.getTempo() == doctest::Approx(300.0f));
+
+  // Out-of-range song tempo is clamped to the shared MIN_BPM–MAX_BPM range.
+  REQUIRE(eng.loadSong(makeSong(900.0f)));
+  CHECK(eng.getTempo() == doctest::Approx(MAX_BPM));
+  eng.setTempo(5.0f); // stored directly, no queue round trip
+  CHECK(eng.getTempo() == doctest::Approx(MIN_BPM));
 }
 
 TEST_CASE("Engine: hard-left pan isolates right channel") {

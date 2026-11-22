@@ -47,8 +47,7 @@ void Tr808Voice::setSamplePool(const SamplePool* pool) {
   }
 }
 
-void Tr808Voice::load(const DeviceState& state, const std::vector<Pattern>& patterns) {
-  (void)patterns;
+void Tr808Voice::load(const DeviceState& state) {
   m_params.tune = state.tune;
   m_params.decay = state.decay;
   m_params.accent = state.accent;

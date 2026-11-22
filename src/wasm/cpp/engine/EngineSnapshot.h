@@ -41,8 +41,9 @@ std::unique_ptr<EngineSnapshot> buildEngineSnapshot(
     std::shared_ptr<const SamplePool> samplePool = nullptr);
 
 /**
- * Re-apply the snapshot's song to its mixer and voices. Main thread only —
- * it allocates.
+ * Re-apply the snapshot's song to its mixer and voices. Allocation-free and
+ * lock-free, so the audio thread may call it on the snapshot it has pinned
+ * (seek / stop do).
  *
  * TRAK automation mutates device knobs and mixer levels as a song plays, and
  * those changes live on in the snapshot. Anything that needs to replay from

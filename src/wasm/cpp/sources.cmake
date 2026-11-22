@@ -60,6 +60,7 @@ set(RB338_TEST_SOURCES
   tests/test_mod_playback.cpp
   tests/test_mixer.cpp
   tests/test_rbm_parser.cpp
+  tests/test_correctness.cpp
 )
 
 set(RB338_INSPECT_SOURCES
