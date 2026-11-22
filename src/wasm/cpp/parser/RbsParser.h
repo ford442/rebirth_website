@@ -94,17 +94,6 @@ private:
                           bool is303, bool lengthAtZero = false);
   bool parseTrak(const uint8_t* data, size_t size, ParsedSong& song);
   bool buildArrangement(ParsedSong& song);
-
-  // ── Legacy stubs (kept so existing call sites compile) ──
-  bool validateHeader(const uint8_t* data, size_t size);
-  bool readMetadata(const uint8_t* data, size_t size, size_t& offset,
-                    ParsedSong& out);
-  bool readDeviceStates(const uint8_t* data, size_t size, size_t& offset,
-                        ParsedSong& out);
-  bool readPatterns(const uint8_t* data, size_t size, size_t& offset,
-                    ParsedSong& out);
-  bool readArrangement(const uint8_t* data, size_t size, size_t& offset,
-                       ParsedSong& out);
 };
 
 } // namespace rb338

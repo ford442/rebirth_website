@@ -98,6 +98,10 @@ bool RbsAudioEngine::loadSong(const ParsedSong& song) {
   // carries across so changing songs does not silently drop its samples.
   m_song = song;
   m_hasSong = true;
+  // A new song starts from its own knobs (the bridge forgets its overrides
+  // on load too). Clearing the mask also hands automation back to the song.
+  m_paramOverridden.store(0, std::memory_order_release);
+  m_paramDirty.store(0, std::memory_order_release);
 
   auto next = buildEngineSnapshot(m_song, m_config, m_samplePool);
   EngineSnapshot* raw = next.get();
@@ -413,40 +417,60 @@ EngineSnapshot* RbsAudioEngine::prepareOfflineTransport() {
   return snap;
 }
 
-uint32_t RbsAudioEngine::runOfflineRender(uint32_t frames, uint8_t deviceIndex,
-                                          float* interleavedOut, WavPcm16Builder* wav) {
+EngineSnapshot* RbsAudioEngine::startOffline(uint8_t deviceIndex) {
   EngineSnapshot* snap = prepareOfflineTransport();
-  if (!snap) return 0;
+  m_offlineSnap = snap;
+  m_offlineStem = false;
+  if (!snap) return nullptr;
 
   // Solo *after* the graph reset, not before: prepareOfflineTransport() calls
   // applySongStateToSnapshot(), which re-applies the song's own mute flags
   // and would silently undo an earlier solo — producing a "stem" identical
   // to the master.
-  const bool stem = (deviceIndex != MASTER_BUS) && (deviceIndex < NUM_DEVICES);
-  bool savedMutes[NUM_DEVICES] = {false, false, false, false};
-  if (stem && snap->mixer) {
+  m_offlineStem = (deviceIndex != MASTER_BUS) && (deviceIndex < NUM_DEVICES);
+  if (m_offlineStem && snap->mixer) {
     for (int d = 0; d < NUM_DEVICES; ++d) {
-      savedMutes[d] = snap->mixer->channelMuted(d);
+      m_offlineSavedMutes[static_cast<size_t>(d)] = snap->mixer->channelMuted(d);
       snap->mixer->setChannelMuted(d, d != static_cast<int>(deviceIndex));
     }
   }
+  return snap;
+}
 
+void RbsAudioEngine::finishOffline() {
+  m_playing.store(false, std::memory_order_release);
+  if (m_offlineStem && m_offlineSnap && m_offlineSnap->mixer) {
+    for (int d = 0; d < NUM_DEVICES; ++d) {
+      m_offlineSnap->mixer->setChannelMuted(d, m_offlineSavedMutes[static_cast<size_t>(d)]);
+    }
+  }
+  m_offlineSnap = nullptr;
+  m_offlineStem = false;
+}
+
+void RbsAudioEngine::renderOfflineQuantum(float* interleaved, uint32_t count) {
   // Render in worklet-sized quanta. The engine is block-size invariant, but
   // matching the browser's quantum keeps the offline path identical to the
   // live one by construction rather than by argument.
   alignas(16) float left[AUDIO_WORKLET_FRAMES];
   alignas(16) float right[AUDIO_WORKLET_FRAMES];
-  alignas(16) float interleaved[AUDIO_WORKLET_FRAMES * 2];
   float* buffers[2] = {left, right};
+  processBlock(buffers, 2, count);
+  for (uint32_t i = 0; i < count; ++i) {
+    interleaved[i * 2] = left[i];
+    interleaved[i * 2 + 1] = right[i];
+  }
+}
 
+uint32_t RbsAudioEngine::runOfflineRender(uint32_t frames, uint8_t deviceIndex,
+                                          float* interleavedOut, WavPcm16Builder* wav) {
+  if (!startOffline(deviceIndex)) return 0;
+
+  alignas(16) float interleaved[AUDIO_WORKLET_FRAMES * 2];
   uint32_t rendered = 0;
   while (rendered < frames) {
     const uint32_t count = std::min<uint32_t>(AUDIO_WORKLET_FRAMES, frames - rendered);
-    processBlock(buffers, 2, count);
-    for (uint32_t i = 0; i < count; ++i) {
-      interleaved[i * 2] = left[i];
-      interleaved[i * 2 + 1] = right[i];
-    }
+    renderOfflineQuantum(interleaved, count);
     if (interleavedOut) {
       ::memcpy(interleavedOut + static_cast<size_t>(rendered) * 2u, interleaved,
                static_cast<size_t>(count) * 2u * sizeof(float));
@@ -455,14 +479,39 @@ uint32_t RbsAudioEngine::runOfflineRender(uint32_t frames, uint8_t deviceIndex,
     if (wav) wav->append(interleaved, count);
     rendered += count;
   }
-  m_playing.store(false, std::memory_order_release);
+  finishOffline();
+  return rendered;
+}
 
-  if (stem && snap->mixer) {
-    for (int d = 0; d < NUM_DEVICES; ++d) {
-      snap->mixer->setChannelMuted(d, savedMutes[d]);
-    }
+bool RbsAudioEngine::beginOfflineRender(uint8_t deviceIndex) {
+  // malloc + null check, not new: with exceptions off a failed new aborts
+  // the whole instance, and the bounce worker should report instead.
+  if (!m_offlineChunk) {
+    m_offlineChunk.reset(static_cast<uint8_t*>(
+        std::malloc(static_cast<size_t>(OFFLINE_CHUNK_FRAMES) * 2u * sizeof(int16_t))));
+    if (!m_offlineChunk) return false;
+  }
+  return startOffline(deviceIndex) != nullptr;
+}
+
+uint32_t RbsAudioEngine::renderOfflineChunk(uint32_t frames) {
+  if (!m_offlineSnap || !m_offlineChunk) return 0;
+  frames = std::min(frames, OFFLINE_CHUNK_FRAMES);
+  alignas(16) float interleaved[AUDIO_WORKLET_FRAMES * 2];
+  uint8_t* out = m_offlineChunk.get();
+  uint32_t rendered = 0;
+  while (rendered < frames) {
+    const uint32_t count = std::min<uint32_t>(AUDIO_WORKLET_FRAMES, frames - rendered);
+    renderOfflineQuantum(interleaved, count);
+    out = encodePcm16Le(interleaved, count * 2u, out);
+    rendered += count;
   }
   return rendered;
+}
+
+void RbsAudioEngine::endOfflineRender() {
+  if (m_offlineSnap) finishOffline();
+  m_offlineChunk.reset();
 }
 
 uint32_t RbsAudioEngine::renderOffline(float* interleavedStereo, uint32_t frames) {
@@ -762,6 +811,13 @@ uint8_t RbsAudioEngine::getPatternLength(uint8_t deviceId, uint8_t bank,
                                          uint8_t patternIndex) const {
   const Pattern* pattern = findPattern(deviceId, bank, patternIndex);
   return pattern ? pattern->length : 0;
+}
+
+std::optional<Pattern> RbsAudioEngine::getPattern(uint8_t deviceId, uint8_t bank,
+                                                  uint8_t patternIndex) const {
+  const Pattern* pattern = findPattern(deviceId, bank, patternIndex);
+  if (!pattern) return std::nullopt;
+  return *pattern;
 }
 
 std::vector<uint8_t> RbsAudioEngine::saveRbs() {

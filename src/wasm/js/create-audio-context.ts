@@ -1,9 +1,10 @@
 /**
  * Production AudioContext factory for the WASM audio bridge and degraded player.
  *
- * Requests interactive latency and a preferred sample rate, retrying without
+ * Requests a latency hint and, optionally, a sample rate — retrying without
  * sampleRate when the browser rejects the requested rate (common on Android /
- * Bluetooth / HDMI sinks at 48 kHz).
+ * Bluetooth / HDMI sinks at 48 kHz). With no preferred rate the context runs at
+ * the output device's own rate, so the browser never resamples.
  *
  * Does not call decodeAudioData, audioWorklet.addModule, or OfflineAudioContext.
  */
@@ -89,10 +90,14 @@ export function attachAudioContextLifecycle(
  * Does not call decodeAudioData, startRendering, or audioWorklet.addModule.
  */
 export function createProductionAudioContext(
-  preferredSampleRate: number,
+  preferredSampleRate: number | null,
   latencyHint: AudioContextLatencyCategory = 'interactive'
 ): { context: AudioContext; diagnostics: AudioContextDiagnostics } {
   const Ctor = resolveAudioContextConstructor();
+  if (preferredSampleRate == null) {
+    const context = new Ctor({ latencyHint });
+    return { context, diagnostics: buildDiagnostics(context, latencyHint, null) };
+  }
   try {
     const context = new Ctor({
       sampleRate: preferredSampleRate,

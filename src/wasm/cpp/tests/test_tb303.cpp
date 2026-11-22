@@ -73,7 +73,6 @@ ParsedSong make303Song() {
 EngineConfig tb303OnlyConfig() {
   EngineConfig cfg;
   cfg.sampleRate = 44100.0f;
-  cfg.bufferSize = 128;
   cfg.enableTb303A = true;
   cfg.enableTb303B = false;
   cfg.enableTr808 = false;

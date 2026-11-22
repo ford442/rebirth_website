@@ -8,6 +8,7 @@
 
 import type { ParsedSong, PlayerStatus } from '../types/wasm-audio-song';
 import { wasmAudioConfig } from '../audio-module.config';
+import { TEMPO_MAX_BPM, TEMPO_MIN_BPM } from '../types/wasm-audio-config';
 import type { InitFailureReason } from './rbs-init-errors';
 import { sniffRbsMetadata } from './RbsMetadataSniffer';
 import {
@@ -219,7 +220,7 @@ export class DegradedRbsPlayer {
   }
 
   setTempoBpm(bpm: number): boolean {
-    const safeBpm = Math.max(40, Math.min(250, Math.round(bpm)));
+    const safeBpm = Math.max(TEMPO_MIN_BPM, Math.min(TEMPO_MAX_BPM, Math.round(bpm)));
     this.tempoBpm = safeBpm;
     if (this.status === 'playing') {
       this._stopSketch();

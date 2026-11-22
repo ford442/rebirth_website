@@ -51,7 +51,6 @@ ParsedSong makeSong(float bpm) {
 EngineConfig makeConfig() {
   EngineConfig cfg;
   cfg.sampleRate = 44100.0f;
-  cfg.bufferSize = 128;
   return cfg;
 }
 

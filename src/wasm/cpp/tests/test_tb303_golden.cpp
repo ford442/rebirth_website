@@ -56,7 +56,6 @@ std::vector<float> renderStandardRebirth303b(uint32_t totalFrames) {
 
   EngineConfig cfg;
   cfg.sampleRate = 44100.0f;
-  cfg.bufferSize = 128;
   cfg.enableTb303A = false;
   cfg.enableTb303B = true;
   cfg.enableTr808 = false;

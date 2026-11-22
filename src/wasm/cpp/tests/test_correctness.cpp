@@ -598,3 +598,73 @@ TEST_CASE("Engine: tempo multiplier keeps automation locked to the notes") {
     REQUIRE(std::fabs(s) <= 1.0f);
   }
 }
+
+// ── §2: chunked bounce ───────────────────────────────────────────────
+
+TEST_CASE("Offline: the chunked bounce matches the whole-file WAV byte for byte") {
+  // The browser bounce now renders in fixed chunks and assembles the WAV in
+  // JavaScript, so the WASM heap holds one chunk instead of the whole file.
+  // It must still be the same render.
+  const ParsedSong song = loadFixture("standard-rebirth.rbs");
+  RbsAudioEngine eng;
+  REQUIRE(eng.init(config44k()));
+  REQUIRE(eng.loadSong(song));
+  eng.setDeviceParam(1, 1, 0.2f); // a live knob move must carry into both
+
+  const uint32_t frames = RbsAudioEngine::OFFLINE_CHUNK_FRAMES * 2u + 12345u;
+  for (uint8_t device : {RbsAudioEngine::MASTER_BUS, uint8_t{1}, uint8_t{3}}) {
+    CAPTURE(int(device));
+    const auto wav = eng.renderOfflineWav(frames, device);
+    REQUIRE(wav.size() == 44u + size_t(frames) * 4u);
+
+    REQUIRE(eng.beginOfflineRender(device));
+    std::vector<uint8_t> body;
+    uint32_t done = 0;
+    while (done < frames) {
+      // Uneven chunk sizes on purpose: the chunk boundary must not show.
+      const uint32_t ask = std::min<uint32_t>(frames - done, done == 0 ? 1000u : 70000u);
+      const uint32_t got = eng.renderOfflineChunk(ask);
+      REQUIRE(got == std::min(ask, RbsAudioEngine::OFFLINE_CHUNK_FRAMES));
+      body.insert(body.end(), eng.offlineChunkData(), eng.offlineChunkData() + size_t(got) * 4u);
+      done += got;
+    }
+    eng.endOfflineRender();
+    REQUIRE(body.size() == wav.size() - 44u);
+    CHECK(std::memcmp(body.data(), wav.data() + 44, body.size()) == 0);
+  }
+  // Outside a begin/end pair nothing renders.
+  CHECK(eng.renderOfflineChunk(128) == 0);
+}
+
+// ── §7: slim Embind surface ──────────────────────────────────────────
+
+TEST_CASE("SongSummary: carries metadata and the slot map, patterns come on demand") {
+  const ParsedSong song = loadFixture("standard-rebirth.rbs");
+  const SongSummary summary = summariseSong(song);
+  CHECK(summary.title == song.title);
+  CHECK(summary.bpm == song.bpm);
+  CHECK(summary.barCount == song.arrangement.size());
+  size_t slots = 0;
+  for (uint32_t mask : summary.patternSlots) slots += static_cast<size_t>(__builtin_popcount(mask));
+  CHECK(slots == song.patterns.size());
+
+  RbsAudioEngine eng;
+  REQUIRE(eng.init(config44k()));
+  REQUIRE(eng.loadSong(song));
+  const Pattern& first = song.patterns.front();
+  auto fetched = eng.getPattern(static_cast<uint8_t>(first.deviceId), first.bank,
+                                first.patternIndex);
+  REQUIRE(fetched.has_value());
+  CHECK(fetched->length == first.length);
+  CHECK(fetched->steps[0].note == first.steps[0].note);
+  // Edits show up in what the UI fetches.
+  StepData edit;
+  edit.active = true;
+  edit.note = 77;
+  REQUIRE(eng.setStep(static_cast<uint8_t>(first.deviceId), first.bank, first.patternIndex, 0,
+                      edit));
+  CHECK(eng.getPattern(static_cast<uint8_t>(first.deviceId), first.bank, first.patternIndex)
+            ->steps[0].note == 77);
+  CHECK(eng.arrangement().size() == song.arrangement.size());
+  CHECK_FALSE(eng.getPattern(9, 0, 0).has_value());
+}

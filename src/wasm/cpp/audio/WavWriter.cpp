@@ -35,6 +35,15 @@ int16_t toPcm16(float sample) {
 
 } // anonymous namespace
 
+uint8_t* encodePcm16Le(const float* samples, uint32_t count, uint8_t* out) {
+  for (uint32_t i = 0; i < count; ++i) {
+    const auto v = static_cast<uint16_t>(toPcm16(samples[i]));
+    *out++ = static_cast<uint8_t>(v & 0xffu);
+    *out++ = static_cast<uint8_t>((v >> 8) & 0xffu);
+  }
+  return out;
+}
+
 uint32_t wavPcm16ByteSize(uint32_t frames, uint16_t channels) {
   return kHeaderBytes + frames * static_cast<uint32_t>(channels) * 2u;
 }

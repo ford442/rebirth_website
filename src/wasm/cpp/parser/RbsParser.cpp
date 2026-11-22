@@ -641,34 +641,4 @@ bool RbsParser::parseV1DeviceChunk(DeviceId primaryId, DeviceId secondaryId,
 
 // TRAK / STRAK decoding and arrangement projection live in RbsTrak.cpp.
 
-// Stubbed helpers kept for future phases
-bool RbsParser::readMetadata(const uint8_t* data, size_t size,
-                             size_t& offset, ParsedSong& out) {
-  (void)data; (void)size; (void)offset; (void)out;
-  return true;
-}
-
-bool RbsParser::readDeviceStates(const uint8_t* data, size_t size,
-                                 size_t& offset, ParsedSong& out) {
-  (void)data; (void)size; (void)offset; (void)out;
-  return true;
-}
-
-bool RbsParser::readPatterns(const uint8_t* data, size_t size,
-                             size_t& offset, ParsedSong& out) {
-  (void)data; (void)size; (void)offset; (void)out;
-  return true;
-}
-
-bool RbsParser::readArrangement(const uint8_t* data, size_t size,
-                                size_t& offset, ParsedSong& out) {
-  (void)data; (void)size; (void)offset; (void)out;
-  return true;
-}
-
-bool RbsParser::validateHeader(const uint8_t* data, size_t size) {
-  (void)data; (void)size;
-  return true;
-}
-
 } // namespace rb338

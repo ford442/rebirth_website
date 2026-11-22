@@ -194,4 +194,58 @@ struct ParsedSong {
   std::vector<AutomationEvent> automation;
 };
 
+// ─────────────────────────────────────────────────────────────────
+// Song summary (what crosses Embind on load)
+// ─────────────────────────────────────────────────────────────────
+
+/**
+ * Everything the UI needs at load time, and nothing it does not: metadata,
+ * device knobs and FX, plus which pattern slots exist. Converting the whole
+ * ParsedSong to JS on every load built thousands of value objects; patterns
+ * and the arrangement are now fetched on demand (RbsAudioEngine::getPattern
+ * / getArrangement), and `automation` never leaves C++ at all.
+ */
+struct SongSummary {
+  std::string title;
+  std::string author;
+  std::string infoText;
+  std::string creatorUrl;
+  float bpm = 125.0f;
+  RbsVersion version = RbsVersion::V2_0_1;
+  uint8_t headVersion = 0;
+  uint8_t globSubFormat = 0;
+  bool showInfoOnOpen = false;
+  std::array<DeviceState, NUM_DEVICES> devices;
+  SongFxSettings fx;
+  /** Bars in the arrangement (0 when the song has none). */
+  uint32_t barCount = 0;
+  /** Per device: bit `bank * 8 + index` is set when the song stores that slot. */
+  std::array<uint32_t, NUM_DEVICES> patternSlots{};
+};
+
+inline SongSummary summariseSong(const ParsedSong& song) {
+  SongSummary out;
+  out.title = song.title;
+  out.author = song.author;
+  out.infoText = song.infoText;
+  out.creatorUrl = song.creatorUrl;
+  out.bpm = song.bpm;
+  out.version = song.version;
+  out.headVersion = song.headVersion;
+  out.globSubFormat = song.globSubFormat;
+  out.showInfoOnOpen = song.showInfoOnOpen;
+  out.devices = song.devices;
+  out.fx = song.fx;
+  out.barCount = static_cast<uint32_t>(song.arrangement.size());
+  for (const Pattern& p : song.patterns) {
+    const auto device = static_cast<size_t>(p.deviceId);
+    if (device >= NUM_DEVICES || p.bank >= MAX_BANKS ||
+        p.patternIndex >= MAX_PATTERNS_PER_BANK) {
+      continue;
+    }
+    out.patternSlots[device] |= 1u << (p.bank * MAX_PATTERNS_PER_BANK + p.patternIndex);
+  }
+  return out;
+}
+
 } // namespace rb338

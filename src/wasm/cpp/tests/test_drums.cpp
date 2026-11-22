@@ -66,7 +66,6 @@ ParsedSong makeDrumSong(DeviceId device, uint8_t hits, uint8_t extra = 0) {
 EngineConfig drumsOnlyConfig() {
   EngineConfig cfg;
   cfg.sampleRate = 44100.0f;
-  cfg.bufferSize = 128;
   cfg.enableTb303A = false;
   cfg.enableTb303B = false;
   cfg.enableTr808 = true;

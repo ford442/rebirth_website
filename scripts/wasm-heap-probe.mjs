@@ -92,14 +92,10 @@ export async function runHeapProbeInPage(page, args) {
     const dual = new module.RbsAudioEngine();
     dual.init({
       sampleRate,
-      bufferSize: 128,
       enableTb303A: true,
       enableTb303B: true,
       enableTr808: true,
       enableTr909: true,
-      enableDistortion: true,
-      enableCompressor: true,
-      enableDelay: true,
     });
     const songU8 = new Uint8Array(b64ToBuf(songB64));
     const songPtr = module._malloc(songU8.byteLength);
@@ -114,8 +110,17 @@ export async function runHeapProbeInPage(page, args) {
     dual.loadMod(kitPtr, kitU8.byteLength);
     module._free(kitPtr);
     peaks.legacyDualBeforeWav = snap();
-    const legacyWav = dual.renderOfflineToWav(frames, 255);
+    // The chunked bounce holds one chunk in the heap, never the whole file.
+    let legacyWavBytes = 44;
+    if (!dual.beginOfflineRender(255)) throw new Error('beginOfflineRender failed (dual)');
+    for (let done = 0; done < frames; ) {
+      const chunk = dual.renderOfflineChunk(Math.min(65536, frames - done));
+      if (chunk.byteLength === 0) break;
+      legacyWavBytes += chunk.byteLength;
+      done += chunk.byteLength / 4;
+    }
     peaks.legacyDualDuringWav = snap();
+    dual.endOfflineRender();
     dual.delete();
     peaks.afterLegacyCleanup = snap();
 
@@ -128,7 +133,7 @@ export async function runHeapProbeInPage(page, args) {
     return {
       peaks,
       frames,
-      legacyWavBytes: legacyWav.byteLength,
+      legacyWavBytes,
       bounceWavBytes: bounced.bytes.byteLength,
     };
   }, args);

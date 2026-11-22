@@ -10,6 +10,7 @@
 #include "../audio/WavWriter.h"
 #include <array>
 #include <atomic>
+#include <cstdlib>
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -23,14 +24,10 @@ namespace rb338 {
  */
 struct EngineConfig {
   float sampleRate = 44100.0f;
-  uint32_t bufferSize = 128;
   bool enableTb303A = true;
   bool enableTb303B = true;
   bool enableTr808 = true;
   bool enableTr909 = true;
-  bool enableDistortion = true;
-  bool enableCompressor = true;
-  bool enableDelay = true;
 };
 
 /**
@@ -182,6 +179,20 @@ public:
   /** A pattern's play length, or 0 when the song has no such pattern. */
   uint8_t getPatternLength(uint8_t deviceId, uint8_t bank, uint8_t patternIndex) const;
 
+  /**
+   * One pattern of the working copy (edits included), or nullopt for a slot
+   * the song does not store. The UI fetches patterns through this rather
+   * than receiving every pattern on load. Main thread only.
+   */
+  std::optional<Pattern> getPattern(uint8_t deviceId, uint8_t bank,
+                                    uint8_t patternIndex) const;
+
+  /** The loaded song's arrangement (empty before a song is loaded). */
+  const std::vector<ArrangementBar>& arrangement() const { return m_song.arrangement; }
+
+  /** Load-time summary of the working copy: metadata, devices, slot map. */
+  SongSummary songSummary() const { return summariseSong(m_song); }
+
   // ── Saving (.rbs write-back) ──────────────────────────────────────
 
   /**
@@ -262,6 +273,40 @@ public:
   static constexpr uint8_t MASTER_BUS = 0xffu;
   std::vector<uint8_t> renderOfflineWav(uint32_t frames, uint8_t deviceIndex = MASTER_BUS);
 
+  // ── Chunked bounce ────────────────────────────────────────────────
+  //
+  // renderOfflineWav() holds the whole file in the WASM heap: 44.1 kHz
+  // stereo 16-bit is ~10.6 MiB a minute, so against the fixed 64 MiB heap
+  // anything past four or five minutes aborted the bounce worker. The
+  // chunked API keeps one fixed chunk on the heap instead; JavaScript copies
+  // each chunk out and assembles the file (header included) on its side.
+  //
+  //   beginOfflineRender(device)            rewind; solo a stem if asked
+  //   renderOfflineChunk(n) / chunk data    repeat until done (n <= CHUNK)
+  //   endOfflineRender()                    restore mutes, release the chunk
+
+  /** Largest frame count one renderOfflineChunk() call renders. */
+  static constexpr uint32_t OFFLINE_CHUNK_FRAMES = 1u << 16;
+
+  /**
+   * Start a chunked bounce. `deviceIndex` is a stem, or MASTER_BUS. Returns
+   * false when nothing is loaded or the chunk buffer cannot be allocated.
+   */
+  bool beginOfflineRender(uint8_t deviceIndex = MASTER_BUS);
+
+  /**
+   * Render the next `frames` (clamped to OFFLINE_CHUNK_FRAMES) as
+   * interleaved little-endian 16-bit stereo into the chunk buffer. Returns
+   * frames rendered; 0 outside a begin/end pair.
+   */
+  uint32_t renderOfflineChunk(uint32_t frames);
+
+  /** The chunk renderOfflineChunk() just wrote: frames × 2 channels × 2 bytes. */
+  const uint8_t* offlineChunkData() const { return m_offlineChunk.get(); }
+
+  /** Finish a chunked bounce, undoing the stem solo. */
+  void endOfflineRender();
+
   /** Push a control command from the main thread. Never blocks. */
   bool pushCommand(const EngineCommand& cmd);
 
@@ -305,6 +350,20 @@ private:
   /** Single offline render path; writes floats, WAV bytes, or both. */
   uint32_t runOfflineRender(uint32_t frames, uint8_t deviceIndex,
                             float* interleavedOut, WavPcm16Builder* wav);
+  /** Rewind and (for a stem) solo; shared by every offline entry point. */
+  EngineSnapshot* startOffline(uint8_t deviceIndex);
+  void finishOffline();
+  /** Render `count` (≤ AUDIO_WORKLET_FRAMES) frames of interleaved stereo. */
+  void renderOfflineQuantum(float* interleaved, uint32_t count);
+
+  // Offline render state (main thread / bounce worker only).
+  EngineSnapshot* m_offlineSnap = nullptr;
+  bool m_offlineStem = false;
+  std::array<bool, NUM_DEVICES> m_offlineSavedMutes{};
+  struct FreeDeleter {
+    void operator()(uint8_t* p) const { std::free(p); }
+  };
+  std::unique_ptr<uint8_t, FreeDeleter> m_offlineChunk;
   EngineSnapshot* pinSnapshot();
   void reclaimRetiredSnapshots();
   void resetVoices(EngineSnapshot* snap);

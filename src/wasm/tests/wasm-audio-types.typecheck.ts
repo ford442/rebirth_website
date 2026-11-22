@@ -35,7 +35,9 @@ import type {
 } from '../types/wasm-audio-mod';
 import type {
   WasmDeviceId,
-  WasmParsedSong,
+  WasmSongSummary,
+  WasmPattern,
+  WasmArrangementBar,
   WasmSongFxSettings,
   WasmStepData,
 } from '../types/wasm-audio-song';
@@ -75,28 +77,20 @@ function emptyModReport(): WasmModLoadReport {
 // ── EngineConfig shape ───────────────────────────────────────────
 
 const engineConfig: EngineConfig = {
-  sampleRate: wasmAudioConfig.preferredSampleRate,
-  bufferSize: wasmAudioConfig.bufferSize,
+  sampleRate: wasmAudioConfig.preferredSampleRate ?? wasmAudioConfig.offlineSampleRate,
   enableTb303A: wasmAudioConfig.features.tb303_a,
   enableTb303B: wasmAudioConfig.features.tb303_b,
   enableTr808: wasmAudioConfig.features.tr808,
   enableTr909: wasmAudioConfig.features.tr909,
-  enableDistortion: wasmAudioConfig.features.distortion,
-  enableCompressor: wasmAudioConfig.features.compressor,
-  enableDelay: wasmAudioConfig.features.delay,
 };
 
 // Ensure the flattened config is exactly the shape the WASM engine expects.
 const configCheck: EngineConfig = {
   sampleRate: 44100,
-  bufferSize: 128,
   enableTb303A: true,
   enableTb303B: true,
   enableTr808: true,
   enableTr909: true,
-  enableDistortion: true,
-  enableCompressor: true,
-  enableDelay: true,
 };
 
 void engineConfig;
@@ -141,22 +135,34 @@ class MockRbsAudioEngine implements RbsAudioEngineInstance {
     return true;
   }
 
-  loadSong(_song: WasmParsedSong): boolean {
-    return true;
+  loadSongFromBytes(_ptr: number, _size: number): WasmSongSummary | undefined {
+    return undefined;
   }
 
-  loadSongFromBytes(_ptr: number, _size: number): WasmParsedSong | undefined {
+  getPattern(_deviceId: number, _bank: number, _patternIndex: number): WasmPattern | undefined {
     return undefined;
+  }
+
+  getArrangement(): EmbindVector<WasmArrangementBar> {
+    return mockVector<WasmArrangementBar>([]);
   }
 
   lastParseError(): string {
     return '';
   }
 
-  play(): void {}
-  pause(): void {}
-  stop(): void {}
-  seek(_bar: number): void {}
+  play(): boolean {
+    return true;
+  }
+  pause(): boolean {
+    return true;
+  }
+  stop(): boolean {
+    return true;
+  }
+  seek(_bar: number): boolean {
+    return true;
+  }
   setVolume(_volume: number): void {}
   setTempo(_bpm: number): void {}
   getTempo(): number {
@@ -235,9 +241,15 @@ class MockRbsAudioEngine implements RbsAudioEngineInstance {
     return emptyModReport();
   }
 
-  renderOfflineToWav(_frames: number, _deviceIndex: number): Uint8Array {
+  beginOfflineRender(_deviceIndex: number): boolean {
+    return false;
+  }
+
+  renderOfflineChunk(_frames: number): Uint8Array {
     return new Uint8Array(0);
   }
+
+  endOfflineRender(): void {}
 
   songLengthFrames(): number {
     return 0;
@@ -247,7 +259,7 @@ class MockRbsAudioEngine implements RbsAudioEngineInstance {
 }
 
 class MockRbsParser implements RbsParserInstance {
-  parse(_ptr: number, _size: number): WasmParsedSong | undefined {
+  parse(_ptr: number, _size: number): WasmSongSummary | undefined {
     return undefined;
   }
 
@@ -306,7 +318,6 @@ void mockModule;
 // If these assignments fail, the bridge contract is out of sync.
 type AssertEngineConfig = EngineConfig extends {
   sampleRate: number;
-  bufferSize: number;
   enableTb303A: boolean;
 }
   ? true

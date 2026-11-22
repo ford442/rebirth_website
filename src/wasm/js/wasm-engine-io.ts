@@ -5,7 +5,7 @@
 
 import type { EngineError, EngineModule, RbsAudioEngineInstance } from '../types/wasm-audio-engine';
 import { MOD_LOAD_STATUSES, type ParsedMod } from '../types/wasm-audio-mod';
-import { toUiParsedMod, toUiParsedSong } from '../types/wasm-audio-mapping';
+import { toUiParsedMod } from '../types/wasm-audio-mapping';
 
 export function mallocCopy(module: EngineModule, bytes: Uint8Array): number {
   const ptr = module._malloc(bytes.byteLength);
@@ -34,7 +34,7 @@ export function loadSongIntoEngine(
         message: engine.lastParseError() || 'Song parse failed.',
       };
     }
-    toUiParsedSong(parsed);
+    // The summary is plain data — no Embind vector handles to free.
     return null;
   } finally {
     module._free(ptr);

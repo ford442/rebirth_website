@@ -38,7 +38,6 @@ ParsedSong parseSongFixture(const std::string& name) {
 EngineConfig testConfig() {
   EngineConfig cfg;
   cfg.sampleRate = 44100.0f;
-  cfg.bufferSize = 128;
   return cfg;
 }
 

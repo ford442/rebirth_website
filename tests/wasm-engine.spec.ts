@@ -10,7 +10,9 @@ const WASM_FIXTURE_URL = '/rebirth_website/archive/rbs-songs/demo/propellerhead-
  */
 test.describe('WASM audio engine', () => {
   test.use({ serviceWorkers: 'allow' });
-  test('AudioContext uses interactive latency and reports diagnostics', async ({ page }) => {
+  test('AudioContext starts at the device rate with playback latency, then goes interactive', async ({
+    page,
+  }) => {
     await page.goto('/rebirth_website/');
     await page.waitForFunction(() => !!(window as any).WasmAudioBridge, null, {
       timeout: 5000,
@@ -20,27 +22,77 @@ test.describe('WASM audio engine', () => {
       const WasmAudioBridge = (window as any).WasmAudioBridge;
       const bridge = new WasmAudioBridge();
       await bridge.init();
-      const ctx = bridge.ctx;
-      const diagnostics = bridge.audioDiagnostics;
-      bridge.dispose();
-      return {
-        latencyHint: ctx?.latencyHint ?? null,
-        sampleRate: ctx?.sampleRate ?? null,
-        diagnosticsSampleRate: diagnostics?.sampleRate ?? null,
-        diagnosticsHint: diagnostics?.latencyHint ?? null,
-        requestedSampleRate: diagnostics?.requestedSampleRate ?? null,
+      const first = bridge.audioDiagnostics;
+      const firstCtx = bridge.ctx;
+      // The first studio edit / knob move / MIDI connection does this.
+      await bridge.useInteractiveLatency();
+      const second = bridge.audioDiagnostics;
+      const blocksBefore = bridge.enginePtr.getProcessedBlockCount();
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const blocksAfter = bridge.enginePtr.getProcessedBlockCount();
+      const info = {
+        firstHint: first?.latencyHint ?? null,
+        firstRequested: first?.requestedSampleRate ?? null,
+        firstRate: first?.sampleRate ?? null,
+        firstCtxRate: firstCtx?.sampleRate ?? null,
+        secondHint: second?.latencyHint ?? null,
+        replacedContext: bridge.ctx !== firstCtx,
+        oldContextState: firstCtx?.state ?? null,
+        newContextState: bridge.ctx?.state ?? null,
+        rendering: blocksAfter > blocksBefore,
       };
+      bridge.dispose();
+      return info;
     });
 
-    expect(audioInfo.diagnosticsHint).toBe('interactive');
-    if (audioInfo.latencyHint != null) {
-      expect(audioInfo.latencyHint).toBe('interactive');
-    }
-    expect(audioInfo.sampleRate).toBeGreaterThan(0);
-    expect(audioInfo.diagnosticsSampleRate).toBe(audioInfo.sampleRate);
-    expect(audioInfo.requestedSampleRate === 44100 || audioInfo.requestedSampleRate === null).toBe(
-      true
-    );
+    // Passive listening: larger buffers, and no forced 44.1 kHz resampling.
+    expect(audioInfo.firstHint).toBe('playback');
+    expect(audioInfo.firstRequested).toBeNull();
+    expect(audioInfo.firstRate).toBe(audioInfo.firstCtxRate);
+    // Interactive: a rebuilt context around the same engine, still rendering.
+    expect(audioInfo.secondHint).toBe('interactive');
+    expect(audioInfo.replacedContext).toBe(true);
+    expect(audioInfo.oldContextState).toBe('closed');
+    expect(audioInfo.newContextState).toBe('running');
+    expect(audioInfo.rendering).toBe(true);
+  });
+
+  test('closes the AudioContext on pagehide and reopens it on a bfcache pageshow', async ({
+    page,
+  }) => {
+    await page.goto('/rebirth_website/');
+    await page.waitForFunction(() => !!(window as any).WasmAudioBridge, null, {
+      timeout: 5000,
+    });
+
+    const info = await page.evaluate(async () => {
+      const WasmAudioBridge = (window as any).WasmAudioBridge;
+      const bridge = new WasmAudioBridge();
+      await bridge.init();
+      const before = bridge.ctx;
+      window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true }));
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      const hidden = { ctx: bridge.ctx, beforeState: before.state };
+      window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+      const deadline = Date.now() + 5000;
+      while (!bridge.ctx && Date.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const result = {
+        closedOnHide: hidden.ctx === null && hidden.beforeState === 'closed',
+        reopened: !!bridge.ctx && bridge.ctx !== before,
+        reopenedState: bridge.ctx?.state ?? null,
+        rendering: (bridge.enginePtr?.getProcessedBlockCount?.() ?? 0) > 0,
+      };
+      bridge.dispose();
+      return result;
+    });
+
+    expect(info.closedOnHide).toBe(true);
+    expect(info.reopened).toBe(true);
+    expect(info.reopenedState).toBe('running');
+    expect(info.rendering).toBe(true);
   });
 
   test('retries AudioContext without sampleRate when preferred rate is rejected', async ({
