@@ -112,6 +112,8 @@ struct StepData {
   uint8_t drumExtra = 0;
   bool accent = false;
   bool slide = false;
+  uint16_t drumAccent = 0;
+  uint16_t drumFlam = 0;
 };
 ```
 
@@ -124,8 +126,21 @@ export interface WasmStepData {
   drumExtra: number;
   accent: boolean;
   slide: boolean;
+  drumAccent: number;
+  drumFlam: number;
 }
 ```
+
+On a drum machine `note` and `drumExtra` are an instrument bitfield
+(`src/wasm/cpp/synth/DrumBitfield.h`): BD SD LT MT HT CH OH CB in `note`, then
+CP CY RS in `drumExtra`. CB is the 808 cowbell / 909 crash, CY the 808 cymbal
+/ 909 ride; the parser maps each machine's step row onto these (RbsFormat.md
+§6e). `accent` is the machine's AC (total accent) row — it can be set on an
+inactive step, which plays nothing but is kept for the save.
+`drumAccent` / `drumFlam` are TR-909 only: one bit per instrument in the same
+11-bit order (`note` bits 0–7, then `drumExtra` bits 8–10) for an accented or
+flammed hit. `setStep` clears both on every other device, masks them to the
+instruments the step hits, and keeps flam over accent when both are set.
 
 ### `PatternRef`
 
@@ -192,9 +207,8 @@ struct DeviceState {
   float level = 0.8f;
   float pan = 0.5f;
   bool dist = false;
-  bool pcf = false;
-  bool compressor = false;
   float delaySend = 0.0f;
+  std::array<uint8_t, DRUM_KIT_BYTES> kit;
 };
 ```
 
@@ -216,11 +230,19 @@ export interface WasmDeviceState {
   level: number;
   pan: number;
   dist: boolean;
-  pcf: boolean;
-  compressor: boolean;
   delaySend: number;
+  kit: number[];
 }
 ```
+
+`kit` is the drum machine's 28 per-instrument bytes (0–127): header bytes 3..
+of its device chunk, which are also TRAK controllers 0x03.. on its track —
+`src/wasm/cpp/parser/DrumKit.h` names them (`Kit808::BassTone`,
+`Kit909::FlamInterval`, …). The 808 uses the first 27. A song summary always
+carries the effective kit (the machine default when the file had none); it is
+meaningless for a TB-303. On a drum machine `accent` is its ACCENT knob.
+The compressor and PCF are no longer per-device flags: they are inserts
+placed by `SongFxSettings.comp.target` / `pcf.target`.
 
 ### `Pattern`
 
@@ -232,6 +254,7 @@ struct Pattern {
   uint8_t bank = 0;
   uint8_t patternIndex = 0;
   uint8_t length = 16;
+  bool shuffle = false;
   std::array<StepData, MAX_STEPS> steps;
 };
 ```
@@ -244,6 +267,7 @@ export interface WasmPattern {
   bank: number;
   patternIndex: number;
   length: number;
+  shuffle: boolean;
   steps: WasmStepData[];
 }
 ```
@@ -268,6 +292,12 @@ struct SongSummary {
   uint8_t headVersion = 0;
   uint8_t globSubFormat = 0;
   bool showInfoOnOpen = false;
+  uint8_t playMode = 1;
+  bool loopEnabled = false;
+  uint32_t loopStartBar = 0;
+  uint32_t loopEndBar = 0;
+  uint8_t shuffle = 0;
+  bool vintage = false;
   std::array<DeviceState, NUM_DEVICES> devices;
   SongFxSettings fx;
   uint32_t barCount = 0;
@@ -288,12 +318,24 @@ export interface WasmSongSummary {
   headVersion: number;
   globSubFormat: number;
   showInfoOnOpen: boolean;
+  playMode: number;
+  loopEnabled: boolean;
+  loopStartBar: number;
+  loopEndBar: number;
+  shuffle: number;
+  vintage: boolean;
   devices: WasmDeviceState[];
   fx: WasmSongFxSettings;
   barCount: number;
   patternSlots: number[];
 }
 ```
+
+`playMode` is 0 for pattern mode, 1 for song mode. The loop locators are
+whole 0-based bars (the GLOB stores bar × 768); the loop is honoured in song
+mode when on and its start lies inside the arrangement. `shuffle` is the
+song's 0–127 amount, applied to patterns whose own `shuffle` flag is set.
+`vintage` is decoded and saved but does not change the sound yet.
 
 `patternSlots[device]` has bit `bank * 8 + index` set for every slot the song
 stores. `toUiParsedSong(summary, engine)` walks it, calling `getPattern` for
@@ -310,9 +352,10 @@ C++ (`src/wasm/cpp/parser/RbsTypes.h`):
 ```cpp
 struct DelaySettings {
   bool enabled = false;
-  uint8_t time = 0;
+  uint8_t steps = 3;
+  bool triplet = false;
   uint8_t feedback = 0;
-  uint8_t wet = 0;
+  uint8_t pan = 64;
 };
 
 struct PcfSettings {
@@ -320,6 +363,10 @@ struct PcfSettings {
   uint8_t cutoff = 64;
   uint8_t resonance = 0;
   uint8_t envAmount = 0;
+  uint8_t pattern = 0;
+  uint8_t decay = 64;
+  bool lowpass = true;
+  uint8_t target = 0;
 };
 
 struct DistSettings {
@@ -333,6 +380,7 @@ struct CompSettings {
   uint8_t threshold = 32;
   uint8_t ratio = 127;
   uint8_t attack = 127;
+  uint8_t target = 0;
 };
 
 struct SongFxSettings {
@@ -345,7 +393,10 @@ struct SongFxSettings {
 ```
 
 TypeScript (`WasmSongFxSettings` in `src/wasm/types/wasm-audio-song.ts`) mirrors the
-nested structs field-for-field. `RbsVersion` adds `V1_0 = 0x10` for MIDI-container
+nested structs field-for-field. The delay time is `steps` sixteenths (two-thirds
+of one each when `triplet`), its return panned by `pan`. `comp.target` /
+`pcf.target` are MIXR's insert device ids: 0 none, 1 master bus, 2–5 TB-303 A,
+TB-303 B, TR-808, TR-909. `RbsVersion` adds `V1_0 = 0x10` for MIDI-container
 v1.0 songs.
 
 The bridge converts `WasmParsedSong` to the UI-facing `ParsedSong`, mapping numeric `WasmDeviceId` values to string labels and flattening knob fields into `DeviceState.knobs`.
@@ -371,6 +422,9 @@ block; it does not create a JavaScript `rb338` namespace.
 | `void setTempo(float)`                                    | `setTempo`            | `(bpm: number) => void`                                                    |
 | `float getTempo() const`                                  | `getTempo`            | `() => number`                                                             |
 | `void setTempoMultiplier(float)`                          | `setTempoMultiplier`  | `(multiplier: number) => void`                                             |
+| `bool setPlayMode(uint8_t)`                               | `setPlayMode`         | `(mode: number) => boolean` (0 pattern, 1 song)                            |
+| `uint8_t playMode() const`                                | `getPlayMode`         | `() => number`                                                             |
+| `bool selectPattern(uint8_t,uint8_t,uint8_t)`             | `selectPattern`       | `(deviceId, bank, patternIndex) => boolean` (at the next bar)              |
 | `void setDeviceParam(uint8_t,uint8_t,float)`              | `setDeviceParam`      | `(deviceId, paramId, value) => void`                                       |
 | `setStepWrapper(..., uint8_t x4, StepData)`               | `setStep`             | `(deviceId, bank, patternIndex, stepIndex, step: WasmStepData) => boolean` |
 | `StepData getStep(uint8_t,uint8_t,uint8_t,uint8_t) const` | `getStep`             | `(deviceId, bank, patternIndex, stepIndex) => WasmStepData`                |
@@ -400,6 +454,14 @@ a Stop.
 `stop` and `seek(bar)` also rewind knob and mixer state: the song's own
 values, then every TRAK automation event before `bar` in order, then the
 session's knob moves — so a jump lands where playback would have been.
+
+**Song end.** In song mode the transport stops after the last bar of the
+arrangement (or jumps back at the loop end when the song's loop is on), so
+`isPlaying()` turns false by itself; the next `play` starts from bar 1.
+Pattern mode plays each device's selected pattern until stopped, and
+`selectPattern` queues a change to the next bar boundary. `songLengthFrames`
+is one pass: the arrangement, cut at a loop end that comes first, or four
+bars in pattern mode. TRAK automation runs in song mode only.
 
 ### `RbsAudioEngine` — pattern editing
 
@@ -464,6 +526,13 @@ numeric value of `DeviceParamId` (`src/wasm/cpp/engine/EngineCommands.h`):
 | 7     | `Level`               | `Level`                                  | `Mixer`    |
 | 8     | `Pan`                 | `Pan`                                    | `Mixer`    |
 | 9     | `Mute`                | `Mute`                                   | `Mixer`    |
+| 10–37 | `KitBase` + _i_       | `KitBase` + _i_                          | `Voice`    |
+
+`KitBase + i` (i = 0–27) sets drum-kit byte `i` (`DeviceState.kit[i]`) on the
+808/909, as a 0–1 value scaled to 0–127; a TB-303 ignores it. The overrides are
+tracked as one 64-bit mask per device, so a kit knob the user moves also masks
+that controller's TRAK automation for the session, and `saveRbs` folds it into
+the saved kit.
 
 `RbsAudioEngine::applyDeviceParam` (audio thread) forwards `Tune`/`Cutoff`/`Resonance`/
 `EnvMod`/`Decay`/`Accent`/`Waveform` straight to `Voice::setParameter(DeviceParamId, float)`

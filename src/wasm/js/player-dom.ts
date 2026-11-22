@@ -63,6 +63,8 @@ export interface PlayerDom {
   studioPattern: HTMLSelectElement | null;
   studioTabs: NodeListOf<HTMLButtonElement>;
   studioKnobs: NodeListOf<HTMLInputElement | HTMLSelectElement>;
+  /** The 808/909 kit panel, filled by the studio view per machine. */
+  studioKit: HTMLElement | null;
   /** The 16 editable pattern cells. */
   studioSteps: NodeListOf<HTMLButtonElement>;
   studioUndo: HTMLButtonElement | null;
@@ -129,6 +131,7 @@ export function queryPlayerDom(playerEl: HTMLElement): PlayerDom {
     studioKnobs: playerEl.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
       '[data-studio-param]'
     ),
+    studioKit: playerEl.querySelector<HTMLElement>('[data-studio-kit]'),
     studioSteps: playerEl.querySelectorAll<HTMLButtonElement>('[data-studio-step]'),
     studioUndo: playerEl.querySelector('#rbsStudioUndo'),
     studioNote: playerEl.querySelector('#rbsStudioNote'),

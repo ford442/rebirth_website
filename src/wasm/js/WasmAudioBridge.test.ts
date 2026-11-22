@@ -358,7 +358,8 @@ describe('WasmAudioBridge.setDeviceParam', () => {
     const engine = wasm.state.engines[0].setDeviceParam;
     expect(engine).toHaveBeenNthCalledWith(1, 3, MAX_DEVICE_PARAM_ID, 1);
     expect(engine).toHaveBeenNthCalledWith(2, 0, 0, 0);
-    expect(MAX_DEVICE_PARAM_ID).toBe(9);
+    // Mute (9) plus the 28 drum-kit params from KitBase (10).
+    expect(MAX_DEVICE_PARAM_ID).toBe(37);
   });
 
   it('treats a non-finite value as 0', async () => {

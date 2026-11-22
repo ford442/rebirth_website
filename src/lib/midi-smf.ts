@@ -59,9 +59,10 @@ export const GM_DRUM_MAP = {
   highTom: 50, // High Tom
   closedHat: 42, // Closed Hi-Hat
   openHat: 46, // Open Hi-Hat
-  clave: 75, // Claves
+  cowbell: 56, // Cowbell (808 CB row)
+  crash: 49, // Crash Cymbal 1 (909 CB row, and the 808's cymbal)
+  ride: 51, // Ride Cymbal 1 (909 CY row)
   clap: 39, // Hand Clap
-  maracas: 70, // Maracas
   rimshot: 37, // Side Stick
 } as const;
 
@@ -74,13 +75,13 @@ const DRUM_HIT = {
   HT: 0x10,
   CH: 0x20,
   OH: 0x40,
-  CL: 0x80,
+  CB: 0x80, // 808 cowbell / 909 crash
 } as const;
 
 /** Secondary hits packed into `StepData.drumExtra`. */
 const DRUM_EXTRA = {
   CP: 0x01,
-  MA: 0x02,
+  CY: 0x02, // 808 cymbal / 909 ride
   RS: 0x04,
 } as const;
 
@@ -92,14 +93,23 @@ const DRUM_BIT_TO_KEY: Array<[number, number]> = [
   [DRUM_HIT.HT, GM_DRUM_MAP.highTom],
   [DRUM_HIT.CH, GM_DRUM_MAP.closedHat],
   [DRUM_HIT.OH, GM_DRUM_MAP.openHat],
-  [DRUM_HIT.CL, GM_DRUM_MAP.clave],
 ];
 
-const DRUM_EXTRA_TO_KEY: Array<[number, number]> = [
-  [DRUM_EXTRA.CP, GM_DRUM_MAP.clap],
-  [DRUM_EXTRA.MA, GM_DRUM_MAP.maracas],
-  [DRUM_EXTRA.RS, GM_DRUM_MAP.rimshot],
-];
+/** The two machine-specific bits, as GM keys for the 808 and the 909. */
+function machineBitKeys(deviceId: DeviceId): {
+  primary: Array<[number, number]>;
+  extra: Array<[number, number]>;
+} {
+  const is909 = deviceId === 'tr909';
+  return {
+    primary: [...DRUM_BIT_TO_KEY, [DRUM_HIT.CB, is909 ? GM_DRUM_MAP.crash : GM_DRUM_MAP.cowbell]],
+    extra: [
+      [DRUM_EXTRA.CP, GM_DRUM_MAP.clap],
+      [DRUM_EXTRA.CY, is909 ? GM_DRUM_MAP.ride : GM_DRUM_MAP.crash],
+      [DRUM_EXTRA.RS, GM_DRUM_MAP.rimshot],
+    ],
+  };
+}
 
 const ACCENT_VELOCITY = 112;
 const NORMAL_VELOCITY = 80;
@@ -246,9 +256,15 @@ function buildAcidEvents(
 }
 
 /** Build percussion events for one drum machine track. */
-function buildDrumEvents(steps: StepData[], channel: number, repeats: number): AbsoluteEvent[] {
+function buildDrumEvents(
+  steps: StepData[],
+  channel: number,
+  repeats: number,
+  deviceId: DeviceId
+): AbsoluteEvent[] {
   const events: AbsoluteEvent[] = [];
   const stepCount = steps.length;
+  const keys = machineBitKeys(deviceId);
 
   for (let repeat = 0; repeat < repeats; repeat += 1) {
     const barTick = repeat * stepCount * TICKS_PER_STEP;
@@ -258,21 +274,24 @@ function buildDrumEvents(steps: StepData[], channel: number, repeats: number): A
       if (!step?.active) continue;
 
       const start = barTick + i * TICKS_PER_STEP;
-      const velocity = step.accent ? ACCENT_VELOCITY : NORMAL_VELOCITY;
       // Percussion is one-shot; a short fixed gate is the usual convention.
       const end = start + Math.max(1, Math.floor(TICKS_PER_STEP / 2));
 
-      const emit = (key: number) => {
+      // The AC row accents the whole step; a 909 hit can also be accented on
+      // its own (drumAccent, in note | drumExtra << 8 bit order).
+      const emit = (key: number, wordBit: number) => {
+        const accented = step.accent || ((step.drumAccent ?? 0) & wordBit) !== 0;
+        const velocity = accented ? ACCENT_VELOCITY : NORMAL_VELOCITY;
         events.push({ tick: start, order: 2, bytes: noteOn(channel, key, velocity) });
         events.push({ tick: end, order: 0, bytes: noteOff(channel, key) });
       };
 
       const hits = step.note ?? 0;
-      for (const [bit, key] of DRUM_BIT_TO_KEY) {
-        if (hits & bit) emit(key);
+      for (const [bit, key] of keys.primary) {
+        if (hits & bit) emit(key, bit);
       }
-      for (const [bit, key] of DRUM_EXTRA_TO_KEY) {
-        if ((step.drumExtra ?? 0) & bit) emit(key);
+      for (const [bit, key] of keys.extra) {
+        if ((step.drumExtra ?? 0) & bit) emit(key, bit << 8);
       }
     }
   }
@@ -334,7 +353,7 @@ export function songToMidi(song: ParsedSong, options: MidiExportOptions = {}): U
     const isDrum = deviceId === 'tr808' || deviceId === 'tr909';
     const channel = isDrum ? drumChannel : deviceIndex;
     const events = isDrum
-      ? buildDrumEvents(steps, channel, repeats)
+      ? buildDrumEvents(steps, channel, repeats, deviceId)
       : buildAcidEvents(steps, channel, repeats, slideMode);
 
     if (events.length === 0) return;

@@ -50,6 +50,9 @@ export interface PatchStep {
   active: boolean;
   accent: boolean;
   slide: boolean;
+  /** TR-909 per-instrument accent / flam bits; omitted (0) everywhere else. */
+  drumAccent?: number;
+  drumFlam?: number;
 }
 
 export interface PatchParam {
@@ -66,7 +69,14 @@ export interface StudioPatch {
   params: PatchParam[];
 }
 
-type StepTuple = [number, number, number, number, number, number, number];
+/**
+ * `[device, bank, pattern, step, note, drumExtra, flags]`, plus
+ * `drumAccent, drumFlam` only when either is set (a 909 step) — older links
+ * without them still decode.
+ */
+type StepTuple =
+  | [number, number, number, number, number, number, number]
+  | [number, number, number, number, number, number, number, number, number];
 type ParamTuple = [number, number, number];
 interface WirePatch {
   v: number;
@@ -105,6 +115,11 @@ function clampByte(value: number): number {
   return Math.max(0, Math.min(255, Math.round(value || 0)));
 }
 
+/** An 11-bit drum instrument mask. */
+function clampMask(value: number | undefined): number {
+  return Math.max(0, Math.min(0x7ff, Math.round(value || 0)));
+}
+
 export function encodeStudioPatch(patch: StudioPatch): string {
   const wire: WirePatch = { v: PATCH_VERSION };
   if (typeof patch.bpm === 'number' && Number.isFinite(patch.bpm)) {
@@ -116,7 +131,7 @@ export function encodeStudioPatch(patch: StudioPatch): string {
       if (step.active) flags |= STEP_FLAG_ACTIVE;
       if (step.accent) flags |= STEP_FLAG_ACCENT;
       if (step.slide) flags |= STEP_FLAG_SLIDE;
-      return [
+      const base: [number, number, number, number, number, number, number] = [
         clampByte(step.deviceIndex),
         clampByte(step.bank),
         clampByte(step.patternIndex),
@@ -125,6 +140,9 @@ export function encodeStudioPatch(patch: StudioPatch): string {
         clampByte(step.drumExtra),
         flags,
       ];
+      const accent = clampMask(step.drumAccent);
+      const flam = clampMask(step.drumFlam);
+      return accent || flam ? [...base, accent, flam] : base;
     });
   }
   if (patch.params.length > 0) {
@@ -177,7 +195,7 @@ export function decodeStudioPatch(encoded: string): StudioPatch | null {
     const [deviceIndex, bank, patternIndex, stepIndex, note, drumExtra, flags] = tuple;
     if (deviceIndex < 0 || deviceIndex > 3) continue;
     if (stepIndex < 0 || stepIndex > 15) continue;
-    patch.steps.push({
+    const step: PatchStep = {
       deviceIndex,
       bank,
       patternIndex,
@@ -187,7 +205,12 @@ export function decodeStudioPatch(encoded: string): StudioPatch | null {
       active: (flags & STEP_FLAG_ACTIVE) !== 0,
       accent: (flags & STEP_FLAG_ACCENT) !== 0,
       slide: (flags & STEP_FLAG_SLIDE) !== 0,
-    });
+    };
+    if (isNumberTuple(tuple, 9)) {
+      step.drumAccent = clampMask(tuple[7]);
+      step.drumFlam = clampMask(tuple[8]);
+    }
+    patch.steps.push(step);
   }
   for (const tuple of asList(wire.k)) {
     if (!isNumberTuple(tuple, 3)) continue;

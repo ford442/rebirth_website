@@ -601,6 +601,10 @@ export class WasmAudioBridge {
         drumExtra: Math.max(0, Math.min(255, Math.floor(step.drumExtra ?? 0))),
         accent: Boolean(step.accent),
         slide: Boolean(step.slide),
+        // 909 dynamics; the engine masks them to the hit instruments and
+        // clears them on every other device.
+        drumAccent: Math.max(0, Math.min(0x7ff, Math.floor(step.drumAccent ?? 0))),
+        drumFlam: Math.max(0, Math.min(0x7ff, Math.floor(step.drumFlam ?? 0))),
       })
     );
   }

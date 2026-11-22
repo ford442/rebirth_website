@@ -170,8 +170,16 @@ export interface RbsAudioEngineInstance {
   renderOfflineChunk(frames: number): Uint8Array;
   /** Finish a chunked bounce and release its chunk buffer. */
   endOfflineRender(): void;
-  /** Frames covering the loaded arrangement at the current tempo. */
+  /**
+   * Frames one pass of the song lasts at the current tempo: the arrangement
+   * (cut at a loop end that comes first), or four bars in pattern mode.
+   */
   songLengthFrames(): number;
+  /** 0 = pattern mode, 1 = song mode (stops at the end or loops). */
+  setPlayMode(mode: number): boolean;
+  getPlayMode(): number;
+  /** Pattern mode: switch the device to this pattern at the next bar boundary. */
+  selectPattern(deviceId: number, bank: number, patternIndex: number): boolean;
   getPlaybackPosition(): PlaybackPosition;
   delete(): void;
 }

@@ -97,7 +97,7 @@ ModLoadStatus loadModWrapper(RbsAudioEngine& self, uintptr_t dataPtr, size_t siz
  * Pattern edit: one step patch, by value.
  *
  * Embind can pass a registered value_object straight through, so the UI sends
- * a `{active, note, drumExtra, accent, slide}` object rather than a whole
+ * a `{active, note, drumExtra, accent, slide, drumAccent, drumFlam}` object rather than a whole
  * song. `ParsedSong` must never travel back across this boundary — it cannot
  * carry `automation`, so a round trip would silently erase it.
  */
@@ -188,6 +188,7 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
   registerFixedArray<DeviceState, NUM_DEVICES>("DeviceStateArray");
   registerFixedArray<PatternRef, NUM_DEVICES>("PatternRefArray");
   registerFixedArray<uint32_t, NUM_DEVICES>("PatternSlotArray");
+  registerFixedArray<uint8_t, DRUM_KIT_BYTES>("DrumKitArray");
 
   // enums — expose as plain numbers so JS/TS can use them directly.
   enum_<DeviceId>("DeviceId", enum_value_type::number)
@@ -282,15 +283,20 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
 
   value_object<DelaySettings>("DelaySettings")
     .field("enabled", &DelaySettings::enabled)
-    .field("time", &DelaySettings::time)
+    .field("steps", &DelaySettings::steps)
+    .field("triplet", &DelaySettings::triplet)
     .field("feedback", &DelaySettings::feedback)
-    .field("wet", &DelaySettings::wet);
+    .field("pan", &DelaySettings::pan);
 
   value_object<PcfSettings>("PcfSettings")
     .field("enabled", &PcfSettings::enabled)
     .field("cutoff", &PcfSettings::cutoff)
     .field("resonance", &PcfSettings::resonance)
-    .field("envAmount", &PcfSettings::envAmount);
+    .field("envAmount", &PcfSettings::envAmount)
+    .field("pattern", &PcfSettings::pattern)
+    .field("decay", &PcfSettings::decay)
+    .field("lowpass", &PcfSettings::lowpass)
+    .field("target", &PcfSettings::target);
 
   value_object<DistSettings>("DistSettings")
     .field("enabled", &DistSettings::enabled)
@@ -301,7 +307,8 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .field("enabled", &CompSettings::enabled)
     .field("threshold", &CompSettings::threshold)
     .field("ratio", &CompSettings::ratio)
-    .field("attack", &CompSettings::attack);
+    .field("attack", &CompSettings::attack)
+    .field("target", &CompSettings::target);
 
   value_object<SongFxSettings>("SongFxSettings")
     .field("masterLevel", &SongFxSettings::masterLevel)
@@ -321,7 +328,9 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .field("note",   &StepData::note)
     .field("drumExtra", &StepData::drumExtra)
     .field("accent", &StepData::accent)
-    .field("slide",  &StepData::slide);
+    .field("slide",  &StepData::slide)
+    .field("drumAccent", &StepData::drumAccent)
+    .field("drumFlam", &StepData::drumFlam);
 
   // PatternRef
   value_object<PatternRef>("PatternRef")
@@ -349,9 +358,8 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .field("level",    &DeviceState::level)
     .field("pan",      &DeviceState::pan)
     .field("dist",     &DeviceState::dist)
-    .field("pcf",      &DeviceState::pcf)
-    .field("compressor", &DeviceState::compressor)
-    .field("delaySend", &DeviceState::delaySend);
+    .field("delaySend", &DeviceState::delaySend)
+    .field("kit",      &DeviceState::kit);
 
   // Pattern
   value_object<Pattern>("Pattern")
@@ -359,6 +367,7 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .field("bank",         &Pattern::bank)
     .field("patternIndex", &Pattern::patternIndex)
     .field("length",       &Pattern::length)
+    .field("shuffle",      &Pattern::shuffle)
     .field("steps",        &Pattern::steps);
 
   register_optional<Pattern>(); // getPattern() on an empty slot
@@ -375,6 +384,12 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .field("headVersion",  &SongSummary::headVersion)
     .field("globSubFormat",&SongSummary::globSubFormat)
     .field("showInfoOnOpen", &SongSummary::showInfoOnOpen)
+    .field("playMode",     &SongSummary::playMode)
+    .field("loopEnabled",  &SongSummary::loopEnabled)
+    .field("loopStartBar", &SongSummary::loopStartBar)
+    .field("loopEndBar",   &SongSummary::loopEndBar)
+    .field("shuffle",      &SongSummary::shuffle)
+    .field("vintage",      &SongSummary::vintage)
     .field("devices",      &SongSummary::devices)
     .field("fx",           &SongSummary::fx)
     .field("barCount",     &SongSummary::barCount)
@@ -428,6 +443,9 @@ EMSCRIPTEN_BINDINGS(rb338_audio) {
     .function("setTempo",  &RbsAudioEngine::setTempo)
     .function("getTempo",  &RbsAudioEngine::getTempo)
     .function("setTempoMultiplier", &RbsAudioEngine::setTempoMultiplier)
+    .function("setPlayMode", &RbsAudioEngine::setPlayMode)
+    .function("getPlayMode", &RbsAudioEngine::playMode)
+    .function("selectPattern", &RbsAudioEngine::selectPattern)
     .function("setDeviceParam", &RbsAudioEngine::setDeviceParam)
     .function("setStep",   &setStepWrapper)
     .function("getStep",   &RbsAudioEngine::getStep)

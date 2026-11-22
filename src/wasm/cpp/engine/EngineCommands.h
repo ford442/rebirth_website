@@ -58,11 +58,9 @@ enum class DeviceParamId : uint8_t {
   Level,
   Pan,
   Mute,
-  /**
-   * First of DRUM_KIT_BYTES drum-kit params: `KitBase + i` is
-   * DeviceState::kit[i] — TRAK controller `i + 3` on an 808/909 track
-   * (DrumKit.h names them). Ignored by the TB-303.
-   */
+  // First of DRUM_KIT_BYTES drum-kit params: `KitBase + i` is
+  // DeviceState::kit[i] — TRAK controller `i + 3` on an 808/909 track
+  // (DrumKit.h names them). Ignored by the TB-303.
   KitBase,
 };
 
