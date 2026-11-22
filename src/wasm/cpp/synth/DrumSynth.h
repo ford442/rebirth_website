@@ -70,6 +70,12 @@ private:
   float m_velocity = 1.0f;
   float m_pitchMul = 1.0f;
   float m_decayMul = 1.0f;
+  // exp(-5 t) envelope, advanced by one multiply per sample instead of an
+  // exp() per sample. m_envGain = exp(-5 * age / length).
+  float m_envGain = 1.0f;
+  float m_envCoeff = 1.0f;
+  float m_burstEnvGain = 1.0f;   // the same for the current clap burst
+  float m_burstEnvCoeff = 1.0f;
   /** xorshift32 state; never zero (zero is xorshift's fixed point). */
   uint32_t m_noiseState = kNoiseSeed;
 

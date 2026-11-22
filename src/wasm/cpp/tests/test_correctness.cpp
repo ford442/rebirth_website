@@ -682,3 +682,45 @@ TEST_CASE("Mods: the sample arena is sized to the mod, not the 8 MiB budget") {
   CHECK(report.capacityFrames == report.usedFrames);
   CHECK(report.capacityFrames < SamplePool::kDefaultArenaFrames / 64);
 }
+
+// ── §5: DSP hygiene ──────────────────────────────────────────────────
+
+#include "../synth/Tb303Voice.h"
+#include <cfloat>
+#include <chrono>
+
+TEST_CASE("Tb303: the tail after note-off flushes to zero instead of going subnormal") {
+  // WASM has no FTZ/DAZ; a decaying envelope or filter state that drifts
+  // into the subnormal range makes every following operation slow.
+  Tb303Voice voice;
+  voice.init(44100.0f);
+  DeviceState state;
+  state.id = DeviceId::TB303_A;
+  state.resonance = 0.9f;
+  state.decay = 1.0f;
+  voice.load(state);
+  StepData on;
+  on.active = true;
+  on.note = 36;
+  on.accent = true;
+  voice.triggerStep(0, on);
+  std::vector<float> note(4410);
+  voice.render(note.data(), static_cast<uint32_t>(note.size()));
+  voice.triggerStep(1, StepData{}); // note off
+
+  std::vector<float> tail(44100 * 10);
+  const auto start = std::chrono::steady_clock::now();
+  voice.render(tail.data(), static_cast<uint32_t>(tail.size()));
+  const auto us = std::chrono::duration_cast<std::chrono::microseconds>(
+                      std::chrono::steady_clock::now() - start)
+                      .count();
+  MESSAGE("TB-303 10 s release tail: " << us << " us");
+
+  size_t subnormal = 0;
+  for (float s : tail) {
+    if (s != 0.0f && std::fabs(s) < FLT_MIN) ++subnormal;
+  }
+  CHECK(subnormal == 0);
+  // And the voice is genuinely silent by the end, not ringing at -300 dB.
+  for (size_t i = tail.size() - 4410; i < tail.size(); ++i) REQUIRE(tail[i] == 0.0f);
+}

@@ -1,4 +1,5 @@
 #include "Tb303Voice.h"
+#include "dsp/Denormal.h"
 #include "Resample.h"
 #include "dsp/PolyBlep.h"
 #include <algorithm>
@@ -45,6 +46,7 @@ float cutoffNormToHz(float norm) {
 void Tb303Voice::init(float sampleRate) {
   m_sampleRate = sampleRate;
   m_glideCoeff = 1.0f - std::exp(-1.0f / (kSlideTimeSeconds * sampleRate));
+  m_smoothK = smoothCoeff(sampleRate); // was an exp() of a constant per sample
   m_accentDecayCoeff = std::exp(-1.0f / (kAccentDecaySeconds * sampleRate));
   reset();
 }
@@ -81,7 +83,7 @@ float Tb303Voice::midiToHz(uint8_t midiNote) const {
 }
 
 float Tb303Voice::renderSample() {
-  const float smoothK = smoothCoeff(m_sampleRate);
+  const float smoothK = m_smoothK;
   m_smoothedCutoff += (m_cutoffKnob - m_smoothedCutoff) * smoothK;
   m_smoothedResonance += (m_resonanceKnob - m_smoothedResonance) * smoothK;
 
@@ -115,17 +117,22 @@ float Tb303Voice::renderSample() {
   if (m_gateOpen) {
     m_envelope = std::max(m_envelope * m_decayCoeff, 0.0001f);
   } else {
-    m_envelope *= m_releaseCoeff;
+    m_envelope = dsp::flushDenormal(m_envelope * m_releaseCoeff);
   }
 
   // Accent one-shot: fixed short decay, independent of the main envelope.
-  m_accentEnvelope *= m_accentDecayCoeff;
+  m_accentEnvelope = dsp::flushDenormal(m_accentEnvelope * m_accentDecayCoeff);
 
   // Filter cutoff: base knob + envelope modulation + accent cutoff bump.
-  const float envCutoff = m_envModKnob * m_envelope;
-  const float accentCutoff = m_accentEnvelope * m_accentKnob * kAccentCutoffBump;
-  const float modCutoffNorm = clamp01(m_smoothedCutoff + envCutoff + accentCutoff);
-  m_filter.setCoeffs(cutoffNormToHz(modCutoffNorm), m_smoothedResonance, m_sampleRate);
+  // Control rate — the pow + tan used to run every sample; the envelope and
+  // knob smoothing it follows move far slower than 16 samples. A new note
+  // resets the counter so its attack lands on the very first sample.
+  if ((m_controlPhase++ & dsp::kControlRateMask) == 0) {
+    const float envCutoff = m_envModKnob * m_envelope;
+    const float accentCutoff = m_accentEnvelope * m_accentKnob * kAccentCutoffBump;
+    const float modCutoffNorm = clamp01(m_smoothedCutoff + envCutoff + accentCutoff);
+    m_filter.setCoeffs(cutoffNormToHz(modCutoffNorm), m_smoothedResonance, m_sampleRate);
+  }
 
   // VCA: main envelope with an accent-driven extra transient on top.
   const float vcaGain = m_envelope * (1.0f + m_accentEnvelope * m_accentKnob * kAccentVcaBoost);
@@ -154,6 +161,7 @@ void Tb303Voice::triggerStep(uint8_t stepIndex, const StepData& step) {
   }
 
   const bool slideFromPrev = m_prevStepActive && m_prevStepSlide;
+  m_controlPhase = 0;
   m_targetLogPitch = std::log2(midiToHz(step.note));
 
   if (step.accent) {
@@ -211,6 +219,7 @@ void Tb303Voice::setSamplePool(const SamplePool* pool) {
 }
 
 void Tb303Voice::reset() {
+  m_controlPhase = 0;
   m_phase = 0.0f;
   m_envelope = 0.0f;
   m_accentEnvelope = 0.0f;

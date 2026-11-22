@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Denormal.h"
+
 #include <algorithm>
 #include <cmath>
 
@@ -54,6 +56,7 @@ public:
     m_ic1eq = 0.0f;
     m_ic2eq = 0.0f;
     m_envelope = 0.0f;
+    m_controlPhase = 0;
   }
 
   /** @param norm 0–1 (the song's `cutoff` byte / 127). */
@@ -76,9 +79,11 @@ public:
   float process(float input) {
     const float absIn = std::fabs(input);
     const float coeff = (absIn > m_envelope) ? m_envAttack : m_envRelease;
-    m_envelope = absIn + coeff * (m_envelope - absIn);
+    m_envelope = flushDenormal(absIn + coeff * (m_envelope - absIn));
 
-    if (m_envAmount > 0.0f) {
+    // The envelope sweep is control-rate: exp2 + tan every 16 samples, not
+    // every sample.
+    if (m_envAmount > 0.0f && (m_controlPhase++ & kControlRateMask) == 0) {
       const float openOctaves =
           m_envAmount * kMaxEnvOctaves * std::min(m_envelope, 1.0f);
       updateCoefficients(false, openOctaves);
@@ -87,8 +92,8 @@ public:
     const float v3 = input - m_ic2eq;
     const float v1 = m_a1 * m_ic1eq + m_a2 * v3;
     const float v2 = m_ic2eq + m_a2 * m_ic1eq + m_a3 * v3;
-    m_ic1eq = 2.0f * v1 - m_ic1eq;
-    m_ic2eq = 2.0f * v2 - m_ic2eq;
+    m_ic1eq = flushDenormal(2.0f * v1 - m_ic1eq);
+    m_ic2eq = flushDenormal(2.0f * v2 - m_ic2eq);
     return v2;
   }
 
@@ -127,6 +132,7 @@ private:
   float m_ic2eq = 0.0f;
 
   float m_envelope = 0.0f;
+  unsigned m_controlPhase = 0;
   float m_envAttack = 0.0f;
   float m_envRelease = 0.0f;
 };
