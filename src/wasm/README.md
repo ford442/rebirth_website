@@ -17,13 +17,18 @@ four devices: TB-303 A/B through a ZDF ladder filter
 and TR-808 / TR-909 either procedurally (`synth/DrumSynth.*`) or from `.rbm`
 mod samples (`RbsAudioEngine::loadMod` → `synth/SamplePool.*`, covered by
 `tests/wasm-rbm-mod.spec.ts`). It bounces offline to 16-bit WAV — full mix or
-per-device stems — via `renderOfflineToWav` on a dedicated Worker, and the TS
+per-device stems — on a dedicated Worker, streaming fixed-size chunks out of
+the WASM heap (`beginOfflineRender` / `renderOfflineChunk`) so a full-length
+song fits the fixed 64 MiB heap, and the TS
 side exports the loaded song as a Standard MIDI File (`src/lib/midi-smf.ts`).
 
 Pattern steps are editable in the studio grid. A click sends one patch —
 `RbsAudioEngine::setStep(deviceId, bank, patternIndex, stepIndex, StepData)` —
-which mutates the engine's main-thread working copy and republishes the render
-graph, the same atomic snapshot swap `loadMod()` uses. Undo lives in JavaScript
+which mutates the engine's main-thread working copy and sends the audio thread
+a `PatchStep` command that rewrites that step in the live snapshot in place —
+held notes, filter state, the delay tail and automated knobs all carry on
+through the edit. Only a brand-new pattern slot falls back to republishing the
+render graph, the atomic snapshot swap `loadMod()` uses. Undo lives in JavaScript
 (`js/player-step-edit.ts`) as a bounded stack of inverse patches. Nothing sends
 a `ParsedSong` back across Embind, and nothing allocates in `processBlock()`.
 
@@ -45,12 +50,13 @@ semantic, not bitwise; `cpp/parser/RbsFormat.md` §10 lists what a save drops,
   never grows a sample bank.
 - **Reproduce a source file byte for byte.** Unknown chunks, reserved fields
   and Propellerhead checksums we have not documented are not preserved.
-- **Play TRAK automation from an archive file loaded through Embind.** The
-  parser _stores_ every non-pattern TRAK event in `ParsedSong::automation` and
-  `AutomationScheduler` applies it on the audio thread — but that vector is not
-  registered with Embind, so it only survives the `loadSongFromBytes` path
-  (parse inside C++). A song handed back through `loadSong(WasmParsedSong)`
-  loses it. Archive loads must use `loadSongFromBytes`.
+- **Send TRAK automation to JavaScript.** The parser stores every
+  non-pattern TRAK event in `ParsedSong::automation` and `AutomationScheduler`
+  plays all of it (sorted by tick, looping with the arrangement), but the
+  vector never crosses Embind: songs load through `loadSongFromBytes`, which
+  returns a slim `SongSummary`, and there is no JS-side `loadSong` any more.
+- **Decode drum accents with confidence.** See `parser/RbsFormat.md` §6e —
+  help wanted.
 - **Load `.rbm` skins.** Skin resources are counted and reported, never drawn.
 
 ## Language roles

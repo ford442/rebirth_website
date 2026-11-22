@@ -307,6 +307,33 @@ Secondary hits are packed into `StepData.drumExtra`:
 
 A step is active when any mapped byte is non-zero.
 
+#### Drum accent — open question (help wanted)
+
+The parser sets `StepData.accent = row[1] != 0`. Byte 1 is also read as a BD
+indicator, so in practice every kick is accented and nothing else ever is.
+That is almost certainly wrong, but the right decode is not settled. What the
+three fixtures plus the community songs in `public/archive/` show:
+
+- **808 byte values are only 0 or 1; 909 values are 0–3** (byte 8 of
+  `blue-planet`'s 909 uses 1, 2 and 3). That fits the 909's per-step
+  dynamics, with the 808 having only a global accent.
+- **A real-hardware order fits some songs well.** Read as
+  `AC BD SD LT MT HT RS CP CB CY OH CH` (808) and
+  `AC BD SD LT MT HT RS CP CH OH CR RD` (909) — accent first, as on the
+  original instrument-select dial — `standard-rebirth`'s 808 puts open hats
+  on every off-beat (byte 10) and accents exactly the kicks (byte 0 equals
+  byte 1 on every step), which is classic programming.
+- **It fits others badly.** `blue-planet`'s 808 has 64 hits in byte 0, none
+  in byte 1, and 43 steps where byte 0 is the only set byte: under the
+  accent-first reading that song has no kick and dozens of accent-only
+  steps. Byte 0 behaves like a BD there, which is why both bytes are
+  currently read as BD.
+
+Telling the two apart needs files saved by a known ReBirth version with
+known patterns (one hit per instrument, accent on known steps). Until then
+the decode is left as is: changing it would move every drum in the archive
+on the strength of three songs.
+
 ---
 
 ## 7. Arrangement (`TRKL` Container)
