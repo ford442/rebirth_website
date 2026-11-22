@@ -135,8 +135,12 @@ Full guidelines in `README.md`.
 
 `src/wasm/` is a **shipping** in-browser `.rbs` playback engine (C++ compiled to
 WASM via Emscripten, CI-built and deployed). It parses v1/v1.5 and v2 `.rbs`,
-sequences the arrangement, synthesises TB-303 (ZDF ladder filter + PolyBLEP
-oscillators) and TR-808/TR-909 — procedurally or from `.rbm` mod samples —
+sequences the arrangement (song mode stops at the end or loops the song's loop
+region; pattern mode plays the selected patterns; per-pattern shuffle),
+synthesises TB-303 (ZDF ladder filter + PolyBLEP oscillators, separate VCA/VCF
+envelopes, gated notes, accent sweep) and TR-808/TR-909 with their
+per-instrument kit knobs, 909 flams and accents — procedurally or from `.rbm`
+mod samples —
 bounces offline to WAV (full mix or per-device stems), and exports `.mid` from
 TypeScript. Pattern steps are editable in the studio grid through
 `RbsAudioEngine::setStep`, and the edited working copy saves back to a v2.x

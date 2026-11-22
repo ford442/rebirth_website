@@ -60,6 +60,27 @@ jobs:
           ./src/wasm/cpp/build/rbs-inspect src/wasm/test-fixtures/standard-rebirth.rbs \
             | node -e "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); if(j.title!=='Standard ReBirth') process.exit(1)"
 
+      - name: Golden comparisons (spectral + envelope distance)
+        run: ./src/wasm/cpp/build/rbs_native_tests --test-case='Golden*' --success=false
+        env:
+          TSAN_OPTIONS: halt_on_error=1
+
+      - name: Golden songs are what rbs-golden builds
+        if: matrix.sanitizer == 'none'
+        run: |
+          out="$(mktemp -d)"
+          ./src/wasm/cpp/build/rbs-golden songs "$out"
+          for f in src/wasm/test-fixtures/golden/*.rbs; do
+            cmp "$f" "$out/$(basename "$f")"
+          done
+
+      - name: Smoke-test rbs-render
+        if: matrix.sanitizer == 'none'
+        run: |
+          ./src/wasm/cpp/build/rbs-render --bars 2 --mono \
+            src/wasm/test-fixtures/standard-rebirth.rbs "$RUNNER_TEMP/standard.wav"
+          test "$(head -c 4 "$RUNNER_TEMP/standard.wav")" = RIFF
+
       - name: Smoke-test rbm-inspect JSON output
         if: matrix.sanitizer == 'none'
         run: |

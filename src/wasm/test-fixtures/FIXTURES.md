@@ -159,3 +159,11 @@ more than two decades (official SongPacks on the Propellerhead FTP, later
 mirrored on the Internet Archive). They are used here in a non-commercial
 archival context. If you are the author of one of these files and want it
 removed, please open an issue.
+
+## Golden references (`golden/`)
+
+Reference songs built by `cpp/tools/GoldenCases.h` and their renders, for the
+spectral / envelope comparisons in `cpp/tests/test_golden.cpp`. See
+[`golden/GOLDEN.md`](golden/GOLDEN.md) for what each case exercises, how the
+references are regenerated, and how to contribute a recording from original
+ReBirth 2.0.1.

@@ -132,8 +132,11 @@ private:
  * bus phase-linear, so the dry signal it is mixed back with can be
  * compensated with a whole-sample delay (kLatency) instead of comb filtering.
  *
- * Cost per input sample: ~70 multiply-adds and eight exp() — only paid
- * while the distortion is on and a channel feeds it.
+ * Cost per input sample: ~70 multiply-adds and eight double exp() — only
+ * paid while the distortion is on and a channel feeds it. Natively (GCC
+ * -O2) the mixer goes from ~0.1 % to ~1 % of one core per second of audio
+ * with it on; the exp() calls are most of that. Not yet measured under
+ * -msimd128 (no Emscripten in the environment this was written in).
  */
 class OversampledShaper {
 public:

@@ -34,6 +34,7 @@ const wasm = vi.hoisted(() => {
     saveRbs = vi.fn(() => new Uint8Array([1, 2, 3]));
     lastSaveError = vi.fn(() => '');
     getPlaybackPosition = vi.fn(() => ({ bar: 2, step: 5 }));
+    isPlaying = vi.fn(() => true);
     constructor() {
       state.engines.push(this as unknown as Record<string, ReturnType<typeof vi.fn>>);
     }
@@ -269,6 +270,27 @@ describe('WasmAudioBridge position polling', () => {
     expect(onPosition).toHaveBeenCalledTimes(2);
     expect(onPosition).toHaveBeenLastCalledWith(2, 5);
     expect(loop.pending()).toBe(1);
+  });
+
+  it('goes back to ready when the song runs out, not before the engine starts', async () => {
+    const bridge = await readyBridge();
+    bridge.play();
+    const engine = wasm.state.engines[0];
+
+    // The Play command has not reached the audio thread yet: keep playing.
+    engine.isPlaying.mockReturnValue(false);
+    loop.runFrame();
+    expect(bridge.playerStatus).toBe('playing');
+
+    engine.isPlaying.mockReturnValue(true);
+    loop.runFrame();
+    expect(bridge.playerStatus).toBe('playing');
+
+    // Song mode stopped after the last bar.
+    engine.isPlaying.mockReturnValue(false);
+    loop.runFrame();
+    expect(bridge.playerStatus).toBe('ready');
+    expect(loop.pending()).toBe(0);
   });
 
   it('never schedules a second loop when play() is called twice', async () => {

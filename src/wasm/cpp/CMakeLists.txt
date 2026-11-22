@@ -130,6 +130,13 @@ if(NOT EMSCRIPTEN)
   add_executable(rbs-conformance ${RB338_CONFORMANCE_SOURCES})
   target_link_libraries(rbs-conformance PRIVATE rb338_engine)
 
+  # Native .rbs → WAV render (A/B against original ReBirth), and the golden
+  # reference generator (test-fixtures/golden/GOLDEN.md).
+  add_executable(rbs-render ${RB338_RENDER_SOURCES})
+  target_link_libraries(rbs-render PRIVATE rb338_engine)
+  add_executable(rbs-golden ${RB338_GOLDEN_SOURCES})
+  target_link_libraries(rbs-golden PRIVATE rb338_engine)
+
   if(RB338_FUZZ)
     foreach(fuzz_src ${RB338_FUZZ_SOURCES})
       get_filename_component(fuzz_name "${fuzz_src}" NAME_WE)
