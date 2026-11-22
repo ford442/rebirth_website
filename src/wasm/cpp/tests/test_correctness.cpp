@@ -796,3 +796,25 @@ TEST_CASE("Parser: GLOB strings are read only within their fixed-width fields") 
   REQUIRE(reloaded.has_value());
   CHECK(semanticDifference(*song, *reloaded) == "");
 }
+
+TEST_CASE("Corpus regression: a v1 tempo just past 500 BPM clamps, so the song saves") {
+  // Found by rbs-conformance: Cherry Coke Contest "12_approach.rbs" stores
+  // 119,999 us per quarter (500.004 BPM). The v1 path accepted it, wrote it
+  // into GLOB, and the v2 reader rejected the save as out of range.
+  auto bytes = readFixtureBytes("v1/just-15.rbs");
+  const uint8_t tempoMeta[3] = {0xff, 0x51, 0x03};
+  auto it = std::search(bytes.begin(), bytes.end(), tempoMeta, tempoMeta + 3);
+  REQUIRE(it != bytes.end());
+  it[3] = 0x01; it[4] = 0xd4; it[5] = 0xbf; // 119999 us per quarter
+  RbsParser parser;
+  auto song = parser.parse(bytes.data(), bytes.size());
+  REQUIRE(song.has_value());
+  CHECK(song->bpm == MAX_BPM);
+  RbsWriter writer;
+  auto saved = writer.write(*song);
+  REQUIRE(saved.has_value());
+  RbsParser reparser;
+  auto reloaded = reparser.parse(saved->data(), saved->size());
+  REQUIRE(reloaded.has_value());
+  CHECK(semanticDifference(*song, *reloaded) == "");
+}

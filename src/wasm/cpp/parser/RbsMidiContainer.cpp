@@ -86,7 +86,12 @@ float readMidiTempoBpm(const uint8_t* data, size_t size) {
           (static_cast<uint32_t>(data[i + 4]) << 8) |
           static_cast<uint32_t>(data[i + 5]);
       if (usPerQuarter > 0) {
-        return 60000000.0f / static_cast<float>(usPerQuarter);
+        // Clamped to the range the v2 GLOB reader enforces, so a v1 song
+        // can always be saved and reloaded. Real archive files sit right on
+        // the edge: Cherry Coke Contest "12_approach" stores 119,999 us per
+        // quarter (500.004 BPM), which parsed as v1 but its v2 save was
+        // rejected (found by the corpus conformance sweep).
+        return std::clamp(60000000.0f / static_cast<float>(usPerQuarter), MIN_BPM, MAX_BPM);
       }
     }
   }
